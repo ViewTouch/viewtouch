@@ -1,0 +1,146 @@
+[
+  {
+    "id": "bun",
+    "name": "Burger Buns",
+    "unit": "each",
+    "onHand": 48,
+    "lowAt": 12,
+    "cost": 0.35,
+    "vendor": "city-bakery"
+  },
+  {
+    "id": "patty",
+    "name": "Beef Patties",
+    "unit": "each",
+    "onHand": 40,
+    "lowAt": 10,
+    "cost": 1.6,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "veggie-patty",
+    "name": "Veggie Patties",
+    "unit": "each",
+    "onHand": 12,
+    "lowAt": 4,
+    "cost": 1.4,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "cheese",
+    "name": "Cheese Slices",
+    "unit": "slice",
+    "onHand": 80,
+    "lowAt": 20,
+    "cost": 0.18,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "swiss",
+    "name": "Swiss Slices",
+    "unit": "slice",
+    "onHand": 30,
+    "lowAt": 8,
+    "cost": 0.22,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "bacon",
+    "name": "Bacon",
+    "unit": "strip",
+    "onHand": 60,
+    "lowAt": 15,
+    "cost": 0.3,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "mushrooms",
+    "name": "Mushrooms",
+    "unit": "oz",
+    "onHand": 64,
+    "lowAt": 16,
+    "cost": 0.25,
+    "vendor": "green-farms"
+  },
+  {
+    "id": "lettuce",
+    "name": "Lettuce",
+    "unit": "oz",
+    "onHand": 160,
+    "lowAt": 40,
+    "cost": 0.12,
+    "vendor": "green-farms"
+  },
+  {
+    "id": "romaine",
+    "name": "Romaine",
+    "unit": "oz",
+    "onHand": 120,
+    "lowAt": 30,
+    "cost": 0.14,
+    "vendor": "green-farms"
+  },
+  {
+    "id": "chicken",
+    "name": "Chicken Breast",
+    "unit": "each",
+    "onHand": 24,
+    "lowAt": 6,
+    "cost": 2.1,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "eggs",
+    "name": "Eggs",
+    "unit": "each",
+    "onHand": 120,
+    "lowAt": 30,
+    "cost": 0.25,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "bread",
+    "name": "Bread",
+    "unit": "slice",
+    "onHand": 60,
+    "lowAt": 16,
+    "cost": 0.12,
+    "vendor": "city-bakery"
+  },
+  {
+    "id": "batter",
+    "name": "Pancake Batter",
+    "unit": "oz",
+    "onHand": 240,
+    "lowAt": 60,
+    "cost": 0.06,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "coffee-beans",
+    "name": "Coffee",
+    "unit": "oz",
+    "onHand": 80,
+    "lowAt": 20,
+    "cost": 0.4,
+    "vendor": "valley-foods"
+  },
+  {
+    "id": "potatoes",
+    "name": "Fries (potatoes)",
+    "unit": "oz",
+    "onHand": 400,
+    "lowAt": 80,
+    "cost": 0.05,
+    "vendor": "green-farms"
+  },
+  {
+    "id": "onions",
+    "name": "Onion Rings",
+    "unit": "each",
+    "onHand": 120,
+    "lowAt": 30,
+    "cost": 0.08,
+    "vendor": "green-farms"
+  }
+]

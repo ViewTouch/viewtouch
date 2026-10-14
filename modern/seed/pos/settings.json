@@ -1,0 +1,843 @@
+{
+  "schemaVersion": 1,
+  "vendors": [
+    {
+      "id": "valley-foods",
+      "name": "Valley Foods",
+      "phone": "555-0140",
+      "account": "VT-2210",
+      "note": "Meat, cheese, eggs, dry goods. Delivers Tue and Fri; order by noon the day before."
+    },
+    {
+      "id": "green-farms",
+      "name": "Green Farms Produce",
+      "phone": "555-0172",
+      "account": "GF-881",
+      "note": "Produce, daily except Sunday."
+    },
+    {
+      "id": "city-bakery",
+      "name": "City Bakery",
+      "phone": "555-0119",
+      "account": "",
+      "note": "Buns and bread every morning before 8."
+    }
+  ],
+  "storeName": "ViewTouch Caf\u00e9",
+  "currencySymbol": "$",
+  "openingChecklist": [
+    "Count the starting cash",
+    "Turn on the grill and fryers",
+    "Check the walk-in temperature",
+    "Stock the bar and the line",
+    "Unlock the front door"
+  ],
+  "closingChecklist": [
+    "Clean the grill and fryers",
+    "Wipe down the tables",
+    "Take out the trash",
+    "Count the drawers",
+    "Lock the back door"
+  ],
+  "autoLogoutMinutes": 3,
+  "phoneLockSeconds": 30,
+  "tableLongMinutes": 90,
+  "loyalty": {
+    "enabled": true,
+    "pointsPerDollar": 1,
+    "rewards": [
+      {
+        "points": 50,
+        "value": 5.0
+      },
+      {
+        "points": 120,
+        "value": 15.0
+      },
+      {
+        "points": 250,
+        "value": 35.0
+      }
+    ]
+  },
+  "promotions": [
+    {
+      "id": "happy-hour",
+      "name": "Happy Hour",
+      "active": true,
+      "items": [
+        "draft-beer",
+        "house-wine"
+      ],
+      "families": [],
+      "percent": 50,
+      "buy": 0,
+      "get": 0,
+      "start": 900,
+      "end": 1080,
+      "days": 62
+    },
+    {
+      "id": "burger-tuesday",
+      "name": "Burger Tuesday",
+      "active": true,
+      "families": [
+        "burgers"
+      ],
+      "items": [],
+      "percent": 50,
+      "buy": 1,
+      "get": 1,
+      "start": 0,
+      "end": 0,
+      "days": 4
+    }
+  ],
+  "display": {
+    "logo": "",
+    "accent": "#2f6fd6",
+    "slides": [
+      "Happy Hour, weekdays 3 - 6 PM: half-price draft beer and wine",
+      "Burger Tuesday: the second burger is half off",
+      "Join our rewards: 1 point for every dollar, $5 off at 50 points",
+      "Gift cards make great gifts - ask your server"
+    ]
+  },
+  "tax": {
+    "food": 8.25,
+    "alcohol": 10.0,
+    "merchandise": 8.25,
+    "room": 0,
+    "taxTakeoutFood": true
+  },
+  "tenders": [
+    {
+      "id": "cash",
+      "name": "Cash",
+      "kind": "cash"
+    },
+    {
+      "id": "credit",
+      "name": "Credit Card",
+      "kind": "card"
+    },
+    {
+      "id": "gift",
+      "name": "Gift Card",
+      "kind": "giftcard"
+    },
+    {
+      "id": "house",
+      "name": "House Account",
+      "kind": "house"
+    },
+    {
+      "id": "discount",
+      "name": "10% Discount",
+      "kind": "discount",
+      "percent": 10
+    },
+    {
+      "id": "comp",
+      "name": "Comp",
+      "kind": "discount",
+      "percent": 100
+    },
+    {
+      "id": "staff-meal",
+      "name": "Staff Meal",
+      "kind": "discount",
+      "percent": 50,
+      "staffMeal": true
+    }
+  ],
+  "printers": [
+    {
+      "id": "receipt",
+      "name": "Receipt",
+      "type": "file",
+      "path": "receipt.txt",
+      "width": 42,
+      "cutter": true,
+      "drawerKick": true
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "type": "file",
+      "path": "kitchen.txt",
+      "width": 42,
+      "cutter": true,
+      "drawerKick": false
+    },
+    {
+      "id": "bar",
+      "name": "Bar",
+      "type": "file",
+      "path": "bar.txt",
+      "width": 42,
+      "cutter": true,
+      "drawerKick": false
+    }
+  ],
+  "receiptHeader": "123 Main Street\nOpen daily 7am - 10pm",
+  "gratuity": {
+    "percent": 18,
+    "minGuests": 6
+  },
+  "terminals": [],
+  "cashMode": "serverBank",
+  "accounts": {
+    "sales": "4000 Food sales",
+    "sales:drinks": "4100 Beverage sales",
+    "sales:events": "4300 Event sales",
+    "tax": "2200 Sales tax payable",
+    "gratuity": "2310 Gratuity payable",
+    "tips": "2300 Tips payable",
+    "discounts": "4900 Discounts and comps",
+    "staffMeals": "6150 Staff meals",
+    "rounding": "4950 Cash rounding",
+    "giftCardsSold": "2400 Gift card liability",
+    "tender:cash": "1000 Cash on hand",
+    "tender:credit": "1100 Card clearing",
+    "tender:gift": "2400 Gift card liability",
+    "tender:house": "1200 House accounts receivable"
+  },
+  "stations": [
+    {
+      "id": "grill",
+      "name": "Grill"
+    },
+    {
+      "id": "fryer",
+      "name": "Fryer"
+    },
+    {
+      "id": "cold",
+      "name": "Cold Line"
+    }
+  ],
+  "menuCategories": [
+    {
+      "id": "breakfast",
+      "name": "Breakfast Plates",
+      "color": "#a86a12",
+      "periods": [
+        "breakfast"
+      ],
+      "printer": "kitchen"
+    },
+    {
+      "id": "burgers",
+      "name": "Burgers",
+      "color": "#a86a12",
+      "periods": [
+        "lunch",
+        "dinner"
+      ],
+      "printer": "kitchen",
+      "station": "grill"
+    },
+    {
+      "id": "salads",
+      "name": "Salads",
+      "color": "#1f8a4c",
+      "periods": [
+        "lunch",
+        "dinner"
+      ],
+      "printer": "kitchen",
+      "station": "cold"
+    },
+    {
+      "id": "plates",
+      "name": "Plates",
+      "color": "#6b46c1",
+      "periods": [
+        "lunch",
+        "dinner"
+      ],
+      "printer": "kitchen"
+    },
+    {
+      "id": "combos",
+      "name": "Combos",
+      "color": "#1f8a4c",
+      "periods": [
+        "lunch",
+        "dinner"
+      ],
+      "printer": "kitchen"
+    },
+    {
+      "id": "drinks",
+      "name": "Drinks",
+      "color": "#1f6f73",
+      "periods": [],
+      "printer": "bar"
+    },
+    {
+      "id": "events",
+      "name": "Events",
+      "color": "#6b46c1",
+      "periods": [],
+      "printer": "kitchen"
+    }
+  ],
+  "modifierGroups": [
+    {
+      "id": "dressing",
+      "name": "Dressing",
+      "min": 1,
+      "max": 1,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Ranch",
+          "price": 0,
+          "kitchenName": "RNCH"
+        },
+        {
+          "name": "Blue Cheese",
+          "price": 0,
+          "kitchenName": "BLU CHZ"
+        },
+        {
+          "name": "Balsamic",
+          "price": 0,
+          "kitchenName": "BALS"
+        },
+        {
+          "name": "Caesar",
+          "price": 0,
+          "kitchenName": "CAES"
+        },
+        {
+          "name": "Oil & Vinegar",
+          "price": 0,
+          "kitchenName": "O&V"
+        }
+      ]
+    },
+    {
+      "id": "salad-protein",
+      "name": "Add a Protein",
+      "min": 0,
+      "max": 1,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Grilled Chicken",
+          "price": 4.0
+        },
+        {
+          "name": "Shrimp",
+          "price": 5.0
+        },
+        {
+          "name": "Salmon",
+          "price": 6.0
+        }
+      ]
+    },
+    {
+      "id": "eggs",
+      "name": "Eggs",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Scrambled",
+          "price": 0
+        },
+        {
+          "name": "Over Easy",
+          "price": 0
+        },
+        {
+          "name": "Over Medium",
+          "price": 0
+        },
+        {
+          "name": "Sunny Side Up",
+          "price": 0
+        },
+        {
+          "name": "Poached",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "toast",
+      "name": "Toast",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "White",
+          "price": 0
+        },
+        {
+          "name": "Wheat",
+          "price": 0
+        },
+        {
+          "name": "Sourdough",
+          "price": 0
+        },
+        {
+          "name": "Rye",
+          "price": 0
+        },
+        {
+          "name": "English Muffin",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "syrup",
+      "name": "Syrup",
+      "min": 1,
+      "max": 1,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Maple",
+          "price": 0
+        },
+        {
+          "name": "Blueberry",
+          "price": 0
+        },
+        {
+          "name": "Strawberry",
+          "price": 0
+        },
+        {
+          "name": "Real Maple",
+          "price": 1.5
+        }
+      ]
+    },
+    {
+      "id": "breakfast-add-ons",
+      "name": "Add-ons",
+      "min": 0,
+      "max": 0,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Bacon",
+          "price": 3.0
+        },
+        {
+          "name": "Sausage",
+          "price": 3.0
+        },
+        {
+          "name": "Fruit Cup",
+          "price": 2.5
+        },
+        {
+          "name": "Hash Browns",
+          "price": 2.75
+        },
+        {
+          "name": "Whipped Cream",
+          "price": 0.75
+        }
+      ]
+    },
+    {
+      "id": "temperature",
+      "name": "Temperature",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Rare",
+          "price": 0,
+          "kitchenName": "RARE"
+        },
+        {
+          "name": "Medium Rare",
+          "price": 0,
+          "kitchenName": "MR"
+        },
+        {
+          "name": "Medium",
+          "price": 0,
+          "kitchenName": "MED"
+        },
+        {
+          "name": "Medium Well",
+          "price": 0,
+          "kitchenName": "MW"
+        },
+        {
+          "name": "Well Done",
+          "price": 0,
+          "kitchenName": "WELL"
+        }
+      ]
+    },
+    {
+      "id": "side",
+      "name": "Side",
+      "min": 1,
+      "max": 1,
+      "menuItems": true,
+      "options": [
+        {
+          "name": "Fries",
+          "price": 0.0,
+          "item": "fries"
+        },
+        {
+          "name": "Side Salad",
+          "price": 0.0,
+          "item": "side-salad"
+        },
+        {
+          "name": "Onion Rings",
+          "price": 1.0,
+          "item": "onion-rings"
+        },
+        {
+          "name": "Sweet Potato Fries",
+          "price": 1.5,
+          "item": "sweet-potato-fries"
+        },
+        {
+          "name": "No Side",
+          "price": 0.0,
+          "kitchenHide": true,
+          "item": "no-side"
+        }
+      ]
+    },
+    {
+      "id": "toppings",
+      "name": "Toppings",
+      "min": 0,
+      "max": 0,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Lettuce",
+          "price": 0,
+          "kitchenName": "LETT",
+          "included": true
+        },
+        {
+          "name": "Tomato",
+          "price": 0,
+          "kitchenName": "TOM",
+          "included": true
+        },
+        {
+          "name": "Onion",
+          "price": 0,
+          "kitchenName": "ONION",
+          "included": true
+        },
+        {
+          "name": "Pickles",
+          "price": 0,
+          "kitchenName": "PICK",
+          "included": true
+        },
+        {
+          "name": "Mayo",
+          "price": 0,
+          "kitchenName": "MAYO",
+          "included": true
+        },
+        {
+          "name": "Cheese",
+          "price": 1.0,
+          "kitchenName": "CHZ"
+        },
+        {
+          "name": "Bacon",
+          "price": 2.0,
+          "kitchenName": "BCN"
+        },
+        {
+          "name": "Avocado",
+          "price": 1.5,
+          "kitchenName": "AVO"
+        },
+        {
+          "name": "Jalape\u00f1os",
+          "price": 0.75,
+          "kitchenName": "JAL"
+        }
+      ]
+    },
+    {
+      "id": "combo-drink",
+      "name": "Drink",
+      "min": 1,
+      "max": 1,
+      "menuItems": true,
+      "options": [
+        {
+          "name": "Soda",
+          "price": 0,
+          "item": "soda"
+        },
+        {
+          "name": "Tea",
+          "price": 0,
+          "item": "tea"
+        },
+        {
+          "name": "Lemonade",
+          "price": 0.3,
+          "item": "lemonade"
+        },
+        {
+          "name": "Juice",
+          "price": 0.55,
+          "item": "juice"
+        },
+        {
+          "name": "Draft Beer",
+          "price": 3.0,
+          "item": "draft-beer"
+        }
+      ]
+    },
+    {
+      "id": "kids-side",
+      "name": "Kids Side",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Fries",
+          "price": 0
+        },
+        {
+          "name": "Apple Slices",
+          "price": 0
+        },
+        {
+          "name": "Fruit Cup",
+          "price": 0
+        },
+        {
+          "name": "Carrot Sticks",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "kids-drink",
+      "name": "Kids Drink",
+      "min": 0,
+      "max": 1,
+      "options": [
+        {
+          "name": "Milk",
+          "price": 0
+        },
+        {
+          "name": "Apple Juice",
+          "price": 0
+        },
+        {
+          "name": "Chocolate Milk",
+          "price": 0.5
+        }
+      ]
+    },
+    {
+      "id": "drink-size",
+      "name": "Size",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Small",
+          "price": 0
+        },
+        {
+          "name": "Medium",
+          "price": 0.5
+        },
+        {
+          "name": "Large",
+          "price": 1.0
+        }
+      ]
+    },
+    {
+      "id": "coffee-extras",
+      "name": "Coffee",
+      "min": 0,
+      "max": 0,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Cream",
+          "price": 0
+        },
+        {
+          "name": "Oat Milk",
+          "price": 0.75
+        },
+        {
+          "name": "Sugar",
+          "price": 0
+        },
+        {
+          "name": "Sweetener",
+          "price": 0
+        },
+        {
+          "name": "Extra Shot",
+          "price": 1.25
+        },
+        {
+          "name": "Decaf",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "hot-or-iced",
+      "name": "Hot or Iced",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Hot",
+          "price": 0
+        },
+        {
+          "name": "Iced",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "draft",
+      "name": "Draft",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "IPA",
+          "price": 0
+        },
+        {
+          "name": "Lager",
+          "price": 0
+        },
+        {
+          "name": "Stout",
+          "price": 0
+        },
+        {
+          "name": "Seasonal",
+          "price": 1.0
+        }
+      ]
+    },
+    {
+      "id": "wine",
+      "name": "Wine",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Red",
+          "price": 0
+        },
+        {
+          "name": "White",
+          "price": 0
+        },
+        {
+          "name": "Ros\u00e9",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "wine-pour",
+      "name": "Pour",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Glass",
+          "price": 0
+        },
+        {
+          "name": "Bottle",
+          "price": 22.0
+        }
+      ]
+    },
+    {
+      "id": "omelette-fillings",
+      "name": "Fillings",
+      "min": 0,
+      "max": 3,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Cheese",
+          "price": 0
+        },
+        {
+          "name": "Ham",
+          "price": 1.0
+        },
+        {
+          "name": "Mushrooms",
+          "price": 0
+        },
+        {
+          "name": "Peppers",
+          "price": 0
+        },
+        {
+          "name": "Onions",
+          "price": 0
+        },
+        {
+          "name": "Spinach",
+          "price": 0
+        },
+        {
+          "name": "Bacon",
+          "price": 1.5
+        }
+      ]
+    }
+  ],
+  "mealPeriods": [
+    {
+      "id": "breakfast",
+      "name": "Breakfast",
+      "start": "04:00"
+    },
+    {
+      "id": "lunch",
+      "name": "Lunch",
+      "start": "11:00"
+    },
+    {
+      "id": "dinner",
+      "name": "Dinner",
+      "start": "16:00"
+    }
+  ],
+  "receiptFooter": "Thank you for visiting!\nPowered by ViewTouch"
+}

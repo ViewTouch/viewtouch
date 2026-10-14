@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "time-clock",
+  "name": "Time Clock",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "role": "timeClock",
+  "permission": "public",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1300,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "{store.name} \u00b7 Time Clock",
+      "style": {
+        "normal": {
+          "fontSize": 52
+        }
+      }
+    },
+    {
+      "id": "clock",
+      "kind": "clock",
+      "rect": {
+        "x": 1332,
+        "y": 26,
+        "w": 572,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "time-clock",
+      "kind": "timeClock",
+      "rect": {
+        "x": 16,
+        "y": 132,
+        "w": 1888,
+        "h": 812
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "register",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 960,
+        "w": 520,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log In to the Register\u2026",
+      "actions": [
+        {
+          "type": "command",
+          "name": "timeClockDone"
+        },
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "login"
+        }
+      ]
+    }
+  ]
+}

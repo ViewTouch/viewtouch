@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "id": "check-options",
+  "name": "Check Options",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "order",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 440,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "This check"
+    },
+    {
+      "id": "later",
+      "kind": "button",
+      "rect": {
+        "x": 472,
+        "y": 16,
+        "w": 444,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Ready Later\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "order-later"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "rush",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 16,
+        "w": 478,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Rush",
+      "actions": [
+        {
+          "type": "command",
+          "name": "rush"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "vip",
+      "kind": "button",
+      "rect": {
+        "x": 1426,
+        "y": 16,
+        "w": 478,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "VIP",
+      "actions": [
+        {
+          "type": "command",
+          "name": "vip"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "history",
+      "kind": "checkHistory",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 900,
+        "h": 952
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "customer",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 112,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Customer\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "customers"
+        }
+      ]
+    },
+    {
+      "id": "gift-card",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 230,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Sell / Check a Gift Card\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "gift-card"
+        }
+      ]
+    },
+    {
+      "id": "transfer",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 348,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Transfer to Another Server\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "transfer"
+        }
+      ]
+    },
+    {
+      "id": "move",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 466,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Move to Another Table\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "move-table"
+        }
+      ]
+    },
+    {
+      "id": "merge",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 584,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Merge Another Check Into This One\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "merge"
+        }
+      ]
+    },
+    {
+      "id": "reopen",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 702,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Reopen a Closed Check\u2026 (manager)",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "closed-checks"
+        }
+      ]
+    },
+    {
+      "id": "sold-out",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 820,
+        "w": 972,
+        "h": 104
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Sold Out (86)\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "sold-out"
+        }
+      ]
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 944,
+        "w": 600,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Back to the Order",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "allergies",
+      "kind": "button",
+      "rect": {
+        "x": 1548,
+        "y": 944,
+        "w": 356,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Allergy\u2026",
+      "actions": [
+        {
+          "type": "command",
+          "name": "allergies"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "switch",
+      "kind": "button",
+      "rect": {
+        "x": 1548,
+        "y": 944,
+        "w": 356,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Switch User",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "id": "logout",
+  "name": "Log Out",
+  "kind": "logout",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "role": "logout",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 560,
+        "y": 40,
+        "w": 800,
+        "h": 90
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "End of shift"
+    },
+    {
+      "id": "panel",
+      "kind": "logoutPanel",
+      "rect": {
+        "x": 560,
+        "y": 150,
+        "w": 800,
+        "h": 400
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "clock-out",
+      "kind": "button",
+      "rect": {
+        "x": 560,
+        "y": 580,
+        "w": 390,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Clock Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "clockOut"
+        }
+      ]
+    },
+    {
+      "id": "tips",
+      "kind": "button",
+      "rect": {
+        "x": 560,
+        "y": 900,
+        "w": 390,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cash Out My Tips",
+      "actions": [
+        {
+          "type": "command",
+          "name": "cashOutTips"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "bank",
+      "kind": "button",
+      "rect": {
+        "x": 970,
+        "y": 900,
+        "w": 390,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "My Bank\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "drawer"
+        }
+      ]
+    },
+    {
+      "id": "break",
+      "kind": "button",
+      "rect": {
+        "x": 970,
+        "y": 580,
+        "w": 390,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Start / End Break",
+      "actions": [
+        {
+          "type": "command",
+          "name": "toggleBreak"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "kind": "button",
+      "rect": {
+        "x": 560,
+        "y": 740,
+        "w": 390,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "cancel",
+      "kind": "button",
+      "rect": {
+        "x": 970,
+        "y": 740,
+        "w": 390,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cancel",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "kind": "button",
+      "rect": {
+        "x": 1380,
+        "y": 900,
+        "w": 390,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Practice Mode",
+      "actions": [
+        {
+          "type": "command",
+          "name": "toggleTraining"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "message",
+      "kind": "button",
+      "rect": {
+        "x": 150,
+        "y": 900,
+        "w": 390,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Send a Message\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "message"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
+      "id": "checklists",
+      "kind": "button",
+      "rect": {
+        "x": 150,
+        "y": 740,
+        "w": 390,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Checklists\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "checklists"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    }
+  ]
+}

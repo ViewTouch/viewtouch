@@ -1,0 +1,52 @@
+# ViewTouch on this machine's screen, full screen at boot (kiosk). Runs in
+# the cage Wayland kiosk on tty1, as the viewtouch user. Settings:
+# /etc/viewtouch/kiosk.conf. cage -s keeps Ctrl+Alt+F<n> working, so a
+# technician can reach a text console (it still asks for a password).
+# Enable with
+#   sudo vtmodern-setup store              # this screen keeps the data
+#   sudo vtmodern-setup terminal <server>  # this screen joins a server
+[Unit]
+Description=ViewTouch POS kiosk screen
+Documentation=file:///usr/share/doc/vtmodern/README.md
+Wants=network-online.target
+After=network-online.target systemd-user-sessions.service plymouth-quit-wait.service
+# The kiosk takes the first console.
+After=getty@tty1.service
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=viewtouch
+Group=viewtouch
+StateDirectory=viewtouch
+StateDirectoryMode=0750
+# A login session on tty1 gives cage the screen, keyboard and touch input.
+PAMName=login
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+UtmpIdentifier=tty1
+UtmpMode=user
+Environment=XDG_SESSION_TYPE=wayland
+Environment=QT_QPA_PLATFORM=wayland
+Environment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+# Bring tty1 to the front: cage waits for its console to be the one on
+# screen (a desktop on another console would otherwise keep it waiting).
+ExecStartPre=-+/usr/bin/chvt 1
+ExecStart=/usr/bin/cage -d -s -- /usr/bin/vtmodern --kiosk --data-dir ${STATE_DIRECTORY} --config /etc/viewtouch/kiosk.conf
+Restart=always
+RestartSec=2
+# Manager -> Close ViewTouch exits with 64: the kiosk then stays off until
+# the next boot, and the screen goes to the second console (the desktop, or
+# a text login on a dedicated register).
+SuccessExitStatus=64
+RestartPreventExitStatus=64
+ExecStopPost=-+/bin/sh -c 'if [ "$$EXIT_STATUS" = 64 ]; then /usr/bin/chvt 2; fi'
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

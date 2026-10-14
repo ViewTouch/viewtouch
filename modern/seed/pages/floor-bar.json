@@ -1,0 +1,631 @@
+{
+  "schemaVersion": 1,
+  "id": "floor-bar",
+  "name": "Bar",
+  "kind": "tables",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "background": {
+    "texture": "woodfloor",
+    "fill": "#3b2a1a"
+  },
+  "zones": [
+    {
+      "id": "area-2",
+      "kind": "decor",
+      "rect": {
+        "x": 307,
+        "y": 129,
+        "w": 858,
+        "h": 815
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "area",
+        "color": "#5b3a1e"
+      },
+      "label": "Bar"
+    },
+    {
+      "id": "wall-2",
+      "kind": "decor",
+      "rect": {
+        "x": 282,
+        "y": 104,
+        "w": 907,
+        "h": 25
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "wall-4",
+      "kind": "decor",
+      "rect": {
+        "x": 1165,
+        "y": 104,
+        "w": 25,
+        "h": 864
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "wall-6",
+      "kind": "decor",
+      "rect": {
+        "x": 282,
+        "y": 943,
+        "w": 228,
+        "h": 25
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "wall-7",
+      "kind": "decor",
+      "rect": {
+        "x": 696,
+        "y": 943,
+        "w": 494,
+        "h": 25
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "window-3",
+      "kind": "decor",
+      "rect": {
+        "x": 449,
+        "y": 104,
+        "w": 247,
+        "h": 25
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "window"
+      }
+    },
+    {
+      "id": "window-4",
+      "kind": "decor",
+      "rect": {
+        "x": 788,
+        "y": 104,
+        "w": 247,
+        "h": 25
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "window"
+      }
+    },
+    {
+      "id": "wall-8",
+      "kind": "decor",
+      "rect": {
+        "x": 282,
+        "y": 129,
+        "w": 25,
+        "h": 278
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "wall-9",
+      "kind": "decor",
+      "rect": {
+        "x": 282,
+        "y": 659,
+        "w": 25,
+        "h": 284
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "wall"
+      }
+    },
+    {
+      "id": "door-2",
+      "kind": "decor",
+      "rect": {
+        "x": 511,
+        "y": 758,
+        "w": 185,
+        "h": 185
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "door"
+      }
+    },
+    {
+      "id": "counter-1",
+      "kind": "decor",
+      "rect": {
+        "x": 974,
+        "y": 197,
+        "w": 148,
+        "h": 648
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "decor": "counter"
+      }
+    },
+    {
+      "id": "table-bar-1",
+      "kind": "table",
+      "rect": {
+        "x": 788,
+        "y": 234,
+        "w": 167,
+        "h": 167
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "label": "Bar 1",
+      "props": {
+        "seats": 1
+      }
+    },
+    {
+      "id": "table-bar-2",
+      "kind": "table",
+      "rect": {
+        "x": 788,
+        "y": 437,
+        "w": 167,
+        "h": 167
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "label": "Bar 2",
+      "props": {
+        "seats": 1
+      }
+    },
+    {
+      "id": "table-bar-3",
+      "kind": "table",
+      "rect": {
+        "x": 788,
+        "y": 641,
+        "w": 167,
+        "h": 167
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "label": "Bar 3",
+      "props": {
+        "seats": 1
+      }
+    },
+    {
+      "id": "table-h1",
+      "kind": "table",
+      "rect": {
+        "x": 372,
+        "y": 227,
+        "w": 201,
+        "h": 201
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "label": "H1",
+      "props": {
+        "seats": 2,
+        "chairs": true
+      }
+    },
+    {
+      "id": "table-h2",
+      "kind": "table",
+      "rect": {
+        "x": 372,
+        "y": 490,
+        "w": 201,
+        "h": 201
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "label": "H2",
+      "props": {
+        "seats": 2,
+        "chairs": true
+      }
+    },
+    {
+      "id": "pillar-1",
+      "kind": "decor",
+      "rect": {
+        "x": 665,
+        "y": 521,
+        "w": 74,
+        "h": 74
+      },
+      "shape": "circle",
+      "behavior": "none",
+      "props": {
+        "decor": "pillar"
+      }
+    },
+    {
+      "id": "plan-main",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 354,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Main",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "replace",
+          "page": "tables"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2a313d"
+        }
+      }
+    },
+    {
+      "id": "plan-dining",
+      "kind": "button",
+      "rect": {
+        "x": 378,
+        "y": 16,
+        "w": 354,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Dining Area",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "replace",
+          "page": "floor-dining"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2a313d"
+        }
+      }
+    },
+    {
+      "id": "plan-bar",
+      "kind": "button",
+      "rect": {
+        "x": 740,
+        "y": 16,
+        "w": 354,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "replace",
+          "page": "floor-bar"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2a313d"
+        }
+      }
+    },
+    {
+      "id": "plan-patio",
+      "kind": "button",
+      "rect": {
+        "x": 1102,
+        "y": 16,
+        "w": 354,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Patio",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "replace",
+          "page": "floor-patio"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2a313d"
+        }
+      }
+    },
+    {
+      "id": "quick",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 16,
+        "w": 432,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Quick Order",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startQuick"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "takeout",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 182,
+        "w": 208,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Takeout",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startTakeout"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "kind": "button",
+      "rect": {
+        "x": 1696,
+        "y": 182,
+        "w": 208,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Delivery",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startDelivery"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ]
+    },
+    {
+      "id": "checks",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 348,
+        "w": 208,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Open Checks",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "checkList"
+        }
+      ]
+    },
+    {
+      "id": "deliveries",
+      "kind": "button",
+      "rect": {
+        "x": 1696,
+        "y": 348,
+        "w": 208,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Deliveries",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "deliveries"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
+      "id": "host",
+      "kind": "button",
+      "rect": {
+        "x": 1102,
+        "y": 976,
+        "w": 354,
+        "h": 88
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Host Stand",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "seating"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "tabs",
+      "kind": "button",
+      "rect": {
+        "x": 740,
+        "y": 976,
+        "w": 354,
+        "h": 88
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar Tabs",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "tabs"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "status",
+      "kind": "logoutPanel",
+      "rect": {
+        "x": 1472,
+        "y": 514,
+        "w": 432,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "switch",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 664,
+        "w": 432,
+        "h": 74
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Switch User",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
+      "id": "manager",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 748,
+        "w": 432,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "manager"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 914,
+        "w": 432,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "logout"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    }
+  ]
+}

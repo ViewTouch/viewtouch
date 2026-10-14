@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ViewTouch User Manual</title>
+<style>
+  body { font-family: "DejaVu Sans", "Liberation Sans", sans-serif; font-size: 10.5pt; line-height: 1.4; color: #1b1b1b; }
+  h1 { font-size: 22pt; color: #1f4fa8; page-break-before: always; margin-top: 0; }
+  h1.first { page-break-before: auto; }
+  h2 { font-size: 14pt; color: #1f4fa8; margin-top: 18pt; }
+  h3 { font-size: 11.5pt; margin-top: 12pt; }
+  p.shot { text-align: center; margin: 8pt 0 2pt 0; }
+  p.caption { text-align: center; font-size: 9pt; color: #555; margin-top: 0; }
+  .tip { background: #eef4ff; border-left: 4px solid #2f6fd6; padding: 6pt 8pt; margin: 8pt 0; }
+  .warn { background: #fff4e5; border-left: 4px solid #d9480f; padding: 6pt 8pt; margin: 8pt 0; }
+  table { border-collapse: collapse; margin: 6pt 0; }
+  td, th { border: 1px solid #c8ccd4; padding: 3pt 6pt; vertical-align: top; }
+  th { background: #eef1f6; text-align: left; }
+  code { font-family: "DejaVu Sans Mono", monospace; font-size: 9.5pt; }
+  .cover { text-align: center; padding-top: 140pt; }
+  .cover h1 { page-break-before: auto; font-size: 34pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+<h1 class="first">ViewTouch</h1>
+<p style="font-size:18pt; color:#555">User Manual</p>
+<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.9 · October 2026</p>
+<p class="shot"><img src="shots/m02-tables.png" width="520" height="292"></p>
+</div>
+
+<h1>Contents</h1>
+<ol>
+<li>Getting started</li>
+<li>Logging in, clocking in and out</li>
+<li>The floor: tables, takeout and open checks</li>
+<li>Taking an order</li>
+<li>Check options: rush, transfer, move, merge, split</li>
+<li>Paying and closing a check</li>
+<li>Customers, gift cards, house accounts and rewards</li>
+<li>The host stand: waitlist and reservations</li>
+<li>Kitchen, bar and expo screens</li>
+<li>Cash: banks, drawers and tips</li>
+<li>Manager screens</li>
+<li>Reports and End of Day</li>
+<li>Changing the screens (edit mode)</li>
+<li>Phones and tablets</li>
+<li>Backups, safety and starting over</li>
+<li>The self-order kiosk</li>
+<li>Languages (Español, Français, Português, 中文)</li>
+<li>Keep running if a computer fails</li>
+<li>Quick reference</li>
+</ol>
+
+<!-- ======================================================================= -->
+<h1>What's new in 0.9</h1>
+<ul>
+<li><b>A computer only for ViewTouch:</b> one line installs it on a fresh Raspberry Pi; the computer locks itself down and starts on the ViewTouch <b>home screen</b> (start ViewTouch, network, time, updates, restart, reset; on the main register the store's setup screens), and the first time you set it up by touch (chapter 1).</li>
+<li><b>12-hour times</b> everywhere ("9:30 PM"), typed as "4:30 PM" or "16:30"; the clock is set from the internet.</li>
+<li><b>Handhelds</b>: their screen sleeps, and after it was off a while the next touch asks for a PIN (their check comes back); each device can have its own <b>start screen</b>; phones don't edit pages (chapters 1, 2 and 14).</li>
+<li><b>Android tablets only for ViewTouch</b>: home screen, pinned, starting when the tablet turns on (chapter 14).</li>
+<li><b>Pictures by touch</b>: the logo and store pictures are chosen from thumbnails of your Pictures, Documents and Downloads, or a USB stick (chapter 13).</li>
+<li><b>Floor plans:</b> <b>Main</b> shows every table with the walls, windows, doors, the bar and the patio; <b>Dining Area</b>, <b>Bar</b> and <b>Patio</b> show each room bigger, with tabs between them. A table on two plans is the same table (chapter 3).</li>
+<li><b>Draw your own room:</b> walls, doors, windows, a bar counter, booths, plants, fences and named areas, chairs around the tables, and anything turned to any angle (chapter 13).</li>
+<li><b>The host stand shows the floor plan</b>, on big screens and phones, with zoom (chapter 8).</li>
+<li><b>Phones show the floor plan too</b>: tables where they stand, touch one to open it; moving a check picks the table on the plan (chapter 14).</li>
+<li><b>Store Settings in sections</b>, with <b>Find a setting</b>; settings made for fingers (− / + numbers, switches, lists as rows); the tip pool as one table; changes marked and kept until saved; and <b>About</b>: the version and where the store's data is (chapter 11).</li>
+<li><b>Start pages</b> are chosen from the floor plans: each job (or person) starts on the room they work (chapter 2).</li>
+<li><b>Coupon codes</b> (typed or scanned), <b>barcode scanners</b> for items, coupons and gift cards, and <b>holding a guest's card</b> on a bar tab (chapters 2 and 11).</li>
+<li><b>Forecast</b>: a coming day from past weeks, the prep list and what to order (chapter 12).</li>
+<li><b>Receipts and kitchen tickets print in the store's language</b> (chapter 17).</li>
+<li><b>Log waste</b> (a dropped burger, lettuce gone bad) and <b>par levels</b> with an order list by vendor; <b>prep labels</b> on a label printer; <b>Waste</b> and <b>Labels</b> on the kitchen screen (chapters 9 and 11).</li>
+<li><b>Store Check</b>: are we ready to open, and what went wrong lately (printers, backups, the standby, a crash), marked on the Manager page (chapter 11).</li>
+<li><b>High Contrast</b> outlines every button; text size <b>Largest</b>; both for a person on any screen, or for one screen (chapters 2 and 13).</li>
+<li><b>French, Portuguese and Chinese</b> (chapter 17).</li>
+<li><b>Stock counts:</b> count the shelves, and Reports → Stock shows what went missing and what it cost (chapter 11).</li>
+<li><b>Count a drawer bill by bill</b>, and <b>blind counts</b> (chapter 10). <b>Voids and comps ask why</b>, and the Exceptions report adds the reasons up; the <b>Changes</b> report shows who changed what on the manager screens, the menu and the pages (chapter 12).</li>
+<li><b>The host stand knows when tables free up</b> (<i>Free ~10m</i>), <b>who's next up</b> for a table, and <b>regulars</b> by their phone number, with their visits and allergies (chapter 8).</li>
+<li><b>Table nudges</b> for servers (<i>Nothing ordered · 9m</i>, <i>Last order 30m ago</i>), and <b>Often added</b> items on the order screen (chapter 3).</li>
+<li><b>A cash tip for the server</b> when someone else takes the payment, and <b>notes for the next shift</b> (chapters 10 and 12).</li>
+<li><b>Unusual activity</b> flagged in the Exceptions report, <b>servers needed each hour</b> in the Forecast, and a <b>price watch</b> when deliveries cost more (chapters 11 and 12).</li>
+<li><b>Phone versions that share the page's buttons:</b> edit a page for standard screens and for phones with the <b>Standard | Phone</b> switch; a button's words, colors and actions are the same on both, only where it sits is the phone's. <b>Show on</b> puts a button on both, or one kind of screen only (chapter 14).</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>1. Getting started</h1>
+<p>ViewTouch is a point-of-sale system for restaurants. Every screen is made of buttons you can move, resize and restyle yourself (chapter 13), and it runs on Linux computers, touch screens, Raspberry Pi and Android tablets.</p>
+
+<h2>One store, any number of screens</h2>
+<p>One computer keeps the store's data: checks, menu, staff and reports. Every other screen (a terminal) connects to it over the network. All screens see the same checks and tables, and a check open on one screen can't be changed on another at the same time.</p>
+<p><b>Setting up a new computer.</b> On a computer with Linux (Raspberry Pi OS 64-bit, Debian 13, Fedora or Ubuntu) and an internet connection, open a terminal and paste:</p>
+<pre>curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh</pre>
+<p>It asks one question:</p>
+<ol>
+<li><b>Only for ViewTouch</b> (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down and restarts it. From then on everything is by touch: see <i>A computer only for ViewTouch</i> below.</li>
+<li><b>Next to the desktop</b>: it installs ViewTouch beside the computer's desktop and asks what this computer is, in a text menu (below).</li>
+</ol>
+<p>On Raspberry Pi OS and Debian 13 it downloads ViewTouch ready-made (a minute); elsewhere it builds it (a few minutes). The text menu's choices:</p>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>Choice</th><th>What that computer does</th></tr>
+<tr><td>1. Main register</td><td>Has a screen and keeps the store's data. Other screens join it.</td></tr>
+<tr><td>2. Back-office server</td><td>Keeps the data with no screen (a box in the office).</td></tr>
+<tr><td>3. Another register</td><td>A register that joins the store.</td></tr>
+<tr><td>4. Kitchen screen</td><td>Shows the orders to make.</td></tr>
+<tr><td>5. Self-order kiosk</td><td>Guests order on their own and pay at the counter.</td></tr>
+<tr><td>6. Time clock</td><td>Staff clock in and out and see their schedules.</td></tr>
+<tr><td>7. Standby server</td><td>A live copy of everything that takes over if the main computer stops (it asks for a pairing code).</td></tr>
+</table>
+<p>To change it later, run <code>sudo vtmodern-setup</code> again; <code>vtmodern-setup status</code> shows what's set up and the newest backup. A screen that joins the store shows a <b>Join</b> screen the first time: pick the store and type a pairing code (next section).</p>
+<p>Screens start full screen at boot and have no way out for staff. To close ViewTouch on a screen, a manager touches <b>Manager → Close ViewTouch</b> twice.</p>
+
+<h2>A computer only for ViewTouch: the home screen</h2>
+<p>A computer installed <b>Only for ViewTouch</b> (like a Raspberry Pi register) has no desktop. It starts on the ViewTouch <b>home screen</b>, and ViewTouch opens on top of it. The home screen shows when a manager closes ViewTouch (<b>Manager → Close ViewTouch</b>), and if ViewTouch ever stops by itself it says so and starts it again after 5 seconds. If it stops three times in a few minutes, it stays on the home screen: restart the computer, or call for help.</p>
+<p class="shot"><img src="shots/m147-home-screen.jpg" width="560" height="315"></p>
+<p class="caption">The home screen of the main register.</p>
+<ul>
+<li><b>Start ViewTouch</b>, the big green button.</li>
+<li><b>The store</b> (the main register only): <b>Setup Guide</b>, <b>Menu</b>, <b>Staff</b>, <b>Printers</b>, <b>Add a Screen</b>, <b>Reports</b>: each opens ViewTouch right there once a manager logs in. <b>Back Up Now</b> makes a backup.</li>
+<li><b>This computer:</b> <b>Network</b> (a cable, or Wi-Fi with the on-screen keyboard; always the store's own network, never the guests' Wi-Fi), <b>Date &amp; Time</b> (the time zone, and whether the clock is set from the internet), <b>Updates</b> (<b>Check for a New ViewTouch</b> looks on the internet and offers <b>Install ViewTouch 0.9.…</b> when there's a newer one: it's checked to be ViewTouch's own and never an older version, the tablets' app comes with it, and the home screen starts again on it; or a new ViewTouch from a USB stick, also only one signed by ViewTouch; security updates for the computer install by themselves each night. Store Check says when a new ViewTouch is out), <b>Remote Help</b> (lets a technician connect while it's on), <b>Restart</b>, <b>Shut Down</b>, <b>Reset…</b> (start over and choose again what the computer is, or erase the store; a backup is made first) and <b>About</b>.</li>
+</ul>
+<p>The computer's settings (Network, Date &amp; Time, Updates, Remote Help, Reset) ask for <b>this computer's PIN</b>, chosen in the first-time setup. Give it only to managers; it isn't anyone's ViewTouch PIN.</p>
+<p><b>The first time</b> the computer starts, it asks by touch: what it is (main register, register, kitchen screen, self-order kiosk, time clock), its name, the network, the store's time zone (touch it: the computer may start on another one) and the settings PIN. Then ViewTouch starts; the main register opens on the setup guide once a manager logs in.</p>
+<p class="shot"><img src="shots/m148-first-setup.jpg" width="520" height="325"></p>
+<p class="caption">The first-time setup.</p>
+<p>Locked down means: ViewTouch runs as its own account that can't log in; the desktop is off; a firewall lets in only ViewTouch's screens; remote access (SSH) is off until <b>Remote Help</b> turns it on; the clock is always set from the internet; a frozen computer restarts by itself. The administrator account made with Raspberry Pi Imager still works for a technician: Ctrl+Alt+F2 on a keyboard, or over the network while Remote Help is on.</p>
+
+<h2>Adding a screen or tablet (pairing)</h2>
+<ol>
+<li>On any store screen: <b>Manager → Terminals → Pair a Device</b>. A code like <code>K7QM4-XHP2W</code> appears. It works once, for 10 minutes.</li>
+<li>On the new screen or tablet, ViewTouch shows <b>Join a ViewTouch store</b> with the stores it found. Pick yours, type the code and a name for the screen (for example "Bar"), and touch <b>Join</b>.</li>
+<li>The new screen now appears in Manager → Terminals, where you choose its receipt printer and whether it has a cash drawer.</li>
+</ol>
+
+<h2>The demo store</h2>
+<p>A new store starts with a demo café: a menu, a floor plan, staff and settings, so you can try everything right away. These are the demo PINs:</p>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>PIN</th><th>Person</th><th>Role</th></tr>
+<tr><td>1234</td><td>Morgan</td><td>Manager (everything)</td></tr>
+<tr><td>1111</td><td>Sam</td><td>Server</td></tr>
+<tr><td>2222</td><td>Casey</td><td>Cashier</td></tr>
+<tr><td>4444</td><td>Jo</td><td>Bartender</td></tr>
+<tr><td>3333</td><td>Riley</td><td>Busser (clocks in, shares tips)</td></tr>
+<tr><td>5555</td><td>Rosa</td><td>Server whose screens are in Spanish (chapter 17)</td></tr>
+</table>
+<div class="tip">Change the PINs and staff in <b>Manager → Employees</b> before you open for real.</div>
+
+<h2>Phones and handhelds</h2>
+<p>Every page works on a phone or handheld held upright. The order screen has the check on top and Void, Send and Pay at the bottom. Other pages are laid out again for the tall screen: buttons two or three across, big enough for a finger. Lists such as <b>Manager → Employees</b> show the list first; touch one to open it, and <b>‹ List</b> goes back.</p>
+<p class="shot"><img src="shots/m122-handhelds.jpg" width="560" height="303"></p>
+<p class="caption">On a phone: a menu page, Pay, Employees and the Time Clock.</p>
+<p>A screen counts as a phone when its short side is under 600 (most phones; a folding phone switches as it opens). To choose for a screen, use <b>Manager → Terminals → Screen layout</b>.</p>
+<ul>
+<li><b>The screen sleeps</b> on phones and handhelds, as on any phone (tablets and registers stay on). When it was off for a while, the next touch asks for a PIN: <b>Type your PIN to go on</b>. Their open check comes back as soon as they log in. How long: <b>Store Settings → Screens → Handhelds: ask for the PIN after the screen was off</b> (30 seconds to start; 0 every time, −1 never).</li>
+<li><b>Phones don't edit pages.</b> Pages are made on a bigger screen (the main register or a tablet) and reach the phones as soon as they're saved.</li>
+<li><b>Pictures</b> (a logo, a menu photo) are chosen with Android's own photo picker.</li>
+</ul>
+
+<h2>Your first day: the setup guide</h2>
+<p>The first time a manager logs in, the <b>setup guide</b> walks through making ViewTouch yours, one step at a time: your store's name and the lines at the top of receipts, your logo, your colors, your taxes, your first menu items and your team. Skip any step with <b>Next</b>; <b>Finish Later</b> closes it until a manager logs in again, and <b>Manager → Setup Guide…</b> brings it back anytime.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m97-setup-welcome.png" width="270" height="152"><br><small>Welcome</small></td>
+<td><img src="shots/m97-setup-logo.png" width="270" height="152"><br><small>Your logo</small></td>
+</tr><tr>
+<td><img src="shots/m97-setup-look.png" width="270" height="152"><br><small>Your colors</small></td>
+<td><img src="shots/m97-setup-staff.png" width="270" height="152"><br><small>Your team</small></td>
+</tr></table>
+<p>On a phone the guide fills the screen, one thing under another; each step scrolls, and Next and Finish Later stay at the bottom.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m149-phone-setup-guide.jpg" width="140" height="311"><br><small>On a phone</small></td>
+<td><img src="shots/m149-phone-setup-colors.jpg" width="140" height="311"><br><small>Your colors</small></td>
+</tr></table>
+<div class="tip">The demo's staff (Morgan 1234, Sam 1111…) have PINs printed in this manual. Add yourself as a manager with your own PIN, then touch <b>Turn Off the Sample Staff</b>. If you're logged in as Morgan, Morgan goes off when you touch Finish; then log in with your own PIN.</div>
+
+<!-- ======================================================================= -->
+<h1>2. Logging in, clocking in and out</h1>
+<p class="shot"><img src="shots/m01-login.png" width="560" height="315"></p>
+<p class="caption">The login screen.</p>
+<ul>
+<li><b>Log in:</b> type your PIN and touch <b>Enter</b> (or <b>Log In</b>).</li>
+<li><b>Clock in / Clock out:</b> type your PIN and touch <b>Clock In</b> or <b>Clock Out</b>. You can also clock in after logging in.</li>
+<li>If you work more than one job (a bartender who also serves), it asks <b>Which job today?</b>. Each job has its own pay.</li>
+</ul>
+<p class="shot"><img src="shots/m78-which-job.png" width="420" height="236"></p>
+<p class="caption">Clocking in with two jobs.</p>
+<ul>
+<li>If the store uses the schedule rule (Store Settings), you can clock in only from a few minutes before your scheduled shift until it ends. A manager can clock you in from the schedule.</li>
+</ul>
+
+<div class="tip">A screen nobody touches dims after 10 minutes (Store Settings → <i>Dim the screen after</i>). Touch it once to wake it: that touch doesn't press anything.</div>
+<p class="shot"><img src="shots/m82-screen-saver.png" width="420" height="236"></p>
+<p class="caption">The screen saver.</p>
+
+<h2>Kitchen screens by station</h2>
+<p>Each cook can have a screen with only their station's orders. On the kitchen screen, touch <b>Station…</b> until it shows yours (Grill, Fryer, Cold Line…); the screen remembers it. A burger combo's fries appear on the fryer's screen as their own line, "with COMBO BGR", and the fryer bumps them. The expediter's screen shows which stations are still working on each order.</p>
+<p class="shot"><img src="shots/m83-station-fryer.png" width="560" height="315"></p>
+<p class="caption">The fryer's screen.</p>
+<div class="tip">Managers: name the stations in Store Settings → <i>Kitchen stations</i>, one per line, and set each menu item's <i>Made at</i> in Manager → Menu. Want one screen for the whole kitchen? Leave <i>Kitchen stations</i> empty: there's no Station button, and every order shows whole on the Kitchen screen.</div>
+
+<h2>Orders for later</h2>
+<p>Taking a phone order for 6:30, or for Saturday? Touch <b>Ready Later…</b> on the check (or <i>Check… → Ready Later…</i> on any order). Pick the day, the hour and the minutes, then <b>Done</b>, and order as usual. <b>Send</b> saves it: the kitchen gets it by itself 20 minutes before it's due (Store Settings → <i>Orders for later go to the kitchen</i>). The ticket and the kitchen screen say <b>READY AT 6:30 PM</b>, and the open checks list shows when each is due.</p>
+<p class="shot"><img src="shots/m80-order-later.png" width="560" height="315"></p>
+<p class="caption">Ready tomorrow at 6:30 PM.</p>
+<div class="tip">An order for another day is paid on that day, and it doesn't hold up tonight's End of Day. <b>As Soon as Possible</b> turns an order for later back into a regular one.</div>
+
+<h2>Event tickets</h2>
+<p>Selling seats for a wine dinner, a class or trivia night? The demo's <b>Wine Dinner Ticket</b> (on the Drinks page) is one: each sale says how many are left, and when all 40 are sold the button shows <b>SOLD OUT</b>. Voiding a ticket gives the seat back. The date and time print on the receipt.</p>
+<div class="tip">Managers: Manager → Menu → <i>Event tickets: seats</i> and <i>Event date and time</i> (like 2026-10-09 19:00). Turn on <i>Don't show in the kitchen</i> for tickets.</div>
+
+<h2>Substitutes</h2>
+<p>A guest wants a salad instead of fries? Order the burger with <i>No Side</i>, touch <b>Sub</b> in the bar at the bottom, then the salad. It goes on the burger as "SUB House Salad" at its substitute price (+$3.00), not as a $8.50 salad of its own.</p>
+<div class="tip">Managers: Manager → Menu → <i>Can be a substitute</i>, and its <i>Substitute price</i>.</div>
+
+<h2>Not sure what a button does? Hold it</h2>
+<p>Press and hold any button for a moment: instead of doing anything, a card at the top says what it does (<i>Sends the new items to the kitchen and bar</i>, <i>Adds Classic Burger ($11.50) to the check</i>). Great for a first shift. Touch the card to close it.</p>
+<p class="shot"><img src="shots/m106-explain.png" width="560" height="315"></p>
+
+<h2>Popular today</h2>
+<p>The <b>Popular</b> card on each menu opens today's best sellers, the most ordered first. It fills itself in as the day goes, so the things people order most are always one touch away.</p>
+<p class="shot"><img src="shots/m108-popular.png" width="560" height="315"></p>
+
+<h2>Another Round</h2>
+<p>At a busy bar or table: once drinks have been sent, <b>Another Round</b> appears next to the check's name. One touch orders the same drinks again (the ones sent last, with the same sizes and choices); touch <b>Send</b>.</p>
+
+<h2>After Send: only a manager can void</h2>
+<p>Once an order is sent, a server, bartender or cashier can't take items off or change them. <b>−</b>, <b>+</b> and <b>Choose</b> go away on sent items (only <b>Again</b>, which adds a new one, stays). Touching <b>Void</b> on a sent item brings up <b>Manager approval</b>: a manager types their PIN and that one void goes through, and the check's history says who approved it. A server's own PIN doesn't work there. Before Send, anyone can still fix their order.</p>
+<p class="shot"><img src="shots/m109-manager-approval.png" width="560" height="315"></p>
+
+<h2>The Dashboard: today at a glance</h2>
+<p><b>Manager → Dashboard</b> shows how the day is going: net sales compared with the same day last week at this time, the number of checks and the average check, labor as a percent of sales (amber when it's getting high, red when it's too high), open checks, how long the kitchen is taking, who's on the clock, today's best sellers, and anything running low or sold out.</p>
+<p class="shot"><img src="shots/m114-dashboard.png" width="560" height="315"></p>
+
+<h2>Running low: "5 left"</h2>
+<p>When an ingredient gets down to its <b>Low at</b> amount (Manager → Inventory), the dishes that use it show how many can still be made, like <b>3 left</b>, so you can warn guests. The number counts down with each order; at zero the dish sells out by itself, and comes back when a delivery is received.</p>
+<p class="shot"><img src="shots/m113-stock-left.png" width="560" height="315"></p>
+
+<h2>Arrange the menu by touch</h2>
+<p>On <b>Everything</b>, a manager touches <b>Arrange…</b>. Touch an item to pick it, then <b>◀ Earlier</b> or <b>Later ▶</b> to move it, or a color to paint its button. <b>Done</b> goes back to taking orders. No page editing needed.</p>
+<p class="shot"><img src="shots/m120-arrange-menu.png" width="560" height="315"></p>
+<p><b>Change an item right here:</b> a manager holds an item's button (or picks it in Arrange and touches <b>Edit…</b>; <b>+ New Item</b> adds one). The card has its name and price, or <b>Sizes…</b> (each size with its price), <b>What's on it</b> (lettuce, tomato, onion: each one can then be No, Lite, Extra or on the Side), its <b>Kitchen name</b>, the <b>Choices it asks for</b>, For sale or Sold out, and its color. <b>Save</b> is one Undo step; <b>All Settings…</b> opens it in the Menu Builder.</p>
+
+<h2>A look for each screen</h2>
+<p>Want the bar's screen dark and the patio tablet light? In <b>Manager → Terminals</b>, choose the screen and pick its <b>Look</b>. Only that screen changes; every other screen keeps the store's look.</p>
+
+<h2>Course pacing: fire the next course in a few minutes</h2>
+<p>When a later course is on hold, touch <b>⏱</b> next to <b>Fire Course 2</b> and pick <b>In 10 min</b> (or 5, 15, 20). The kitchen gets it by itself then; the button shows when. Touch <b>Fire Course 2</b> to send it sooner, or <b>⏱ → Don't fire it</b> to go back to firing it yourself.</p>
+<p class="shot"><img src="shots/m119-fire-in.png" width="560" height="315"></p>
+
+<h2>Kitchen times: late tickets</h2>
+<p>The kitchen screen learns how long each dish usually takes from the times it's bumped. Each ticket shows its time and its target (<i>7:32 / 12m</i>), turns amber as it gets close, and red with <b>LATE</b> when it's over. To set a dish's time yourself, use <b>Manager → Menu → Kitchen time (minutes)</b>.</p>
+<p class="shot"><img src="shots/m118-kitchen-late.png" width="560" height="315"></p>
+
+<h2>Opening and closing checklists</h2>
+<p>Write your store's opening and closing tasks in <b>Manager → Settings</b> (<b>Opening checklist</b>, <b>Closing checklist</b>, one per line). Whoever does a task touches it on the <b>Checklists</b> page (on the Manager page, and on the Log Out page for everyone); it shows who did it and when. End of Day tells you how many closing tasks are left, and the <b>Checklists</b> report keeps each day's record.</p>
+<p class="shot"><img src="shots/m117-checklists.png" width="560" height="315"></p>
+
+<h2>Time off and shift swaps</h2>
+<p>On the Time Clock, after typing your PIN:</p>
+<ul>
+<li><b>Ask for Time Off…</b>: pick the day (up to four weeks out), a reason if you like, and <b>Ask</b>.</li>
+<li><b>Give Away</b> next to one of your shifts: it shows up under <b>Up for grabs</b> on everyone else's Time Clock, where a coworker can <b>Take It</b>.</li>
+</ul>
+<p class="shot"><img src="shots/m115-up-for-grabs.png" width="560" height="315"></p>
+<p>A manager decides in <b>Manager → Schedule → Requests…</b>: <b>Approve</b> or <b>Don't approve</b>. Approving a swap gives the shift to whoever took it. Your requests and their answers are listed on the Time Clock under <b>My requests</b>, and the Dashboard shows how many are waiting.</p>
+
+<h2>Overtime warnings</h2>
+<p>When someone is within two hours of overtime (by the store's daily and weekly rules, Manager → Store), the Time Clock tells them how long they have left, clocking in says so, and the manager's Dashboard marks them in amber. Once they're in overtime it turns red.</p>
+
+<h2>Fixing a time punch</h2>
+<p>Someone forgot to clock out, or clocked in late by mistake? Go to <b>Manager → Schedule → Time Punches…</b>. Choose the punch (the last month's are there), fix <b>Clocked in</b>, <b>Clocked out</b>, the breaks or the job, write the <b>Reason for the change</b>, and <b>Save</b>. <b>+ Add</b> adds a punch someone missed; to remove one made by mistake, tick <b>Remove this punch</b>, give the reason, and Save.</p>
+<p>Every change is kept: the <b>Labor</b> report marks changed punches with a * and lists what changed, who changed it and why.</p>
+<p>At <b>End of Day</b>, anyone still clocked in is listed (in red if it's been over 12 hours) with <b>Clock Out Now</b>.</p>
+<p class="shot"><img src="shots/m112-eod-clocked-in.png" width="560" height="315"></p>
+
+<h2>Time Clock: clock in and out, and see your schedule</h2>
+<p>On the login screen, touch <b>Time Clock &amp; My Schedule</b> and type your PIN. You see whether you're clocked in, your hours today, and your shifts for the next two weeks. Touch <b>Clock In</b>, <b>Start Break</b> / <b>End Break</b> or <b>Clock Out</b>. It never logs you in to the register, and goes back to the keypad by itself (or touch <b>Done</b>).</p>
+<p class="shot"><img src="shots/m111-time-clock.png" width="560" height="315"></p>
+<p>Want a screen just for this, like a tablet by the back door? In <b>Manager → Terminals</b>, choose that terminal and set <b>Screen</b> to <b>Time Clock</b>. It then always shows the Time Clock; <b>Log In to the Register…</b> at the bottom is for managers who need the rest.</p>
+
+<h2>Discounts are a manager's</h2>
+<p>Only managers give discounts: <b>10% Off</b>, <b>Comp</b>, <b>Staff Meal</b> and custom ones. When a server, bartender or cashier touches one, the <b>Manager approval</b> pad asks for a manager's PIN. A staff meal is still recorded as the server's meal.</p>
+<p><b>Custom discounts:</b> on the Pay screen, type the amount on the keypad, then touch <b>$ Off</b> (type 500 for $5.00 off) or <b>% Off</b> (type 15 for 15% off).</p>
+<p class="shot"><img src="shots/m110-custom-discount.png" width="560" height="315"></p>
+<p>To let one trusted person give discounts without a manager, open <b>Manager → Employees</b>, choose them, and set <b>Give discounts and comps</b> to <i>Allow</i>.</p>
+
+<h2>Oops: Undo</h2>
+<p>Took the wrong item off? For a few seconds the bottom of the check says <i>Removed Bacon Burger</i> with an <b>Undo</b> button. Touch it and the item comes back where it was, with its choices.</p>
+<p class="shot"><img src="shots/m107-undo.png" width="560" height="315"></p>
+
+<h2>More of an item: − 2 + and Again</h2>
+<p>Four burgers? Touch the burger once, then <b>+</b> three times: the check says <i>4 × Bacon Burger</i>. Under the item you just added (or any item you touch on the check) are <b>−</b>, the number, <b>+</b> and <b>Again</b>:</p>
+<ul>
+<li><b>+</b> and <b>−</b> change how many. <b>−</b> on the last one takes it off.</li>
+<li><b>Again</b> adds one more made the same way (Medium Rare with onion rings) as its own line, so you can change it, say, to well done.</li>
+<li>Something already sent to the kitchen only has <b>Again</b>; to take one off, use <b>Void</b>.</li>
+</ul>
+<p class="shot"><img src="shots/m103-quantity.png" width="560" height="315"></p>
+<p><b>Swipe</b> an item on the check: <b>left</b> takes it off (a void once it's sent, which needs a manager as usual), <b>right</b> adds one more. While you slide, the line shows <i>Remove</i>, <i>Void</i> or <i>+1</i>, and turns bright once letting go will do it. A short slide does nothing.</p>
+<p class="shot"><img src="shots/m124-swipe.jpg" width="560" height="315"></p>
+
+<h2>Deliveries and drivers</h2>
+<p><b>Deliveries</b> on the Tables page shows every open delivery, the oldest promise first, colored by where it is: gray <i>not sent to the kitchen</i>, amber <i>cooking</i>, green <i>ready to go</i>, blue <i>out with the driver</i> (and for how long), teal <i>back</i>. Late promises are in red.</p>
+<p class="shot"><img src="shots/m124-deliveries.jpg" width="560" height="315"></p>
+<ul>
+<li><b>Send it out:</b> touch the orders going together, touch the driver, <b>Send Out</b>. The check stays with whoever took the order: the sale and the tip are theirs (unless the check is transferred to another server). The driver collects the payment, into their own bank.</li>
+<li><b>Back:</b> touch the orders, <b>Delivered</b>. The driver logs in, <b>Open Check</b>, and takes the payment. Paying a check that's out counts as delivered too.</li>
+<li><b>Drivers:</b> give someone the <i>Delivery driver</i> role (or <i>driver</i> as another job) in Manager → Employees. Drivers carry their own bank (the cash they collect, their change and tips) unless their <i>Cash handling</i> says otherwise, and check out like a server.</li>
+<li><b>Delivery fee:</b> Store Settings → <i>Delivery fee</i> adds it to every delivery once something is ordered (not for food; no tax; no discounts). Taking it off is a void, so it needs a manager.</li>
+<li><b>Report:</b> Reports → <b>Drivers</b>: deliveries, sales, fees, tips and the average time out, per driver.</li>
+</ul>
+
+<h2>Separate checks at one table</h2>
+<p>A party of six, each paying on their own? Open the table as usual and take the first guest's order. Then touch <b>+ Check</b> at the top of the check: a new check opens for the same table, without leaving the menu. Touch a number to go back to any of them. With many checks (a party of 20), the row stays on one line: <b>‹</b> and <b>›</b> show the others. The top of the check says which one you're on, like <i>T5 · Check 3</i>.</p>
+<p class="shot"><img src="shots/m102-table-checks.png" width="560" height="315"></p>
+<p>The <b>⋯</b> button next to <b>+</b> has more:</p>
+<ul>
+<li><b>One Check per Seat</b>: if you used <b>Seat − / +</b> while ordering, one touch gives each seat its own check.</li>
+<li><b>Print Every Check</b>: a receipt for each.</li>
+<li><b>Put Them Back Together</b>: one check for the whole table again.</li>
+</ul>
+<p class="shot"><img src="shots/m104-table-tools.png" width="560" height="315"></p>
+<p>Something on the wrong check? Touch it, then <b>Move…</b>, and pick the check it belongs on (or <b>A New Check</b>).</p>
+<p class="shot"><img src="shots/m105-move-line.png" width="560" height="315"></p>
+<p>Each check is sent and paid on its own. Later, touching the table on the floor plan asks which check to open.</p>
+
+<h2>Each person's own screen</h2>
+<p>In <b>Manager → Employees</b>, each person can have:</p>
+<ul>
+<li><b>Text size</b>: Bigger, Biggest or Largest button and check text, just for them. A screen read from afar can have its own too (Manager → Terminals → <i>Text size</i>); a person's own wins while they're logged in.</li>
+<li><b>Look</b>: their colors on any screen while they're logged in. <b>High Contrast</b> (black, with every button outlined in white and the colors that mean something at their brightest) is for anyone who reads the screen better that way.</li>
+<li><b>Left-handed</b>: the check moves to the right of the order and Pay screens, the menu to the left.</li>
+<li><b>Start screen</b>: the floor plan they see first after logging in, like the Bar for a bartender.</li>
+<li><b>Language</b>.</li>
+</ul>
+<p class="shot"><img src="shots/m145-high-contrast.jpg" width="560" height="315"></p>
+<p class="caption">High Contrast.</p>
+<p class="shot"><img src="shots/m101-left-handed.png" width="560" height="315"></p>
+<p class="caption">The order screen for someone left-handed.</p>
+<p>In <b>Manager → Store Settings → Start pages</b>, <b>Servers start on</b>, <b>Bartenders start on</b> and the others pick the floor plan each job starts on: the Tables page, the host's Seating screen, or another room drawn in the editor (a page with tables). Left empty, hosts start on Seating and everyone else on Tables. A person's own start screen (Employees) wins over their job's.</p>
+<p><b>A device's own start screen</b> wins over both: <b>Manager → Terminals</b> → the device → <b>Start screen</b>. The patio handheld opens on the Patio floor plan, a takeout tablet on Open Checks, whoever logs in. It can be a floor plan, Open Checks, a menu, Tabs or Deliveries.</p>
+
+<h2>Switch User</h2>
+<p>Someone else needs the screen in the middle of your order? Touch <b>Check…</b> → <b>Switch User</b> (or <b>Switch User</b> on the floor plan). They type their PIN and work; when you type yours again, on this screen or any other, your check opens right where you left it. The same happens if the screen logs you out by itself after sitting idle.</p>
+
+<h2>Ring items in by number</h2>
+<p>Know the menu by heart? Every item can have a number (<b>Manager → Menu → Number</b>). With a keyboard, type the number on the order screen and press <b>Enter</b>; on <b>Find</b>, type the number and touch the item. The demo menu's burgers are 101 to 107, salads 201 to 204, drinks 301 to 308.</p>
+
+<h2>Barcode scanners</h2>
+<p>Any USB or Bluetooth barcode scanner that acts as a keyboard works; nothing needs setting up. Scan:</p>
+<ul>
+<li><b>An item's package</b> on the order screen to ring it in. Give items their barcodes in the Menu Builder (<b>Barcodes</b>: touch the field and scan the package; several are fine), in Manager → Menu, or with a <i>Barcode</i> or <i>UPC</i> column in an imported spreadsheet.</li>
+<li><b>A coupon</b> on the Pay screen (or any screen with a check open) to take it off the check.</li>
+<li><b>A gift card</b> to look it up: the Gift Card page opens with its balance.</li>
+</ul>
+<p>A scanner types faster than anyone, which is how ViewTouch tells it from someone typing. When a text field is open (the coupon or gift card number), the scan goes into it instead.</p>
+
+<h2>Find an item by typing</h2>
+<p>Don't know where something is on the menu? Touch <b>Find</b> at the top of the order screen and type part of its name: <i>cob</i> finds Cobb, <i>bur</i> every burger. Touch the item to order it; the text clears for the next one.</p>
+<p class="shot"><img src="shots/m100-find-item.png" width="560" height="315"></p>
+
+<h2>Sold by weight</h2>
+<p>Some things are sold by the pound, like the demo's <b>Smoked Brisket</b>. Touch it and the <b>Weigh</b> page asks how much: type the weight from the scale (<i>125</i> is 1.25 lb) and it shows the price as you type. Touch <b>Add</b>. The check says "Smoked Brisket 1.25 lb" with its price.</p>
+<p class="shot"><img src="shots/m87-weigh.png" width="560" height="315"></p>
+<p class="caption">The Weigh page: 4.58 lb at $22.00 a pound.</p>
+<div class="tip">Managers: Manager → Menu → <i>Sold by weight</i>, with the price per pound (or ounce, or kilogram).</div>
+
+<h2>Combos</h2>
+<p>A combo (the demo's <b>Burger Combo</b>) asks for its parts like any other choice: how it's cooked, a side, a drink. Sold-out parts are grayed out. Some cost a bit more (<i>Lemonade +$0.30</i>).</p>
+<p class="shot"><img src="shots/m79-combo.png" width="560" height="315"></p>
+<p class="caption">A Burger Combo: temperature, side and drink.</p>
+<div class="tip">To make one: Manager → Modifier Groups → new group, turn on <b>Options are menu items</b>, and type the items' names, one per line. Then add the group to the combo in Manager → Menu. The parts use up their own stock and appear on the Items report. The kitchen only sees the parts it makes: a drink (its menu item goes to the bar) is left off the kitchen ticket.</div>
+
+<h2>Messages between screens</h2>
+<p>Touch <b>Message…</b> (on the kitchen screen, or the Manager page) to send a note to everyone, the kitchen screens, the floor, or one person: "Need a runner", "86 salmon". It appears across the top of their screens until someone touches <b>OK</b>.</p>
+<p>For something everyone should see all shift, pick <b>Show it: Until tonight</b> (or tomorrow night, or a week). It stays up, and shows again to each person who logs in, until then. Whoever posted it, or a manager, can <b>Take Down</b> it early.</p>
+
+<h2>Bar tabs</h2>
+<p>Tables → <b>Bar Tabs</b> shows every open tab. Touch <b>New Tab…</b>, type the guest's name (or "red jacket"), and touch <b>Open Tab</b>: the menu opens. The tab stays on the list all night, even empty, until it is paid. Touch a tab to add the next round, then Pay as usual.</p>
+<h3>Holding the guest's card</h3>
+<ul>
+<li>Touch <b>Open Tab &amp; Hold Card</b> instead, and the guest taps or inserts their card on the reader. The bank sets $50 aside on it; nothing is charged. Pay shows <i>Card held: Visa •••• 4242</i>.</li>
+<li>When the guest leaves, touch <b>Card on File…</b> on Pay and pick the tip (No Tip, 15%, 18%, 20%, or type it). The card is charged for the tab and the tip. If that's more than was held, the bank is asked to hold more first. If it says no, the held amount is charged and the rest is still owed.</li>
+<li>Paid another way (cash, another card): the hold is let go when the tab closes, and so does <b>Let the Card Go</b>. A guest who walks out can still be charged.</li>
+<li>Managers: Store Settings → <b>Bar tabs: hold the guest's card for</b> sets the amount (0 turns it off). It needs a card reader on the screen and the internet.</li>
+</ul>
+<p class="shot"><img src="shots/m134-tab-hold.jpg" width="480" height="270"></p>
+<p class="caption">Card on File…: the card held, charged with the tip.</p>
+<p class="shot"><img src="shots/m81-bar-tabs.png" width="560" height="315"></p>
+<p class="caption">Three open tabs.</p>
+
+<h2>Log Out, breaks and your tips</h2>
+<p class="shot"><img src="shots/m24-logout.png" width="520" height="292"></p>
+<p class="caption">Log Out: your clock status, open checks, tips owed and next shift.</p>
+<ul>
+<li><b>Start / End Break</b> starts or ends a break. Clocking out ends a break too.</li>
+<li><b>Cash Out My Tips</b> pays you the card tips you're owed, after any tip-outs to bussers and the bar.</li>
+<li><b>My Bank…</b> is where you check out your cash at the end of the shift (chapter 10).</li>
+<li>Your <b>next shift</b> from the schedule is shown under your name.</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>3. The floor: tables, takeout and open checks</h1>
+<p class="shot"><img src="shots/m02-tables.png" width="560" height="315"></p>
+<p class="caption">The floor plan. Green tables are yours, amber ones are other servers'.</p>
+<p>The store comes with four floor plans, with tabs across the top to switch: <b>Main</b> (every table, with the walls, doors and the patio), <b>Dining Area</b>, <b>Bar</b> and <b>Patio</b> (each room on its own, bigger). A table on two plans is the same table: T1 open on Main shows open on Dining Area too, and touching it on either opens the same check. Each job (or each person) can start on the plan they work (chapter 2, Each person's own screen).</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m130-floor-dining.jpg" width="180" height="101"><br><small>Dining Area</small></td>
+<td><img src="shots/m130-floor-bar.jpg" width="180" height="101"><br><small>Bar</small></td>
+<td><img src="shots/m130-floor-patio.jpg" width="180" height="101"><br><small>Patio</small></td>
+</tr></table>
+<ul>
+<li><b>A table:</b> touch it to start a check there, or to open its check if it has one. The table shows the check's total once it's open.</li>
+<li><b>Nudges:</b> a table that needs a look says so, with ⏰: <i>Nothing ordered · 9m</i> (seated 8 minutes or more and nothing sent yet), or <i>Last order 30m ago</i> (25 minutes since anything was sent, and the check not printed yet: time for dessert, or the check). Printing the check or taking a payment clears it.</li>
+<li><b>Often added:</b> under the check, up to three items that usually go with what's on it, from the last four weeks' checks (<i>Often added: + Fries + Soda</i>). Touch one to order it, like its menu button. It's only a hint: nothing pops up, and it learns as sales add up. Sold-out items aren't offered.
+<p class="shot"><img src="shots/m133-often-added.jpg" width="560" height="315"></p></li>
+<li><b>Regulars:</b> when the guest is on file (picked from the list, or seated from the waitlist with their phone number), <b>★ Regular · 7 visits · Allergic to nuts</b> shows under the check: how often they've come, and their note from Customers.</li>
+<li><b>Quick Order:</b> a counter sale with no table.</li>
+<li><b>Takeout / Delivery:</b> opens the menu right away. The check has <b>+ Name</b>, <b>+ Phone</b> (and <b>+ Address</b> for a delivery) and <b>Ready Later…</b> at the top: touch one, type, <b>Save</b>. Typing three digits of a phone number (or letters of a name) shows regulars who match; touch one and their name, phone and address fill in. Name and address stay amber until they're filled.
+<ul>
+<li><b>Same as Last Time:</b> when the customer is a regular (picked from the list), a button shows their last order, like <i>Same as Last Time: 2 × Coffee, Water</i>. One touch puts it on the check, at today's prices; anything sold out is left off, and it says so.</li>
+<li><b>Ready in about 20 min:</b> under the name, what to tell the caller. It starts from the usual time (Store Settings → <i>Takeout is usually ready in</i>, <i>Deliveries usually arrive in</i>) and adds a few minutes for each order the kitchen is still making. At <b>Send</b> it becomes the promise, <i>Promised for 6:45 PM</i>, which the Deliveries screen shows too.</li>
+<li><b>A name before Send:</b> Store Settings → <i>Phone orders need a name before Send</i> stops a takeout without a name (or a delivery without an address) from going to the kitchen. Each person (Employees) and each screen (Terminals) can say otherwise; the screen's setting wins, then the person's, then the store's.</li>
+</ul>
+<p class="shot"><img src="shots/m124-same.jpg" width="560" height="315"></p></li>
+<li><b>Open Checks:</b> your open checks (and, for whoever takes payments, the kiosk's orders waiting at the counter); touch one to open it. <b>All Checks</b> shows everyone's: someone else's is dimmed with a 🔒, and opening it asks for a manager's PIN. Managers and cashiers can open anyone's; give anyone else that with Manager → Employees → <i>Open other people's checks</i>. A driver can open the deliveries they're carrying.</li>
+<li><b>Host Stand:</b> seating, table states, the waitlist and reservations (chapter 8).</li>
+</ul>
+<p class="shot"><img src="shots/m03-guest-count.png" width="480" height="270"></p>
+<p class="caption">How many guests? Type the number (or use − and +), then Start Order.</p>
+<div class="tip">Tables of 6 or more get the party gratuity automatically (18% to start; Store Settings).</div>
+
+<!-- ======================================================================= -->
+<h1>4. Taking an order</h1>
+<p class="shot"><img src="shots/m04-menu-index.png" width="560" height="315"></p>
+<p class="caption">The order screen: the check on the left, the menu on the right, the order bar at the bottom.</p>
+<p>The tabs at the top switch between the <b>Breakfast</b>, <b>Lunch</b> and <b>Dinner</b> menus. The menu that fits the time of day opens by itself. Touch a category (Burgers, Salads, Drinks) to see its items, and touch an item to add it to the check.</p>
+<p class="shot"><img src="shots/m05-items.png" width="560" height="315"></p>
+<p class="caption">An item page. Touch an item to add it.</p>
+
+<h2>Choices for an item</h2>
+<p>Some items ask for choices on the <b>Choose</b> page beside the check. A burger asks how it's cooked and for a side (onion rings and sweet potato fries cost extra).</p>
+<p class="shot"><img src="shots/m06-modifier-page.png" width="560" height="315"></p>
+<p class="caption">A burger's choices: Temperature (choose 1) and Side (choose 1).</p>
+<p>Other items ask for a dressing (choose 1), a protein (optional, priced), fillings (up to 3), a drink size… The groups and their options are set in <b>Manager → Modifier Groups</b> (chapter 11), and the self-order kiosk asks for the same choices.</p>
+<p class="shot"><img src="shots/m07-choose.png" width="560" height="315"></p>
+<p class="caption">The Choose page. Required choices must be made before Done; Cancel Item takes off what was just added. Touching <b>Choose</b> on an item already on the check changes it: <b>Cancel Changes</b> puts its choices back and leaves it on the check.</p>
+<div class="warn">An item still missing a required choice can't be sent. Its amber <b>Choose</b> button on the check reopens its choices.</div>
+
+<h2>No, Extra, Lite, Side</h2>
+<p><b>No</b>, <b>Lite</b>, <b>Extra</b>, <b>Side</b> and <b>Sub</b> along the bottom change how something is made. Touch one (it lights up and says what it's waiting for), then the thing it's for:</p>
+<ul>
+<li><b>No onion on the burger:</b> touch the burger on the check, then <b>No</b>. Its choices open by themselves; touch <b>Onion</b>. The burger now says <i>No Onion</i> (in red on the Choose page), and so does the kitchen ticket. No and Lite are free.</li>
+<li><b>Faster: hold a choice.</b> On the Choose page, hold any choice for a moment: <b>No</b>, <b>Lite</b>, <b>Extra</b> or <b>On the Side</b>. Touching it again the same way takes it off; another way changes it (Extra Bacon becomes Lite Bacon).</li>
+<li><b>Extra</b> costs more: Store Settings → <i>Extra: percent added</i> (50 = half again) and/or <i>Extra: amount added</i> (e.g. $0.75, even on a free choice). Extra then a whole item (not a choice) is a bigger portion at that price.</li>
+<li><b>Sub</b> swaps a side: Sub, then House Salad or Caesar, in place of the fries, at its substitute price (Manager → Menu → <i>Can be a substitute</i>).</li>
+<li>A "No" doesn't count as the choice: No Fries on a burger still needs a side.</li>
+</ul>
+<p>The demo burgers have a <b>Toppings</b> group to try it on: lettuce, tomato, onion, pickles and mayo come on it; cheese, bacon, avocado and jalapeños cost extra.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m125-qualifier-hold.jpg" width="270" height="152"><br><small>Hold a choice: how to have it</small></td>
+<td><img src="shots/m125-qualifier-chosen.jpg" width="270" height="152"><br><small>No Onion, Extra Tomato</small></td>
+</tr></table>
+
+<h2>Seats and courses</h2>
+<p class="shot"><img src="shots/m08-order-seats-courses.png" width="560" height="315"></p>
+<p class="caption">Seat and course controls at the top of the check. The Caesar is for seat 2, course 2, and held.</p>
+<ul>
+<li><b>Seat − / +</b> sets the seat for the next items. Touch an item first to move it to another seat. The kitchen sees "S2".</li>
+<li><b>Course 1 2 3</b> sets the course. <b>Send</b> sends course 1; later courses wait, marked <b>HOLD</b>, until you touch <b>Fire Course 2</b>.</li>
+</ul>
+
+<h2>Notes for the kitchen</h2>
+<p class="shot"><img src="shots/m09-note.png" width="560" height="315"></p>
+<p class="caption">Note: type a note ("no pickles") and Add Note.</p>
+
+<h2>Send, Void and Pay</h2>
+<ul>
+<li><b>Send</b> sends new items to the kitchen and bar (their screens and printers).</li>
+<li><b>Void</b> removes the selected item. An item not sent yet just comes off. Voiding a sent item asks why (below), needs permission (managers), prints a VOID ticket and is kept in the audit report.</li>
+<li><b>Pay</b> goes to the payment screen (chapter 6). <b>Tables</b> puts the check away.</li>
+</ul>
+
+<h2>Why? Voids and comps</h2>
+<p>Voiding something already sent, or a discount or comp, first asks why: one touch on a reason (<i>Took too long</i>, <i>Guest didn't like it</i>…), then the manager's PIN if one is needed. <b>Cancel</b> leaves it as it was. The reason goes on the check's history, and Reports → <b>Exceptions</b> adds them up.</p>
+<p class="shot"><img src="shots/m139-void-reason.jpg" width="560" height="315"></p>
+<p>The lists, and whether to ask at all, are in Store Settings → <b>Voids and comps</b>; each person can be set otherwise (Employees → <i>Asked why on voids and comps</i>).</p>
+
+<!-- ======================================================================= -->
+<h1>5. Check options</h1>
+<p>Touch <b>Check…</b> (top right of the order screen).</p>
+<p class="shot"><img src="shots/m10-check-options.png" width="560" height="315"></p>
+<p class="caption">Check Options, with the check's history on the left.</p>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>Button</th><th>What it does</th></tr>
+<tr><td><b>Rush</b></td><td>The kitchen does this check first: its tickets jump to the front with a red frame, and printed tickets say RUSH. Touch again to turn it off.</td></tr>
+<tr><td><b>VIP</b></td><td>A gold frame in the kitchen, for extra care.</td></tr>
+<tr><td><b>Customer…</b></td><td>Find a customer or put one on the check (chapter 7).</td></tr>
+<tr><td><b>Sell / Check a Gift Card…</b></td><td>Sell, reload or check a gift card.</td></tr>
+<tr><td><b>Transfer to Another Server…</b></td><td>Give the check to someone else.</td></tr>
+<tr><td><b>Move to Another Table…</b></td><td>The party moved.</td></tr>
+<tr><td><b>Merge Another Check Into This One…</b></td><td>Two tables joined: items, payments and guests come along.</td></tr>
+<tr><td><b>Reopen a Closed Check…</b></td><td>Managers: reopen a check closed today (to fix a mistake or refund).</td></tr>
+<tr><td><b>Sold Out (86)…</b></td><td>Mark items sold out, or back.</td></tr>
+</table>
+<p>Servers can transfer, move and merge their own checks; managers can do it to anyone's. Everything is recorded in the check's history.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m11-transfer.png" width="180" height="101"><br><small>Transfer</small></td>
+<td><img src="shots/m12-move-table.png" width="180" height="101"><br><small>Move to a table</small></td>
+<td><img src="shots/m13-merge.png" width="180" height="101"><br><small>Merge</small></td>
+</tr></table>
+
+<h2>Split a check</h2>
+<p class="shot"><img src="shots/m14-split.png" width="560" height="315"></p>
+<p class="caption">Split Check (on the payment screen): touch an item, then the check it moves to, or + New check.</p>
+<ul>
+<li><b>One at a time:</b> on a line like "2 × Cheeseburger", each touch of a check moves one of them. Touch <b>All 2</b> first to move the whole line.</li>
+<li><b>Share This Item…:</b> cuts an item into even pieces (a $30 bottle of wine 3 ways: three $10 pieces, "Wine (1/3)"…). Move each piece to its check. The kitchen makes it once. <b>Put Back Together</b> makes it whole again.</li>
+<li><b>Split Evenly…:</b> the check becomes 2 to 9 checks of the same amount. Whole items go around first; what's left is shared in pieces. Any leftover cent goes on one check.</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>6. Paying and closing a check</h1>
+<p class="shot"><img src="shots/m18-settle.png" width="560" height="315"></p>
+<p class="caption">The payment (Settle) screen.</p>
+<ol>
+<li>Type an amount on the keypad, or leave it empty to pay the whole balance.</li>
+<li>Touch how they pay: <b>Cash</b> (gives change), <b>Credit Card</b>, <b>Gift Card…</b>, <b>House Account</b>, or a discount (<b>10% Off</b>, <b>Comp</b>).</li>
+<li>For a card tip, touch 15%, 18% or 20%, or type an amount.</li>
+<li>Touch <b>Close Check</b>. <b>Print Receipt</b> prints one; <b>Undo Payment</b> takes the selected payment off.</li>
+</ol>
+<ul>
+<li><b>Ask Guest for Tip</b> shows tip choices on the customer display (below).</li>
+<li><b>Add 18% gratuity</b> adds the party gratuity by hand.</li>
+<li>Promotions (Happy Hour…) and rewards appear as discounts by name.</li>
+</ul>
+
+<h2>The customer display</h2>
+<p>A second screen facing the guest shows their order as it's rung up, the total, tip choices and a thank-you.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m70-display-welcome.png" width="300" height="169"><br><small>Between guests: your messages and pictures in turn.</small></td>
+<td><img src="shots/m71-display-order.png" width="300" height="169"><br><small>The order, with their rewards.</small></td>
+</tr><tr>
+<td><img src="shots/m72-display-tip.png" width="300" height="169"><br><small>Tip choices, a custom amount, or no tip.</small></td>
+<td><img src="shots/m73-display-thanks.png" width="300" height="169"><br><small>Thank you, change, points, and a receipt choice.</small></td>
+</tr></table>
+<ul>
+<li>Guests can join rewards by touching <b>Earn rewards</b> and typing their phone number. Only their first name (or the last four digits) is shown, never the number.</li>
+<li>The tip they choose goes on their card payment.</li>
+<li>After paying they choose <b>Print receipt</b>, <b>Text me</b> (when texting is set up) or <b>No receipt</b>.</li>
+<li>The logo, color and messages are set in Manager → Settings. Start the display with <code>customer-display = auto</code> in the screen's settings file.</li>
+</ul>
+
+<h2>Card readers (Stripe)</h2>
+<p>There are two ways to take cards with Stripe: a reader <b>beside the register</b> (any register: a Linux touch screen, a tablet), run from the store's computer, or ViewTouch running <b>on</b> a Stripe Reader S700 as a handheld.</p>
+<h3>A reader beside the register</h3>
+<p>A Stripe <b>S700</b> or <b>WisePOS E</b> sits on the counter next to the register, on the store's Wi-Fi or network. Touch <b>Credit Card</b> on the Pay screen: the amount appears on the reader, the guest taps, inserts or swipes, and the payment lands on the check with the card. The reader runs Stripe's own software; nothing is installed on it, and nothing needs Stripe's app review.</p>
+<p class="shot"><img src="shots/m127-counter-reader.jpg" width="560" height="315"></p>
+<p class="caption">Waiting for the card on the reader beside the register (in Stripe test mode, with test-card buttons).</p>
+<ol>
+<li>Manager → Store Settings → <i>Stripe secret key</i> (see below).</li>
+<li>Manager → Terminals → <b>Card Readers…</b> → <b>+ Add</b>: on the reader, swipe in from the left edge → Settings → <i>Generate pairing code</i>, type the code and a name ("Front counter"), Save. The first time, Stripe also needs the store's street address. It shows up in the list when Stripe has paired it.</li>
+<li>Manager → Terminals → the register → <i>Card reader: Reader beside it: Front counter</i>.</li>
+</ol>
+<ul>
+<li><b>Cancel</b> clears the reader. While the card is being read it says to wait a moment.</li>
+<li><b>Declined</b>, or the guest pressing cancel on the reader: nothing goes on the check, and it says why.</li>
+<li>The store's computer follows the payment with Stripe, so a register that drops off the network loses nothing: the approved card still goes on the check.</li>
+<li><b>Tips:</b> Store Settings → <i>Card tips are asked on</i>: the customer display (Ask Guest for Tip), or the reader's own screen (turn on tipping in the Stripe Dashboard → Terminal → Configurations). With tips on the reader, a store can do without a customer display; the display still shows the order as it's rung, rewards sign-up and the receipt choice.</li>
+<li><b>Try it without a reader:</b> with a Stripe <i>test</i> key, pair the code <code>simulated-wpe</code>: a simulated reader. The waiting screen then has <b>Tap Test Card</b> and <b>Tap Declined Card</b>.</li>
+</ul>
+<h3>ViewTouch on the reader</h3>
+<p>ViewTouch can also take cards itself on a <b>Stripe Reader S700</b>: the ViewTouch app runs on the reader (Stripe calls this <i>Apps on Devices</i>), and when you touch <b>Credit Card</b> on the Pay screen, Stripe's own payment screen asks the guest to tap, insert or swipe. The amount (with the tip the guest chose) goes to the reader; when the card is approved, the check shows it, like <i>Credit Card · Visa •••• 4242</i>, and so does the receipt with Stripe's payment number. ViewTouch never sees the card number.</p>
+<p class="shot"><img src="shots/m126-card-reader.jpg" width="560" height="315"></p>
+<p class="caption">Taking a card (here the simulated reader, for practice): the amount, and Cancel.</p>
+<ul>
+<li><b>Declined or canceled:</b> nothing goes on the check; it says why. Try again or take another payment.</li>
+<li><b>Undo Payment</b> on a card from the reader refunds it through Stripe first; the payment comes off the check when Stripe confirms ("refunding…" until then).</li>
+<li><b>Setting it up:</b>
+<ol>
+<li>Ask Stripe to turn on <i>Apps on Devices</i> for your account (Stripe support, or your sales contact).</li>
+<li>Manager → Store Settings → <i>Stripe secret key</i>: paste your secret key from the Stripe Dashboard (Developers → API keys). It stays on the store's computer; it's never shown again (only its last four), and readers only get short-lived tokens from it.</li>
+<li>Install ViewTouch on the reader (through Stripe: a DevKit for testing, then Stripe's app review and deployment for your readers) and pair it with the store like any tablet.</li>
+<li>Manager → Terminals → that reader → <i>Card reader: Stripe smart reader (this device)</i>.</li>
+</ol></li>
+<li><b>Practice:</b> <i>Card reader: Simulated</i> on any screen approves cards after a moment (amounts ending in 05 cents are declined), to train staff without a reader.</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>7. Customers, gift cards, house accounts and rewards</h1>
+<h2>Customers</h2>
+<p class="shot"><img src="shots/m16-customers.png" width="560" height="315"></p>
+<p class="caption">Customers: find by any part of the phone number or the name.</p>
+<ul>
+<li>Each customer has their phone, email, address, a note ("peanut allergy"), visits, total spent and last visit.</li>
+<li><b>Put on This Check</b> attaches them to the open check, and they earn points when it's paid.</li>
+<li>Takeout and delivery customers are saved by themselves, and the takeout form suggests regulars as you type.</li>
+<li><b>Forget This Customer…</b> (managers; touch twice): when a guest asks for their information to be deleted (privacy laws such as California's). Their record goes, and their name, phone, address, email and note come off every check and waitlist entry, on every day, on the store's computer and the standby. The sales stay, with no name on them. Not while they owe on a house account. Older backups still hold it until they're replaced; say so in your privacy notice.</li>
+</ul>
+<p class="shot"><img src="shots/m15-takeout-customer.png" width="480" height="270"></p>
+<p class="caption">Takeout: who the order is for.</p>
+
+<h2>Rewards (loyalty)</h2>
+<ul>
+<li>Customers earn points on what they spend (1 point per dollar to start).</li>
+<li>Rewards take money off: 50 points = $5, 120 = $15, 250 = $35 in the demo. On the Customers screen, with the customer on the check, touch a reward button.</li>
+<li>Undoing the reward gives the points back; reopening a check takes its points back.</li>
+</ul>
+
+<h2>Gift cards</h2>
+<p class="shot"><img src="shots/m17-gift-card.png" width="560" height="315"></p>
+<p class="caption">Gift cards: type or swipe the number to see the balance and history.</p>
+<ul>
+<li><b>Sell</b> or <b>Reload</b>: choose an amount; the card goes on the check and works once that check is paid. No number? One is made up and printed on the receipt.</li>
+<li><b>Pay the Check from This Card</b> takes as much as the card holds.</li>
+<li><b>Cash Out</b>: some states make a small balance redeemable in cash when the guest asks (California: under $10). With the store's state chosen (Store Settings → Staff hours), the button shows for such a card; the cash comes out of the drawer (or your bank) as a recorded pay out, and the card is empty. Gift cards never expire.</li>
+</ul>
+
+<h2>House accounts</h2>
+<p>A manager turns on a house account for a customer (with an optional limit). Put the customer on the check, then touch <b>House Account</b> on the payment screen. Payments on the account (cash or card) are taken on the Customers screen.</p>
+
+<!-- ======================================================================= -->
+<h1>8. The host stand: waitlist and reservations</h1>
+<h2>Seating</h2>
+<p><b>Host Stand</b> on the Tables page opens the seating screen. Hosts start on it when they log in.</p>
+<p class="shot"><img src="shots/m123-seating.jpg" width="560" height="315"></p>
+<p class="caption">Green: available. Amber: seated. Red: dirty. Purple: held for a party.</p>
+<p>The tables are shown on the floor plan, where they really are, with the walls, doors and bar around them. Tabs across the top show <b>Main</b> or one room bigger (<b>Dining Area</b>, <b>Bar</b>, <b>Patio</b>); the screen remembers the last one. On a phone, or for a closer look, spread two fingers to zoom in (up to 3 times) and drag the plan around.</p>
+<ul>
+<li><b>Seat a party:</b> touch them in <b>Waiting</b> or <b>Reservations</b> (or <b>Walk-in</b>, with − / + for how many), touch their table, then <b>Seat</b>.</li>
+<li><b>Who gets the table:</b> the <b>Server</b> list starts on whoever is <i>(next up)</i>: of the servers on the clock, the one with the fewest guests seated right now, and if that's a tie, the one seated longest ago. Pick someone else if you like; the next party starts on next-up again.</li>
+<li><b>When tables free up:</b> each seated table says about when, <i>Free ~15m</i>, from where it is (still ordering, eating, check printed, paying) and how long parties that size stayed today (early in the day, the usual: about 50 minutes for 1–2, 65 for 3–4, 80 for more). <i>Paying: free soon</i> means a payment is on it. Tell the waitlist with confidence.</li>
+<li><b>Regulars:</b> a party whose phone number is on file (Customers), however it's written, shows <b>★ Regular · 7 visits</b> and their note (allergies, a favorite booth) on the waitlist (on the host stand, a ★ after their name, and the note), and their server sees it on the check.</li>
+<li><b>A big party:</b> touch several tables to push them together. It shows the seats against the party size. The check opens on the first table; the others show <i>with T5</i>.</li>
+<li><b>Hold tables for a reservation:</b> touch the party, their tables, then <b>Hold for Them</b>. Nobody else can be seated there. Touch the party when they arrive and their tables are picked again; <b>Seat</b>.</li>
+<li><b>Taking a table's payment when its server is busy:</b> with <b>Store Settings → Waitlist → Hosts take payments at the host stand</b> on, touch the seated table, then <b>Pay This Table</b>: its check opens on the Pay screen, and after it's paid the host is back at the host stand. (Several checks at the table: pick one.) Hosts can then open any check to take its payment; in <b>Manager → Employees</b>, turn it off for one host, or on for just one.</li>
+<li><b>Bussing:</b> when a table's check closes, it turns red by itself (and so do tables pushed together with it). Touch it, then <b>Mark Available</b> when it's clean. <b>Mark Dirty</b> marks one by hand.</li>
+</ul>
+<p class="shot"><img src="shots/m132-host-free.jpg" width="560" height="315"></p>
+<p class="caption">Free ~45m on each seated table; Rosa is next up; Dana ★ is a regular, with her note.</p>
+<table cellpadding="4"><tr><td><img src="shots/m123-seating-phone.jpg" width="140" height="295"></td>
+<td>On a phone, the tables are on top and the parties below.<br>Held and dirty tables show on the floor plan too.</td></tr></table>
+<h2>The waitlist</h2>
+<p class="shot"><img src="shots/m19-host-stand.png" width="560" height="315"></p>
+<p class="caption">Waitlist on the left; add a party on the right.</p>
+<ul>
+<li><b>Add to the waitlist:</b> name, phone, party size, a note. The quote (minutes) is worked out for you; change it with −5 / +5. Waits past the quote turn red.</li>
+<li><b>Table Ready: Notify</b> texts the guest (when texting is set up), or reminds you to tell them.</li>
+<li><b>Seat Them…</b> lists the free tables, the smallest that fits first. Pick the server and the table: the table's check opens for that server with the party size and name.</li>
+<li><b>Reservations:</b> book today or up to six days ahead. <b>They're Here</b> puts them at the front of the line; <b>No-Show</b> or <b>Cancel Booking</b> takes them off.</li>
+</ul>
+<p class="shot"><img src="shots/m75-host-seat.png" width="560" height="315"></p>
+<p class="caption">Seating a party of 4: 4-seat tables first, smaller ones dimmed.</p>
+
+<!-- ======================================================================= -->
+<h1>9. Kitchen, bar and expo screens</h1>
+<p class="shot"><img src="shots/m20-kitchen.png" width="560" height="315"></p>
+<p class="caption">The kitchen screen: one ticket per Send, oldest first.</p>
+<ul>
+<li>Touch a ticket when it's ready (bump). <b>Recall</b> brings back the last one.</li>
+<li>Tickets turn yellow, then red when late (8 and 15 minutes to start; Store Settings).</li>
+<li>Rush tickets come first with a red frame; VIP ones have a gold frame.</li>
+<li>Each station sees only its own items: the bar screen shows drinks, the kitchen food.</li>
+<li>Items can show a shorter <b>kitchen name</b> ("BCN BGR") and a <b>highlight color</b>, and some items (water, "No side") aren't shown at all (chapter 11).</li>
+<li><b>Long orders continue:</b> tickets fill columns as tall as the screen, oldest on the left, small ones stacked. An order too long for the room left goes on in the next column on a card of its own, marked <i>T5 2/3</i>, with <b>Continued ▸</b> at the bottom of each card before the last. The guest's allergies are on every card. Touching any of its cards bumps the whole order.</li>
+<li><b>More than fit:</b> swipe the tickets sideways. <b>2 more ▸</b> in the corner says how many orders are past the right edge; touch it to go there.</li>
+</ul>
+<p class="shot"><img src="shots/m134-kitchen-continued.jpg" width="560" height="315"></p>
+<p class="caption">A party of twenty on four cards (T5 1/4 to 4/4).</p>
+<p class="shot"><img src="shots/m21-kitchen-all-day.png" width="560" height="315"></p>
+<p class="caption">All Day: everything still to make, by item, for batching.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m22-bar-display.png" width="300" height="169"><br><small>The bar screen.</small></td>
+<td><img src="shots/m23-expo.png" width="300" height="169"><br><small>The expo screen.</small></td>
+</tr></table>
+<h2>Expo (the expediter)</h2>
+<ul>
+<li>Every ticket from the kitchen's stations. Each line gets a ✓ when its station bumps it, and the card says what it's still waiting on ("Waiting on: Grill").</li>
+<li><b>No drinks:</b> drinks go out from the bar, so expo doesn't show them. A ticket of only drinks never reaches expo, and running a ticket out leaves its drinks on the bar's screen. Store Settings → Kitchen → <b>Expo doesn't show</b> lists what's left out (Bar to start); add a station or printer by name, or remove Bar to see everything.</li>
+<li>When everything is made the ticket turns blue: <b>READY</b>. Touch it when it goes out to the table. A ticket that isn't ready needs a second touch.</li>
+</ul>
+<p>Kitchen, bar and expo screens need no login. Open them from the Manager screen, or set a screen to start on them.</p>
+<p>The kitchen screen also has <b>Waste…</b> (log what was thrown away) and <b>Labels…</b> (print prep labels), both chapter 11. Nobody needs to log in: they're signed by the screen.</p>
+
+<!-- ======================================================================= -->
+<h1>10. Cash: banks, drawers and tips</h1>
+<p class="shot"><img src="shots/m44-drawer.png" width="560" height="315"></p>
+<p class="caption">The drawer screen.</p>
+<h2>Server banks (the starter setting)</h2>
+<ul>
+<li>Each person keeps the cash they take in their own bank, on any screen. The bank starts at the first cash sale. To start with change, type the amount on the Drawer page and touch <b>Start Bank</b>.</li>
+<li>At the end of the shift: Log Out → <b>My Bank…</b> and touch <b>Check Out</b>, then count your cash bill by bill (below). It shows the cash to turn in and whether you're over or short.</li>
+<li>Close or hand over your open checks first (unless the store turned this rule off).</li>
+</ul>
+<h2>A drawer per screen</h2>
+<p>Stores can choose a cash drawer per screen instead (Store Settings → Cash handling), or per person (Employees). A manager starts the drawer with a starting amount and counts it at the end.</p>
+<h2>Counting the cash</h2>
+<p>Touch <b>Count Drawer</b> (or <b>Check Out</b> for a bank) with nothing typed, and the count sheet opens: a row for each bill and coin. Touch a row, type how many on its keypad, then <b>Next ↓</b> for the next one. The total adds up as you go; <b>Count Drawer</b> finishes. The drawer screen and its printout list what was counted. (Typing the total on the keypad first still works.)</p>
+<table cellpadding="4"><tr><td><img src="shots/m138-drawer-count.jpg" width="400" height="250"></td>
+<td><img src="shots/m138-drawer-count-phone.jpg" width="120" height="260"></td></tr></table>
+<p class="caption">Counting by bills and coins, on a terminal and on a phone.</p>
+<ul>
+<li><b>Blind counts:</b> Store Settings → Cash → <i>Count drawers blind</i>. Whoever counts doesn't see what should be in the drawer, before or after counting, nor whether it came out over or short; managers still do (the Drawer report shows it, marked <i>blind</i>). Each person can be set otherwise (Employees → <i>Counting a drawer</i>).</li>
+<li><b>Bills and coins</b> (Store Settings → Cash): the store's list, largest first. $100 to 1¢ to start; for pesos, for example, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.50.</li>
+</ul>
+<h2>Pay outs, paid ins and No Sale</h2>
+<p>On the Drawer page a manager types the amount, touches <b>Reason…</b> (optional), then <b>Pay Out</b> or <b>Paid In</b>. A pay out is an expense: first touch what it was for (Food &amp; supplies, Produce, Ice, Cleaning, Repairs, Other; Store Settings → <i>Expense categories</i> sets the list). Reports → <b>Expenses</b> adds them up. <b>No Sale</b> opens the drawer.</p>
+<h2>Tips</h2>
+<ul>
+<li>Card tips are owed to the server; <b>Cash Out My Tips</b> pays them from the bank or drawer.</li>
+<li><b>Tip-outs</b> (Store Settings): for example "busser 15 tips" and "bartender 2 sales". That share of each server's tips (or sales) is split among the bussers or bartenders who worked today, by hours.</li>
+<li><b>Managers are never in the tip pool or tip-outs</b> (federal law; California Labor Code §351), even on a day they worked a server shift: they keep only the tips from their own tables. Card fees are never taken out of tips.</li>
+<li><b>A cash tip for the server:</b> when a host, manager or cashier takes a table's payment and the guest leaves cash for the server, type the amount and touch <b>Cash tip for the server</b> on the Pay screen. It shows on the check (<i>Cash tip for Sam</i>); the cash stays in the drawer or bank of whoever took it, which then expects that much more, and it's owed to the server like a card tip (Cash Out My Tips, the Tips report and tip-outs all count it).</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>11. Manager screens</h1>
+<p class="shot"><img src="shots/m30-manager.png" width="560" height="315"></p>
+<p class="caption">The Manager screen (PIN 1234).</p>
+<p><b>Network…</b> shows the store's computers and printers (chapter 18), and <b>Self-Order Kiosk</b> turns this screen into a kiosk for guests (chapter 16).</p>
+<p>Every Manager screen works the same way: the list on the left, the details on the right. Touch a record, change it, touch <b>Save</b> (or <b>Undo changes</b>). <b>+ Add</b> makes a new one; <b>Remove</b> deletes it.</p>
+
+<h2>Building the menu (Menu Builder)</h2>
+<p><b>Manager → Menu Builder</b> is the whole menu on one screen. The order screens fill themselves from it: a new item or category shows up on the registers, handhelds and the kiosk as soon as it's saved, with no page editing.</p>
+<ul>
+<li><b>Categories</b> (left): <b>+ Category</b> adds one: its name, its color, which meals it's on (Breakfast, Lunch, Dinner, or All day), and what new items in it start with (which kitchen ticket, where it's made, its tax). Hold one and drag it to move it (or ▲ ▼); that's the order of the buttons on the order screens. <b>Edit Category</b> changes the one chosen.</li>
+<li><b>Items</b> (middle): the category's items as tiles. <b>+ Add Item</b>, or touch an item to change it. Hold an item and drag it to another place: the order screens follow.</li>
+<li><b>The item's card</b> (right): name, price, category, photo, sold out, on the kiosk or not. <b>What's on it</b>: type the ingredients it comes with, separated by commas (<i>lettuce, tomato, onion, mayo</i>); guests and staff can then have each No, Light, Extra or On the side. <b>Choices it asks for</b>: touch the choice groups it should ask for (Temperature, Side, Dressing…). <b>Add to the Menu</b> / <b>Save</b> are always at the bottom. <b>More…</b> opens every setting (kitchen name, prices by meal, takeout price, recipe…) in Manager → Menu.</li>
+<li><b>Add Several…</b> (beside the category's name): type or paste a list, one per line or separated by commas, each with its price: <i>Carne Asada 3.50</i>, <i>Al Pastor $3.25</i>, <i>Lengua 4,25</i>. A line starting with a category's name and a colon puts what follows there, and makes the category if it's new: <i>Drinks: Horchata 2.75, Agua Fresca 2.50</i>. It shows what it will add before you touch <b>Add</b>.</li>
+<li><b>Import…</b> (under the categories): a menu from a spreadsheet. In Excel, Google Sheets or LibreOffice, save it as CSV (File → Save As / Download → CSV) onto a USB stick or this computer, then choose it. A first row with column names is read by name: <i>Name</i> or <i>Item</i>, <i>Price</i>, <i>Category</i> or <i>Section</i>, <i>Description</i>, <i>Ingredients</i> (Spanish names work too); without one, the columns are name, price, category. Prices like <i>$3.50</i> or <i>3,50</i> are fine. A <i>Photo</i> (or <i>Foto</i>) column names a picture file for each item, like <i>fish-tacos.jpg</i>: put the pictures in the same folder as the spreadsheet (on the USB stick too). Rows whose picture isn't there come in without one, and the preview says which. It shows what it will add, and which rows it leaves out and why, before <b>Import</b>; new categories are made, items already on the menu are skipped, or get the file's price if you turn that on.</li>
+<li><b>Export</b>: the whole menu as one file (in <i>ViewTouch Exports</i>, or the folder set for exports): its categories, choice groups and items with every setting. At another store, <b>Import…</b> that file: what that store doesn't have by name is added, with its choices; nothing it has changes. Photos go along in the file; sales counts and stock recipes stay with each store.</li>
+<li><b>Print…</b> (beside Import… and Export): the menu with today's prices as a PDF, to print or hand out (in <i>ViewTouch Exports</i>). Type a title and a line under it (address, hours), choose 1 or 2 columns, Letter or A4, with or without pictures and descriptions, and which categories. The first page shows as it will print. Sizes print with their prices; sections from the Menu Builder print as small headings. Make a new one after prices change.</li>
+<li><b>Starter…</b>: a Taqueria, Café, Burgers &amp; Bar or Pizza menu: its categories, choice groups (salsas, sizes, milks, how it's cooked…) and items with typical prices and what's on them, added to your menu; nothing already on it changes. Then change the prices and names to yours.</li>
+<li><b>Duplicate</b> (on an item's card) makes a copy right after it, with its choices and what's on it, named <i>Fish Tacos 2</i>: change its name and price and save.</li>
+<li><b>Choice Groups</b> (the switch at the top left): every group of choices, how many items ask for it, and <b>+ Choice Group</b>. A group has a name; how many guests pick (<b>One</b>, <b>Up to…</b>, <b>Any number</b>) and whether it's <b>Required</b>; whether guests can ask for a choice <b>Light, Extra or On the side</b> (dressings, toppings; not temperatures or sizes); and its options, a row each: name, what it adds to the price, and <b>Comes on it</b> for what's already on the item. ▲ ▼ reorder them, ✕ removes one, <b>+ Option</b> adds one. It lists which items ask for it. <b>+ New Choice Group…</b> on an item's card opens it too.</li>
+<li><b>✓ Ready to go</b> / <b>⚠ 3 to fix</b> (top left) checks the menu for what would trip up service: an item with no price or category, a choice group it asks for that's gone, a kitchen printer that isn't set up, two items with the same name, a required choice group with too few options, a category on a meal period that isn't set up, and (as notes) empty categories. Touch one to go straight to it.</li>
+<li><b>↶ Undo</b> (top left, under the check) takes back the last change: a removed item, a moved category, an import or a starter menu as a whole; again for the one before (up to 20). If the menu was changed elsewhere since (another screen, Manager → Menu), it says so and doesn't undo over that change.</li>
+<li>Touching another item, category or choice group with changes not saved asks <b>Save</b>, <b>Don't Save</b> or <b>Keep Editing</b>. <b>+ New Choice Group…</b> on an item's card comes back to the item once the group is added, with it chosen (<b>‹ item</b> goes back without one). Prices can be typed 3.50, $3.50 or 3,50.</li>
+<li><b>Contains</b> (an item's card): its allergens (gluten, dairy, egg, peanut, tree nuts, soy, fish, shellfish, sesame).</li>
+<li><b>Also a button on</b> (an item's card, for stores with pages of buttons placed by hand, like a Happy Hour page): pick the page, <b>Add Button</b>. It goes in the page's next free place, sized and styled like its other item buttons.</li>
+<li>On a phone the Menu Builder shows one step at a time: categories, then items, then the card.</li>
+</ul>
+<p><b>A store set up before the menu screens filled themselves</b> sees a note at the top of the Menu Builder: its meal pages have category buttons placed by hand, so new items don't show up on them. <b>Switch to Self-Filling</b> replaces those buttons with the self-filling categories, where they were, and keeps everything else on the page; it opens the page editor to look them over, then <b>Save</b> (or <b>Undo</b>). Pages built by hand stay as pages of their own.</p>
+<p><b>★ Favorite</b> on an item's card puts it in the order screen's <b>★ Favorites</b>, the first tab, together with today's best sellers (12 in all). The item buttons size themselves: as many columns as fit the category's items without scrolling, as big as they can be.</p>
+<p>On the order screen, each meal's page shows its categories as buttons (<b>Breakfast</b>, <b>Lunch</b>, <b>Dinner</b> at the top); touching one shows its items, with a button for every category across the top. <b>Everything</b> shows the whole menu, <b>Popular</b> today's best sellers.</p>
+
+<h2>Menu items</h2>
+<p class="shot"><img src="shots/m31-menu-items.png" width="560" height="315"></p>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>Field</th><th>Meaning</th></tr>
+<tr><td>Name, Price, Family</td><td>The family groups items in reports (burgers, drinks…).</td></tr>
+<tr><td>Tax</td><td>Food, alcohol, merchandise, room or no tax.</td></tr>
+<tr><td>Kitchen ticket goes to</td><td>The station: kitchen, bar…</td></tr>
+<tr><td>Is a modifier</td><td>It attaches to the item before it (sides, temperatures).</td></tr>
+<tr><td>Available</td><td>Untick when sold out (86).</td></tr>
+<tr><td>Modifier groups</td><td>The choices it asks for, by group ID.</td></tr>
+<tr><td>Prices by meal period</td><td>e.g. <code>dinner = 14.50</code>.</td></tr>
+<tr><td>Takeout price, Delivery price</td><td>A different price on takeout or delivery checks (0 = the regular price).</td></tr>
+<tr><td>No discounts, No staff discount</td><td>Discounts and comps leave it out; staff meals leave it out (alcohol, say).</td></tr>
+<tr><td>Kitchen name, highlight, don't show</td><td>How it looks on the kitchen screen and tickets.</td></tr>
+<tr><td>Recipe</td><td>What one uses up, e.g. <code>bun 1</code>, <code>lettuce 0.5</code> (Inventory).</td></tr>
+<tr><td>Not on the self-order kiosk</td><td>Guests can't order it on their own (alcohol never shows there).</td></tr>
+<tr><td>Description, Photo</td><td>What guests see on the self-order kiosk: a line under the name, and an image file on the kiosk's computer.</td></tr>
+</table>
+
+<h2>Modifier groups</h2>
+<p class="shot"><img src="shots/m32-modifier-groups.png" width="560" height="315"></p>
+<p>A group is a set of choices: how many are required, and the most allowed (1 = pick one, 0 = any number). Options go one per line, with a price after <code>+</code> and the kitchen's name after <code>|</code>: <code>Grilled Chicken + 4.00 | CHKN</code>. Write <code>| -</code> to leave an option off kitchen tickets.</p>
+
+<h2>Employees</h2>
+<p class="shot"><img src="shots/m33-employees.png" width="560" height="315"></p>
+<ul>
+<li>Name, role (server, bartender, cashier, host, busser, manager, admin) and a PIN of 4 to 8 digits; managers and admins 6 to 8, since they can do the most. Five wrong PINs in a row make a screen wait (30 seconds, then longer each time), and Store Check says someone may be guessing.</li>
+<li>Each permission can be <i>As the role</i>, <i>Yes</i> or <i>No</i> for one person: take orders, take payments, discounts, void sent items, manager screens, edit pages.</li>
+<li>Staff are deactivated, not deleted, so their sales and hours keep a name.</li>
+<li><b>Language</b>: the screens switch to it when this person logs in (chapter 17).</li>
+<li><b>Pay rate</b> (an hour, before tips) and <b>Other jobs</b> with their pay, one per line: <code>bartender 9.00</code>. For the labor cost on Reports → Labor.</li>
+</ul>
+
+<h2>Store settings</h2>
+<p class="shot"><img src="shots/m34-store-settings.png" width="560" height="315"></p>
+<p>The settings are in sections: touch one on the left (The store, Receipts, Cash, Staff hours, Tips, Kitchen, Cards, Loyalty, Self-order kiosk, Backups…) to see only its settings.</p>
+<ul>
+<li><b>Find a setting</b>: type a word or two at the top (<i>tip</i>, <i>receipt</i>, <i>kiosk color</i>). The settings that have them show from every section, each with its section's name above it. <b>Clear</b> goes back to the sections.</li>
+<li>A setting that only matters when another is on shows once that one is on: <i>…points per dollar</i> and <i>Rewards</i> with <b>Loyalty points</b>, <i>…clock in up to (minutes) early</i> with the schedule rule, the offline limits with <b>Take cards when the internet is down</b>, the backup password with <b>Encrypt backups</b>.</li>
+<li>Made for fingers: numbers have big <b>−</b> and <b>+</b> keys (or touch the number and type it; 0 shows what it means, like <i>Never</i> or <i>Not in it</i>), on/off settings are switches, and lists are rows: tip-outs (<i>Bussers · 15 · of tips</i>), the tip pool (a row for each job in it, with its share), rewards, tip choices, checklists, kitchen stations, expense categories, the customer display's messages and the chart of accounts. <b>+ Add…</b> adds a row, <b>✕</b> takes one out. The same goes for Menu Items, Employees, Payment Types and the other manager pages.</li>
+<li><b>The store's state</b> (Staff hours): pick yours and its labor and gift card laws are set: daily overtime and double time (California: past 8 and 12 hours), California's seventh day in a row, when a meal break is due (California: by the 5th hour; the person is reminded at login half an hour before, Store Check shows who's late, and Reports → Labor lists late or missed meals, where California owes an hour's pay), and gift card balances to cash out. Federal overtime (past 40 hours a week) applies everywhere. Each can still be changed; these are the usual rules for restaurant staff, so check special cases with your accountant.</li>
+<li><b>Fees on receipts</b>: an automatic gratuity says what it is and who gets it (<i>For 6+ guests; goes to the server.</i>), and the delivery fee says whether it goes to the driver (<b>The delivery fee goes to the driver</b>, off to start: <i>Store's fee, not the driver's tip.</i>). Put these charges on your menu too.</li>
+<li><b>About</b> (the last section): the version the store runs (with its build number), this screen's own version (a tablet can lag behind until it updates), the store's computer, where its data is kept and how big it is, the last backup, <b>Updates on this store</b> (each version it has run and when it arrived) and <b>Recent changes</b> (what the latest versions changed), and the license. The version's last number is the build: it goes up by itself with every new build (0.9.1283, 0.9.1284…).</li>
+<li>What you change is marked <b>changed</b>, its section says how many, and the button says <b>Save 2 changes</b>. Nothing is kept until you touch it; <b>Undo changes</b> puts everything back. Leave the page without saving and your changes are still there when you come back.</li>
+</ul>
+<table cellpadding="4"><tr>
+<td><img src="shots/m136-settings-search.jpg" width="180" height="101"><br><small>Find a setting</small></td>
+<td><img src="shots/m136-tip-pool.jpg" width="180" height="101"><br><small>The tip pool: a row a job</small></td>
+<td><img src="shots/m34b-about.jpg" width="180" height="101"><br><small>About</small></td>
+</tr></table>
+
+<h2>Taxes, payment types, printers and terminals</h2>
+<table cellpadding="4"><tr>
+<td><img src="shots/m35-taxes.png" width="180" height="101"><br><small>Taxes</small></td>
+<td><img src="shots/m36-payment-types.png" width="180" height="101"><br><small>Payment types</small></td>
+<td><img src="shots/m37-printers.png" width="180" height="101"><br><small>Printers</small></td>
+</tr></table>
+<ul>
+<li><b>Taxes</b> also sets <b>Cash rounding</b> where pennies are gone: a check paid in cash is rounded to the nearest 5 (or 10) cents and shows a <i>Cash rounding</i> line; cards stay exact.</li>
+<li><b>Payment types</b>: a discount can be a <b>Staff meal</b> (the demo has <i>Staff Meal</i>, 50%). Ring your meal, touch Staff Meal on the payment screen, and it records who ate; the Sales report counts staff meals.</li>
+<li><b>Printers</b>: network (TCP 9100, ESC/POS), CUPS, or a text file for testing; label printers too (Format: ZPL or TSPL, and the label size). After saving a printer, touch <b>Test Print</b>: it prints your logo, text in each size, a sample item and total, and a row of digits that should exactly fill one line (if it wraps or falls short, change <b>Characters per line</b>), then cuts the paper. With a drawer wired to the printer, <b>Test Print + Open Drawer</b> also opens it. A message says when the printer took the page, or why it didn't.</li>
+<li><b>86'd items come back the next day</b> (on unless turned off): an item marked sold out during service (on the order screen or the sold-out list) is back after End of Day. Marked sold out in the Menu Builder, it stays so until changed there (for something out of season).</li>
+<li><b>Cards when the internet is down</b> (Store Settings, off until turned on; Stripe readers running ViewTouch only): with <b>Take cards when the internet is down</b>, the reader keeps a card it can't send and sends it to Stripe when the internet is back, up to the amount a card and the amount waiting in all that you set. The check shows it as taken offline; it can't be refunded until Stripe has it. The bank only sees it then: if it's declined, the store doesn't get that money, and managers see a red alert with the check and the amount until they touch OK. A reader beside the register driven by this computer (not running ViewTouch) can't take cards offline: Stripe needs the internet for those.</li>
+<li><b>Receipts while the internet is down:</b> a printed receipt prints as usual, with <i>Approval pending (taken offline)</i> under the card (once it's declined: <i>Declined once sent: not paid</i>), so the guest can leave. An <b>emailed</b> receipt is kept with the check and Stripe sends it as soon as every card on the check has reached Stripe (and, with the internet down, it's tried again every couple of minutes until it goes). A <b>texted</b> receipt or message that can't go out waits and is tried again every minute, for up to a day.</li>
+<li><b>Updating the tablets</b>: Manager → Network shows the build each screen runs and which need an update. Copy the new tablet app (<i>ViewTouch-b…-arm64-v8a.apk</i>) into the <i>updates</i> folder it names on the store's computer; then, on a tablet that's behind, a manager touches <b>Update Now</b> on the strip at the bottom, and Android asks to install it (the first time, allow ViewTouch to install apps, then <b>Install</b>).</li>
+<li><b>Allergies</b>: on the order screen, Check… → <b>Allergy…</b>, touch what the guest is allergic to. Items that contain it get a red border and a ⚠ label on the menu, adding one warns, and the kitchen ticket starts with <b>!! ALLERGY !!</b> and marks each item that has it (<b>!! CONTAINS EGG</b>); the kitchen screen shows the same in red. On the kiosk, each dish says what it contains, guests can touch <b>Allergies</b> to hide dishes with what they avoid, and the kitchen sees that as an allergy too.</li>
+<li><b>Terminals → Start orders on</b>: a category orders opened on that screen start on (the bar's: Drinks); <b>‹ Menu</b> still shows the meal's categories.</li>
+<li><b>Terminals</b>: each screen's receipt printer, cash drawer and screen layout (standard, phone, or <b>Self-order kiosk</b>), and <b>Pair a Device</b>.</li>
+</ul>
+
+<h3>What receipts show</h3>
+<ul>
+<li><b>Choices that cost nothing</b> (No onion, Medium rare) are left off the guest's receipt to save paper; ones that change the price (Extra bacon) are printed. The kitchen's tickets still show every choice. To print them all on receipts, turn on <b>Free choices on receipts</b> in Store Settings.</li>
+<li><b>Everything fits the paper</b>, 58 mm or 80 mm: long names wrap, and a line too wide for its amount puts the amount on the next row. Addresses and notes typed on several lines keep their lines.</li>
+<li><b>Letters</b> (Manager → Printers): <i>Accented letters</i> prints ñ, é, ¿ ¡, £ and € on Epson and most receipt printers. If a printer shows them as wrong symbols, choose <i>Plain letters only</i> (é prints as e, € as EUR). The Test Print page has a line of accents to check.</li>
+</ul>
+
+<h3>When a printer needs someone</h3>
+<p>Network receipt and kitchen printers are asked every 20 seconds how they are. When one runs out of paper, has its cover open, has a paper jam, or stops answering (power, cable or network), a red banner at the top of every staff screen says so, for example <b>Kitchen: out of paper</b>, until it's fixed. <b>Paper running low</b> shows in amber, on printers that can tell. The kiosk doesn't show it to guests. Manager → Network shows each printer's state too. For a printer that doesn't report its state, turn off Manager → Printers → <i>Warn when it's out of paper</i>.</p>
+
+<h3>Receipts on handhelds</h3>
+<p>A handheld has no printer of its own. Its receipts print on a printer on the store's network:</p>
+<ul>
+<li><b>Which printer:</b> Manager → Terminals → the handheld → <b>Receipts and cash drawer on</b>. Pick one printer, or <b>Ask each time</b>: then <b>Print Receipt</b> shows the printers to choose from (the bar, the host stand…), so the server prints wherever they're standing. Only printers with <b>Prints receipts</b> on (Manager → Printers) are offered; the kitchen's aren't.</li>
+<li><b>After a check is paid</b> (Manager → Terminals): <i>Nothing</i> (touch Print Receipt when the guest wants one), <i>Print a receipt</i> (every time, by itself), or <i>Ask</i>: Print / Email / No Receipt comes up as the check closes.</li>
+<li><b>Email:</b> for a card taken on a Stripe reader, type the guest's email (or let them type it) and touch <b>Email</b>. Stripe sends its receipt for the card payment; no email server is needed. A customer's email on file is filled in, and one typed for a customer without one is saved. Stripe only sends these with a live key, not in test mode. Cash and typed-in cards can only be printed.</li>
+<li><b>A copy later:</b> Find a Check → the check → <b>Reprint Receipt</b>. On a handheld set to Ask each time, it asks where.</li>
+</ul>
+
+<h2>Meal periods</h2>
+<p class="shot"><img src="shots/m39-meal-periods.png" width="480" height="270"></p>
+<p>When breakfast, lunch and dinner start. Each runs until the next one begins.</p>
+
+<h2>Inventory</h2>
+<p class="shot"><img src="shots/m40-inventory.png" width="560" height="315"></p>
+<ul>
+<li>Each ingredient's unit, what's on hand, its low-stock mark and its cost. To count the shelves, use <b>Count Stock…</b> (below) rather than changing <b>On hand</b>: a count shows how far off it was.</li>
+<li>Stock goes down as orders go to the kitchen and comes back on a void.</li>
+<li>An item whose ingredients run short sells out by itself and comes back when you restock. You'll see "Running low: …" as items get low.</li>
+<li><b>Vendors…</b>: who you buy from (phone, your account number, delivery days). Each ingredient can name its usual vendor.</li>
+<li><b>Receive a Delivery…</b> (below): touch the vendor, type how much came of each item (and its cost if it changed) and the invoice number, then <b>Receive Delivery</b>. Stock goes up, costs are updated for the Food Cost report, and items that had run out come back. Reports → <b>Purchases</b> shows what came in today, by vendor.</li>
+</ul>
+<p class="shot"><img src="shots/m76-receive-delivery.png" width="560" height="315"></p>
+<p class="caption">Receiving a delivery: what came, at what cost.</p>
+
+<h2>Counting stock</h2>
+<p>Once a week (or each night for the costly items), count the shelves: <b>Manager → Inventory → Count Stock…</b>. Touch a vendor to count one shelf or walk-in at a time, type how many there are of each item, and touch <b>Save Count</b>. Only the items you type are counted; leave the rest empty. What you counted becomes what's on hand.</p>
+<p class="shot"><img src="shots/m141-stock-count.jpg" width="560" height="315"></p>
+<p>Reports → <b>Stock</b> then shows each item counted: what should have been there, what was counted, how far off and what that cost, the biggest losses first. <i>Should be</i> is the last count, plus the deliveries received, less what the sales used (by each item's recipe), plus any change made by hand to <b>On hand</b>. Coming up short again and again on one item means waste, portions bigger than the recipe, theft, or a recipe that needs fixing.</p>
+<p class="shot"><img src="shots/m141-stock-report.jpg" width="560" height="315"></p>
+<p>While counting, what should be there isn't shown, so it can't sway the count. Store Settings → <b>Inventory</b> can show it.</p>
+
+<h2>Logging waste</h2>
+<p>When something is thrown away, log it: <b>Manager → Log Waste…</b>, or <b>Waste…</b> on the kitchen screen. Touch the menu item (its recipe comes off the shelf: a dropped burger is a bun, a patty and some lettuce) or <b>Ingredient</b> and the ingredient, how much, and why (<i>Dropped or spilled</i>, <i>Expired or spoiled</i>, <i>Made wrong</i>…; Store Settings → <b>Inventory</b> sets the reasons), then <b>Log Waste</b>.</p>
+<p class="shot"><img src="shots/m142-waste.jpg" width="560" height="315"></p>
+<p>Stock counts then tell the two apart: waste that was logged shows as <i>Thrown away (logged)</i>, and only the rest as missing. The Stock report also lists what was thrown away today and what it cost.</p>
+<h2>Par levels and what to order</h2>
+<p>Give each ingredient a <b>Keep on hand (par)</b> in Manager → Inventory: the amount you like to have after a delivery. Reports → <b>Stock</b> then lists, for each vendor, everything below its par: what's on hand, the par, how much to order to get back to it, and about what it costs. Print it and call the vendor, or read it to the rep.</p>
+<h2>Prep labels</h2>
+<p><b>Labels…</b> on the kitchen screen (or <b>Prep Labels…</b> on the Log Waste page): touch the ingredient, or type what it is (Pico de gallo), choose how long it keeps, add a note if you like, how many, and <b>Print</b>. Each label says what it is, when it was made, when to use it by, and who made it.</p>
+<p class="shot"><img src="shots/m143-prep-labels.jpg" width="560" height="315"></p>
+<ul>
+<li><b>Keeps for</b>: set it once on each ingredient (Manager → Inventory → <i>Keeps for (hours)</i>) and it's filled in by itself.</li>
+<li><b>The printer:</b> most label printers work. In Manager → Printers, set its <b>Format</b> to <i>Label printer: ZPL</i> (Zebra and the many that copy it) or <i>Label printer: TSPL</i> (TSC, Xprinter, Munbyn, Rollo and most low-cost ones), and its label size (2 × 1 inch is 51 × 25 mm). Store Settings → <b>Inventory</b> picks it for the store, and each screen can pick its own (Terminals). No label printer? Choose a receipt printer and each label prints as a short slip.</li>
+</ul>
+<h2>Store Check</h2>
+<p><b>Manager → Store Check</b> answers "are we ready to open?": every printer answering, a backup in the last day, room on the disk, the standby computer, the clock (not behind the last sale, which a dead clock battery causes), the cash drawers started and the opening checklist. Each line is ✓ or ⚠, and the top says <b>Ready to open</b> or how many to look at.</p>
+<p>It also notes what keeps the store safe and within the law, without holding up opening: sample staff still on (their PINs are in this manual for anyone to read), the store's state not chosen, backups not encrypted (set a backup password), a full Stripe secret key where a restricted one (<i>rk_…</i>, only Terminal and refunds) would do, and meal breaks past due.</p>
+<p class="shot"><img src="shots/m144-store-check.jpg" width="560" height="315"></p>
+<p>Beside it, <b>Problems, the last 7 days</b>: things that went wrong while nobody was looking. A printer out of paper or not answering, a save to the database or a backup that failed, the standby computer losing touch, and ViewTouch having closed without being told to (a crash, or the power went off). New ones are marked, and the Manager page's button says how many (<b>Store Check ⚠ 2</b>); <b>Mark as seen</b> clears that.</p>
+
+<h2>Promotions</h2>
+<p class="shot"><img src="shots/m41-promotions.png" width="560" height="315"></p>
+<ul>
+<li>Percent off chosen categories or items, or "buy N, get M at percent off".</li>
+<li>Set the days (Mon-Fri, Tue, Sat, Sun) and the hours.</li>
+<li>They apply by themselves while they run. Demo: Happy Hour (weekdays 3-6 PM, half-price draft beer and wine) and Burger Tuesday (second burger half off).</li>
+</ul>
+
+<h3>Coupons</h3>
+<ul>
+<li>A promotion with a <b>Coupon code</b> (SAVE5) comes off only the checks the code is entered on. With no categories or items, it covers the whole order.</li>
+<li>It can take an <b>Amount off</b> instead of a percent, need <b>Orders of at least</b> an amount, run from a <b>First day</b> to a <b>Last day</b>, and be used a set number of <b>Times</b>. Used so far counts the closed checks it came off; reopening one gives the use back.</li>
+<li>On the Pay screen, touch <b>Coupon…</b> and type the code, or scan it: a barcode scanner types it and presses Enter. The screen says why a code won't work (unknown, ended, used up, under the minimum). <b>Remove</b> takes it off, and so does Undo Payment on it.</li>
+</ul>
+<p class="shot"><img src="shots/m133-coupon.jpg" width="448" height="280"></p>
+<p class="caption">Coupon… on the Pay screen: typed or scanned.</p>
+
+<h2>Schedule</h2>
+<p class="shot"><img src="shots/m42-schedule.png" width="560" height="315"></p>
+<ul>
+<li>A week at a time (‹ ›). Touch a day, pick the person and the times, and touch <b>Add Shift</b>. A shift that ends before it starts runs past midnight.</li>
+<li>Touch a shift to remove it, or <b>Clock Them In</b>.</li>
+<li>Each person's hours for the week are listed below, in red over the overtime line.</li>
+</ul>
+
+<h2>Sold out (86)</h2>
+<p class="shot"><img src="shots/m43-sold-out.png" width="480" height="270"></p>
+<p>Touch an item to mark it sold out, or back. Its buttons say SOLD OUT on every screen.</p>
+
+<h2>Closed checks</h2>
+<p class="shot"><img src="shots/m49-closed-checks.png" width="480" height="270"></p>
+<p class="shot"><img src="shots/m77-find-check.png" width="560" height="315"></p>
+<p class="caption">Find a Check: every check from the last year.</p>
+<p><b>Find a Check…</b> (Manager, or <i>Find an Older Check…</i> on the Reopen page) finds any check ever closed. Every check is kept forever, through End of Day, for as long as the store runs: nothing is ever thrown away.</p>
+<ul>
+<li><b>How far back:</b> Today, Week, Month, Year, 2 Years, 5 Years, 50 Years or All.</li>
+<li><b>Search:</b> a check number (<code>#123</code>), an amount (<code>17.62</code>), or part of a name, phone number, table, server, item or gift card number. <b>Show All</b> lists every check in that range instead, newest first; <b>Older ›</b> and <b>‹ Newer</b> go through them a page at a time.</li>
+<li>Touch one to see its items, payments, any refunds, and its <b>History</b>: everything that happened to it, when and by whom (sent, voids, discounts, approvals, payments, reopened, refunds). That's the audit trail. <b>Reprint Receipt</b> prints a copy.</li>
+</ul>
+<h2>Refunds</h2>
+<p>On a closed check, today's or from any day before, each payment has <b>Refund…</b>. The bill it paid is filled in; type less to give back part of it. Tips aren't refunded: they stay with the staff who earned them (cash refunds also leave out the change already given back). Choose or type why, then <b>Refund</b>. It needs a manager: anyone else gets the <b>Manager approval</b> PIN pad.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m128-refund-sheet.jpg" width="270" height="152"><br><small>How much, and why</small></td>
+<td><img src="shots/m128-find-refund.jpg" width="270" height="152"><br><small>On the check, with who did it</small></td>
+</tr></table>
+<ul>
+<li><b>A card from a Stripe reader</b> goes back to the guest's card through Stripe right away; their bank shows it in 5–10 business days (often sooner when it's the same day).</li>
+<li><b>Cash</b> comes out of your drawer (or your bank) as a refund pay-out, so the drawer still counts right.</li>
+<li><b>A card typed in</b> (taken on another machine) is recorded here; give it back on that machine.</li>
+<li>Every refund goes in the check's history and on <b>today's</b> reports (Sales: a <i>Refunds</i> section and <i>Collected after refunds</i>; Deposit: <i>Card refunds</i> off the card batch), whatever day the check was from. You can't refund more than was paid.</li>
+<li>On a check that's still open, <b>Undo Payment</b> on a Stripe card refunds it, and also needs a manager.</li>
+</ul>
+<p>From the order screen: Check… → <b>Reopen a Closed Check…</b>. Checks closed today; touch one to reopen it (managers). A refund is a reopen: void the item or take off the payment, then close again.</p>
+
+<!-- ======================================================================= -->
+<h1>12. Reports and End of Day</h1>
+<p class="shot"><img src="shots/m46-report-sales.png" width="560" height="315"></p>
+<p class="caption">Reports: the report along the top, the period below.</p>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>Report</th><th>Shows</th></tr>
+<tr><td>Sales</td><td>Checks, guests, item sales, discounts, tax, payments by type, card tips, averages.</td></tr>
+<tr><td>Items / Categories</td><td>What sold, how many and for how much.</td></tr>
+<tr><td>By Hour</td><td>Sales by the hour.</td></tr>
+<tr><td>Servers</td><td>Each server's sales.</td></tr>
+<tr><td>Tips</td><td>Card tips, gratuity, tip-outs, pool shares, paid and owed.</td></tr>
+<tr><td>Labor</td><td>Clock in/out, breaks, hours today and this week, regular hours, overtime and double time by the store's state law, late or missed meal breaks, and <b>labor cost</b>: each person's pay, overtime at time and a half, double time at double, and <b>labor % of sales</b>.</td></tr>
+<tr><td>Drawer</td><td>Each bank or drawer: start, cash, pay outs, expected, counted, over/short.</td></tr>
+<tr><td>Expenses</td><td>Cash paid out for expenses, by category (produce, ice, repairs…), then each one with who and why.</td></tr>
+<tr><td>Audit</td><td>Every void, discount, reopen, transfer, move and merge, with who and when.</td></tr>
+<tr><td>Gift Cards</td><td>Cards sold and spent, what's still on cards, house accounts.</td></tr>
+<tr><td>Kitchen</td><td>Ticket times by station, late tickets, the slowest.</td></tr>
+<tr><td>Food Cost</td><td>Each item's sales and recipe cost, and stock. <b>Prices to look at</b> lists every item that costs more than the store's target to make (Store Settings → Inventory → <i>Food cost to stay under</i>, 30% to start) at today's costs, with its price now and one that brings it back (<i>$12.00 → $13.75</i>). When a delivery comes in at higher prices, it says which items just went over.</td></tr>
+<tr><td>Menu Mix</td><td>In each category, every item by how well it sells and what it earns after food cost: <b>Star</b> (keep it), <b>Workhorse</b> (sells well, earns little: raise the price or make it for less), <b>Hidden gem</b> (earns well, sells slowly: show it off) and <b>Weak</b> (change it or take it off). Items not sold count too.</td></tr>
+<tr><td>Forecast</td><td>A coming day (Today, Tomorrow, or the next five days), from the same weekday in past weeks, with the most recent counting most. It shows the guests, checks and sales to expect, by hour (for the schedule), how many of each item, and the ingredients the kitchen will use beside what's on hand (the prep list). <b>To order</b> lists, by vendor, what that use and the low-stock level need beyond what's on hand. <b>Servers</b>: for each hour, how many servers it needs (the checks expected over Store Settings → Staff hours → <i>Checks a server takes care of in an hour</i>, 4 to start) beside how many are on the schedule then; ⚠ marks an hour that's short. It gets better as weeks of sales add up.</td></tr>
+<tr><td>Purchases</td><td>Deliveries received today: by vendor, then each one's items and costs.</td></tr>
+</table>
+<p class="shot"><img src="shots/m135-forecast.jpg" width="560" height="315"></p>
+<p class="caption">Forecast: Wednesday from the last four Wednesdays.</p>
+<h2>Periods and last year</h2>
+<p><b>Day</b> shows one business day (◀ ▶ for earlier days). <b>This Week</b>, <b>Last Week</b>, <b>This Month</b>, <b>Last Month</b>, <b>This Year</b> and <b>Dates…</b> cover a range. <b>vs Last Year</b> adds the same days a year before and the change.</p>
+<p class="shot"><img src="shots/m47-report-month-vs-last-year.png" width="560" height="315"></p>
+<p class="caption">Items last month against the same month a year before.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m48-report-labor.png" width="190" height="107"><br><small>Labor</small></td>
+<td><img src="shots/m48-report-tips.png" width="190" height="107"><br><small>Tips</small></td>
+<td><img src="shots/m48-report-kitchen.png" width="190" height="107"><br><small>Kitchen times</small></td>
+</tr><tr>
+<td><img src="shots/m48-report-food-cost.png" width="190" height="107"><br><small>Food cost</small></td>
+<td><img src="shots/m48-report-gift-cards.png" width="190" height="107"><br><small>Gift cards and accounts</small></td>
+<td><img src="shots/m48-report-expenses.png" width="190" height="107"><br><small>Expenses</small></td>
+</tr><tr>
+<td><img src="shots/m48-report-purchases.png" width="190" height="107"><br><small>Purchases</small></td>
+<td><img src="shots/m48-report-exceptions.png" width="190" height="107"><br><small>Exceptions</small></td>
+<td><img src="shots/m48-report-deposit.png" width="190" height="107"><br><small>Deposit</small></td>
+</tr><tr>
+<td><img src="shots/m48-report-customers.png" width="190" height="107"><br><small>Customers</small></td>
+<td><img src="shots/m48-report-royalty.png" width="190" height="107"><br><small>Royalty</small></td>
+<td><img src="shots/m48-report-accounting.png" width="190" height="107"><br><small>Accounting</small></td>
+</tr></table>
+<ul>
+<li><b>Exceptions:</b> by employee, every void of something already sent, every discount and comp, payments and discounts taken back, reopened checks, moved or merged checks, and each time the drawer opened with no sale. Then voids and comps by reason, and the biggest ones. The first report to read when the cash is short.
+<br><b>Unusual</b> sections come first: anyone who did one of these far more than everyone else on the shift (3 times or more, and at least 3 times as often as whoever else did it most), with the most anyone else did beside it. There's often a good reason (a new server, a tough table); it's a place to start, not an accusation.</li>
+<li><b>Changes:</b> who changed what, newest first: each setting, employee, payment type or other manager-screen record saved (the field, from what to what; a PIN only as changed), menu prices and names, items added or removed, and pages edited. Kept with each day at End of Day.</li>
+<li><b>Customers:</b> who comes back. Each customer's visits, spending, average check, last visit and favorite item, best customers first, for any dates.</li>
+<li><b>Royalty:</b> for a franchise, the royalty and advertising fund on net sales (Store Settings sets the percents), for any dates.</li>
+<li><b>Accounting:</b> the sales as a journal, debits and credits by account (Store Settings → <i>Chart of accounts</i>). Touch <b>CSV</b> to save it for QuickBooks or your accountant; the two totals always match.</li>
+<li><b>Deposit:</b> tonight's trip to the bank. Each drawer's cash (counted, or what should be there), less the starting cash kept for tomorrow, is the deposit. Then the card batch the processor will pay, and the book balance: what was sold against what was collected, and whether the drawers were over or short.</li>
+</ul>
+<p class="shot"><img src="shots/m140-changes.jpg" width="560" height="315"></p>
+<p class="caption">The Changes report.</p>
+<p><b>Print</b> prints a report on the receipt printer. <b>CSV</b> (for spreadsheets) and <b>PDF</b> save it to the <code>exports</code> folder.</p>
+
+<h2>End of Day</h2>
+<p class="shot"><img src="shots/m45-end-of-day.png" width="480" height="270"></p>
+<ul>
+<li>It lists anything still in the way (open checks, drawers or banks not counted).</li>
+<li>Once everything is settled, <b>Close the Day</b> (touch twice) saves the day's reports and starts a new day.</li>
+<li>It also shows the last backup and a <b>Back Up Now</b> button.</li>
+<li><b>Note for the Next Shift…</b> leaves a note for whoever comes in next (<i>Walk-in cooler is making noise; the repair is coming at 10</i>). Each manager sees new notes once, when they log in, and touches <b>Got It</b>. Notes are kept a week.</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>13. Changing the screens (edit mode)</h1>
+<p class="shot"><img src="shots/m51-edit-mode.png" width="560" height="315"></p>
+<p class="caption">Edit mode: pages on the left, the page in the middle, settings on the right.</p>
+<p>Every screen is a page of buttons you can change. Touch <b>Manager → Edit Pages</b> (or press F1 / Ctrl+E on a keyboard). Changes are a draft until you <b>Save</b>.</p>
+<ul>
+<li><b>Select:</b> click a button; shift-click to add more; drag across empty space to select several.</li>
+<li><b>Move and resize:</b> drag a button to move it, or a handle to resize it. Buttons snap to the grid and line up with guides.</li>
+<li><b>Add:</b> + Button, + Text, + Image, + Panel (tables, check lists, keypads and more). A new one goes in free space near the middle.</li>
+<li><b>Copy, cut, delete, layer order:</b> hold a button for its menu (or right-click with a mouse).</li>
+<li><b>Change:</b> on the right, its label, colors, shape and font, and what it does when touched: <b>+ Add action</b> (go to a page, add an item, a command…). A button can do several things in order; ▲ ▼ reorder them, ✕ removes one.</li>
+<li><b>Tables:</b> on a floor plan, add a table with <b>+ Floor Plan → Table</b>, or Duplicate one (T7 becomes T8). Give each its name and seats; <b>Show chairs</b> draws a chair for each seat around it. To show a table on another plan too (Main and a room), Copy it and Paste it there: it stays the same table.</li>
+<li><b>Draw the room:</b> <b>+ Floor Plan</b> adds a wall, window, door, bar counter, booth bench, plant, pillar, fence, entrance or an area (a room's floor, with its name). They go under the tables, and touching them during service does nothing. Each has its own color (or the usual).</li>
+<li><b>Turn anything:</b> drag the round handle above a selected piece (15° at a time; Shift: any angle), or hold it for <b>Turn 90°</b>, <b>Turn 15°</b> and <b>Straighten</b> (also under Arrange), or type <b>Turned (degrees)</b> on the right. A turned table's name stays upright.</li>
+<li><b>Undo / Redo</b> every step (Ctrl+Z / Ctrl+Y). <b>Done</b> asks whether to save. On a small screen, swipe the tools sideways; Save and Done always stay in view.</li>
+</ul>
+<p class="shot"><img src="shots/m131-floor-editing.jpg" width="560" height="315"></p>
+<p class="caption">Drawing the Patio: a wall turned with the round handle above it.</p>
+<div class="tip">Template pages share buttons: the order bar is on one template page, and every menu page uses it. Change it once and it changes everywhere.</div>
+
+<h2>Ready-made looks</h2>
+<p>In edit mode, the <b>Theme</b> tab starts with <b>Looks</b>: touch one and every screen takes its colors. Once your logo is set, two looks are made from its colors. Don't like it? <b>Undo</b>. Like it? <b>Save</b>.</p>
+<p class="shot"><img src="shots/m94-looks.png" width="560" height="315"></p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m95-look-daylight.png" width="270" height="152"><br><small>Daylight</small></td>
+<td><img src="shots/m96-look-cafe.png" width="270" height="152"><br><small>Warm Café</small></td>
+</tr></table>
+
+<h2>A menu that lays itself out</h2>
+<p>On the menu pages, <b>Everything</b> shows the whole menu: touch a family across the top, then an item. Items added in Manager → Menu appear there by themselves, with their price; sold-out ones are grayed.</p>
+<p class="shot"><img src="shots/m92-menu-grid.png" width="560" height="315"></p>
+<p class="caption">Everything: Soup of the Day appeared as soon as it was added to the menu.</p>
+<div class="tip">To put one on any page: edit mode → <b>+ Panel → Menu (self-filling)</b>, and set its <i>Family</i> (or leave it empty for all), <i>Columns</i> and <i>Show photos</i>.</div>
+
+<h2>Your logo and pictures</h2>
+<p>Make the screens yours. In <b>Manager → Store Settings → Store logo</b> (or the setup guide's logo step), touch <b>Add Picture…</b>: the pictures on the computer show as thumbnails, newest first, from its Pictures, Documents, Downloads and Desktop folders. Touch yours. On a computer only for ViewTouch, copy pictures into the administrator's Pictures or Documents folder, or put them on a USB stick and touch <b>USB Stick</b>; <b>Browse…</b> opens any other folder. On a phone or tablet, Android's photo picker opens instead. It shows on the login page and the screen saver (and on the customer display and kiosk). Turn on <b>Print the logo on receipts</b> to print it at the top of every receipt.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m88-login-logo.png" width="270" height="152"><br><small>The login page</small></td>
+<td><img src="shots/m90-screen-saver-logo.png" width="270" height="152"><br><small>The screen saver</small></td>
+<td><img src="shots/m91-receipt-logo.png" width="140" height="128"><br><small>On a receipt</small></td>
+</tr></table>
+<p>Every button can have a picture: in edit mode select it, and set its <b>Picture</b>. The same field is on <b>+ Image</b> buttons, and on the page's <b>Background</b> (with how the picture fits). Pictures you add are kept by the store, so every screen shows them.</p>
+<p class="shot"><img src="shots/m89-picture-field.png" width="560" height="315"></p>
+<p class="caption">A button's Picture: the store's pictures, a preview, and Add Picture….</p>
+<p>Your brand's font works the same way: next to every <b>Font</b> list in edit mode, <b>Add Font…</b> takes a TTF or OTF file. Every screen gets it, and it appears in all the font lists.</p>
+<p class="shot"><img src="shots/m93-store-font.png" width="420" height="236"></p>
+<p class="caption">Quick Order in the store's own font.</p>
+
+<h2>Preview on other screens</h2>
+<p>In edit mode, <b>Preview…</b> shows the page on a phone, a tablet, a terminal and an upright kiosk, and how big its smallest button comes out on each (about 9 mm is right for a finger). Red means too small to touch reliably there: make the buttons bigger, or give phones a phone version of the page.</p>
+<p class="shot"><img src="shots/m121-preview.png" width="560" height="315"></p>
+
+<h2>Ready-made layouts, and sharing them</h2>
+<p>Don't want to move buttons one by one? In edit mode, touch <b>Layouts…</b>: the login page, the tables, the order screen, Pay and the kitchen screen each come with five arrangements, with a picture of each. Touch one to try it; <b>Undo</b> takes it back, <b>Save</b> keeps it.</p>
+<p class="shot"><img src="shots/m98-layouts.png" width="560" height="315"></p>
+<p class="caption">Five layouts for the Tables page.</p>
+<p class="shot"><img src="shots/m99-settle-layouts.png" width="560" height="214"></p>
+<p class="caption">The Pay screen's five.</p>
+<p>The same window shares designs with other stores. <b>Export This Page…</b> or <b>Export Every Page…</b> saves a file; on the other store, <b>Use a Page File for This Page…</b> makes the page you're on look like it (it keeps its name and job), <b>Add a Page from a File…</b> adds it as a new page, and <b>Replace Every Page from a File…</b> brings over a whole restaurant's screens.</p>
+<p>The files carry the pictures the pages use and your custom fonts, so the other store gets the whole look in one file. (Each store keeps its own logo.)</p>
+
+<h2>Panels and their own buttons</h2>
+<p>Select a panel (the kitchen screen, the check, the payment panel…) and the right side shows more:</p>
+<ul>
+<li><b>Settings:</b> what the panel does. Examples: a kitchen screen's station, or expediter mode; whether a check list shows open checks, bar tabs or closed ones; which report the reports panel opens on; how many columns of tables.</li>
+<li><b>Built-in buttons:</b> hide any of the panel's own buttons, or give it other words ("All Day" → "Everything"). <i>Hide all its buttons</i> hides every one.</li>
+<li><b>Position</b> (kitchen screen, choices, drawer): which built-in button comes first in its row.</li>
+<li><b>Built-in button look:</b> color, text color, pressed color, font and corners of the panel's buttons. Set it on the Theme tab to change every panel at once.</li>
+</ul>
+<h2>Colors that mean something</h2>
+<p>On the <b>Theme</b> tab, <b>Status colors</b> sets the colors of a table with a check (and with your check, the one you're on, one seated a long time), of kitchen tickets as they get older, of the expediter's ready orders, and of the sold-out badge. Brand colors, or a high-contrast set for a bright kitchen.</p>
+
+<h2>Buttons that show only sometimes, and text that changes</h2>
+<p>Every button has <b>Show only when</b> on the right: who's logged in (a manager only, say), whether a check is open, the kind of check (takeout only), the meal period (lunch only) or the kind of screen (phones only; <b>Show on</b> at the top sets the same). In edit mode you see all of them; the ones hidden right now are dimmed.</p>
+<p>A button's text can change by itself: type <b>Pay {check.balance}</b> and it says "Pay $13.53". Others: {check.total}, {check.label}, {check.guests}, {check.items}, {check.due}, {user.name}, {store.name}, {time}, {date}. The text box's hint lists them.</p>
+
+<p>Each panel button has a command, so a regular button can do the same anywhere: hide the kitchen screen's Recall and put a big red <i>Recall kitchen ticket</i> button at the bottom of the page. The commands include next station, All Day, recall, next seat, next course, fire course, done / cancel choosing, one more / fewer guest, no sale, pay out, back up.</p>
+<p class="shot"><img src="shots/m84-builtins.png" width="560" height="315"></p>
+<p class="caption">The kitchen screen with red buttons, Recall hidden and All Day renamed.</p>
+
+<!-- ======================================================================= -->
+<h1>14. Phones and tablets</h1>
+<p>Tablets show the same screens as the store. Phones get phone pages: big buttons in one column, portrait.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m60-phone-login.png" width="140" height="280"><br><small>Login</small></td>
+<td><img src="shots/m61-phone-tables.png" width="140" height="280"><br><small>Tables</small></td>
+<td><img src="shots/m62-phone-order.png" width="140" height="280"><br><small>Order</small></td>
+<td><img src="shots/m63-phone-settle.png" width="140" height="280"><br><small>Pay</small></td>
+</tr></table>
+<p><b>Tables on a phone:</b> the floor plan, with the tabs for Main, Dining Area, Bar and Patio across the top and the usual buttons below. The tables are where they stand, colored as on the big screen; touch one to open it. A wide plan is turned a quarter to fill the phone (so its tables come out bigger), with the names still upright. Spread two fingers to zoom in and drag it around. Someone whose start page is a room (Dining Area) opens on that room. Moving a check to another table (Check… → Move) picks the table on the plan too.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m132-phone-floor.jpg" width="140" height="295"><br><small>Main, turned to fit</small></td>
+<td><img src="shots/m132-phone-dining.jpg" width="140" height="295"><br><small>Dining Area</small></td>
+</tr></table>
+<h2>A phone version of a page</h2>
+<p>Phones lay every page out by themselves, in rows of big buttons. When you want a page laid out your way on phones, give it a <b>phone version</b>: in edit mode, on the page, touch <b>Phone</b> at the top (next to <b>Standard</b>), then <b>Make phone version</b>. It starts as phones show the page now, so you only move what bothers you. Menu pages stay inside the order screen's phone frame.</p>
+<p class="shot"><img src="shots/m137-phone-version.jpg" width="560" height="350"></p>
+<p class="caption">Editing Pay's phone version. Cash is shared with the standard page.</p>
+<ul>
+<li><b>One button, two places.</b> A button on the phone version is the page's button: change its words, color or what it does on either screen, and both change. Moving or sizing it changes only the screen you're on.</li>
+<li><b>Different words on phones.</b> Select the button on <b>Phone</b> and tick <b>Own words on phones</b> (or <b>Own text size on phones</b>). Change the words on the standard page later and ViewTouch reminds you the phone still says its own.</li>
+<li><b>Show on:</b> at the top of a button's settings, <b>Both</b>, <b>Standard</b> or <b>Phone</b> puts it on both kinds of screen, or only one.</li>
+<li><b>Delete on Phone</b> only takes the button off the phone; it stays on the standard page. Delete it on <b>Standard</b> and it goes from both. A copy made on the phone is the phone's alone.</li>
+<li><b>New buttons:</b> a button added to the standard page shows as <b>⚠ 1 not on phone</b>. Touch it, then <b>Put on phone</b> or <b>Leave off</b>.</li>
+<li><b>Phone version ▾</b> also lists where the phone differs from the page: own words and text sizes (with what the page says), and buttons only on the phone. <b>Show</b> selects one; <b>Same as page</b> makes it follow the page again.</li>
+<li><b>Back to automatic…</b> removes the phone version; phones lay the page out by themselves again. (Undo brings it back.)</li>
+</ul>
+<p class="shot"><img src="shots/m137-phone-differences.jpg" width="560" height="350"></p>
+<p class="caption">Phone version ▾: buttons left off the phone, and where it differs from the page.</p>
+<p>A page without a phone version can still be steered: select a button on the standard page and use <b>On phones</b> on the right. <b>A row of its own</b> makes it take the whole width; <b>Where</b> puts it first or last.</p>
+
+<p>To add a tablet or phone, install the ViewTouch Android app and pair it (chapter 1). Manager → Terminals → <i>Screen layout</i> can force phone or standard pages for a screen.</p>
+<h2>Getting the app</h2>
+<p>On the tablet or phone, download it from <code>github.com/ViewTouch/viewtouch/releases/tag/modern-packages</code>: <b>ViewTouch-android-arm64.apk</b> (most) or <b>ViewTouch-android-armv7.apk</b> (older or budget ones), open it, and allow installing it. Later versions come from the store's computer: a strip on the tablet says one is ready, and a manager touches <b>Update Now</b>. On a Stripe Reader S700 the app is installed and updated through Stripe (Apps on Devices).</p>
+<h2>A tablet only for ViewTouch</h2>
+<p>Like the main register, a tablet can be only for ViewTouch: ViewTouch is its home screen and starts when it turns on, it's pinned (no Home, Recents or notifications; the power button's menu still restarts it), there's no lock screen, and staff can't add accounts or install other apps. Set it up once, with a computer and a USB cable, on a tablet just reset to factory settings (no Google account added):</p>
+<ol>
+<li>On the tablet: Settings → About → touch <i>Build number</i> 7 times; then Settings → Developer options → <i>USB debugging</i> on.</li>
+<li>On the computer, with Android's <i>platform tools</i>: <code>adb install ViewTouch-android-arm64.apk</code></li>
+<li><code>adb shell dpm set-device-owner org.viewtouch.pos/.KioskAdmin</code></li>
+<li>Open ViewTouch: it pins itself. Pair it as usual.</li>
+</ol>
+<p><b>Manager → Close ViewTouch</b> lets go of the tablet (for a technician: Settings, Wi-Fi) until ViewTouch is opened again or the tablet restarts. To make it an ordinary tablet for good, close ViewTouch and reset it to factory settings.</p>
+<h2>The on-screen keyboard</h2>
+<p class="shot"><img src="shots/m74-on-screen-keyboard.png" width="560" height="315"></p>
+<p class="caption">On a touch screen, text fields bring up a keyboard (a number pad for numbers).</p>
+<p>Touch any text field and the keyboard pops up over the screen: a number pad for phone numbers and amounts. The screen keeps its size; if the keyboard would cover the field, the screen slides up a little so you can see what you type, and back down after. <b>⏎</b> (or <b>Done</b>) saves the field, and <b>⌨▾</b> puts the keyboard away.</p>
+<p>Phones and tablets use their own keyboard, which pops up over the screen the same way. PINs are always typed on ViewTouch's own number pad.</p>
+<p>It is on for every screen, since most touch screens have no keyboard. A screen with a real keyboard can turn it off: <b>Manager → Terminals</b> → the screen → <i>On-screen keyboard: Off</i>.</p>
+
+<!-- ======================================================================= -->
+<h1>15. Backups, safety and starting over</h1>
+<ul>
+<li><b>Every sale is saved at once</b>, so a power cut loses nothing already on the screen.</li>
+<li><b>Automatic backups:</b> when ViewTouch starts, every 24 hours and after every End of Day. The newest 30 are kept.</li>
+<li><b>A second copy</b> on a USB drive or network folder: Store Settings → <i>Also copy backups to</i>.</li>
+<li><b>Damaged database:</b> if the database is damaged, ViewTouch won't use it. It names the newest good backup and the command to restore it.</li>
+<li><b>Restore</b> (ViewTouch stopped): <code>sudo vtmodern --data-dir /var/lib/viewtouch --restore &lt;backup file&gt;</code>.</li>
+</ul>
+<h2>Encrypted backups</h2>
+<p>A USB drive with backups on it holds every sale, customer and phone number. To lock them: <b>Store Settings → Encrypt backups</b>, then a <b>Backup password</b> (8 characters or more), and Save. From then on every backup and its second copy is a <code>.vtbak</code> file that only this password opens. Each one is opened again and checked as it's made.</p>
+<ul>
+<li>Restoring on the same computer needs nothing more. On another computer, <code>--restore</code> asks for the password.</li>
+<li>Changing the password leaves older backups on the old one.</li>
+</ul>
+<div class="warn">Write the backup password down and keep it somewhere safe. Without it, nobody can open an encrypted backup, not even ViewTouch's makers.</div>
+<p>The live database on the store computer is protected by turning on disk encryption when installing the operating system (Fedora and Ubuntu: <i>Encrypt my data</i>). PINs are never stored, only scrambled (salted hashes).</p>
+<h2>Factory reset</h2>
+<p class="shot"><img src="shots/m50-factory-reset.png" width="480" height="270"></p>
+<p><b>Manager → Factory Reset…</b>, type RESET. ViewTouch backs up, deletes everything (sales, customers, staff, menu, settings, page changes) and starts again with the starter set. The backup lets you undo it with <code>--restore</code>.</p>
+<p>From the command line: <code>vtmodern --factory-reset</code>, and <code>vtmodern --demo-data</code> to fill an empty store with two months of demo history for training.</p>
+
+<!-- ======================================================================= -->
+<h1>16. The self-order kiosk</h1>
+<p>A screen where guests order on their own and pay at the counter, with no help from staff.</p>
+<h2>Turning it on</h2>
+<ul>
+<li><b>On the spot:</b> log in as a manager, touch <b>Manager → Self-Order Kiosk</b>.</li>
+<li><b>Always:</b> Manager → Terminals → the screen → <i>Screen layout</i> → <b>Self-order kiosk</b>. It starts as a kiosk every time it connects.</li>
+<li><b>From the command line:</b> <code>vtmodern --self-order</code>.</li>
+<li><b>Turning it off:</b> hold the top-left corner of the kiosk for 3 seconds, then type a manager's PIN.</li>
+</ul>
+<h2>What the guest does</h2>
+<table cellpadding="4"><tr>
+<td><img src="shots/m55-kiosk-welcome.png" width="280" height="158"><br><small>1. Touch to Order (then For Here or To Go)</small></td>
+<td><img src="shots/m57-kiosk-order.png" width="280" height="158"><br><small>2. The menu and their order</small></td>
+</tr><tr>
+<td><img src="shots/m56-kiosk-choices.png" width="280" height="158"><br><small>3. Choices (temperature, side…)</small></td>
+<td><img src="shots/m58-kiosk-name.png" width="280" height="158"><br><small>4. A name to call the order by</small></td>
+</tr></table>
+<p class="shot"><img src="shots/m59-kiosk-number.png" width="480" height="270"></p>
+<p class="caption">5. The order number, and "please pay at the counter".</p>
+<ul>
+<li><b>Their slip:</b> as the order is placed, the kiosk's receipt printer (Manager → Terminals → the kiosk → <i>Receipts and cash drawer on</i>) prints a slip: the order number in big type, their name, For here or To go, what they ordered and the total, and "Please pay at the counter". The screen tells them to take it. At the counter they show it, and the cashier finds <i>Kiosk 42</i> in Open Checks. Turn it off with Store Settings → Self-order kiosk → <i>Print an order slip</i>.</li>
+<li>Categories on the left, dishes with their photo, description and price in the middle, their order and total on the right. <b>×</b> takes an item off; <b>Start Over</b> clears everything.</li>
+<li><b>Their way:</b> for what comes on an item (a burger's lettuce, tomato, onion, pickles, mayo), the choices sheet lists <i>What's on it</i>, each with <b>No · Light · Regular · Extra · On the side</b>. Add-ons they choose (bacon, a dressing) can be Light, Extra or On the side too. The kitchen ticket says <i>No Onion</i>, <i>Side of Mayo</i>, <i>Extra Bacon</i>. In Manager → Modifier Groups, start an option with <b>*</b> for what comes on the item (<code>*Onion</code>), and turn on <i>Guests can ask for Light, Extra or On the side</i> for groups like dressings and toppings (not temperatures or sizes). On staff screens, touching something that comes on it asks No, Lite, Extra or Side.</li>
+<li>Sold-out items show SOLD OUT and can't be ordered.</li>
+<li>While nobody is ordering, the kiosk shows the dishes' photos and the customer display's messages and pictures (Store Settings), with a pulsing <b>Touch to Order</b>.</li>
+<li>If nobody touches the screen for 90 seconds in the middle of an order, it asks <b>Are you still there?</b>. With no answer it clears the order and goes back to the welcome screen (Store Settings sets the time).</li>
+</ul>
+<h2>On a tall kiosk</h2>
+<p>On a portrait screen, such as a 21.5" floor-standing kiosk, the menu fills the screen with big photo cards. The categories, the order bar and every button sit at the bottom, within reach. Touch the order bar to see the order; choices come up from the bottom.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m64-kiosk-portrait-attract.png" width="120" height="213"><br><small>Attract</small></td>
+<td><img src="shots/m65-kiosk-portrait-menu.png" width="120" height="213"><br><small>Menu</small></td>
+<td><img src="shots/m66-kiosk-portrait-choices.png" width="120" height="213"><br><small>Choices</small></td>
+<td><img src="shots/m67-kiosk-portrait-easy-reach.png" width="120" height="213"><br><small>Easy Reach</small></td>
+</tr></table>
+<p><b>Easy Reach</b> (in the order bar) brings the whole menu down to the lower 60% of the screen for guests in a wheelchair, and children. <b>Full Screen</b> puts it back. It turns off by itself for the next guest.</p>
+
+<h2>The kiosk in your colors</h2>
+<p>Store Settings has a group of <b>Self-order kiosk</b> settings: the background, card, button and text colors (written like <i>#1f8a4c</i>), the font, a bigger or smaller size, and the words on the welcome button. Turn off <b>ask For Here or To Go</b> for a place where everything is for here, and <b>ask for a name</b> to call orders by number only. <b>Easy Reach button</b> hides that button. The accent color, logo and pictures come from the customer display settings.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m85-kiosk-look.png" width="270" height="152"><br><small>A light kiosk: welcome</small></td>
+<td><img src="shots/m86-kiosk-look-menu.png" width="270" height="152"><br><small>Its menu</small></td>
+</tr></table>
+
+<h2>At the counter</h2>
+<p>The order waits in <b>Open Checks</b> as <i>Kiosk 42</i>, with the guest's name. The cashier opens it, takes the payment and closes it. Closing sends it to the kitchen. With <b>Store Settings → Self-order kiosk → <i>Send orders to the kitchen at once</i></b>, it goes to the kitchen as soon as the guest finishes instead.</p>
+<h2>What guests can order</h2>
+<p>Every menu item except modifiers (they appear as choices), items marked <b>Not on the self-order kiosk</b>, and alcohol, which never shows there. Give items a <b>Description</b> and a <b>Photo</b> in Manager → Menu Items. A photo is an image file on the store's computer (for example in <code>/var/lib/viewtouch/photos</code>). Kiosks connected over the network get it from there.</p>
+<div class="tip">Card payments at the kiosk will come with card readers. Until then, guests pay at the counter.</div>
+
+<!-- ======================================================================= -->
+<h1>17. Languages</h1>
+<p>The screens come in English, Spanish (Español), French (Français), Portuguese (Português, as spoken in Brazil) and Simplified Chinese (中文).</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m146-french-pay.jpg" width="280" height="175"><br><small>Pay, in French</small></td>
+<td><img src="shots/m146-chinese-order.jpg" width="280" height="175"><br><small>Taking an order in Chinese</small></td>
+</tr></table>
+<p>Receipt and label printers can't print Chinese characters, so a store whose language is Chinese prints its receipts, kitchen tickets, reports and labels in English. (Item names typed in Chinese print as question marks: give them an English kitchen name, chapter 11.) The screens show Chinese wherever a Chinese font is installed: on Android tablets and phones it always is; on a Linux computer, install the Noto CJK fonts.</p>
+<ul>
+<li><b>Each person's own:</b> Manager → Employees → the person → <b>Language</b>. The screen switches when they log in and back when they log out. On a store with several screens, each speaks its own user's language, messages included.</li>
+<li><b>The store's:</b> Manager → Store Settings → <b>Language</b>. Used on screens nobody is logged in to, for people without their own, and for everything guests see: the customer display, the self-order kiosk, receipts and kitchen tickets.</li>
+</ul>
+<table cellpadding="4"><tr>
+<td><img src="shots/m53-spanish-tables.png" width="280" height="158"><br><small>Rosa's floor plan</small></td>
+<td><img src="shots/m54-spanish-choices.png" width="280" height="158"><br><small>Taking an order in Spanish</small></td>
+</tr></table>
+<p>Menu items, modifier groups and their options stay as you typed them, because the check, the kitchen and receipts use those names. To translate your own buttons or any phrase, put a file <code>translations/es.json</code> (or <code>fr.json</code>, <code>pt.json</code>, <code>zh.json</code>) in ViewTouch's data folder, for example <code>{"Burger of the Day": "Hamburguesa del día"}</code>.</p>
+
+<!-- ======================================================================= -->
+<h1>18. Keep running if a computer fails</h1>
+<p>A second store computer can be the <b>standby</b>. It keeps a live copy of everything and takes over if the main computer stops.</p>
+<h2>Setting it up</h2>
+<ol>
+<li>On any store screen: Manager → Terminals → <b>Pair a Device</b>, and note the code.</li>
+<li>On the second computer: <code>vtmodern --standby auto --pair &lt;code&gt;</code> (once). From then on, <code>vtmodern --standby auto</code>, best as a service.</li>
+</ol>
+<h2>When the main computer stops</h2>
+<ul>
+<li>The screens say <i>The main server isn't answering. The standby computer takes over in a few seconds.</i></li>
+<li>After 20 seconds the standby becomes the main computer: same store, same screens, same check numbers. The screens find it and reconnect by themselves.</li>
+<li>A manager can touch <b>Take Over Now</b> on a screen and type their PIN to skip the wait.</li>
+<li>When the old main computer comes back, it sees the store running elsewhere and becomes the new standby. It first keeps its own data as a <code>…-before-standby.db</code> backup.</li>
+</ul>
+<h2>Manager → Network</h2>
+<p class="shot"><img src="shots/m52-network-standby.png" width="560" height="315"></p>
+<p class="caption">Network: this computer, the standby, the screens connected (and who is on them), and how each printer did last.</p>
+<div class="warn">If the cable between the two computers breaks while both keep running, both may take orders for a few seconds. Orders taken on the old main computer in that time are only in its <code>-before-standby</code> backup.</div>
+
+<!-- ======================================================================= -->
+<h1>19. Quick reference</h1>
+<h2>Where things are</h2>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>To…</th><th>Go to</th></tr>
+<tr><td>Rush a check</td><td>Order screen → Check… → Rush</td></tr>
+<tr><td>Mark an item sold out</td><td>Check… → Sold Out (86)…, or Manager → Sold Out</td></tr>
+<tr><td>Find a customer / use rewards</td><td>Check… → Customer…</td></tr>
+<tr><td>Sell a gift card</td><td>Check… → Sell / Check a Gift Card…</td></tr>
+<tr><td>Find an old check, reprint a receipt</td><td>Manager → Find a Check…</td></tr>
+<tr><td>Refund a closed check (any day)</td><td>Manager → Find a Check… → the check → Refund…</td></tr>
+<tr><td>Refund</td><td>Check… → Reopen a Closed Check… (manager) → void / undo payment → close</td></tr>
+<tr><td>Ask for a tip on the guest screen</td><td>Pay → Ask Guest for Tip</td></tr>
+<tr><td>Check out your cash</td><td>Log Out → My Bank…</td></tr>
+<tr><td>Seat a waiting party</td><td>Tables → Host Stand → the party → their table(s) → Seat</td></tr>
+<tr><td>Mark a table clean</td><td>Tables → Host Stand → the table → Mark Available</td></tr>
+<tr><td>Change a price</td><td>Manager → Menu → the item → Price → Save</td></tr>
+<tr><td>Add a person</td><td>Manager → Employees → + Add</td></tr>
+<tr><td>Pair a tablet</td><td>Manager → Terminals → Pair a Device</td></tr>
+<tr><td>Close the day</td><td>Manager → End of Day</td></tr>
+<tr><td>Close ViewTouch on a screen</td><td>Manager → Close ViewTouch (twice)</td></tr>
+<tr><td>Make a screen a self-order kiosk</td><td>Manager → Self-Order Kiosk</td></tr>
+<tr><td>Leave the self-order kiosk</td><td>Hold the top-left corner 3 seconds → manager PIN</td></tr>
+<tr><td>Someone's screens in Spanish</td><td>Manager → Employees → Language</td></tr>
+<tr><td>Is the standby in sync? Are printers OK?</td><td>Manager → Network…</td></tr>
+<tr><td>Encrypt backups</td><td>Manager → Settings → Encrypt backups + Backup password</td></tr>
+</table>
+<h2>Keys (with a keyboard)</h2>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<tr><th>Key</th><th>Does</th></tr>
+<tr><td>Esc</td><td>Back a page</td></tr>
+<tr><td>Home</td><td>Home page</td></tr>
+<tr><td>F1 or Ctrl+E</td><td>Edit pages (managers)</td></tr>
+<tr><td>F11 or Ctrl+Shift+F</td><td>Full screen / window (not on kiosk screens)</td></tr>
+</table>
+</body>
+</html>

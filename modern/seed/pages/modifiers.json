@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "modifiers",
+  "name": "Choose",
+  "kind": "modifier",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "role": "modifiers",
+  "zones": [
+    {
+      "id": "choices",
+      "kind": "modifierPicker",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 860
+      },
+      "shape": "rect",
+      "behavior": "none"
+    }
+  ]
+}

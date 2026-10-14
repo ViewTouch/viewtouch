@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ViewTouch as a tablet's device owner (Kiosk.kt): it pins itself; no other policies. -->
+<device-admin>
+    <uses-policies/>
+</device-admin>

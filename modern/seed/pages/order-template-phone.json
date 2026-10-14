@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "id": "order-template-phone",
+  "name": "Order Template (phone)",
+  "kind": "template",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "order-template",
+  "formFactor": "phone",
+  "contentArea": {
+    "x": 16,
+    "y": 878,
+    "w": 1048,
+    "h": 1032
+  },
+  "hiddenZones": [
+    "tab-breakfast",
+    "tab-lunch",
+    "tab-dinner"
+  ],
+  "zones": [
+    {
+      "id": "tab-categories",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-note",
+      "shared": true,
+      "rect": {
+        "x": 228,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-check",
+      "shared": true,
+      "rect": {
+        "x": 440,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-find",
+      "shared": true,
+      "rect": {
+        "x": 652,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-tables",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "order-list",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 142,
+        "w": 1048,
+        "h": 720
+      }
+    },
+    {
+      "id": "flow-no",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 1926,
+        "w": 196,
+        "h": 150
+      }
+    },
+    {
+      "id": "flow-extra",
+      "shared": true,
+      "rect": {
+        "x": 228,
+        "y": 1926,
+        "w": 196,
+        "h": 150
+      }
+    },
+    {
+      "id": "flow-lite",
+      "shared": true,
+      "rect": {
+        "x": 440,
+        "y": 1926,
+        "w": 196,
+        "h": 150
+      }
+    },
+    {
+      "id": "flow-side",
+      "shared": true,
+      "rect": {
+        "x": 652,
+        "y": 1926,
+        "w": 196,
+        "h": 150
+      }
+    },
+    {
+      "id": "flow-sub",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 1926,
+        "w": 196,
+        "h": 150
+      }
+    },
+    {
+      "id": "flow-void",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2092,
+        "w": 338,
+        "h": 172
+      }
+    },
+    {
+      "id": "flow-send",
+      "shared": true,
+      "rect": {
+        "x": 370,
+        "y": 2092,
+        "w": 338,
+        "h": 172
+      }
+    },
+    {
+      "id": "flow-pay",
+      "shared": true,
+      "rect": {
+        "x": 724,
+        "y": 2092,
+        "w": 338,
+        "h": 172
+      }
+    }
+  ]
+}

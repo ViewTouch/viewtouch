@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "sold-out",
+  "name": "Sold Out (86)",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "order",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Touch an item to mark it sold out, or back on"
+    },
+    {
+      "id": "list",
+      "kind": "soldOutList",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 816
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Back",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}

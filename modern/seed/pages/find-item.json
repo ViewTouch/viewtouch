@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "find-item",
+  "name": "Find an Item",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "results",
+      "kind": "menuGrid",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 400
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "search": true,
+        "columns": 4
+      }
+    },
+    {
+      "id": "keyboard",
+      "kind": "keyboard",
+      "rect": {
+        "x": 592,
+        "y": 516,
+        "w": 1312,
+        "h": 448
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "placeholder": "Part of a name\u2026"
+      }
+    }
+  ]
+}

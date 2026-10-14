@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "bar-display",
+  "name": "Bar Display",
+  "kind": "kitchen",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "role": "bar",
+  "permission": "public",
+  "background": {
+    "fill": "#101317"
+  },
+  "zones": [
+    {
+      "id": "tickets",
+      "kind": "kitchenDisplay",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 1080
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "station": "bar"
+      },
+      "style": {
+        "normal": {
+          "fill": "#101317",
+          "frame": "flat",
+          "shadow": 0,
+          "radius": 0
+        }
+      }
+    }
+  ]
+}

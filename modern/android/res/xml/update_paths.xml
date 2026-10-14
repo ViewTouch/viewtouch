@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What Android's installer may read: the updates ViewTouch fetched from the
+     store (net/remote_session.cpp keeps them in the app's cache, updates/). -->
+<paths>
+    <cache-path name="updates" path="updates/"/>
+</paths>

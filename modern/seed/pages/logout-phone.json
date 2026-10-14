@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "id": "logout-phone",
+  "name": "Log Out (phone)",
+  "kind": "logout",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "logout",
+  "formFactor": "phone",
+  "hiddenZones": [
+    "checklists"
+  ],
+  "zones": [
+    {
+      "id": "title",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 40,
+        "w": 1032,
+        "h": 110
+      }
+    },
+    {
+      "id": "panel",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 170,
+        "w": 1032,
+        "h": 520
+      }
+    },
+    {
+      "id": "clock-out",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 720,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "break",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 720,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "logout",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 936,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "cancel",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 936,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "tips",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 1152,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "bank",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 1152,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "practice",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 1368,
+        "w": 508,
+        "h": 200
+      }
+    },
+    {
+      "id": "message",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 1368,
+        "w": 508,
+        "h": 200
+      }
+    }
+  ]
+}

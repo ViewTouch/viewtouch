@@ -1,0 +1,2 @@
+# The account the ViewTouch services run as; its home holds the database.
+u viewtouch - "ViewTouch POS" /var/lib/viewtouch /usr/sbin/nologin

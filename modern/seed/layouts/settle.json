@@ -1,0 +1,1992 @@
+{
+  "schemaVersion": 1,
+  "page": "settle",
+  "role": "settle",
+  "variants": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "description": "The check on the left, the keypad in the middle, payment types right.",
+      "zones": [
+        {
+          "id": "payment",
+          "kind": "paymentPanel",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 900,
+            "h": 1048
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "pad",
+          "kind": "numPad",
+          "rect": {
+            "x": 932,
+            "y": 16,
+            "w": 520,
+            "h": 620
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "amount"
+          }
+        },
+        {
+          "id": "tender-cash",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 16,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Cash",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "cash"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "tender-credit",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 102,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Credit Card",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "credit"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "tender-gift",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 188,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Gift Card\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "gift-card"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-house",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 274,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "House Account",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "house"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-discount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 360,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "10% Off",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "discount"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "tender-comp",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 446,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Comp",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "comp"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "tender-staff-meal",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 532,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Staff Meal",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "staff-meal"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "receipt",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 652,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Print Receipt",
+          "actions": [
+            {
+              "type": "command",
+              "name": "printReceipt"
+            }
+          ]
+        },
+        {
+          "id": "close",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 788,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Close Check",
+          "actions": [
+            {
+              "type": "command",
+              "name": "closeCheck"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "remove-payment",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 924,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Undo Payment",
+          "actions": [
+            {
+              "type": "command",
+              "name": "removePayment"
+            }
+          ]
+        },
+        {
+          "id": "split",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 640,
+            "w": 212,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Split",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "split"
+            }
+          ]
+        },
+        {
+          "id": "drawer",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 640,
+            "w": 212,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Drawer\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "drawer"
+            }
+          ]
+        },
+        {
+          "id": "ask-tip",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 752,
+            "w": 436,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Ask Guest for Tip",
+          "actions": [
+            {
+              "type": "command",
+              "name": "askForTip"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "off-amount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 852,
+            "w": 212,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "$ Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "amountOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "off-percent",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 852,
+            "w": 212,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "% Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "percentOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "done",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 944,
+            "w": 436,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Back to Order",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "back"
+            }
+          ]
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "keypad-left",
+      "name": "Keypad left",
+      "description": "The keypad and its buttons on the left, the check in the middle.",
+      "zones": [
+        {
+          "id": "payment",
+          "kind": "paymentPanel",
+          "rect": {
+            "x": 552,
+            "y": 16,
+            "w": 900,
+            "h": 1048
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "pad",
+          "kind": "numPad",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 520,
+            "h": 620
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "amount"
+          }
+        },
+        {
+          "id": "tender-cash",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 16,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Cash",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "cash"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "tender-credit",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 102,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Credit Card",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "credit"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "tender-gift",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 188,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Gift Card\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "gift-card"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-house",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 274,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "House Account",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "house"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-discount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 360,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "10% Off",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "discount"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "tender-comp",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 446,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Comp",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "comp"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "tender-staff-meal",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 532,
+            "w": 436,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Staff Meal",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "staff-meal"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "receipt",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 652,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Print Receipt",
+          "actions": [
+            {
+              "type": "command",
+              "name": "printReceipt"
+            }
+          ]
+        },
+        {
+          "id": "close",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 788,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Close Check",
+          "actions": [
+            {
+              "type": "command",
+              "name": "closeCheck"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "remove-payment",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 924,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Undo Payment",
+          "actions": [
+            {
+              "type": "command",
+              "name": "removePayment"
+            }
+          ]
+        },
+        {
+          "id": "split",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 640,
+            "w": 212,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Split",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "split"
+            }
+          ]
+        },
+        {
+          "id": "drawer",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 640,
+            "w": 212,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Drawer\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "drawer"
+            }
+          ]
+        },
+        {
+          "id": "ask-tip",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 752,
+            "w": 436,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Ask Guest for Tip",
+          "actions": [
+            {
+              "type": "command",
+              "name": "askForTip"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "off-amount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 852,
+            "w": 212,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "$ Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "amountOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "off-percent",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 852,
+            "w": 212,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "% Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "percentOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "done",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 944,
+            "w": 436,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Back to Order",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "back"
+            }
+          ]
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "payment-types-top",
+      "name": "Payment types on top",
+      "description": "The payment types across the top.",
+      "zones": [
+        {
+          "id": "payment",
+          "kind": "paymentPanel",
+          "rect": {
+            "x": 16,
+            "y": 162,
+            "w": 900,
+            "h": 902
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "pad",
+          "kind": "numPad",
+          "rect": {
+            "x": 932,
+            "y": 162,
+            "w": 520,
+            "h": 560
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "amount"
+          }
+        },
+        {
+          "id": "tender-cash",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Cash",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "cash"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "tender-credit",
+          "kind": "button",
+          "rect": {
+            "x": 286,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Credit Card",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "credit"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "tender-gift",
+          "kind": "button",
+          "rect": {
+            "x": 556,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Gift Card\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "gift-card"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-house",
+          "kind": "button",
+          "rect": {
+            "x": 826,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "House Account",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "house"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-discount",
+          "kind": "button",
+          "rect": {
+            "x": 1096,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "10% Off",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "discount"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "tender-comp",
+          "kind": "button",
+          "rect": {
+            "x": 1366,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Comp",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "comp"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "tender-staff-meal",
+          "kind": "button",
+          "rect": {
+            "x": 1636,
+            "y": 16,
+            "w": 262,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Staff Meal",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "staff-meal"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "receipt",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 738,
+            "w": 520,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Print Receipt",
+          "actions": [
+            {
+              "type": "command",
+              "name": "printReceipt"
+            }
+          ]
+        },
+        {
+          "id": "close",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 850,
+            "w": 520,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Close Check",
+          "actions": [
+            {
+              "type": "command",
+              "name": "closeCheck"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "remove-payment",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 962,
+            "w": 520,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Undo Payment",
+          "actions": [
+            {
+              "type": "command",
+              "name": "removePayment"
+            }
+          ]
+        },
+        {
+          "id": "split",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 162,
+            "w": 212,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Split",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "split"
+            }
+          ]
+        },
+        {
+          "id": "drawer",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 162,
+            "w": 212,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Drawer\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "drawer"
+            }
+          ]
+        },
+        {
+          "id": "ask-tip",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 298,
+            "w": 436,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Ask Guest for Tip",
+          "actions": [
+            {
+              "type": "command",
+              "name": "askForTip"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "off-amount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 434,
+            "w": 212,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "$ Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "amountOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "off-percent",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 434,
+            "w": 212,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "% Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "percentOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "done",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 944,
+            "w": 436,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Back to Order",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "back"
+            }
+          ]
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "cash-and-card",
+      "name": "Cash and card first",
+      "description": "Cash and Credit Card big, the rest smaller.",
+      "zones": [
+        {
+          "id": "payment",
+          "kind": "paymentPanel",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 900,
+            "h": 1048
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "pad",
+          "kind": "numPad",
+          "rect": {
+            "x": 932,
+            "y": 16,
+            "w": 520,
+            "h": 620
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "amount"
+          }
+        },
+        {
+          "id": "tender-cash",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 16,
+            "w": 436,
+            "h": 180
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Cash",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "cash"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "tender-credit",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 206,
+            "w": 436,
+            "h": 180
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Credit Card",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "credit"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "tender-gift",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 396,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Gift Card\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "gift-card"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-house",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 396,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "House Account",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "house"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-discount",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 490,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "10% Off",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "discount"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "tender-comp",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 490,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Comp",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "comp"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "tender-staff-meal",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 584,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Staff Meal",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "staff-meal"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "receipt",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 652,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Print Receipt",
+          "actions": [
+            {
+              "type": "command",
+              "name": "printReceipt"
+            }
+          ]
+        },
+        {
+          "id": "close",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 788,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Close Check",
+          "actions": [
+            {
+              "type": "command",
+              "name": "closeCheck"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "remove-payment",
+          "kind": "button",
+          "rect": {
+            "x": 932,
+            "y": 924,
+            "w": 520,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Undo Payment",
+          "actions": [
+            {
+              "type": "command",
+              "name": "removePayment"
+            }
+          ]
+        },
+        {
+          "id": "split",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 678,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Split",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "split"
+            }
+          ]
+        },
+        {
+          "id": "drawer",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 772,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Drawer\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "drawer"
+            }
+          ]
+        },
+        {
+          "id": "ask-tip",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 772,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Ask Guest for Tip",
+          "actions": [
+            {
+              "type": "command",
+              "name": "askForTip"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "off-amount",
+          "kind": "button",
+          "rect": {
+            "x": 1692,
+            "y": 584,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "$ Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "amountOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "off-percent",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 678,
+            "w": 212,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "% Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "percentOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "done",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 944,
+            "w": 436,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Back to Order",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "back"
+            }
+          ]
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "wide-buttons",
+      "name": "Wide buttons",
+      "description": "A narrower check, wider keypad and payment buttons.",
+      "zones": [
+        {
+          "id": "payment",
+          "kind": "paymentPanel",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 700,
+            "h": 1048
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "pad",
+          "kind": "numPad",
+          "rect": {
+            "x": 732,
+            "y": 16,
+            "w": 600,
+            "h": 620
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "amount"
+          }
+        },
+        {
+          "id": "tender-cash",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 16,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Cash",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "cash"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "tender-credit",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 102,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Credit Card",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "credit"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "tender-gift",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 188,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Gift Card\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "gift-card"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-house",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 274,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "House Account",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "house"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "tender-discount",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 360,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "10% Off",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "discount"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "tender-comp",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 446,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Comp",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "comp"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "tender-staff-meal",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 532,
+            "w": 556,
+            "h": 76
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Staff Meal",
+          "actions": [
+            {
+              "type": "tender",
+              "tender": "staff-meal"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#6b46c1"
+            }
+          }
+        },
+        {
+          "id": "receipt",
+          "kind": "button",
+          "rect": {
+            "x": 732,
+            "y": 652,
+            "w": 600,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Print Receipt",
+          "actions": [
+            {
+              "type": "command",
+              "name": "printReceipt"
+            }
+          ]
+        },
+        {
+          "id": "close",
+          "kind": "button",
+          "rect": {
+            "x": 732,
+            "y": 788,
+            "w": 600,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Close Check",
+          "actions": [
+            {
+              "type": "command",
+              "name": "closeCheck"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "remove-payment",
+          "kind": "button",
+          "rect": {
+            "x": 732,
+            "y": 924,
+            "w": 600,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Undo Payment",
+          "actions": [
+            {
+              "type": "command",
+              "name": "removePayment"
+            }
+          ]
+        },
+        {
+          "id": "split",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 640,
+            "w": 272,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Split",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "split"
+            }
+          ]
+        },
+        {
+          "id": "drawer",
+          "kind": "button",
+          "rect": {
+            "x": 1632,
+            "y": 640,
+            "w": 272,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Drawer\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "drawer"
+            }
+          ]
+        },
+        {
+          "id": "ask-tip",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 752,
+            "w": 556,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Ask Guest for Tip",
+          "actions": [
+            {
+              "type": "command",
+              "name": "askForTip"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        },
+        {
+          "id": "off-amount",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 852,
+            "w": 272,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "$ Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "amountOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "off-percent",
+          "kind": "button",
+          "rect": {
+            "x": 1632,
+            "y": 852,
+            "w": 272,
+            "h": 82
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "% Off",
+          "actions": [
+            {
+              "type": "command",
+              "name": "percentOff"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "done",
+          "kind": "button",
+          "rect": {
+            "x": 1348,
+            "y": 944,
+            "w": 556,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Back to Order",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "back"
+            }
+          ]
+        }
+      ],
+      "background": {}
+    }
+  ]
+}

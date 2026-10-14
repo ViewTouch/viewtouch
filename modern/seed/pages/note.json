@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "note",
+  "name": "Note",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Note for the kitchen"
+    },
+    {
+      "id": "keyboard",
+      "kind": "keyboard",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 1312,
+        "h": 560
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "cancel",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 800,
+        "w": 420,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cancel",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "add-note",
+      "kind": "button",
+      "rect": {
+        "x": 1484,
+        "y": 800,
+        "w": 420,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Add Note",
+      "actions": [
+        {
+          "type": "command",
+          "name": "addComment"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-#!/bin/sh
-
-BUILDNUM=`date +"%Y%m%d%H%M"`
-INFILE=main/manager.cc
-OUTFILE=main/manager.sedout
-
-sed -e "s/BUILD [0-9][0-9]*/BUILD $BUILDNUM/" <$INFILE >$OUTFILE
-mv $OUTFILE $INFILE

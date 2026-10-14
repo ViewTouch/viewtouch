@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "guest-count-phone",
+  "name": "Guest Count (phone)",
+  "kind": "guestCount",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "guest-count",
+  "formFactor": "phone",
+  "zones": [
+    {
+      "id": "title",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 40,
+        "w": 1032,
+        "h": 120
+      }
+    },
+    {
+      "id": "guests",
+      "shared": true,
+      "rect": {
+        "x": 140,
+        "y": 180,
+        "w": 800,
+        "h": 220
+      }
+    },
+    {
+      "id": "pad",
+      "shared": true,
+      "rect": {
+        "x": 140,
+        "y": 420,
+        "w": 800,
+        "h": 1300
+      }
+    },
+    {
+      "id": "cancel",
+      "shared": true,
+      "rect": {
+        "x": 40,
+        "y": 1780,
+        "w": 480,
+        "h": 220
+      }
+    },
+    {
+      "id": "start",
+      "shared": true,
+      "rect": {
+        "x": 560,
+        "y": 1780,
+        "w": 480,
+        "h": 220
+      }
+    }
+  ]
+}

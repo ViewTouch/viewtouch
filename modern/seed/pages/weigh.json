@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "weigh",
+  "name": "Weigh",
+  "kind": "modifier",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "role": "weigh",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "How much does it weigh?"
+    },
+    {
+      "id": "weight",
+      "kind": "numPad",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 640,
+        "h": 700
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "mode": "weight"
+      }
+    },
+    {
+      "id": "add",
+      "kind": "button",
+      "rect": {
+        "x": 1264,
+        "y": 192,
+        "w": 640,
+        "h": 200
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Add",
+      "actions": [
+        {
+          "type": "command",
+          "name": "addWeighed"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "cancel",
+      "kind": "button",
+      "rect": {
+        "x": 1264,
+        "y": 408,
+        "w": 640,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cancel",
+      "actions": [
+        {
+          "type": "command",
+          "name": "cancelWeighing"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "hint",
+      "kind": "label",
+      "rect": {
+        "x": 1264,
+        "y": 564,
+        "w": 640,
+        "h": 200
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Type the weight from the scale: 125 is 1.25 lb.",
+      "style": {
+        "normal": {
+          "fontSize": 30,
+          "bold": false
+        }
+      }
+    }
+  ]
+}

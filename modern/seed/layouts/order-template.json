@@ -1,0 +1,2004 @@
+{
+  "schemaVersion": 1,
+  "page": "order-template",
+  "role": "",
+  "variants": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "description": "The check on the left, the buttons along the bottom.",
+      "zones": [
+        {
+          "id": "order-list",
+          "kind": "orderList",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 560,
+            "h": 948
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "flow-tables",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Tables",
+          "actions": [
+            {
+              "type": "command",
+              "name": "releaseCheck"
+            },
+            {
+              "type": "jump",
+              "mode": "replace",
+              "role": "tables"
+            }
+          ]
+        },
+        {
+          "id": "flow-no",
+          "kind": "button",
+          "rect": {
+            "x": 226,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "No",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "no"
+            }
+          ]
+        },
+        {
+          "id": "flow-extra",
+          "kind": "button",
+          "rect": {
+            "x": 436,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Extra",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "extra"
+            }
+          ]
+        },
+        {
+          "id": "flow-lite",
+          "kind": "button",
+          "rect": {
+            "x": 646,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lite",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "lite"
+            }
+          ]
+        },
+        {
+          "id": "flow-side",
+          "kind": "button",
+          "rect": {
+            "x": 856,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Side",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "side"
+            }
+          ]
+        },
+        {
+          "id": "flow-sub",
+          "kind": "button",
+          "rect": {
+            "x": 1066,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Sub",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "sub"
+            }
+          ]
+        },
+        {
+          "id": "flow-void",
+          "kind": "button",
+          "rect": {
+            "x": 1276,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "double",
+          "label": "Void",
+          "actions": [
+            {
+              "type": "command",
+              "name": "voidItem"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#b83232"
+            }
+          }
+        },
+        {
+          "id": "flow-send",
+          "kind": "button",
+          "rect": {
+            "x": 1486,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Send",
+          "actions": [
+            {
+              "type": "command",
+              "name": "sendOrder"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          },
+          "hotkey": "s"
+        },
+        {
+          "id": "flow-pay",
+          "kind": "button",
+          "rect": {
+            "x": 1696,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Pay",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "role": "settle"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          },
+          "hotkey": "p"
+        },
+        {
+          "id": "tab-breakfast",
+          "kind": "button",
+          "rect": {
+            "x": 592,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Breakfast",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-breakfast"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-lunch",
+          "kind": "button",
+          "rect": {
+            "x": 810,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lunch",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-lunch"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-dinner",
+          "kind": "button",
+          "rect": {
+            "x": 1028,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dinner",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-dinner"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-find",
+          "kind": "button",
+          "rect": {
+            "x": 1246,
+            "y": 16,
+            "w": 120,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Find",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clearText"
+            },
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "find-item"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-categories",
+          "kind": "button",
+          "rect": {
+            "x": 1374,
+            "y": 16,
+            "w": 170,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Menu",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "index"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-note",
+          "kind": "button",
+          "rect": {
+            "x": 1560,
+            "y": 16,
+            "w": 160,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Note",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "note"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-check",
+          "kind": "button",
+          "rect": {
+            "x": 1736,
+            "y": 16,
+            "w": 168,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Check\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "check-options"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "buttons-under-check",
+      "name": "Buttons under the check",
+      "description": "A shorter check with its buttons in a grid below it.",
+      "zones": [
+        {
+          "id": "order-list",
+          "kind": "orderList",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 560,
+            "h": 620
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "flow-tables",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 652,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Tables",
+          "actions": [
+            {
+              "type": "command",
+              "name": "releaseCheck"
+            },
+            {
+              "type": "jump",
+              "mode": "replace",
+              "role": "tables"
+            }
+          ]
+        },
+        {
+          "id": "flow-no",
+          "kind": "button",
+          "rect": {
+            "x": 204,
+            "y": 652,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "No",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "no"
+            }
+          ]
+        },
+        {
+          "id": "flow-extra",
+          "kind": "button",
+          "rect": {
+            "x": 392,
+            "y": 652,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Extra",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "extra"
+            }
+          ]
+        },
+        {
+          "id": "flow-lite",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 792,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lite",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "lite"
+            }
+          ]
+        },
+        {
+          "id": "flow-side",
+          "kind": "button",
+          "rect": {
+            "x": 204,
+            "y": 792,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Side",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "side"
+            }
+          ]
+        },
+        {
+          "id": "flow-sub",
+          "kind": "button",
+          "rect": {
+            "x": 392,
+            "y": 792,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Sub",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "sub"
+            }
+          ]
+        },
+        {
+          "id": "flow-void",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 932,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "double",
+          "label": "Void",
+          "actions": [
+            {
+              "type": "command",
+              "name": "voidItem"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#b83232"
+            }
+          }
+        },
+        {
+          "id": "flow-send",
+          "kind": "button",
+          "rect": {
+            "x": 204,
+            "y": 932,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Send",
+          "actions": [
+            {
+              "type": "command",
+              "name": "sendOrder"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          },
+          "hotkey": "s"
+        },
+        {
+          "id": "flow-pay",
+          "kind": "button",
+          "rect": {
+            "x": 392,
+            "y": 932,
+            "w": 180,
+            "h": 130
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Pay",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "role": "settle"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          },
+          "hotkey": "p"
+        },
+        {
+          "id": "tab-breakfast",
+          "kind": "button",
+          "rect": {
+            "x": 592,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Breakfast",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-breakfast"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-lunch",
+          "kind": "button",
+          "rect": {
+            "x": 810,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lunch",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-lunch"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-dinner",
+          "kind": "button",
+          "rect": {
+            "x": 1028,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dinner",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-dinner"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-find",
+          "kind": "button",
+          "rect": {
+            "x": 1246,
+            "y": 16,
+            "w": 120,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Find",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clearText"
+            },
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "find-item"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-categories",
+          "kind": "button",
+          "rect": {
+            "x": 1374,
+            "y": 16,
+            "w": 170,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Menu",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "index"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-note",
+          "kind": "button",
+          "rect": {
+            "x": 1560,
+            "y": 16,
+            "w": 160,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Note",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "note"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-check",
+          "kind": "button",
+          "rect": {
+            "x": 1736,
+            "y": 16,
+            "w": 168,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Check\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "check-options"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "big-send-pay",
+      "name": "Big Send and Pay",
+      "description": "Send and Pay much bigger; the rest smaller.",
+      "zones": [
+        {
+          "id": "order-list",
+          "kind": "orderList",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 560,
+            "h": 948
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "flow-tables",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Tables",
+          "actions": [
+            {
+              "type": "command",
+              "name": "releaseCheck"
+            },
+            {
+              "type": "jump",
+              "mode": "replace",
+              "role": "tables"
+            }
+          ]
+        },
+        {
+          "id": "flow-no",
+          "kind": "button",
+          "rect": {
+            "x": 184,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "No",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "no"
+            }
+          ]
+        },
+        {
+          "id": "flow-extra",
+          "kind": "button",
+          "rect": {
+            "x": 352,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Extra",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "extra"
+            }
+          ]
+        },
+        {
+          "id": "flow-lite",
+          "kind": "button",
+          "rect": {
+            "x": 520,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lite",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "lite"
+            }
+          ]
+        },
+        {
+          "id": "flow-side",
+          "kind": "button",
+          "rect": {
+            "x": 688,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Side",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "side"
+            }
+          ]
+        },
+        {
+          "id": "flow-sub",
+          "kind": "button",
+          "rect": {
+            "x": 856,
+            "y": 980,
+            "w": 160,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Sub",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "sub"
+            }
+          ]
+        },
+        {
+          "id": "flow-void",
+          "kind": "button",
+          "rect": {
+            "x": 1024,
+            "y": 980,
+            "w": 200,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "double",
+          "label": "Void",
+          "actions": [
+            {
+              "type": "command",
+              "name": "voidItem"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#b83232"
+            }
+          }
+        },
+        {
+          "id": "flow-send",
+          "kind": "button",
+          "rect": {
+            "x": 1232,
+            "y": 980,
+            "w": 330,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Send",
+          "actions": [
+            {
+              "type": "command",
+              "name": "sendOrder"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          },
+          "hotkey": "s"
+        },
+        {
+          "id": "flow-pay",
+          "kind": "button",
+          "rect": {
+            "x": 1570,
+            "y": 980,
+            "w": 334,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Pay",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "role": "settle"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          },
+          "hotkey": "p"
+        },
+        {
+          "id": "tab-breakfast",
+          "kind": "button",
+          "rect": {
+            "x": 592,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Breakfast",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-breakfast"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-lunch",
+          "kind": "button",
+          "rect": {
+            "x": 810,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lunch",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-lunch"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-dinner",
+          "kind": "button",
+          "rect": {
+            "x": 1028,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dinner",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-dinner"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-find",
+          "kind": "button",
+          "rect": {
+            "x": 1246,
+            "y": 16,
+            "w": 120,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Find",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clearText"
+            },
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "find-item"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-categories",
+          "kind": "button",
+          "rect": {
+            "x": 1374,
+            "y": 16,
+            "w": 170,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Menu",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "index"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-note",
+          "kind": "button",
+          "rect": {
+            "x": 1560,
+            "y": 16,
+            "w": 160,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Note",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "note"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-check",
+          "kind": "button",
+          "rect": {
+            "x": 1736,
+            "y": 16,
+            "w": 168,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Check\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "check-options"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "tabs-below",
+      "name": "Menus below",
+      "description": "The buttons on top, the menu tabs along the bottom.",
+      "zones": [
+        {
+          "id": "order-list",
+          "kind": "orderList",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 560,
+            "h": 948
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "flow-tables",
+          "kind": "button",
+          "rect": {
+            "x": 592,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Tables",
+          "actions": [
+            {
+              "type": "command",
+              "name": "releaseCheck"
+            },
+            {
+              "type": "jump",
+              "mode": "replace",
+              "role": "tables"
+            }
+          ]
+        },
+        {
+          "id": "flow-no",
+          "kind": "button",
+          "rect": {
+            "x": 738,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "No",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "no"
+            }
+          ]
+        },
+        {
+          "id": "flow-extra",
+          "kind": "button",
+          "rect": {
+            "x": 884,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Extra",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "extra"
+            }
+          ]
+        },
+        {
+          "id": "flow-lite",
+          "kind": "button",
+          "rect": {
+            "x": 1030,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lite",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "lite"
+            }
+          ]
+        },
+        {
+          "id": "flow-side",
+          "kind": "button",
+          "rect": {
+            "x": 1176,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Side",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "side"
+            }
+          ]
+        },
+        {
+          "id": "flow-sub",
+          "kind": "button",
+          "rect": {
+            "x": 1322,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Sub",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "sub"
+            }
+          ]
+        },
+        {
+          "id": "flow-void",
+          "kind": "button",
+          "rect": {
+            "x": 1468,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "double",
+          "label": "Void",
+          "actions": [
+            {
+              "type": "command",
+              "name": "voidItem"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#b83232"
+            }
+          }
+        },
+        {
+          "id": "flow-send",
+          "kind": "button",
+          "rect": {
+            "x": 1614,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Send",
+          "actions": [
+            {
+              "type": "command",
+              "name": "sendOrder"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          },
+          "hotkey": "s"
+        },
+        {
+          "id": "flow-pay",
+          "kind": "button",
+          "rect": {
+            "x": 1760,
+            "y": 16,
+            "w": 138,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Pay",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "role": "settle"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          },
+          "hotkey": "p"
+        },
+        {
+          "id": "tab-breakfast",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Breakfast",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-breakfast"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-lunch",
+          "kind": "button",
+          "rect": {
+            "x": 286,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lunch",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-lunch"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-dinner",
+          "kind": "button",
+          "rect": {
+            "x": 556,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dinner",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-dinner"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-find",
+          "kind": "button",
+          "rect": {
+            "x": 826,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Find",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clearText"
+            },
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "find-item"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-categories",
+          "kind": "button",
+          "rect": {
+            "x": 1096,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Menu",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "index"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-note",
+          "kind": "button",
+          "rect": {
+            "x": 1366,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Note",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "note"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-check",
+          "kind": "button",
+          "rect": {
+            "x": 1636,
+            "y": 980,
+            "w": 262,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Check\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "check-options"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fontSize": 26
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "colorful",
+      "name": "Colorful",
+      "description": "The classic arrangement, every button in its own color.",
+      "zones": [
+        {
+          "id": "order-list",
+          "kind": "orderList",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 560,
+            "h": 948
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "flow-tables",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Tables",
+          "actions": [
+            {
+              "type": "command",
+              "name": "releaseCheck"
+            },
+            {
+              "type": "jump",
+              "mode": "replace",
+              "role": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          }
+        },
+        {
+          "id": "flow-no",
+          "kind": "button",
+          "rect": {
+            "x": 226,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "No",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "no"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "flow-extra",
+          "kind": "button",
+          "rect": {
+            "x": 436,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Extra",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "extra"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "flow-lite",
+          "kind": "button",
+          "rect": {
+            "x": 646,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lite",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "lite"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "flow-side",
+          "kind": "button",
+          "rect": {
+            "x": 856,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Side",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "side"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "flow-sub",
+          "kind": "button",
+          "rect": {
+            "x": 1066,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Sub",
+          "actions": [
+            {
+              "type": "qualifier",
+              "qualifier": "sub"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#a86a12"
+            }
+          }
+        },
+        {
+          "id": "flow-void",
+          "kind": "button",
+          "rect": {
+            "x": 1276,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "double",
+          "label": "Void",
+          "actions": [
+            {
+              "type": "command",
+              "name": "voidItem"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#b83232"
+            }
+          }
+        },
+        {
+          "id": "flow-send",
+          "kind": "button",
+          "rect": {
+            "x": 1486,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Send",
+          "actions": [
+            {
+              "type": "command",
+              "name": "sendOrder"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          },
+          "hotkey": "s"
+        },
+        {
+          "id": "flow-pay",
+          "kind": "button",
+          "rect": {
+            "x": 1696,
+            "y": 980,
+            "w": 202,
+            "h": 84
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Pay",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "role": "settle"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2b62b0"
+            }
+          },
+          "hotkey": "p"
+        },
+        {
+          "id": "tab-breakfast",
+          "kind": "button",
+          "rect": {
+            "x": 592,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Breakfast",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-breakfast"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-lunch",
+          "kind": "button",
+          "rect": {
+            "x": 810,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Lunch",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-lunch"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-dinner",
+          "kind": "button",
+          "rect": {
+            "x": 1028,
+            "y": 16,
+            "w": 210,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dinner",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "index-dinner"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-find",
+          "kind": "button",
+          "rect": {
+            "x": 1246,
+            "y": 16,
+            "w": 120,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Find",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clearText"
+            },
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "find-item"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-categories",
+          "kind": "button",
+          "rect": {
+            "x": 1374,
+            "y": 16,
+            "w": 170,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "\u2039 Menu",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "index"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-note",
+          "kind": "button",
+          "rect": {
+            "x": 1560,
+            "y": 16,
+            "w": 160,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Note",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "note"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        },
+        {
+          "id": "tab-check",
+          "kind": "button",
+          "rect": {
+            "x": 1736,
+            "y": 16,
+            "w": 168,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Check\u2026",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "check-options"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73",
+              "fontSize": 26
+            }
+          }
+        }
+      ],
+      "background": {}
+    }
+  ]
+}

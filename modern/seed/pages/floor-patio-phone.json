@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "id": "floor-patio-phone",
+  "name": "Patio (phone)",
+  "kind": "tables",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "floor-patio",
+  "formFactor": "phone",
+  "background": {
+    "fill": "#2a2118"
+  },
+  "hiddenZones": [
+    "table-p1",
+    "table-p2",
+    "table-p3",
+    "table-p4",
+    "plan-main",
+    "plan-dining",
+    "plan-bar",
+    "plan-patio",
+    "tabs",
+    "status",
+    "switch"
+  ],
+  "zones": [
+    {
+      "id": "tables",
+      "kind": "floorPlan",
+      "rect": {
+        "x": 24,
+        "y": 24,
+        "w": 1032,
+        "h": 1600
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "tabs": true,
+        "plan": "floor-patio"
+      }
+    },
+    {
+      "id": "quick",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "checks",
+      "shared": true,
+      "rect": {
+        "x": 373,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "takeout",
+      "shared": true,
+      "rect": {
+        "x": 722,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "delivery",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "deliveries",
+      "shared": true,
+      "rect": {
+        "x": 373,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "host",
+      "shared": true,
+      "rect": {
+        "x": 722,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "manager",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "logout",
+      "shared": true,
+      "rect": {
+        "x": 373,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      }
+    },
+    {
+      "id": "bar-tabs",
+      "kind": "button",
+      "rect": {
+        "x": 722,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar Tabs",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "tabs"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    }
+  ]
+}

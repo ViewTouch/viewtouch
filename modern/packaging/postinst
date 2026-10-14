@@ -1,0 +1,12 @@
+#!/bin/sh
+# After install or upgrade (DEB: "configure"; RPM: 1 = install, 2 = upgrade).
+set -e
+if command -v systemd-sysusers >/dev/null 2>&1; then
+    systemd-sysusers viewtouch.conf || true
+fi
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload || true
+    # An upgrade restarts whatever was running; a fresh install starts nothing.
+    systemctl try-restart vtmodern.service vtmodern-kiosk.service || true
+fi
+exit 0

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "customer-phone",
+  "name": "Customer (phone)",
+  "kind": "custom",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "customer",
+  "formFactor": "phone",
+  "hiddenZones": [
+    "later"
+  ],
+  "zones": [
+    {
+      "id": "title",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 24,
+        "w": 1032,
+        "h": 100
+      }
+    },
+    {
+      "id": "customer",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 140,
+        "w": 1032,
+        "h": 1860
+      }
+    },
+    {
+      "id": "cancel",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 2030,
+        "w": 508,
+        "h": 220
+      }
+    },
+    {
+      "id": "menu",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 2030,
+        "w": 508,
+        "h": 220
+      },
+      "own": {
+        "label": "Menu ›"
+      }
+    }
+  ]
+}

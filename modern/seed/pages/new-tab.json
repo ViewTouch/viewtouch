@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "id": "new-tab",
+  "name": "New Tab",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "order",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Name on the tab"
+    },
+    {
+      "id": "keyboard",
+      "kind": "keyboard",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 760
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "placeholder": "Mike, red jacket\u2026"
+      }
+    },
+    {
+      "id": "cancel",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cancel",
+      "actions": [
+        {
+          "type": "command",
+          "name": "clearText"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "open-hold",
+      "kind": "button",
+      "rect": {
+        "x": 960,
+        "y": 944,
+        "w": 496,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Open Tab & Hold Card",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openTab"
+        },
+        {
+          "type": "command",
+          "name": "holdCard"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "open",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Open Tab",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openTab"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    }
+  ]
+}

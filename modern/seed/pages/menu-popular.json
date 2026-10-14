@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "menu-popular",
+  "name": "Popular",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Popular today"
+    },
+    {
+      "id": "popular",
+      "kind": "menuGrid",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 1312,
+        "h": 772
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "popular": true,
+        "columns": 4
+      }
+    }
+  ]
+}

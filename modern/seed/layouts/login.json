@@ -1,0 +1,857 @@
+{
+  "schemaVersion": 1,
+  "page": "login",
+  "role": "login",
+  "variants": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "description": "The keypad in the middle, the logo to its left.",
+      "zones": [
+        {
+          "id": "title",
+          "kind": "label",
+          "rect": {
+            "x": 460,
+            "y": 40,
+            "w": 1000,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "{store.name}",
+          "style": {
+            "normal": {
+              "fontSize": 72
+            }
+          }
+        },
+        {
+          "id": "logo",
+          "kind": "image",
+          "rect": {
+            "x": 60,
+            "y": 260,
+            "w": 560,
+            "h": 420
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "imagePath": "logo:",
+          "style": {
+            "normal": {
+              "fill": "transparent",
+              "frame": "none",
+              "shadow": 0
+            }
+          }
+        },
+        {
+          "id": "clock",
+          "kind": "clock",
+          "rect": {
+            "x": 660,
+            "y": 160,
+            "w": 600,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "login-pad",
+          "kind": "loginPad",
+          "rect": {
+            "x": 660,
+            "y": 260,
+            "w": 600,
+            "h": 600
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "clock-in",
+          "kind": "button",
+          "rect": {
+            "x": 300,
+            "y": 880,
+            "w": 344,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockIn"
+            }
+          ]
+        },
+        {
+          "id": "start",
+          "kind": "button",
+          "rect": {
+            "x": 660,
+            "y": 880,
+            "w": 600,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Log In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "login"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "clock-out",
+          "kind": "button",
+          "rect": {
+            "x": 1276,
+            "y": 880,
+            "w": 344,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock Out",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockOut"
+            }
+          ]
+        },
+        {
+          "id": "hint",
+          "kind": "comment",
+          "rect": {
+            "x": 1300,
+            "y": 260,
+            "w": 560,
+            "h": 200
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+        },
+        {
+          "id": "time-clock",
+          "kind": "button",
+          "rect": {
+            "x": 1300,
+            "y": 480,
+            "w": 560,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Time Clock & My Schedule",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "time-clock"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "logo-left",
+      "name": "Logo first",
+      "description": "A big logo on the left half, the keypad on the right.",
+      "zones": [
+        {
+          "id": "title",
+          "kind": "label",
+          "rect": {
+            "x": 80,
+            "y": 40,
+            "w": 800,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "{store.name}",
+          "style": {
+            "normal": {
+              "fontSize": 72
+            }
+          }
+        },
+        {
+          "id": "logo",
+          "kind": "image",
+          "rect": {
+            "x": 80,
+            "y": 170,
+            "w": 800,
+            "h": 680
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "imagePath": "logo:",
+          "style": {
+            "normal": {
+              "fill": "transparent",
+              "frame": "none",
+              "shadow": 0
+            }
+          }
+        },
+        {
+          "id": "clock",
+          "kind": "clock",
+          "rect": {
+            "x": 1080,
+            "y": 40,
+            "w": 680,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "login-pad",
+          "kind": "loginPad",
+          "rect": {
+            "x": 1080,
+            "y": 140,
+            "w": 680,
+            "h": 640
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "clock-in",
+          "kind": "button",
+          "rect": {
+            "x": 1080,
+            "y": 936,
+            "w": 330,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockIn"
+            }
+          ]
+        },
+        {
+          "id": "start",
+          "kind": "button",
+          "rect": {
+            "x": 1080,
+            "y": 800,
+            "w": 680,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Log In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "login"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "clock-out",
+          "kind": "button",
+          "rect": {
+            "x": 1430,
+            "y": 936,
+            "w": 330,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock Out",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockOut"
+            }
+          ]
+        },
+        {
+          "id": "hint",
+          "kind": "comment",
+          "rect": {
+            "x": 80,
+            "y": 880,
+            "w": 800,
+            "h": 70
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+        },
+        {
+          "id": "time-clock",
+          "kind": "button",
+          "rect": {
+            "x": 80,
+            "y": 960,
+            "w": 800,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Time Clock & My Schedule",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "time-clock"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "keypad-left",
+      "name": "Keypad left",
+      "description": "The keypad on the left, the logo and clock on the right.",
+      "zones": [
+        {
+          "id": "title",
+          "kind": "label",
+          "rect": {
+            "x": 1000,
+            "y": 40,
+            "w": 840,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "{store.name}",
+          "style": {
+            "normal": {
+              "fontSize": 72
+            }
+          }
+        },
+        {
+          "id": "logo",
+          "kind": "image",
+          "rect": {
+            "x": 1000,
+            "y": 170,
+            "w": 840,
+            "h": 580
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "imagePath": "logo:",
+          "style": {
+            "normal": {
+              "fill": "transparent",
+              "frame": "none",
+              "shadow": 0
+            }
+          }
+        },
+        {
+          "id": "clock",
+          "kind": "clock",
+          "rect": {
+            "x": 1000,
+            "y": 770,
+            "w": 840,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "login-pad",
+          "kind": "loginPad",
+          "rect": {
+            "x": 160,
+            "y": 140,
+            "w": 680,
+            "h": 640
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "clock-in",
+          "kind": "button",
+          "rect": {
+            "x": 160,
+            "y": 936,
+            "w": 330,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockIn"
+            }
+          ]
+        },
+        {
+          "id": "start",
+          "kind": "button",
+          "rect": {
+            "x": 160,
+            "y": 800,
+            "w": 680,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Log In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "login"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "clock-out",
+          "kind": "button",
+          "rect": {
+            "x": 510,
+            "y": 936,
+            "w": 330,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock Out",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockOut"
+            }
+          ]
+        },
+        {
+          "id": "hint",
+          "kind": "comment",
+          "rect": {
+            "x": 1000,
+            "y": 880,
+            "w": 840,
+            "h": 70
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+        },
+        {
+          "id": "time-clock",
+          "kind": "button",
+          "rect": {
+            "x": 1000,
+            "y": 960,
+            "w": 840,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Time Clock & My Schedule",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "time-clock"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "big-keypad",
+      "name": "Big keypad",
+      "description": "Big keys and buttons, for gloves or a screen farther away.",
+      "zones": [
+        {
+          "id": "title",
+          "kind": "label",
+          "rect": {
+            "x": 400,
+            "y": 20,
+            "w": 1120,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "{store.name}",
+          "style": {
+            "normal": {
+              "fontSize": 72
+            }
+          }
+        },
+        {
+          "id": "logo",
+          "kind": "image",
+          "rect": {
+            "x": 40,
+            "y": 20,
+            "w": 340,
+            "h": 150
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "imagePath": "logo:",
+          "style": {
+            "normal": {
+              "fill": "transparent",
+              "frame": "none",
+              "shadow": 0
+            }
+          }
+        },
+        {
+          "id": "clock",
+          "kind": "clock",
+          "rect": {
+            "x": 660,
+            "y": 120,
+            "w": 600,
+            "h": 60
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "login-pad",
+          "kind": "loginPad",
+          "rect": {
+            "x": 460,
+            "y": 190,
+            "w": 1000,
+            "h": 690
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "clock-in",
+          "kind": "button",
+          "rect": {
+            "x": 160,
+            "y": 900,
+            "w": 480,
+            "h": 150
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockIn"
+            }
+          ]
+        },
+        {
+          "id": "start",
+          "kind": "button",
+          "rect": {
+            "x": 680,
+            "y": 900,
+            "w": 560,
+            "h": 150
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Log In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "login"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "clock-out",
+          "kind": "button",
+          "rect": {
+            "x": 1280,
+            "y": 900,
+            "w": 480,
+            "h": 150
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock Out",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockOut"
+            }
+          ]
+        },
+        {
+          "id": "hint",
+          "kind": "comment",
+          "rect": {
+            "x": 1500,
+            "y": 190,
+            "w": 400,
+            "h": 220
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+        },
+        {
+          "id": "time-clock",
+          "kind": "button",
+          "rect": {
+            "x": 1500,
+            "y": 430,
+            "w": 400,
+            "h": 120
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Time Clock & My Schedule",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "time-clock"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        }
+      ],
+      "background": {}
+    },
+    {
+      "id": "compact",
+      "name": "Compact",
+      "description": "A small keypad in the center, lots of space around it.",
+      "zones": [
+        {
+          "id": "title",
+          "kind": "label",
+          "rect": {
+            "x": 560,
+            "y": 120,
+            "w": 800,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "{store.name}",
+          "style": {
+            "normal": {
+              "fontSize": 72
+            }
+          }
+        },
+        {
+          "id": "logo",
+          "kind": "image",
+          "rect": {
+            "x": 810,
+            "y": 10,
+            "w": 300,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "imagePath": "logo:",
+          "style": {
+            "normal": {
+              "fill": "transparent",
+              "frame": "none",
+              "shadow": 0
+            }
+          }
+        },
+        {
+          "id": "clock",
+          "kind": "clock",
+          "rect": {
+            "x": 660,
+            "y": 220,
+            "w": 600,
+            "h": 70
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "login-pad",
+          "kind": "loginPad",
+          "rect": {
+            "x": 760,
+            "y": 310,
+            "w": 400,
+            "h": 430
+          },
+          "shape": "rect",
+          "behavior": "none"
+        },
+        {
+          "id": "clock-in",
+          "kind": "button",
+          "rect": {
+            "x": 760,
+            "y": 890,
+            "w": 195,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockIn"
+            }
+          ]
+        },
+        {
+          "id": "start",
+          "kind": "button",
+          "rect": {
+            "x": 760,
+            "y": 760,
+            "w": 400,
+            "h": 110
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Log In",
+          "actions": [
+            {
+              "type": "command",
+              "name": "login"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f8a4c"
+            }
+          }
+        },
+        {
+          "id": "clock-out",
+          "kind": "button",
+          "rect": {
+            "x": 965,
+            "y": 890,
+            "w": 195,
+            "h": 90
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Clock Out",
+          "actions": [
+            {
+              "type": "command",
+              "name": "clockOut"
+            }
+          ]
+        },
+        {
+          "id": "hint",
+          "kind": "comment",
+          "rect": {
+            "x": 1400,
+            "y": 320,
+            "w": 480,
+            "h": 200
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+        },
+        {
+          "id": "time-clock",
+          "kind": "button",
+          "rect": {
+            "x": 1400,
+            "y": 540,
+            "w": 480,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Time Clock & My Schedule",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "push",
+              "page": "time-clock"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#1f6f73"
+            }
+          }
+        }
+      ],
+      "background": {}
+    }
+  ]
+}

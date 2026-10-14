@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "id": "library",
+  "name": "Button Library",
+  "kind": "library",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "background": {
+    "texture": "graymarble",
+    "fill": "#555a60"
+  },
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 40,
+        "y": 24,
+        "w": 1840,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Button Library \u2014 copy these onto any page"
+    },
+    {
+      "id": "lib-send",
+      "kind": "button",
+      "rect": {
+        "x": 40,
+        "y": 140,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Send",
+      "actions": [
+        {
+          "type": "command",
+          "name": "sendOrder"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "lib-void",
+      "kind": "button",
+      "rect": {
+        "x": 360,
+        "y": 140,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "double",
+      "label": "Void",
+      "actions": [
+        {
+          "type": "command",
+          "name": "voidItem"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "lib-pay",
+      "kind": "button",
+      "rect": {
+        "x": 680,
+        "y": 140,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Pay",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "settle"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
+      "id": "lib-close",
+      "kind": "button",
+      "rect": {
+        "x": 1320,
+        "y": 140,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "double",
+      "label": "Close ViewTouch",
+      "actions": [
+        {
+          "type": "command",
+          "name": "closeApp"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "lib-toggle",
+      "kind": "button",
+      "rect": {
+        "x": 1000,
+        "y": 140,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "toggle",
+      "label": "Toggle"
+    },
+    {
+      "id": "lib-diamond",
+      "kind": "button",
+      "rect": {
+        "x": 40,
+        "y": 300,
+        "w": 240,
+        "h": 240
+      },
+      "shape": "diamond",
+      "behavior": "blink",
+      "label": "Diamond"
+    },
+    {
+      "id": "lib-hexagon",
+      "kind": "button",
+      "rect": {
+        "x": 320,
+        "y": 300,
+        "w": 300,
+        "h": 240
+      },
+      "shape": "hexagon",
+      "behavior": "blink",
+      "label": "Hexagon"
+    },
+    {
+      "id": "lib-octagon",
+      "kind": "button",
+      "rect": {
+        "x": 660,
+        "y": 300,
+        "w": 240,
+        "h": 240
+      },
+      "shape": "octagon",
+      "behavior": "blink",
+      "label": "Octagon"
+    },
+    {
+      "id": "lib-circle",
+      "kind": "button",
+      "rect": {
+        "x": 940,
+        "y": 300,
+        "w": 240,
+        "h": 240
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Circle"
+    },
+    {
+      "id": "lib-sand",
+      "kind": "button",
+      "rect": {
+        "x": 40,
+        "y": 580,
+        "w": 300,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Sand",
+      "style": {
+        "normal": {
+          "texture": "sand",
+          "fill": "#ae9877",
+          "textColor": "#1b1b1b"
+        },
+        "selected": {
+          "texture": "litsand",
+          "fill": "#d9c49a"
+        }
+      }
+    },
+    {
+      "id": "lib-marble",
+      "kind": "button",
+      "rect": {
+        "x": 360,
+        "y": 580,
+        "w": 300,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Marble",
+      "style": {
+        "normal": {
+          "texture": "greenmarble",
+          "fill": "#3a5a40"
+        }
+      }
+    },
+    {
+      "id": "lib-wood",
+      "kind": "button",
+      "rect": {
+        "x": 680,
+        "y": 580,
+        "w": 300,
+        "h": 140
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Wood",
+      "style": {
+        "normal": {
+          "texture": "darkwood",
+          "fill": "#5a3a22"
+        }
+      }
+    },
+    {
+      "id": "lib-parchment",
+      "kind": "button",
+      "rect": {
+        "x": 1000,
+        "y": 580,
+        "w": 300,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Parchment",
+      "style": {
+        "normal": {
+          "texture": "parchment",
+          "fill": "#d8c8a0",
+          "textColor": "#2b2b2b",
+          "textStyle": "embossed"
+        }
+      }
+    },
+    {
+      "id": "lib-disabled",
+      "kind": "button",
+      "rect": {
+        "x": 1320,
+        "y": 580,
+        "w": 300,
+        "h": 140
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Disabled",
+      "enabled": false
+    },
+    {
+      "id": "lib-status",
+      "kind": "statusBar",
+      "rect": {
+        "x": 40,
+        "y": 780,
+        "w": 1840,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none"
+    }
+  ]
+}

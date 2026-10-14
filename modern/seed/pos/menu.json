@@ -1,0 +1,697 @@
+[
+  {
+    "id": "classic-burger",
+    "name": "Classic Burger",
+    "price": 11.5,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "101",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "toppings"
+    ],
+    "periodPrices": {
+      "dinner": 12.5
+    },
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "lettuce",
+        "qty": 0.5
+      }
+    ]
+  },
+  {
+    "id": "cheeseburger",
+    "name": "Cheeseburger",
+    "price": 12.25,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "102",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "toppings"
+    ],
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "cheese",
+        "qty": 2
+      },
+      {
+        "ingredient": "lettuce",
+        "qty": 0.5
+      }
+    ]
+  },
+  {
+    "id": "bacon-burger",
+    "name": "Bacon Burger",
+    "price": 13.5,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "103",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "toppings"
+    ],
+    "periodPrices": {
+      "dinner": 14.5
+    },
+    "kitchenName": "BCN BGR",
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "cheese",
+        "qty": 1
+      },
+      {
+        "ingredient": "bacon",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "mushroom-swiss",
+    "name": "Mushroom Swiss",
+    "price": 13.25,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "104",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "toppings"
+    ],
+    "kitchenName": "MUSH SWS",
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "swiss",
+        "qty": 2
+      },
+      {
+        "ingredient": "mushrooms",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "veggie-burger",
+    "name": "Veggie Burger",
+    "price": 12.0,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "105",
+    "modifierGroups": [
+      "side",
+      "toppings"
+    ],
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "veggie-patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "lettuce",
+        "qty": 0.5
+      }
+    ]
+  },
+  {
+    "id": "kids-burger",
+    "name": "Kids Burger",
+    "price": 7.5,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "106",
+    "modifierGroups": [
+      "kids-side",
+      "kids-drink"
+    ],
+    "kitchenColor": "blue",
+    "kitchenName": "KIDS BGR",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "id": "burger-of-the-day",
+    "name": "Burger of the Day",
+    "price": 14.0,
+    "family": "burgers",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "107",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "toppings"
+    ],
+    "kitchenName": "BOTD",
+    "kitchenColor": "orange",
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "bacon",
+        "qty": 1
+      },
+      {
+        "ingredient": "cheese",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "id": "house-salad",
+    "name": "House Salad",
+    "price": 8.5,
+    "family": "salads",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "201",
+    "modifierGroups": [
+      "dressing",
+      "salad-protein"
+    ],
+    "substitute": true,
+    "substitutePrice": 3.0,
+    "station": "cold",
+    "recipe": [
+      {
+        "ingredient": "lettuce",
+        "qty": 4
+      }
+    ]
+  },
+  {
+    "id": "caesar",
+    "name": "Caesar",
+    "price": 9.75,
+    "family": "salads",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "202",
+    "modifierGroups": [
+      "salad-protein"
+    ],
+    "substitute": true,
+    "substitutePrice": 3.5,
+    "station": "cold",
+    "recipe": [
+      {
+        "ingredient": "romaine",
+        "qty": 5
+      }
+    ]
+  },
+  {
+    "id": "cobb",
+    "name": "Cobb",
+    "price": 12.5,
+    "family": "salads",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "203",
+    "modifierGroups": [
+      "salad-protein"
+    ],
+    "station": "cold",
+    "recipe": [
+      {
+        "ingredient": "lettuce",
+        "qty": 4
+      },
+      {
+        "ingredient": "chicken",
+        "qty": 1
+      },
+      {
+        "ingredient": "bacon",
+        "qty": 2
+      },
+      {
+        "ingredient": "eggs",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "id": "greek",
+    "name": "Greek",
+    "price": 10.25,
+    "family": "salads",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "204",
+    "modifierGroups": [
+      "dressing",
+      "salad-protein"
+    ],
+    "station": "cold",
+    "recipe": [
+      {
+        "ingredient": "lettuce",
+        "qty": 4
+      }
+    ]
+  },
+  {
+    "id": "coffee",
+    "name": "Coffee",
+    "price": 2.75,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "301",
+    "modifierGroups": [
+      "coffee-extras"
+    ],
+    "recipe": [
+      {
+        "ingredient": "coffee-beans",
+        "qty": 0.5
+      }
+    ]
+  },
+  {
+    "id": "tea",
+    "name": "Tea",
+    "price": 2.5,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "302",
+    "modifierGroups": [
+      "hot-or-iced"
+    ]
+  },
+  {
+    "id": "soda",
+    "name": "Soda",
+    "price": 2.95,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "303",
+    "modifierGroups": [
+      "drink-size"
+    ]
+  },
+  {
+    "id": "juice",
+    "name": "Juice",
+    "price": 3.5,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "304",
+    "modifierGroups": [
+      "drink-size"
+    ]
+  },
+  {
+    "id": "water",
+    "name": "Water",
+    "price": 0.0,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "305",
+    "kitchenHide": true
+  },
+  {
+    "id": "lemonade",
+    "name": "Lemonade",
+    "price": 3.25,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "306",
+    "modifierGroups": [
+      "drink-size"
+    ]
+  },
+  {
+    "id": "draft-beer",
+    "name": "Draft Beer",
+    "price": 6.0,
+    "family": "drinks",
+    "taxClass": "alcohol",
+    "printer": "bar",
+    "number": "307",
+    "modifierGroups": [
+      "draft"
+    ],
+    "noStaffDiscount": true
+  },
+  {
+    "id": "house-wine",
+    "name": "House Wine",
+    "price": 8.0,
+    "family": "drinks",
+    "taxClass": "alcohol",
+    "printer": "bar",
+    "number": "308",
+    "modifierGroups": [
+      "wine",
+      "wine-pour"
+    ],
+    "noStaffDiscount": true,
+    "periodPrices": {
+      "dinner": 9.0
+    }
+  },
+  {
+    "id": "two-eggs",
+    "name": "Two Eggs",
+    "price": 8.95,
+    "family": "breakfast",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "401",
+    "modifierGroups": [
+      "eggs",
+      "toast",
+      "breakfast-add-ons"
+    ],
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "eggs",
+        "qty": 2
+      },
+      {
+        "ingredient": "bread",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "pancakes",
+    "name": "Pancakes",
+    "price": 9.5,
+    "family": "breakfast",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "402",
+    "modifierGroups": [
+      "syrup",
+      "breakfast-add-ons"
+    ],
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "batter",
+        "qty": 8
+      }
+    ]
+  },
+  {
+    "id": "french-toast",
+    "name": "French Toast",
+    "price": 9.75,
+    "family": "breakfast",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "403",
+    "modifierGroups": [
+      "syrup",
+      "breakfast-add-ons"
+    ],
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "bread",
+        "qty": 3
+      },
+      {
+        "ingredient": "eggs",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "id": "omelette",
+    "name": "Omelette",
+    "price": 11.25,
+    "family": "breakfast",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "404",
+    "modifierGroups": [
+      "omelette-fillings",
+      "toast",
+      "breakfast-add-ons"
+    ],
+    "station": "grill",
+    "recipe": [
+      {
+        "ingredient": "eggs",
+        "qty": 3
+      },
+      {
+        "ingredient": "bread",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "rare",
+    "name": "Rare",
+    "price": 0.0,
+    "family": "temperature",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "R"
+  },
+  {
+    "id": "medium-rare",
+    "name": "Medium Rare",
+    "price": 0.0,
+    "family": "temperature",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "MR"
+  },
+  {
+    "id": "medium",
+    "name": "Medium",
+    "price": 0.0,
+    "family": "temperature",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "M"
+  },
+  {
+    "id": "medium-well",
+    "name": "Medium Well",
+    "price": 0.0,
+    "family": "temperature",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "MW"
+  },
+  {
+    "id": "well-done",
+    "name": "Well Done",
+    "price": 0.0,
+    "family": "temperature",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "WD"
+  },
+  {
+    "id": "fries",
+    "name": "Fries",
+    "price": 0.0,
+    "family": "sides",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "station": "fryer",
+    "recipe": [
+      {
+        "ingredient": "potatoes",
+        "qty": 6
+      }
+    ]
+  },
+  {
+    "id": "side-salad",
+    "name": "Side Salad",
+    "price": 0.0,
+    "family": "sides",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "station": "cold"
+  },
+  {
+    "id": "onion-rings",
+    "name": "Onion Rings",
+    "price": 1.0,
+    "family": "sides",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "station": "fryer",
+    "recipe": [
+      {
+        "ingredient": "onions",
+        "qty": 6
+      }
+    ]
+  },
+  {
+    "id": "sweet-potato-fries",
+    "name": "Sweet Potato Fries",
+    "price": 1.5,
+    "family": "sides",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenName": "SWT FRY",
+    "station": "fryer",
+    "recipe": [
+      {
+        "ingredient": "potatoes",
+        "qty": 6
+      }
+    ]
+  },
+  {
+    "id": "no-side",
+    "name": "No Side",
+    "price": 0.0,
+    "family": "sides",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifier": true,
+    "kitchenHide": true
+  },
+  {
+    "id": "wine-dinner-ticket",
+    "name": "Wine Dinner Ticket",
+    "price": 65.0,
+    "family": "events",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "ticketCapacity": 40,
+    "kitchenHide": true,
+    "description": "Five courses, five wines. Friday at 7."
+  },
+  {
+    "id": "smoked-brisket",
+    "name": "Smoked Brisket",
+    "price": 22.0,
+    "family": "plates",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "byWeight": true,
+    "weightUnit": "lb"
+  },
+  {
+    "id": "burger-combo",
+    "name": "Burger Combo",
+    "price": 16.95,
+    "family": "combos",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "modifierGroups": [
+      "temperature",
+      "side",
+      "combo-drink"
+    ],
+    "description": "Classic burger, a side and a drink",
+    "station": "grill",
+    "kitchenName": "COMBO BGR",
+    "kitchenColor": "orange",
+    "recipe": [
+      {
+        "ingredient": "bun",
+        "qty": 1
+      },
+      {
+        "ingredient": "patty",
+        "qty": 1
+      },
+      {
+        "ingredient": "lettuce",
+        "qty": 0.5
+      }
+    ]
+  }
+]

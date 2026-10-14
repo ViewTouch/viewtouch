@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "items-salads",
+  "name": "Salads",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Salads"
+    },
+    {
+      "id": "item-1",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "hexagon",
+      "behavior": "blink",
+      "label": "House Salad",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "house-salad"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "item-2",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "hexagon",
+      "behavior": "blink",
+      "label": "Caesar",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "caesar"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "item-3",
+      "kind": "button",
+      "rect": {
+        "x": 1256,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "hexagon",
+      "behavior": "blink",
+      "label": "Cobb",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "cobb"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "item-4",
+      "kind": "button",
+      "rect": {
+        "x": 1588,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "hexagon",
+      "behavior": "blink",
+      "label": "Greek",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "greek"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    }
+  ]
+}

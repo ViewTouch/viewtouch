@@ -1,0 +1,45 @@
+# Packages of the new Qt ViewTouch (modern/) for Fedora, Debian / Raspberry
+# Pi OS and Ubuntu, on x86_64 and aarch64. Run it from the Actions tab, or
+# push a modern-v* tag. The packages are attached to the run as artifacts.
+name: Modern packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'modern-v*'
+
+jobs:
+  package:
+    name: ${{ matrix.distro }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.image }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { distro: fedora, image: 'fedora:44',      arch: x86_64,  runner: ubuntu-24.04 }
+          - { distro: fedora, image: 'fedora:44',      arch: aarch64, runner: ubuntu-24.04-arm }
+          - { distro: debian, image: 'debian:trixie',  arch: x86_64,  runner: ubuntu-24.04 }
+          - { distro: debian, image: 'debian:trixie',  arch: aarch64, runner: ubuntu-24.04-arm }
+          - { distro: ubuntu, image: 'ubuntu:26.04',   arch: x86_64,  runner: ubuntu-24.04 }
+          - { distro: ubuntu, image: 'ubuntu:26.04',   arch: aarch64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # every commit: the build number is their count
+
+      - name: Install build tools
+        run: modern/packaging/build-packages.sh deps
+
+      - name: Build packages
+        run: modern/packaging/build-packages.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vtmodern-${{ matrix.distro }}-${{ matrix.arch }}
+          path: |
+            modern/dist/*.deb
+            modern/dist/*.rpm
+          if-no-files-found: error

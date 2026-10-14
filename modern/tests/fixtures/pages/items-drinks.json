@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "id": "items-drinks",
+  "name": "Drinks",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Drinks"
+    },
+    {
+      "id": "item-1",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Coffee",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "coffee"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-2",
+      "kind": "button",
+      "rect": {
+        "x": 870,
+        "y": 192,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Tea",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "tea"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-3",
+      "kind": "button",
+      "rect": {
+        "x": 1148,
+        "y": 192,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Soda",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "soda"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-4",
+      "kind": "button",
+      "rect": {
+        "x": 1426,
+        "y": 192,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Juice",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "juice"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-5",
+      "kind": "button",
+      "rect": {
+        "x": 1704,
+        "y": 192,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Water",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "water"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-6",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 408,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Lemonade",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "lemonade"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-7",
+      "kind": "button",
+      "rect": {
+        "x": 870,
+        "y": 408,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "Draft Beer",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "draft-beer"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "item-8",
+      "kind": "button",
+      "rect": {
+        "x": 1148,
+        "y": 408,
+        "w": 200,
+        "h": 200
+      },
+      "shape": "circle",
+      "behavior": "blink",
+      "label": "House Wine",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "house-wine"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "wine-dinner",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 640,
+        "w": 632,
+        "h": 150
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Wine Dinner Ticket\nFriday 7 PM \u00b7 $65",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "wine-dinner-ticket"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#6b46c1"
+        }
+      }
+    }
+  ]
+}

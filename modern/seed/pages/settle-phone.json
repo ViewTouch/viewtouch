@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "id": "settle-phone",
+  "name": "Settle (phone)",
+  "kind": "settle",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "settle",
+  "formFactor": "phone",
+  "hiddenZones": [
+    "ask-tip",
+    "off-amount",
+    "off-percent"
+  ],
+  "zones": [
+    {
+      "id": "payment",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1048,
+        "h": 760
+      }
+    },
+    {
+      "id": "pad",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 792,
+        "w": 520,
+        "h": 840
+      }
+    },
+    {
+      "id": "tender-cash",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 792,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-credit",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 914,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-gift",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1036,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-house",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1158,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-discount",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1280,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-comp",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1402,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "tender-staff-meal",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1524,
+        "w": 512,
+        "h": 106
+      }
+    },
+    {
+      "id": "close",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 1648,
+        "w": 520,
+        "h": 180
+      }
+    },
+    {
+      "id": "receipt",
+      "shared": true,
+      "rect": {
+        "x": 552,
+        "y": 1648,
+        "w": 512,
+        "h": 180
+      }
+    },
+    {
+      "id": "remove-payment",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 1844,
+        "w": 336,
+        "h": 180
+      }
+    },
+    {
+      "id": "split",
+      "shared": true,
+      "rect": {
+        "x": 368,
+        "y": 1844,
+        "w": 336,
+        "h": 180
+      },
+      "own": {
+        "label": "Split Check"
+      }
+    },
+    {
+      "id": "drawer",
+      "shared": true,
+      "rect": {
+        "x": 720,
+        "y": 1844,
+        "w": 344,
+        "h": 180
+      }
+    },
+    {
+      "id": "coupon",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2040,
+        "w": 336,
+        "h": 220
+      }
+    },
+    {
+      "id": "done",
+      "shared": true,
+      "rect": {
+        "x": 368,
+        "y": 2040,
+        "w": 696,
+        "h": 220
+      }
+    }
+  ]
+}

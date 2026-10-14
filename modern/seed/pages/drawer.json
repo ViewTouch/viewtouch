@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "drawer",
+  "name": "Drawer",
+  "kind": "manager",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "check.settle",
+  "zones": [
+    {
+      "id": "drawer",
+      "kind": "drawerPanel",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 900,
+        "h": 1048
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "pad",
+      "kind": "numPad",
+      "rect": {
+        "x": 932,
+        "y": 16,
+        "w": 520,
+        "h": 620
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "mode": "amount"
+      }
+    },
+    {
+      "id": "reason",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 652,
+        "w": 520,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Reason\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "drawer-reason"
+        }
+      ]
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Back",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}

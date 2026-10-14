@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "items-breakfast",
+  "name": "Breakfast Plates",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Breakfast Plates"
+    },
+    {
+      "id": "item-1",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 316,
+        "h": 220
+      },
+      "shape": "octagon",
+      "behavior": "blink",
+      "label": "Two Eggs",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "two-eggs"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-2",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 192,
+        "w": 316,
+        "h": 220
+      },
+      "shape": "octagon",
+      "behavior": "blink",
+      "label": "Pancakes",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "pancakes"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-3",
+      "kind": "button",
+      "rect": {
+        "x": 1256,
+        "y": 192,
+        "w": 316,
+        "h": 220
+      },
+      "shape": "octagon",
+      "behavior": "blink",
+      "label": "French Toast",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "french-toast"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-4",
+      "kind": "button",
+      "rect": {
+        "x": 1588,
+        "y": 192,
+        "w": 316,
+        "h": 220
+      },
+      "shape": "octagon",
+      "behavior": "blink",
+      "label": "Omelette",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "omelette"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "login-phone",
+  "name": "Login (phone)",
+  "kind": "login",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "login",
+  "formFactor": "phone",
+  "hiddenZones": [
+    "logo",
+    "time-clock"
+  ],
+  "zones": [
+    {
+      "id": "title",
+      "shared": true,
+      "rect": {
+        "x": 40,
+        "y": 60,
+        "w": 1000,
+        "h": 150
+      },
+      "own": {
+        "label": "ViewTouch",
+        "style.normal.fontSize": 96
+      }
+    },
+    {
+      "id": "clock",
+      "shared": true,
+      "rect": {
+        "x": 140,
+        "y": 230,
+        "w": 800,
+        "h": 100
+      }
+    },
+    {
+      "id": "login-pad",
+      "shared": true,
+      "rect": {
+        "x": 60,
+        "y": 360,
+        "w": 960,
+        "h": 1400
+      }
+    },
+    {
+      "id": "clock-in",
+      "shared": true,
+      "rect": {
+        "x": 40,
+        "y": 1800,
+        "w": 320,
+        "h": 200
+      }
+    },
+    {
+      "id": "start",
+      "shared": true,
+      "rect": {
+        "x": 380,
+        "y": 1800,
+        "w": 320,
+        "h": 200
+      }
+    },
+    {
+      "id": "clock-out",
+      "shared": true,
+      "rect": {
+        "x": 720,
+        "y": 1800,
+        "w": 320,
+        "h": 200
+      }
+    }
+  ]
+}

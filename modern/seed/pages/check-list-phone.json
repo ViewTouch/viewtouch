@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "check-list-phone",
+  "name": "Open Checks (phone)",
+  "kind": "custom",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "check-list",
+  "formFactor": "phone",
+  "zones": [
+    {
+      "id": "title",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 24,
+        "w": 1032,
+        "h": 100
+      }
+    },
+    {
+      "id": "list",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 140,
+        "w": 1032,
+        "h": 1860
+      }
+    },
+    {
+      "id": "back",
+      "shared": true,
+      "rect": {
+        "x": 24,
+        "y": 2030,
+        "w": 1032,
+        "h": 220
+      }
+    }
+  ]
+}

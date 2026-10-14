@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "end-of-day",
+  "name": "End of Day",
+  "kind": "manager",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "manager",
+  "zones": [
+    {
+      "id": "eod",
+      "kind": "endOfDay",
+      "rect": {
+        "x": 460,
+        "y": 40,
+        "w": 1000,
+        "h": 880
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "drawer",
+      "kind": "button",
+      "rect": {
+        "x": 460,
+        "y": 944,
+        "w": 480,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Drawer\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "drawer"
+        }
+      ]
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 980,
+        "y": 944,
+        "w": 480,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}

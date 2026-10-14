@@ -1,0 +1,331 @@
+#!/bin/sh
+# Set up this machine's part in a ViewTouch store.
+#
+#   sudo vtmodern-setup                          ask what this machine is (a menu)
+#   sudo vtmodern-setup store                    the main register: keeps the data; other screens join it
+#   sudo vtmodern-setup server                   keeps the data with no screen (back office / closet box)
+#   sudo vtmodern-setup terminal [HOST] [NAME]   another register that joins the store
+#   sudo vtmodern-setup kitchen [HOST] [NAME]    a kitchen screen (orders to make, bumped by touch)
+#   sudo vtmodern-setup selforder [HOST] [NAME]  a self-order kiosk for guests
+#   sudo vtmodern-setup timeclock [HOST] [NAME]  a time clock: clocking in and out, and schedules
+#   sudo vtmodern-setup standby CODE [HOST]      a standby server: a live copy that takes over
+#   sudo vtmodern-setup pair                     on a server without a screen: a code to pair a screen with
+#   sudo vtmodern-setup off                      stop starting ViewTouch at boot
+#   sudo vtmodern-setup forget                   forget what this machine is (the data is kept)
+#   vtmodern-setup status                        what is set up now
+#
+# HOST is the store's main machine (an address), or "auto" (the default) to
+# find it on the network. NAME is this screen's name (the default: the
+# computer's name). Screens that join a store show a Join screen the first
+# time: pick the store and type a pairing code from Manager -> Terminals ->
+# Pair a Device. With --guest-display, a second monitor faces the guests
+# (store and terminal); --no-desktop turns the desktop login off.
+set -eu
+
+CONF_DIR=/etc/viewtouch
+KIOSK_CONF=$CONF_DIR/kiosk.conf
+SERVER_CONF=$CONF_DIR/server.conf
+DATA_DIR=/var/lib/viewtouch
+# VTM_SETUP_DRYRUN=1: say what would be done, change nothing (for testing).
+DRY=${VTM_SETUP_DRYRUN:-}
+
+usage() {
+    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
+    exit "${1:-0}"
+}
+
+# VTM_SETUP_STATION=1: called by the ViewTouch home screen (vtmodern-device),
+# which starts ViewTouch itself: write the settings, leave the services alone.
+STATION=${VTM_SETUP_STATION:-}
+
+run() {
+    if [ -n "$DRY" ]; then echo "would run: $*"; else "$@"; fi
+}
+
+need_root() {
+    if [ -z "$DRY" ] && [ "$(id -u)" -ne 0 ]; then
+        echo "Run this with sudo." >&2
+        exit 1
+    fi
+}
+
+# Replace the block between the "set by vtmodern-setup" markers in a conf file.
+write_block() {
+    file=$1
+    block=$(printf '%s\n' "$2" | sed '/^[[:space:]]*$/d')
+    tmp=$(mktemp)
+    if [ -f "$file" ] && grep -q '^# --- set by vtmodern-setup ---' "$file"; then
+        awk -v block="$block" '
+            /^# --- set by vtmodern-setup ---/ { print; printf "%s\n", block; skip = 1; next }
+            /^# --- end ---/ { skip = 0 }
+            !skip { print }' "$file" > "$tmp"
+    else
+        { echo '# --- set by vtmodern-setup ---'; printf '%s\n' "$block"; echo '# --- end ---';
+          [ -f "$file" ] && cat "$file"; } > "$tmp"
+    fi
+    if [ -n "$DRY" ]; then
+        echo "would write $file:"
+        sed -n '/^# --- set by vtmodern-setup ---/,/^# --- end ---/p' "$tmp" | sed 's/^/    /'
+    else
+        install -D -m 0644 "$tmp" "$file"
+    fi
+    rm -f "$tmp"
+}
+
+warn_desktop() {
+    if systemctl is-enabled --quiet display-manager.service 2>/dev/null; then
+        dm=$(systemctl show -p Id --value display-manager.service 2>/dev/null || echo "the desktop login")
+        if [ "$no_desktop" = yes ]; then
+            run systemctl disable "$dm"
+            echo "The desktop login ($dm) is off; the screen is ViewTouch's after a restart."
+        else
+            echo
+            echo "Note: $dm (a desktop login) is also enabled and will compete for the screen."
+            echo "For a dedicated POS screen turn it off:  sudo systemctl disable $dm"
+        fi
+    fi
+    if ! command -v cage >/dev/null 2>&1; then
+        echo
+        echo "Note: the screen needs 'cage'. Install it: sudo dnf install cage   (or: sudo apt install cage)"
+    fi
+}
+
+firewall_note() {
+    if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+        echo "The firewall is on; let screens in (and find this machine) with:"
+        echo "  sudo firewall-cmd --permanent --add-port=7719/tcp --add-port=7719/udp && sudo firewall-cmd --reload"
+    elif command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then
+        echo "The firewall is on; let screens in (and find this machine) with:"
+        echo "  sudo ufw allow 7719/tcp && sudo ufw allow 7719/udp"
+    fi
+}
+
+start_screen() {
+    [ -n "$STATION" ] && return 0
+    run systemctl daemon-reload
+    run systemctl disable --now vtmodern.service >/dev/null 2>&1 || true
+    run systemctl enable vtmodern-kiosk.service
+    # No screen yet (set up over SSH, or in a container): it starts at the next boot.
+    run systemctl restart vtmodern-kiosk.service ||
+        echo "The screen didn't start now; it will at the next boot (sudo reboot)."
+    warn_desktop
+}
+
+start_server() {
+    [ -n "$STATION" ] && return 0
+    run systemctl daemon-reload
+    run systemctl disable --now vtmodern-kiosk.service >/dev/null 2>&1 || true
+    run systemctl enable vtmodern.service
+    run systemctl restart vtmodern.service
+}
+
+guest_line() {
+    [ "$guest_display" = yes ] && echo "customer-display = auto" || true
+}
+
+# A screen that joins the store: where, its name, and what it shows.
+join_store() {
+    host=$1
+    name=$2
+    extra=$3
+    write_block "$KIOSK_CONF" "connect = $host
+terminal = $name$extra"
+    start_screen
+}
+
+join_note() {
+    echo "The first time it shows the Join screen: pick the store, type a pairing code, Join."
+    echo "The code comes from Manager -> Terminals -> Pair a Device on any store screen,"
+    echo "or, on a server without a screen: sudo vtmodern-setup pair"
+}
+
+# --- the menu -----------------------------------------------------------------------
+
+ask() {   # ask "Question" default -> $answer
+    printf '%s ' "$1"
+    [ -n "${2:-}" ] && printf '[%s] ' "$2"
+    read -r answer || answer=
+    [ -n "$answer" ] || answer=${2:-}
+}
+
+menu() {
+    cat <<'EOF'
+What is this machine?
+
+  1) Main register      this screen keeps the store's data; other screens join it
+  2) Back-office server keeps the data with no screen of its own
+  3) Another register   joins the store (the main register or the server)
+  4) Kitchen screen     shows the orders to make; bumped by touch
+  5) Self-order kiosk   guests order on their own and pay at the counter
+  6) Time clock         staff clock in and out and see their schedules
+  7) Standby server     keeps a live copy of the data, takes over if the main one stops
+  8) Nothing            ViewTouch doesn't start at boot
+EOF
+    ask "Choose 1-8:" 1
+    case "$answer" in
+        1) cmd=store ;; 2) cmd=server ;; 3) cmd=terminal ;; 4) cmd=kitchen ;;
+        5) cmd=selforder ;; 6) cmd=timeclock ;; 7) cmd=standby ;; 8) cmd=off ;;
+        *) echo "Choose a number from 1 to 8." >&2; exit 1 ;;
+    esac
+    case "$cmd" in
+        terminal|kitchen|selforder|timeclock)
+            ask "The store's main machine (an address, or auto to find it):" auto
+            host=$answer
+            ask "This screen's name:" "$(uname -n)"
+            name=$answer ;;
+        standby)
+            ask "Pairing code (Manager -> Terminals -> Pair a Device -> Standby):" ""
+            code=$answer
+            ask "The main machine (an address, or auto):" auto
+            host=$answer ;;
+    esac
+    case "$cmd" in
+        store|terminal)
+            ask "Is there a second monitor facing the guests? (y/n)" n
+            case "$answer" in [yY]*) guest_display=yes ;; esac ;;
+    esac
+    case "$cmd" in
+        store|terminal|kitchen|selforder|timeclock)
+            if systemctl is-enabled --quiet display-manager.service 2>/dev/null; then
+                ask "Turn the desktop login off, so this screen is only ViewTouch? (y/n)" y
+                case "$answer" in [yY]*) no_desktop=yes ;; esac
+            fi ;;
+    esac
+}
+
+# --- options and the command --------------------------------------------------------
+
+guest_display=no
+no_desktop=no
+host=auto
+name=$(uname -n)
+code=
+# The switches, wherever they are; the rest in order (names may have spaces).
+n=$#
+while [ "$n" -gt 0 ]; do
+    a=$1
+    shift
+    n=$((n - 1))
+    case "$a" in
+        --guest-display) guest_display=yes ;;
+        --no-desktop) no_desktop=yes ;;
+        -h|--help) usage 0 ;;
+        *) set -- "$@" "$a" ;;
+    esac
+done
+
+cmd=${1:-}
+if [ -z "$cmd" ]; then
+    if [ -t 0 ] || [ -n "${VTM_SETUP_MENU:-}" ]; then
+        need_root
+        menu
+    else
+        usage 1
+    fi
+else
+    shift
+    case "$cmd" in
+        terminal|kitchen|selforder|timeclock) host=${1:-auto}; name=${2:-$(uname -n)} ;;
+        standby) code=${1:-}; host=${2:-auto} ;;
+    esac
+fi
+
+case "$cmd" in
+store)
+    need_root
+    write_block "$KIOSK_CONF" "serve = yes
+$(guest_line)"
+    start_screen
+    echo "This screen now runs ViewTouch at boot and keeps the store's data."
+    echo "Other screens: run vtmodern-setup on them, then pair them with a code from"
+    echo "Manager -> Terminals -> Pair a Device on this screen."
+    firewall_note
+    ;;
+server)
+    need_root
+    write_block "$SERVER_CONF" ""
+    start_server
+    echo "ViewTouch now keeps the store's data on this machine and serves the screens (port 7719)."
+    echo "Set up each screen with vtmodern-setup, and pair it with a code from:  sudo vtmodern-setup pair"
+    firewall_note
+    ;;
+terminal)
+    need_root
+    join_store "$host" "$name" "
+$(guest_line)"
+    echo "This screen is now a register of the store ($name)."
+    join_note
+    ;;
+kitchen)
+    need_root
+    join_store "$host" "$name" "
+page = kitchen"
+    echo "This screen is now a kitchen screen ($name): it opens on the orders to make."
+    echo "Its Station button picks what it shows (Manager -> Settings: Kitchen stations)."
+    join_note
+    ;;
+selforder)
+    need_root
+    join_store "$host" "$name" "
+self-order = yes"
+    echo "This screen is now a self-order kiosk ($name): guests order and pay at the counter."
+    echo "A manager's PIN (hold the top-left corner) leaves it."
+    join_note
+    ;;
+timeclock)
+    need_root
+    join_store "$host" "$name" "
+screen = timeClock"
+    echo "This screen is now a time clock ($name): staff type their PIN to clock in or out"
+    echo "and see their schedule. \"Log In to the Register...\" at the bottom is for managers."
+    join_note
+    ;;
+standby)
+    need_root
+    if [ -z "$code" ]; then
+        echo "A standby pairs once with a code: Manager -> Terminals -> Pair a Device -> Standby," >&2
+        echo "then: sudo vtmodern-setup standby CODE [HOST]" >&2
+        exit 1
+    fi
+    run systemctl disable --now vtmodern.service vtmodern-kiosk.service >/dev/null 2>&1 || true
+    run install -d -m 0750 "$DATA_DIR"
+    # Pair now (once); the service then runs it as the viewtouch account.
+    run env QT_QPA_PLATFORM=offscreen vtmodern --data-dir "$DATA_DIR" --standby "$host" --pair "$code" --pair-only
+    run chown -R viewtouch:viewtouch "$DATA_DIR"
+    write_block "$SERVER_CONF" "standby = $host"
+    start_server
+    echo "This machine is now the store's standby: it keeps a live copy of the data and"
+    echo "takes over if the main machine stops (or when a manager touches Take Over Now)."
+    firewall_note
+    ;;
+pair)
+    need_root
+    exec vtmodern --data-dir "$DATA_DIR" --pairing-code
+    ;;
+forget)
+    need_root
+    write_block "$KIOSK_CONF" "# not set up yet"
+    echo "Forgotten: this machine isn't set up as anything now. Its data in $DATA_DIR is kept."
+    ;;
+off)
+    need_root
+    run systemctl disable --now vtmodern.service vtmodern-kiosk.service >/dev/null 2>&1 || true
+    echo "ViewTouch no longer starts at boot. The data in $DATA_DIR is kept."
+    ;;
+status)
+    for unit in vtmodern.service vtmodern-kiosk.service; do
+        printf '%-24s %s, %s\n' "$unit" "$(systemctl is-enabled $unit 2>/dev/null || true)" \
+            "$(systemctl is-active $unit 2>/dev/null || true)"
+    done
+    for f in "$KIOSK_CONF" "$SERVER_CONF"; do
+        if [ -f "$f" ] && grep -q '^# --- set by vtmodern-setup ---' "$f"; then
+            echo "$f:"
+            sed -n '/^# --- set by vtmodern-setup ---/,/^# --- end ---/p' "$f" | grep -v '^#' | grep -v '^$' | sed 's/^/  /'
+        fi
+    done
+    ls -1t "$DATA_DIR/backups" 2>/dev/null | head -1 | sed 's/^/newest backup: /' || true
+    ;;
+*)
+    usage 1
+    ;;
+esac

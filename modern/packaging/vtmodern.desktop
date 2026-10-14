@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ViewTouch
+GenericName=Point of Sale
+Comment=Restaurant point of sale with pages you design yourself
+Exec=vtmodern
+Icon=vtmodern
+Terminal=false
+Categories=Office;Finance;
+Keywords=POS;restaurant;register;

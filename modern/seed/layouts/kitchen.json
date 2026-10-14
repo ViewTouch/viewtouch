@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "page": "kitchen",
+  "role": "kitchen",
+  "variants": [
+    {
+      "id": "classic",
+      "name": "Whole kitchen",
+      "description": "Every kitchen order on one screen.",
+      "zones": [
+        {
+          "id": "tickets",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1920,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "kitchen"
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        }
+      ],
+      "background": {
+        "fill": "#101317"
+      }
+    },
+    {
+      "id": "grill-fryer",
+      "name": "Grill | Fryer",
+      "description": "Two stations side by side.",
+      "zones": [
+        {
+          "id": "tickets",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 956,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "grill",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        },
+        {
+          "id": "tickets-2",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 964,
+            "y": 0,
+            "w": 956,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "fryer",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        }
+      ],
+      "background": {
+        "fill": "#101317"
+      }
+    },
+    {
+      "id": "three-stations",
+      "name": "Grill | Fryer | Cold",
+      "description": "Three stations side by side.",
+      "zones": [
+        {
+          "id": "tickets",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 636,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "grill",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        },
+        {
+          "id": "tickets-2",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 642,
+            "y": 0,
+            "w": 636,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "fryer",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        },
+        {
+          "id": "tickets-3",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 1284,
+            "y": 0,
+            "w": 636,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "cold",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        }
+      ],
+      "background": {
+        "fill": "#101317"
+      }
+    },
+    {
+      "id": "kitchen-bar",
+      "name": "Kitchen | Bar",
+      "description": "The kitchen's orders and the bar's, side by side.",
+      "zones": [
+        {
+          "id": "tickets",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1276,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "kitchen",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        },
+        {
+          "id": "tickets-2",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 1284,
+            "y": 0,
+            "w": 636,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "bar",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        }
+      ],
+      "background": {
+        "fill": "#101317"
+      }
+    },
+    {
+      "id": "kitchen-expo",
+      "name": "Kitchen | Expo",
+      "description": "The kitchen's orders, and the expediter beside them.",
+      "zones": [
+        {
+          "id": "tickets",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1276,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "station": "kitchen",
+            "lockStation": true
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        },
+        {
+          "id": "tickets-2",
+          "kind": "kitchenDisplay",
+          "rect": {
+            "x": 1284,
+            "y": 0,
+            "w": 636,
+            "h": 1080
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "mode": "expo"
+          },
+          "style": {
+            "normal": {
+              "fill": "#101317",
+              "frame": "flat",
+              "shadow": 0,
+              "radius": 0
+            }
+          }
+        }
+      ],
+      "background": {
+        "fill": "#101317"
+      }
+    }
+  ]
+}

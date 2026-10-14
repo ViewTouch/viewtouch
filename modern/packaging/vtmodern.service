@@ -1,0 +1,35 @@
+# ViewTouch store server without a screen: keeps the data and serves the
+# terminals. Settings: /etc/viewtouch/server.conf. Enable with
+#   sudo vtmodern-setup server
+[Unit]
+Description=ViewTouch POS server
+Documentation=file:///usr/share/doc/vtmodern/README.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=exec
+User=viewtouch
+Group=viewtouch
+StateDirectory=viewtouch
+StateDirectoryMode=0750
+Environment=QT_QPA_PLATFORM=offscreen
+ExecStart=/usr/bin/vtmodern --headless --data-dir ${STATE_DIRECTORY} --config /etc/viewtouch/server.conf
+Restart=on-failure
+RestartSec=3
+# Give the last writes time to reach the database.
+TimeoutStopSec=30
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

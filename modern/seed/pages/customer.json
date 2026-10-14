@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "customer",
+  "name": "Customer",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Who is the order for?"
+    },
+    {
+      "id": "customer",
+      "kind": "customerInfo",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 800
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "cancel",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Cancel",
+      "actions": [
+        {
+          "type": "command",
+          "name": "releaseCheck"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "later",
+      "kind": "button",
+      "rect": {
+        "x": 1024,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Ready Later\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "order-later"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "menu",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Continue to Menu \u203a",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    }
+  ]
+}

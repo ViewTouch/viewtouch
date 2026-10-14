@@ -1,0 +1,57 @@
+[
+  {
+    "id": "manager",
+    "name": "Morgan (Manager)",
+    "role": "manager",
+    "pin": "1234",
+    "sample": true,
+    "payRate": 24.0
+  },
+  {
+    "id": "sam",
+    "name": "Sam",
+    "role": "server",
+    "pin": "1111",
+    "sample": true,
+    "payRate": 7.25
+  },
+  {
+    "id": "riley",
+    "name": "Riley",
+    "role": "busser",
+    "pin": "3333",
+    "sample": true,
+    "payRate": 11.0
+  },
+  {
+    "id": "jo",
+    "name": "Jo",
+    "role": "bartender",
+    "pin": "4444",
+    "sample": true,
+    "payRate": 9.0,
+    "otherJobs": [
+      {
+        "role": "server",
+        "rate": 7.25
+      }
+    ]
+  },
+  {
+    "id": "casey",
+    "name": "Casey",
+    "role": "cashier",
+    "pin": "2222",
+    "sample": true,
+    "payRate": 15.5
+  },
+  {
+    "id": "rosa",
+    "name": "Rosa",
+    "role": "server",
+    "pin": "5555",
+    "language": "es",
+    "sample": true,
+    "payRate": 7.25
+  }
+]

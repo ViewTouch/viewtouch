@@ -1,0 +1,107 @@
+# The ViewTouch tablet app (modern/, Qt for Android). Run it from the Actions
+# tab, or push a modern-v* tag. The APKs are attached to the run.
+#
+# Signing: with the repository secrets ANDROID_KEYSTORE_BASE64 (a keystore,
+# base64), ANDROID_KEYSTORE_ALIAS and ANDROID_KEYSTORE_PASSWORD, every build
+# is signed with that key and installs over the previous one. Without them
+# each build gets a throwaway key: uninstall the old app before installing.
+name: Modern Android
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'modern-v*'
+
+env:
+  QT_VERSION: 6.11.2
+  NDK_VERSION: 27.2.12479018
+  ANDROID_PLATFORM: android-35
+  BUILD_TOOLS: 35.0.0
+
+jobs:
+  apk:
+    name: APK ${{ matrix.abi }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { abi: arm64-v8a,   qt_arch: android_arm64_v8a }   # most tablets
+          - { abi: armeabi-v7a, qt_arch: android_armv7 }       # older / budget tablets
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # every commit: the build number is their count
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK pieces
+        run: |
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;${NDK_VERSION}" "platforms;${ANDROID_PLATFORM}" "build-tools;${BUILD_TOOLS}"
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Qt for Android
+        run: |
+          sudo apt-get update && sudo apt-get install -y ninja-build
+          python3 -m pip install --user aqtinstall
+          python3 -m aqt install-qt all_os android "${QT_VERSION}" ${{ matrix.qt_arch }} -O "$HOME/Qt" --autodesktop
+          echo "QT_ANDROID=$HOME/Qt/${QT_VERSION}/${{ matrix.qt_arch }}" >> "$GITHUB_ENV"
+          echo "QT_HOST=$(dirname "$(dirname "$(find "$HOME/Qt/${QT_VERSION}" -path '*gcc_64/bin/qmake' -o -path '*gcc_64/bin/qtpaths' | head -1)")")" >> "$GITHUB_ENV"
+
+      - name: Signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          ks="$RUNNER_TEMP/viewtouch.keystore"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$ks"
+            alias="$KEYSTORE_ALIAS"; pass="$KEYSTORE_PASSWORD"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret: signing with a throwaway key."
+            alias=viewtouch; pass=$(openssl rand -hex 16)
+            keytool -genkeypair -keystore "$ks" -alias "$alias" -keyalg RSA -keysize 3072 -validity 10000 \
+              -storepass "$pass" -keypass "$pass" -dname "CN=ViewTouch test build" > /dev/null
+          fi
+          echo "::add-mask::$pass"
+          {
+            echo "QT_ANDROID_KEYSTORE_PATH=$ks"
+            echo "QT_ANDROID_KEYSTORE_ALIAS=$alias"
+            echo "QT_ANDROID_KEYSTORE_STORE_PASS=$pass"
+            echo "QT_ANDROID_KEYSTORE_KEY_PASS=$pass"
+          } >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          # Qt's toolchain file directly: some Qt for Android downloads ship
+          # the qt-cmake script without its executable bit.
+          cmake -S modern -B build-android -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID/lib/cmake/Qt6/qt.toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DQT_HOST_PATH="$QT_HOST" \
+            -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
+            -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
+            -DQT_ANDROID_SIGN_APK=ON \
+            -DVTM_BUILD_TESTS=OFF
+          cmake --build build-android --target apk
+          mkdir -p dist
+          apk=$(find build-android -name '*-release-signed.apk' | head -1)
+          test -n "$apk" || { echo "No signed APK was made"; find build-android -name '*.apk'; exit 1; }
+          # Named with the build number: the store's computer offers it to tablets that are behind.
+          number=$(git rev-list --count HEAD)
+          cp "$apk" "dist/ViewTouch-b${number}-${{ matrix.abi }}.apk"
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ViewTouch-android-${{ matrix.abi }}
+          path: dist/*.apk
+          if-no-files-found: error

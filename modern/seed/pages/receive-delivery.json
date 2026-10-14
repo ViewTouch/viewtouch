@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "receive-delivery",
+  "name": "Receive a Delivery",
+  "kind": "manager",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "manager",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Receive a delivery"
+    },
+    {
+      "id": "receive",
+      "kind": "receiveDelivery",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 816
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Inventory",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}

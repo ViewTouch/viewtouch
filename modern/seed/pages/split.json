@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "split",
+  "name": "Split Check",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "order",
+  "zones": [
+    {
+      "id": "split-check",
+      "kind": "splitCheck",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 932
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 964,
+        "w": 432,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Back",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}

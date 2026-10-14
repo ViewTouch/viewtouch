@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "id": "items-burgers",
+  "name": "Burgers",
+  "kind": "items",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "templateId": "order-template",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 592,
+        "y": 104,
+        "w": 1312,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Burgers"
+    },
+    {
+      "id": "item-1",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Classic Burger",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "classic-burger"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-2",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Cheeseburger",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "cheeseburger"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-3",
+      "kind": "button",
+      "rect": {
+        "x": 1256,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Bacon Burger",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "bacon-burger"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-4",
+      "kind": "button",
+      "rect": {
+        "x": 1588,
+        "y": 192,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Mushroom Swiss",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "mushroom-swiss"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-5",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 388,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Veggie Burger",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "veggie-burger"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "item-6",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 388,
+        "w": 316,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Kids Burger",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "kids-burger"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "combo",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 596,
+        "w": 300,
+        "h": 180
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Burger Combo",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "burger-combo"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "brisket",
+      "kind": "button",
+      "rect": {
+        "x": 924,
+        "y": 792,
+        "w": 300,
+        "h": 136
+      },
+      "shape": "rounded",
+      "behavior": "blink",
+      "label": "Smoked Brisket\n$22.00 / lb",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "smoked-brisket"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#6b46c1"
+        }
+      }
+    },
+    {
+      "id": "burger-photo",
+      "kind": "image",
+      "rect": {
+        "x": 592,
+        "y": 596,
+        "w": 316,
+        "h": 260
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Burger of the Day",
+      "actions": [
+        {
+          "type": "addItem",
+          "item": "burger-of-the-day"
+        }
+      ],
+      "imagePath": "qrc:/images/burger.png"
+    },
+    {
+      "id": "note",
+      "kind": "comment",
+      "rect": {
+        "x": 1240,
+        "y": 596,
+        "w": 664,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Burgers ask for Temperature and Side (Manager -> Modifier Groups)."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "admin-employees",
+  "name": "Employees",
+  "kind": "manager",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "permission": "manager",
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Employees"
+    },
+    {
+      "id": "editor",
+      "kind": "adminPanel",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 816
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "panel": "employees"
+      }
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "\u2039 Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    }
+  ]
+}
