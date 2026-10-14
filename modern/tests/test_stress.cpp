@@ -46,6 +46,8 @@ TEST_CASE("Stress: a busy dinner, every check balanced and saved", "[.stress]")
     net::StressOptions o;
     o.minutes = qEnvironmentVariableIntValue("VTM_STRESS_MINUTES") > 0 ? qEnvironmentVariableIntValue("VTM_STRESS_MINUTES") : 1;
     o.speed = qEnvironmentVariableIntValue("VTM_STRESS_SPEED") > 0 ? qEnvironmentVariableIntValue("VTM_STRESS_SPEED") : 60;
+    o.hours = qEnvironmentVariable("VTM_STRESS_HOURS").toDouble();
+    o.load = std::max(1, qEnvironmentVariableIntValue("VTM_STRESS_LOAD"));
     o.dbPath = db;
     o.writer = &writer;
     net::StressRunner::tablesOn(*layout, o.tables, o.barSeats);
@@ -55,7 +57,8 @@ TEST_CASE("Stress: a busy dinner, every check balanced and saved", "[.stress]")
     REQUIRE(run.start(&error));
     QElapsedTimer t;
     t.start();
-    while (!run.isFinished() && t.elapsed() < (o.minutes + 4) * 60'000) {
+    const int minutes = o.hours > 0 ? int(std::ceil(o.hours * 60 / o.speed)) : o.minutes;
+    while (!run.isFinished() && t.elapsed() < (minutes + 6) * 60'000) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
         QThread::msleep(2);
     }

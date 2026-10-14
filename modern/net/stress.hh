@@ -13,6 +13,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 // A live stress test (vtmodern --stress): a busy dinner played on a
@@ -41,6 +42,9 @@ struct StressOptions {
     double speed = 12;         // times faster than real life (12: two hours in ten minutes)
     int servers = 6;           // pretend servers (every other one on a handheld)
     int watchers = 3;          // more handhelds that only watch (host iPad, expo, office)
+    double hours = 0;          // a business day this long instead (minutes = hours x 60 / speed):
+                               // 6 hours or more has a lunch rush and a dinner rush
+    int load = 1;              // times the staff, tables, guests and handhelds
     QStringList tables;        // the dining room (from the floor plans)
     QStringList barSeats;      // the bar's seats
     QString dbPath;            // checked against at the end
@@ -78,6 +82,8 @@ public:
     bool winding() const { return winding_; }
     QStringList freeTables(const QVariantMap &floor) const;
     QStringList serverIds() const { return serverIds_; }
+    QString anyDriver() const { return driverIds_.isEmpty() ? QString() : driverIds_.at(int(nowCount_++ % driverIds_.size())); }
+    bool closing() const { return closing_; }
     void counted(const char *what, int n = 1)
     {
         const QMutexLocker lock(&mutex_);
@@ -92,6 +98,8 @@ private:
     void sample();      // every 20 ms: how late was it?
     void everySecond();
     void windDown();
+    void closeTheDay();     // everyone counts their bank, then End of Day
+    bool longDay() const { return o_.minutes * o_.speed >= 360; }
     void finish();
     void checkEverything(QStringList &problems, QStringList &notes);
     void measureUpdate();   // in the rush: what one screen's update costs, piece by piece
@@ -105,12 +113,13 @@ private:
     std::vector<std::unique_ptr<app::PosSession>> watchers_;
     // The handhelds run on a thread of their own, like separate devices: their
     // work (reading the store's updates) isn't this computer's.
-    QThread handhelds_;
-    QObject *handheldHome_ = nullptr;
+    std::vector<std::unique_ptr<QThread>> handhelds_;   // a few threads, the handhelds shared out
+    std::vector<QObject *> homes_;                      // an object living on each (to run things there)
     mutable QRecursiveMutex mutex_;   // what the handhelds report
     QStringList serverIds_;
     QStringList drinks_, food_;   // what guests order
-    QString driverId_;
+    QStringList driverIds_;
+    mutable std::atomic<qint64> nowCount_{0};
 
     QElapsedTimer clock_;
     QTimer sampler_, second_;
@@ -129,7 +138,15 @@ private:
     int dbPending_ = 0, dbWorst_ = 0;
     double cpu_ = 0, rssMb_ = 0, rssWorstMb_ = 0;
     qint64 cpuTicks_ = 0, cpuAt_ = 0;
-    std::atomic<bool> winding_{false}, finished_{false};
+    std::atomic<bool> winding_{false}, finished_{false}, closing_{false};
+    std::atomic<int> counting_{0};       // banks still being counted
+    qint64 closingStartedMs_ = 0;
+    QString dayClosed_;                  // End of Day: what happened
+    bool dayClosedOk_ = false;
+    std::optional<std::pair<QStringList, QStringList>> checked_;   // problems, notes (before End of Day)
+    qint64 closedDayId_ = 0;
+    int dayChecks_ = 0;          // the closed day's checks and sales (for the panel after End of Day)
+    qint64 daySalesCents_ = 0;
     bool passed_ = false;
     qint64 windStartedMs_ = 0, finishedMs_ = 0;
     QString report_;

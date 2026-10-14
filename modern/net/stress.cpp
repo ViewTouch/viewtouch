@@ -13,6 +13,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QRandomGenerator>
+#include <QRegularExpression>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
@@ -139,6 +140,7 @@ struct StressRunner::Bot {
     QTimer next;
     QRandomGenerator rng;
     QString lastNotice;
+    int share = 0, shares = 1;   // the kitchen and expo screens: their share of the tickets
     std::atomic<bool> busy{false}, ready{false};
     std::atomic<qint64> busySince{0};
 
@@ -191,8 +193,10 @@ struct StressRunner::Bot {
         s->invoke(op.method, op.args, [this, op, ops, done, t](const QVariant &r) {
             run->recordCommand(op.method, remote, t.nsecsElapsed());
             const bool ok = !(r.metaType().id() == QMetaType::Bool && !r.toBool());
-            if (!ok)
+            if (!ok && !remote)
                 run->recordRefused(name, op.method, lastNotice, op.mayFail);
+            else if (!ok)   // a handheld: the reason comes just after the answer
+                QTimer::singleShot(0, &ctx, [this, op] { run->recordRefused(name, op.method, lastNotice, op.mayFail); });
             if (!ok && !op.mayFail) {
                 QTimer::singleShot(gap(), &ctx, [this, done] { recover(); done(false); });
                 return;
@@ -240,7 +244,7 @@ struct StressRunner::Bot {
 
     void loop()
     {
-        if (busy || run->finished_)
+        if (busy || run->finished_ || run->closing_)
             return;
         busy = true;
         busySince = nowMs();
@@ -378,6 +382,27 @@ struct StressRunner::Bot {
             return {};
         }) << cmd(u"releaseCheck"_s, {}, true);
         return ops;
+    }
+
+    // ---- the end of the day: count the bank ----
+
+    void countBank(std::function<void()> done)
+    {
+        const QVariantMap d = s->drawerInfo();
+        if (!d.value(u"open"_s).toBool()) {
+            done();
+            return;
+        }
+        QString expected = d.value(u"expected"_s).toString();
+        expected.remove(QRegularExpression(u"[^0-9.\\-]"_s));
+        const qint64 cents = std::llround(expected.toDouble() * 100);
+        go({cmd(u"entryKey"_s, {u"clear"_s}, true), cmd(u"entryKey"_s, {QString::number(std::max<qint64>(cents, 0))}),
+            cmd(u"countDrawer"_s)},
+           [this, done](bool ok) {
+               if (ok)
+                   run->counted("banks counted");
+               done();
+           });
     }
 
     // ---- what each job does next ----
@@ -616,7 +641,7 @@ struct StressRunner::Bot {
             const Stage stage = it->stage;
             work.erase(it);
             if (stage == Stage::Out) {
-                go({cmd(u"sendOut"_s, {QVariantList{checkId}, run->driverId_}, true)}, done);
+                go({cmd(u"sendOut"_s, {QVariantList{checkId}, run->anyDriver()}, true)}, done);
                 return;
             }
             go({cmd(u"openCheck"_s, {checkId}, true), then([this] { return payThis(); })}, done);
@@ -656,6 +681,8 @@ struct StressRunner::Bot {
         for (const QVariant &v : s->kitchenTickets()) {
             const QVariantMap k = v.toMap();
             const qint64 checkId = k.value(u"checkId"_s).toLongLong(), sentAt = k.value(u"sentAt"_s).toLongLong();
+            if (checkId % shares != share)
+                continue;   // another kitchen screen's
             const double cook = 6 + double((checkId * 7 + sentAt / 1000) % 9);
             if (t - sentAt >= minutes(run->winding() ? 0.5 : cook)) {
                 run->counted("tickets bumped");
@@ -672,6 +699,8 @@ struct StressRunner::Bot {
         for (const QVariant &v : s->expoTickets()) {
             const QVariantMap k = v.toMap();
             const qint64 sentAt = k.value(u"sentAt"_s).toLongLong();
+            if (k.value(u"checkId"_s).toLongLong() % shares != share)
+                continue;
             if (k.value(u"ready"_s).toBool() && t - sentAt >= minutes(1)) {   // all made: out it goes
                 run->counted("expo runs");
                 go({cmd(u"expoBump"_s, {k.value(u"checkId"_s), sentAt}, true)}, done);
@@ -731,10 +760,13 @@ StressRunner::StressRunner(app::PosShared *shared, LayoutHub *hub, StressOptions
     , hub_(hub)
     , o_(std::move(options))
 {
-    o_.minutes = std::clamp(o_.minutes, 1, 600);
+    o_.load = std::clamp(o_.load, 1, 5);
+    if (o_.hours > 0)
+        o_.minutes = int(std::ceil(o_.hours * 60.0 / std::clamp(o_.speed, 1.0, 120.0)));
+    o_.minutes = std::clamp(o_.minutes, 1, 900);
     o_.speed = std::clamp(o_.speed, 1.0, 120.0);
-    o_.servers = std::clamp(o_.servers, 1, 24);
-    o_.watchers = std::clamp(o_.watchers, 0, 24);
+    o_.servers = std::clamp(o_.servers * o_.load, 1, 72);
+    o_.watchers = std::clamp(o_.watchers * o_.load, 0, 48);
     sampler_.setTimerType(Qt::PreciseTimer);
     sampler_.setInterval(20);
     connect(&sampler_, &QTimer::timeout, this, &StressRunner::sample);
@@ -744,25 +776,32 @@ StressRunner::StressRunner(app::PosShared *shared, LayoutHub *hub, StressOptions
 
 StressRunner::~StressRunner()
 {
-    // The handhelds go first, on their own thread (then their bots come home).
-    if (handhelds_.isRunning()) {
-        QThread *home = thread();
-        QMetaObject::invokeMethod(handheldHome_, [this, home] {
-            for (auto &b : bots_)
-                if (b->remote) {
-                    b->next.stop();
-                    b->owned.reset();
-                    b->ctx.moveToThread(home);
-                    b->next.moveToThread(home);
-                }
-            watchers_.clear();
-            handheldHome_->moveToThread(home);
+    // The handhelds go on their own threads (their bots' timers come home), then the threads.
+    QThread *home = thread();
+    for (auto &b : bots_) {
+        if (!b->remote || b->ctx.thread() == home)
+            continue;
+        Bot *raw = b.get();
+        QMetaObject::invokeMethod(&raw->ctx, [raw, home] {
+            raw->next.stop();
+            raw->owned.reset();
+            raw->next.moveToThread(home);
+            raw->ctx.moveToThread(home);
         }, Qt::BlockingQueuedConnection);
-        handhelds_.quit();
-        handhelds_.wait();
     }
-    delete handheldHome_;
+    for (size_t i = 0; i < watchers_.size(); ++i) {
+        RemoteSession *w = static_cast<RemoteSession *>(watchers_[i].get());
+        if (!w)
+            continue;
+        QMetaObject::invokeMethod(w, [this, i] { watchers_[i].release()->deleteLater(); }, Qt::BlockingQueuedConnection);
+    }
+    for (size_t i = 0; i < handhelds_.size(); ++i) {
+        QMetaObject::invokeMethod(homes_[i], [o = homes_[i]] { o->deleteLater(); });
+        handhelds_[i]->quit();
+        handhelds_[i]->wait();
+    }
     bots_.clear();
+    watchers_.clear();
 }
 
 std::int64_t StressRunner::simMinute() const
@@ -774,6 +813,13 @@ double StressRunner::intensity() const
 {
     // Opening, the rush in the middle, and quieter at the end.
     const double f = std::clamp(double(clock_.elapsed()) / (o_.minutes * 60'000.0), 0.0, 1.0);
+    if (longDay()) {
+        // A whole day: open, the lunch rush, the afternoon lull, the dinner
+        // rush (the biggest), and late.
+        const double lunch = std::exp(-std::pow((f - 0.22) / 0.07, 2));
+        const double dinner = std::exp(-std::pow((f - 0.68) / 0.10, 2));
+        return std::clamp(0.2 + 0.7 * lunch + 0.85 * dinner, 0.0, 1.0) * (f < 0.04 ? 0.5 + f / 0.08 : 1.0);
+    }
     if (f < 0.3)
         return 0.35 + 0.65 * f / 0.3;
     if (f < 0.7)
@@ -854,12 +900,32 @@ bool StressRunner::start(QString *error)
         who.push_back({Bot::Job::Server, name, pin, person(name, "server", pin)});
         serverIds_ << who.back().id;
     }
-    who.push_back({Bot::Job::Host, u"Hostess"_s, u"6201"_s, person(u"Hostess"_s, "host", u"6201"_s)});
-    driverId_ = person(u"Lou (driver)"_s, "driver", u"6301"_s);
-    who.push_back({Bot::Job::Driver, u"Lou (driver)"_s, u"6301"_s, driverId_});
-    who.push_back({Bot::Job::Kitchen, u"Kitchen"_s, u"6401"_s, person(u"Kitchen"_s, "cook", u"6401"_s)});
-    who.push_back({Bot::Job::Bartender, u"Jo"_s, u"4444"_s, idOfPin("4444")});
-    who.push_back({Bot::Job::Phone, u"Casey"_s, u"2222"_s, idOfPin("2222")});
+    // More of everyone at a heavier load (the starter bartender and cashier first).
+    for (int i = 0; i < o_.load; ++i) {
+        const QString n = o_.load > 1 ? u" %1"_s.arg(i + 1) : QString();
+        who.push_back({Bot::Job::Host, u"Host"_s + n, QString::number(6201 + i), person(u"Host"_s + n, "host", QString::number(6201 + i))});
+        const QString driver = person(u"Driver"_s + n, "driver", QString::number(6301 + i));
+        driverIds_ << driver;
+        who.push_back({Bot::Job::Driver, u"Driver"_s + n, QString::number(6301 + i), driver});
+        if (i == 0) {
+            who.push_back({Bot::Job::Bartender, u"Jo"_s, u"4444"_s, idOfPin("4444")});
+            who.push_back({Bot::Job::Phone, u"Casey"_s, u"2222"_s, idOfPin("2222")});
+        } else {
+            who.push_back({Bot::Job::Bartender, u"Bar"_s + n, QString::number(6500 + i), person(u"Bar"_s + n, "bartender", QString::number(6500 + i))});
+            who.push_back({Bot::Job::Phone, u"Counter"_s + n, QString::number(6600 + i), person(u"Counter"_s + n, "cashier", QString::number(6600 + i))});
+        }
+    }
+    for (int i = 0; i < o_.load; ++i) {
+        const QString n = o_.load > 1 ? u" %1"_s.arg(i + 1) : QString();
+        who.push_back({Bot::Job::Kitchen, u"Kitchen"_s + n, QString::number(6401 + i),
+                       person(u"Kitchen"_s + n, "cook", QString::number(6401 + i))});
+        if (i > 0)
+            who.push_back({Bot::Job::Expo, u"Expo"_s + n, u"1234"_s, idOfPin("1234")});
+    }
+    // The extra guests need tables: banquet rooms past the floor plans.
+    const int floorTables = int(o_.tables.size());
+    for (int i = 0; i < floorTables * (o_.load - 1); ++i)
+        o_.tables << u"Banquet %1"_s.arg(i + 1);
     who.push_back({Bot::Job::Expo, u"Expo"_s, u"1234"_s, idOfPin("1234")});
     who.push_back({Bot::Job::Manager, u"Manager"_s, u"1234"_s, idOfPin("1234")});
 
@@ -894,10 +960,22 @@ bool StressRunner::start(QString *error)
         c.key = key;
         return c;
     };
-    handheldHome_ = new QObject;
-    handheldHome_->moveToThread(&handhelds_);
-    handhelds_.setObjectName(u"vt-stress-handhelds"_s);
-    handhelds_.start();
+    // The handhelds on a few threads of their own, like separate devices.
+    for (int i = 0; i < 4; ++i) {
+        handhelds_.push_back(std::make_unique<QThread>());
+        handhelds_.back()->setObjectName(u"vt-stress-handhelds-%1"_s.arg(i + 1));
+        homes_.push_back(new QObject);
+        homes_.back()->moveToThread(handhelds_.back().get());
+        handhelds_.back()->start();
+    }
+    int nextThread = 0;
+    const auto threadForNext = [&] { return handhelds_[size_t(nextThread++ % int(handhelds_.size()))].get(); };
+    const auto homeOf = [this](QThread *t) {
+        for (size_t i = 0; i < handhelds_.size(); ++i)
+            if (handhelds_[i].get() == t)
+                return homes_[i];
+        return homes_.front();
+    };
 
     int n = 0;
     for (const Who &w : who) {
@@ -906,10 +984,11 @@ bool StressRunner::start(QString *error)
         bot->remote = (w.job == Bot::Job::Server && n % 2 == 1) || w.job == Bot::Job::Kitchen || w.job == Bot::Job::Driver;
         const QString terminal = u"%1's %2"_s.arg(w.name, bot->remote ? u"handheld"_s : u"screen"_s);
         if (bot->remote) {
-            // On the handhelds' thread: it connects, then starts work.
-            bot->ctx.moveToThread(&handhelds_);
-            bot->next.moveToThread(&handhelds_);
+            // On a handhelds' thread: made, connected and working there.
             const Credentials c = credentials(terminal);
+            QThread *t = threadForNext();
+            bot->ctx.moveToThread(t);
+            bot->next.moveToThread(t);
             Bot *b = bot.get();
             const int after = 150 * n;
             QMetaObject::invokeMethod(&b->ctx, [b, c, terminal, after] {
@@ -928,10 +1007,22 @@ bool StressRunner::start(QString *error)
         bots_.push_back(std::move(bot));
         ++n;
     }
+    // The kitchen and expo screens split the tickets between them.
+    for (const Bot::Job job : {Bot::Job::Kitchen, Bot::Job::Expo}) {
+        std::vector<Bot *> same;
+        for (auto &b : bots_)
+            if (b->job == job)
+                same.push_back(b.get());
+        for (size_t i = 0; i < same.size(); ++i) {
+            same[i]->share = int(i);
+            same[i]->shares = int(same.size());
+        }
+    }
     // Screens that only watch (the host stand's iPad, the office...), logged in.
+    watchers_.resize(size_t(o_.watchers));   // each filled on its own thread
     for (int i = 0; i < o_.watchers; ++i) {
         const Credentials c = credentials(u"Watching screen %1"_s.arg(i + 1));
-        QMetaObject::invokeMethod(handheldHome_, [this, c] {
+        QMetaObject::invokeMethod(homeOf(threadForNext()), [this, i, c] {
             auto r = std::make_unique<RemoteSession>(c.terminalName);
             r->setCredentials(c);
             r->connectTo(c.host, c.port);
@@ -940,7 +1031,7 @@ bool StressRunner::start(QString *error)
                 if (raw->online() && !raw->loggedIn())
                     raw->invoke(u"loginWithPin"_s, {u"1234"_s});
             });
-            watchers_.push_back(std::move(r));
+            watchers_[size_t(i)] = std::move(r);
         });
     }
     // Everyone on the clock (the manager does it, as on a real night).
@@ -1053,7 +1144,8 @@ void StressRunner::everySecond()
             });
         }
 
-    if (server_ && actionsPerSecond_.size() % 10 == 0 && !finished_) {
+    const size_t every = size_t(std::max(10, (o_.minutes * 60 / 80) / 10 * 10));   // about 80 lines at most
+    if (server_ && actionsPerSecond_.size() % every == 0 && !finished_) {
         const int rounds = server_->updateRounds() - lastUpdateRounds_;
         const double ms = rounds ? double(server_->updateNsecs() - lastUpdateNsecs_) / 1e6 / rounds : 0;
         lastUpdateRounds_ = server_->updateRounds();
@@ -1071,14 +1163,48 @@ void StressRunner::everySecond()
     }
     if (!winding_ && clock_.elapsed() >= qint64(o_.minutes) * 60'000)
         windDown();
-    if (winding_ && !finished_) {
-        // Done when every check is closed (or after three minutes of trying).
+    if (winding_ && !closing_ && !finished_) {
+        // Every check closed (or three minutes of trying): close the day.
         bool anyOpen = false;
         for (const auto &[checkId, c] : shared_->open)
             if (!c.training)
                 anyOpen = true;
-        if (!anyOpen || clock_.elapsed() - windStartedMs_ > 180'000)
+        if (!anyOpen || clock_.elapsed() - windStartedMs_ > std::max<qint64>(180'000, o_.minutes * 6'000LL))
+            closeTheDay();
+    }
+    if (closing_ && !finished_) {
+        bool busy = false;
+        for (const auto &b : bots_)
+            busy = busy || b->busy;
+        if ((!busy && counting_ == 0 && closingStartedMs_ > 0 && clock_.elapsed() - closingStartedMs_ > 1500)
+            || clock_.elapsed() - closingStartedMs_ > 120'000) {
+            // Everyone has counted: the manager closes the day.
+            Bot *office = nullptr;
+            for (auto &b : bots_)
+                if (b->job == Bot::Job::Manager)
+                    office = b.get();
+            auto *pos = office ? qobject_cast<app::PosService *>(office->owned.get()) : nullptr;
+            const size_t past = shared_->pastDays.size();
+            const qint64 dayId = shared_->day.id;
+            closedDayId_ = dayId;
+            dayChecks_ = int(shared_->closedToday.size());
+            for (const core::Check &c : shared_->closedToday)
+                daySalesCents_ += c.totals(shared_->settings.tax).subtotal.cents();
+            const int closed = int(shared_->closedToday.size());
+            QElapsedTimer t;
+            t.start();
+            // The day's checks are checked against the database first (they leave with the day).
+            QStringList problems, notes;
+            checkEverything(problems, notes);
+            checked_ = {problems, notes};
+            const bool ok = pos && pos->endOfDay();
+            const double ms = double(t.nsecsElapsed()) / 1e6;
+            dayClosedOk_ = ok && shared_->pastDays.size() == past + 1 && shared_->closedToday.empty()
+                           && shared_->day.id != dayId;
+            dayClosed_ = ok ? u"End of Day closed day %1 (%2 checks) in %3 ms; a new day started."_s.arg(dayId).arg(closed).arg(ms, 0, 'f', 0)
+                            : u"End of Day refused: %1"_s.arg(pos ? pos->dayInfo().value(u"blockers"_s).toStringList().join(u"; "_s) : u"no manager"_s);
             finish();
+        }
     }
     if (lagWindow_.size() > 3000)
         lagWindow_.erase(lagWindow_.begin(), lagWindow_.end() - 3000);   // the last minute
@@ -1117,6 +1243,36 @@ void StressRunner::measureUpdate()
     probe.logout();
 }
 
+void StressRunner::closeTheDay()
+{
+    closing_ = true;
+    closingStartedMs_ = clock_.elapsed();
+    // Everyone with a bank counts it (on their own screen, when they're free).
+    for (auto &b : bots_) {
+        if (b->job != Bot::Job::Server && b->job != Bot::Job::Bartender && b->job != Bot::Job::Phone
+            && b->job != Bot::Job::Driver)
+            continue;
+        ++counting_;
+        Bot *raw = b.get();
+        QMetaObject::invokeMethod(&raw->ctx, [this, raw] {
+            raw->next.stop();
+            const auto start = std::make_shared<std::function<void()>>();
+            *start = [this, raw, start] {
+                if (raw->busy) {   // finishing what they were doing first
+                    QTimer::singleShot(300, &raw->ctx, *start);
+                    return;
+                }
+                raw->busy = true;
+                raw->countBank([this, raw] {
+                    raw->busy = false;
+                    --counting_;
+                });
+            };
+            (*start)();
+        });
+    }
+}
+
 void StressRunner::windDown()
 {
     winding_ = true;
@@ -1136,7 +1292,7 @@ QVariantMap StressRunner::stats() const
             if (l.sent && !l.voided && !l.isComment())
                 ++tickets;
     }
-    qint64 sales = 0;
+    qint64 sales = daySalesCents_;
     for (const core::Check &c : shared_->closedToday)
         sales += c.totals(shared_->settings.tax).subtotal.cents();
     const auto timing = [](const QHash<QString, Timing> &h) {
@@ -1161,15 +1317,18 @@ QVariantMap StressRunner::stats() const
     return {
         {u"elapsed"_s, elapsed / 1000},
         {u"total"_s, o_.minutes * 60},
-        {u"phase"_s, finished_ ? (passed_ ? u"Passed"_s : u"Problems found"_s) : winding_ ? u"Last checks"_s
-                     : intensity() >= 0.99 ? u"The rush"_s : u"Service"_s},
+        {u"phase"_s, finished_ ? (passed_ ? u"Passed"_s : u"Problems found"_s) : closing_ ? u"Closing the day"_s
+                     : winding_ ? u"Last checks"_s
+                     : intensity() >= 0.8 ? (!longDay() ? u"The rush"_s
+                                             : clock_.elapsed() < o_.minutes * 27'000LL ? u"Lunch rush"_s : u"Dinner rush"_s)
+                     : u"Service"_s},
         {u"intensity"_s, intensity()},
         {u"speed"_s, o_.speed},
         {u"people"_s, int(bots_.size())},
         {u"handhelds"_s, server_ ? server_->terminalCount() : 0},
         {u"open"_s, open},
         {u"guests"_s, guests},
-        {u"closed"_s, int(shared_->closedToday.size())},
+        {u"closed"_s, dayChecks_ + int(shared_->closedToday.size())},
         {u"sales"_s, QString::number(double(sales) / 100.0, 'f', 2)},
         {u"waiting"_s, [this] {
              int n = 0;
@@ -1281,15 +1440,37 @@ void StressRunner::finish()
     }
     const QMutexLocker lock(&mutex_);
     QStringList problems, notes;
-    checkEverything(problems, notes);
+    if (checked_) {
+        problems = checked_->first;
+        notes = checked_->second;
+    } else {
+        checkEverything(problems, notes);
+    }
+    // The day closed, and the database has it.
+    if (!dayClosed_.isEmpty()) {
+        (dayClosedOk_ ? notes : problems) << dayClosed_;
+        if (dayClosedOk_ && o_.writer && !o_.dbPath.isEmpty()) {
+            o_.writer->flush();
+            storage::PosStore store(o_.dbPath);
+            const auto saved = store.open() ? store.load() : std::nullopt;
+            const bool there = saved && std::ranges::any_of(saved->pastDays, [this](const app::PastDay &d) {
+                return d.day.id == closedDayId_;
+            });
+            (there ? notes : problems) << (there ? u"The closed day and its reports are in the database."_s
+                                                 : u"The closed day isn't in the database."_s);
+        }
+    }
     passed_ = problems.isEmpty();
 
     const QVariantMap st = stats();
     const QVariantMap local = st[u"local"_s].toMap(), remote = st[u"remote"_s].toMap();
     QString r;
     r += u"ViewTouch stress test - %1\n"_s.arg(QDateTime::currentDateTime().toString(u"yyyy-MM-dd h:mm AP"_s));
-    r += u"%1 minutes at %2x (a %3-minute dinner), %4 pretend staff, %5 handhelds.\n\n"_s.arg(o_.minutes)
-             .arg(o_.speed).arg(int(o_.minutes * o_.speed)).arg(bots_.size()).arg(st[u"handhelds"_s].toInt());
+    r += longDay() ? u"%1 minutes at %2x (a %3-hour business day), %4x load: %5 pretend staff, %6 handhelds, %7 tables.\n\n"_s
+                         .arg(o_.minutes).arg(o_.speed).arg(double(o_.minutes) * o_.speed / 60.0, 0, 'f', 1).arg(o_.load)
+                         .arg(bots_.size()).arg(st[u"handhelds"_s].toInt()).arg(o_.tables.size() + o_.barSeats.size())
+                   : u"%1 minutes at %2x (a %3-minute dinner), %4x load: %5 pretend staff, %6 handhelds.\n\n"_s.arg(o_.minutes)
+                         .arg(o_.speed).arg(int(o_.minutes * o_.speed)).arg(o_.load).arg(bots_.size()).arg(st[u"handhelds"_s].toInt());
     r += passed_ ? u"RESULT: PASSED\n"_s : u"RESULT: PROBLEMS FOUND\n"_s;
     for (const QString &p : problems)
         r += u"  ! "_s + p + u'\n';
@@ -1335,9 +1516,13 @@ void StressRunner::finish()
         r += u"\nAs the night went on\n"_s + timeline_.join(u'\n') + u'\n';
     if (!refusedWhy_.isEmpty()) {
         r += u"\nRefused steps (%1; (!) = shouldn't have been)\n"_s.arg(refused_);
+        for (auto it = refusedWhy_.cbegin(); it != refusedWhy_.cend(); ++it)
+            if (it.key().startsWith(u"(!)"_s))
+                r += u"  %1 x %2\n"_s.arg(it.value()).arg(it.key());
         std::vector<std::pair<int, QString>> why;
         for (auto it = refusedWhy_.cbegin(); it != refusedWhy_.cend(); ++it)
-            why.emplace_back(it.value(), it.key());
+            if (!it.key().startsWith(u"(!)"_s))
+                why.emplace_back(it.value(), it.key());
         std::ranges::sort(why, std::greater<>());
         for (size_t i = 0; i < std::min<size_t>(25, why.size()); ++i)
             r += u"  %1 x %2\n"_s.arg(why[i].first).arg(why[i].second);

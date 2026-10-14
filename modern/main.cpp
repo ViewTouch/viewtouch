@@ -160,6 +160,11 @@ struct Options {
     QCommandLineOption stressSpeed{u"stress-speed"_s,
         u"Times faster than real life (default 12: a two-hour dinner in ten minutes)."_s, u"times"_s, u"12"_s};
     QCommandLineOption stressServers{u"stress-servers"_s, u"Pretend servers (default 6)."_s, u"count"_s, u"6"_s};
+    QCommandLineOption stressHours{u"stress-hours"_s,
+        u"A whole business day this long instead (6 or more: a lunch rush and a dinner rush), at --stress-speed; "
+         "ends with everyone counting their bank and End of Day."_s, u"hours"_s};
+    QCommandLineOption stressLoad{u"stress-load"_s,
+        u"Times the staff, tables, guests and handhelds (default 1; up to 5)."_s, u"times"_s, u"1"_s};
     QCommandLineOption stressExit{u"stress-exit"_s, u"Quit when the stress test is done (exit code 0: passed)."_s};
 
     static QString defaultDataDir() { return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation); }
@@ -1367,6 +1372,8 @@ int runStore(const Args &cli, const Options &o)
         so.minutes = cli.value(o.stressMinutes).toInt();
         so.speed = cli.value(o.stressSpeed).toDouble();
         so.servers = cli.value(o.stressServers).toInt();
+        so.hours = cli.isSet(o.stressHours) ? cli.value(o.stressHours).toDouble() : 0;
+        so.load = cli.value(o.stressLoad).toInt();
         so.dbPath = dbPath;
         so.writer = writer.get();
         vt::net::StressRunner::tablesOn(*layout, so.tables, so.barSeats);
@@ -1811,7 +1818,7 @@ int main(int argc, char *argv[])
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
         o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.exportDir,
-        o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressExit};
+        o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
     cli.process(app);
 
