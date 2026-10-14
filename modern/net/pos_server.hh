@@ -48,6 +48,9 @@ public:
     quint16 port() const { return server_.serverPort(); }
     QString errorString() const { return error_.isEmpty() ? server_.errorString() : error_; }
     int terminalCount() const;
+    // Time spent sending the screens their updates (for the stress test).
+    qint64 updateNsecs() const { return updateNsecs_; }
+    int updateRounds() const { return updateRounds_; }
 
     // The store's standby: a full copy of the database when it connects
     // (`snapshot` makes one: the database file's bytes), then every change
@@ -78,6 +81,8 @@ private:
     void scheduleFlushAll();
 
     app::PosShared *shared_;
+    qint64 updateNsecs_ = 0;
+    int updateRounds_ = 0;
     LayoutHub *layouts_;
     QSslServer server_;
     QString error_;

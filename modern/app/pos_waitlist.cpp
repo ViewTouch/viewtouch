@@ -52,7 +52,7 @@ int PosService::quoteFor(int ahead) const
     return std::max(5, (minutes + 4) / 5 * 5);   // to the next 5 minutes
 }
 
-QVariantMap PosService::waitlistInfo() const
+QVariantMap PosService::waitlistInfoNow() const
 {
     if (!user())
         return {};
@@ -302,7 +302,7 @@ bool PosService::tableTaken(const QString &table) const
     return false;
 }
 
-QVariantMap PosService::floor() const
+QVariantMap PosService::floorNow() const
 {
     if (!user())
         return {};

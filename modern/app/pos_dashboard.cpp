@@ -28,7 +28,7 @@ QString clock(std::int64_t ms)
 
 } // namespace
 
-QVariantMap PosService::dashboard() const
+QVariantMap PosService::dashboardNow() const
 {
     if (!user() || !user()->can(perm::Manager))
         return {};
@@ -168,7 +168,7 @@ QVariantMap PosService::dashboard() const
 
 // --- opening and closing checklists ------------------------------------------------
 
-QVariantMap PosService::checklists() const
+QVariantMap PosService::checklistsNow() const
 {
     const PosSettings &st = s_->settings;
     const bool today = st.checklistDayId == s_->day.id;
@@ -237,6 +237,76 @@ Report PosService::checklistReport(const ReportContext &ctx) const
     if (r.rows.empty())
         r.note("No checklists (Manager -> Settings: Opening / Closing checklist).");
     return r;
+}
+
+// What's the same on every screen (in its language), made once while the
+// server updates them all.
+QVariantList PosService::kitchenTickets() const
+{
+    return s_->memo(u"kitchenTickets "_s + language(), [this] { return QVariant(kitchenTicketsNow()); }).toList();
+}
+QVariantList PosService::expoTickets() const
+{
+    return s_->memo(u"expoTickets "_s + language(), [this] { return QVariant(expoTicketsNow()); }).toList();
+}
+QVariantMap PosService::dashboard() const
+{
+    if (!user() || !user()->can(perm::Manager))
+        return {};
+    return s_->memo(u"dashboard "_s + language(), [this] { return QVariant(dashboardNow()); }).toMap();
+}
+QVariantList PosService::menuItems() const
+{
+    if (!user())
+        return {};
+    return s_->memo(u"menuItems "_s + language(), [this] { return QVariant(menuItemsNow()); }).toList();
+}
+QVariantList PosService::menuCategories() const
+{
+    return s_->memo(u"menuCategories "_s + language(), [this] { return QVariant(menuCategoriesNow()); }).toList();
+}
+QVariantList PosService::choiceGroups() const
+{
+    return s_->memo(u"choiceGroups "_s + language(), [this] { return QVariant(choiceGroupsNow()); }).toList();
+}
+
+QVariantList PosService::closedChecks() const
+{
+    if (!can(QString::fromLatin1(perm::Manager)))
+        return {};
+    return s_->memo(u"closedChecks "_s + language(), [this] { return QVariant(closedChecksNow()); }).toList();
+}
+QVariantMap PosService::waitlistInfo() const
+{
+    if (!user())
+        return {};
+    return s_->memo(u"waitlistInfo "_s + language(), [this] { return QVariant(waitlistInfoNow()); }).toMap();
+}
+QVariantMap PosService::floor() const
+{
+    if (!user())
+        return {};
+    return s_->memo(u"floor "_s + language(), [this] { return QVariant(floorNow()); }).toMap();
+}
+QVariantMap PosService::stockLeft() const
+{
+    return s_->memo(u"stockLeft "_s + language(), [this] { return QVariant(stockLeftNow()); }).toMap();
+}
+QVariantMap PosService::dayInfo() const
+{
+    return s_->memo(u"dayInfo "_s + language(), [this] { return QVariant(dayInfoNow()); }).toMap();
+}
+QVariantList PosService::days() const
+{
+    return s_->memo(u"days "_s + language(), [this] { return QVariant(daysNow()); }).toList();
+}
+QVariantMap PosService::checklists() const
+{
+    return s_->memo(u"checklists "_s + language(), [this] { return QVariant(checklistsNow()); }).toMap();
+}
+QStringList PosService::popularItems() const
+{
+    return s_->memo(u"popularItems "_s + language(), [this] { return QVariant(popularItemsNow()); }).toStringList();
 }
 
 } // namespace vt::app

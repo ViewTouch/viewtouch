@@ -1118,7 +1118,7 @@ bool PosService::setGratuity(std::int64_t percentBp)
 
 // --- business day --------------------------------------------------------------------
 
-QVariantMap PosService::dayInfo() const
+QVariantMap PosService::dayInfoNow() const
 {
     QStringList blockers;
     if (!s_->open.empty())
@@ -1185,7 +1185,7 @@ bool PosService::clockOutPunch(qint64 punchId)
     return fail(tr("They're not clocked in anymore."));
 }
 
-QVariantList PosService::days() const
+QVariantList PosService::daysNow() const
 {
     QVariantList out{QVariantMap{{u"id"_s, qint64(0)}, {u"label"_s, tr("Today (since %1)").arg(clockText(s_->day.openedAt))}}};
     for (const PastDay &p : s_->pastDays)

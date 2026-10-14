@@ -156,6 +156,20 @@ public:
     std::int64_t now() const { return now_(); }
     void setClock(std::function<std::int64_t()> now) { now_ = std::move(now); }
 
+    // While the server makes every screen's update at once (nothing changes
+    // meanwhile), what's the same for all of them (the kitchen's tickets, the
+    // menu) is made once: `memo` keeps it until `endMemo`.
+    void beginMemo() { memo_.emplace(); }
+    void endMemo() { memo_.reset(); }
+    QVariant memo(const QString &key, const std::function<QVariant()> &make) const
+    {
+        if (!memo_)
+            return make();
+        if (const auto it = memo_->constFind(key); it != memo_->cend())
+            return *it;
+        return *memo_->insert(key, make());
+    }
+
     const core::Employee *employee(const std::string &id) const;
 
     core::PosSettings settings;
@@ -193,6 +207,11 @@ public:
     std::map<std::string, int> pastChecksWith;
     std::map<std::string, std::map<std::string, int>> pastTogether;
     bool pastTogetherAsked = false;
+    // ...and today's, counted as checks close (not again for every screen).
+    std::map<std::string, int> todayChecksWith;
+    std::map<std::string, std::map<std::string, int>> todayTogether;
+    size_t todayCounted = 0;
+    std::int64_t todayLastId = 0;
     // Older time punches from the store (Time Punches reaches a month back).
     std::function<std::vector<core::TimePunch>(std::int64_t from, std::int64_t to)> punchHistory;
     std::vector<core::TimePunch> olderPunches;   // loaded from it for editing
@@ -347,6 +366,9 @@ signals:
 
 private:
     std::function<std::int64_t()> now_;
+
+private:
+    mutable std::optional<QHash<QString, QVariant>> memo_;
 };
 
 // One terminal's POS session: who is logged in, the check being worked on,
@@ -803,6 +825,21 @@ public:
     bool saveChoiceGroup(const QVariantMap &record);
     bool deleteChoiceGroup(const QString &id);   // items stop asking for it
     QVariantList kitchenTickets() const override;
+    // The same for every screen: made once per round of updates (PosShared::memo).
+    QVariantList kitchenTicketsNow() const;
+    QVariantList expoTicketsNow() const;
+    QVariantMap dashboardNow() const;
+    QVariantList menuItemsNow() const;
+    QVariantList menuCategoriesNow() const;
+    QVariantList choiceGroupsNow() const;
+    QVariantList closedChecksNow() const;
+    QVariantMap waitlistInfoNow() const;
+    QVariantMap floorNow() const;
+    QVariantMap stockLeftNow() const;
+    QVariantMap dayInfoNow() const;
+    QVariantList daysNow() const;
+    QVariantMap checklistsNow() const;
+    QStringList popularItemsNow() const;
     QVariantMap drawerInfo() const override;
     QVariantMap dayInfo() const override;
     QVariantList days() const override;

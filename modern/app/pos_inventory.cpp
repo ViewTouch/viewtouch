@@ -100,7 +100,7 @@ void PosService::takeStock(const std::vector<OrderLine> &lines, int sign)
     emit s_->dayChanged();   // "5 left" on the buttons
 }
 
-QVariantMap PosService::stockLeft() const
+QVariantMap PosService::stockLeftNow() const
 {
     QVariantMap out;
     for (const MenuItem &m : s_->menu) {

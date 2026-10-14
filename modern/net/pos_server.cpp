@@ -1,10 +1,13 @@
 #include "net/pos_server.hh"
 
+#include "app/i18n.hh"
 #include "app/pos_service.hh"
 #include "net/layout_hub.hh"
 #include "net/pairing.hh"
 #include "net/protocol.hh"
 
+#include <QElapsedTimer>
+#include <QMetaProperty>
 #include <QDateTime>
 #include "net/build_info.hh"
 #include <QRegularExpression>
@@ -33,6 +36,7 @@ struct PosServer::Connection {
     bool synced = false;                        // ...has its copy, gets every change
     qint64 since = 0;
     QVariantMap sent;                           // last state sent
+    quint32 dirty = ~0u;                        // what may have changed since (StatePiece::bit)
     QList<QJsonObject> events;                  // queued until the next flush
     QStringList notices;
     qint64 heard = 0;         // when it last sent anything
@@ -40,6 +44,56 @@ struct PosServer::Connection {
     QString version, platform;
     bool answersPings = false;   // a terminal that says "pong" (older ones don't)
 };
+
+namespace {
+
+// A screen's state, piece by piece, and which change signal says each one
+// may have changed (its property's NOTIFY, the same signal the screen on
+// this computer redraws by). After a change only those pieces are made
+// again; a piece without one is made every time.
+struct StatePiece {
+    QString key;
+    QMetaProperty property;
+    quint32 bit;
+};
+constexpr quint32 kAlways = 1u << 31;
+
+const std::vector<StatePiece> &statePieces()
+{
+    static const std::vector<StatePiece> pieces = [] {
+        std::vector<StatePiece> out;
+        const QMetaObject &mo = app::PosSession::staticMetaObject;
+        QList<int> signalIndexes;
+        for (const QString &key : app::PosSession::stateKeys()) {
+            const int i = mo.indexOfProperty(key.toLatin1().constData());
+            Q_ASSERT(i >= 0);
+            const QMetaProperty p = mo.property(i);
+            quint32 bit = kAlways;
+            if (p.hasNotifySignal()) {
+                int at = int(signalIndexes.indexOf(p.notifySignalIndex()));
+                if (at < 0) {
+                    at = int(signalIndexes.size());
+                    signalIndexes << p.notifySignalIndex();
+                }
+                bit = at < 31 ? 1u << at : kAlways;
+            }
+            out.push_back({key, p, bit});
+        }
+        return out;
+    }();
+    return pieces;
+}
+
+// The bit for a change signal (kAlways for one no piece names).
+quint32 bitOfSignal(const QMetaMethod &signal)
+{
+    for (const StatePiece &p : statePieces())
+        if (p.property.hasNotifySignal() && p.property.notifySignalIndex() == signal.methodIndex())
+            return p.bit;
+    return kAlways;
+}
+
+} // namespace
 
 PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent)
     : QObject(parent)
@@ -88,11 +142,22 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     flushTimer_.setSingleShot(true);
     flushTimer_.setInterval(0);
     connect(&flushTimer_, &QTimer::timeout, this, [this] {
+        QElapsedTimer t;
+        t.start();
+        shared_->beginMemo();
         for (auto &c : connections_)
             flush(c.get());
+        shared_->endMemo();
+        updateNsecs_ += t.nsecsElapsed();
+        ++updateRounds_;
     });
     tickTimer_.setInterval(30'000);
-    connect(&tickTimer_, &QTimer::timeout, this, &PosServer::scheduleFlushAll);
+    // Now and then everything (times that move on their own: minutes seated).
+    connect(&tickTimer_, &QTimer::timeout, this, [this] {
+        for (auto &c : connections_)
+            c->dirty = ~0u;
+        scheduleFlushAll();
+    });
     tickTimer_.start();
 
     // Pages saved anywhere reach every other terminal.
@@ -246,19 +311,25 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         app::PosService *s = c->session.get();
         if (paired->screen == "selfOrder")   // Manager -> Terminals: a kiosk for guests
             s->enableSelfOrder();
-        // Any change to this session's state is sent out on the next flush.
+        // Any change to this session's state is sent out on the next flush
+        // (the pieces that signal names).
         for (auto signal : {&app::PosSession::sessionChanged, &app::PosSession::entryChanged,
                             &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
                             &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
                             &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
                             &app::PosSession::adminChanged}) {
-            connect(s, signal, this, &PosServer::scheduleFlushAll);
+            const quint32 bit = bitOfSignal(QMetaMethod::fromSignal(signal));
+            connect(s, signal, this, [this, c, bit] {
+                c->dirty |= bit;
+                scheduleFlushAll();
+            });
         }
         connect(s, &app::PosSession::notice, this, [c](const QString &text) { c->notices << text; });
         connect(s, &app::PosSession::checkClosed, this, [c](qint64 id) {
             c->events << QJsonObject{{u"t"_s, u"event"_s}, {u"e"_s, u"checkClosed"_s}, {u"v"_s, id}};
         });
         c->sent = s->snapshot();
+        c->dirty = 0;
         // What the store runs, and an update for this screen if it has one.
         const AppBuild me = appBuild();
         QJsonObject welcome{{u"t"_s, u"welcome"_s}, {u"protocol"_s, ProtocolVersion},
@@ -481,13 +552,21 @@ void PosServer::flush(Connection *c)
 {
     if (!c->session)
         return;
-    const QVariantMap now = c->session->snapshot();
+    // The pieces that may have changed, made again and compared.
+    const quint32 dirty = std::exchange(c->dirty, 0) | kAlways;
+    app::PosService *s = c->session.get();
+    const i18n::Scope language([s] { return s->language(); });
     QJsonObject changed;
-    for (auto it = now.begin(); it != now.end(); ++it) {
-        if (c->sent.value(it.key()) != it.value())
-            changed.insert(it.key(), QJsonValue::fromVariant(it.value()));
+    for (const StatePiece &p : statePieces()) {
+        if (!(p.bit & dirty))
+            continue;
+        const QVariant value = p.property.read(s);
+        auto it = c->sent.find(p.key);
+        if (it != c->sent.end() && *it == value)
+            continue;
+        changed.insert(p.key, QJsonValue::fromVariant(value));
+        c->sent.insert(p.key, value);
     }
-    c->sent = now;
     if (!changed.isEmpty())
         c->channel->send({{u"t"_s, u"state"_s}, {u"set"_s, changed}});
     for (const QJsonObject &e : std::exchange(c->events, {}))

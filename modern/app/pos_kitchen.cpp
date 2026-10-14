@@ -18,7 +18,7 @@ namespace vt::app {
 
 // --- kitchen display -----------------------------------------------------------------------
 
-QVariantList PosService::kitchenTickets() const
+QVariantList PosService::kitchenTicketsNow() const
 {
     // A ticket is everything sent in one go from one check that the kitchen
     // has not bumped yet. Closed checks count too (pay-first counters).
@@ -194,7 +194,7 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
 
 // --- the expediter -------------------------------------------------------------------------
 
-QVariantList PosService::expoTickets() const
+QVariantList PosService::expoTicketsNow() const
 {
     // Everything sent and not yet run to the table, a ticket per send, with
     // what each station has made.

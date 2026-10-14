@@ -406,7 +406,7 @@ bool PosService::setMenuItemColor(const QString &id, const QString &color)
     return fail(tr("'%1' is not on the menu.").arg(id));
 }
 
-QStringList PosService::popularItems() const
+QStringList PosService::popularItemsNow() const
 {
     // Today's checks, closed and open (not practice): how many of each item.
     std::map<std::string, int> sold;
@@ -480,22 +480,36 @@ QVariantList PosService::goesWith(const Check &c) const
             }, Qt::QueuedConnection);
         });
     }
-    // With today's checks (those not in the past already).
-    std::map<std::string, int> with = s_->pastChecksWith;
-    std::map<std::string, std::map<std::string, int>> together = s_->pastTogether;
-    for (const Check &x : s_->closedToday)
-        countTogether(x, with, together);
+    // Today's, counted once as checks close (from the start again if one
+    // was reopened or the day closed).
+    const auto &closed = s_->closedToday;
+    if (closed.size() < s_->todayCounted
+        || (s_->todayCounted > 0 && closed[s_->todayCounted - 1].id != s_->todayLastId)) {
+        s_->todayChecksWith.clear();
+        s_->todayTogether.clear();
+        s_->todayCounted = 0;
+    }
+    for (; s_->todayCounted < closed.size(); ++s_->todayCounted)
+        countTogether(closed[s_->todayCounted], s_->todayChecksWith, s_->todayTogether);
+    s_->todayLastId = closed.empty() ? 0 : closed.back().id;
+    const auto withOf = [this](const std::string &a) {
+        const auto p = s_->pastChecksWith.find(a), t = s_->todayChecksWith.find(a);
+        return (p == s_->pastChecksWith.end() ? 0 : p->second) + (t == s_->todayChecksWith.end() ? 0 : t->second);
+    };
 
     // For each item not on the check: how often it went with what's on it (the
     // most likely of them); at least 3 checks, and 1 in 4 of them.
     const std::vector<std::string> on = itemsOn(c);
     std::map<std::string, double> score;
     for (const std::string &a : on) {
-        const auto t = together.find(a);
-        if (t == together.end())
-            continue;
-        const int checks = with[a];
-        for (const auto &[b, n] : t->second)
+        // Past and today together.
+        std::map<std::string, int> pairs;
+        for (const auto *source : {&s_->pastTogether, &s_->todayTogether})
+            if (const auto t = source->find(a); t != source->end())
+                for (const auto &[b, n] : t->second)
+                    pairs[b] += n;
+        const int checks = withOf(a);
+        for (const auto &[b, n] : pairs)
             if (n >= 3 && checks > 0 && n * 4 >= checks && std::ranges::find(on, b) == on.end())
                 score[b] = std::max(score[b], double(n) / checks);
     }
@@ -559,7 +573,7 @@ QVariantList PosService::sizesOf(const MenuItem &m) const
     return out;
 }
 
-QVariantList PosService::choiceGroups() const
+QVariantList PosService::choiceGroupsNow() const
 {
     QVariantList out;
     for (const ModifierGroup &g : s_->settings.modifierGroups) {
@@ -604,7 +618,7 @@ std::vector<MenuCategory> PosShared::categories() const
     return out;
 }
 
-QVariantList PosService::menuCategories() const
+QVariantList PosService::menuCategoriesNow() const
 {
     QVariantList out;
     const std::string period = currentMealPeriod();
@@ -623,7 +637,7 @@ QVariantList PosService::menuCategories() const
     return out;
 }
 
-QVariantList PosService::menuItems() const
+QVariantList PosService::menuItemsNow() const
 {
     QVariantList out;
     if (!user())

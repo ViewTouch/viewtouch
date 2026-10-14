@@ -299,7 +299,7 @@ bool PosService::fireCourseOn(Check &check, bool paced)
     return true;
 }
 
-QVariantList PosService::closedChecks() const
+QVariantList PosService::closedChecksNow() const
 {
     QVariantList out;
     if (!can(QString::fromLatin1(perm::Manager)))

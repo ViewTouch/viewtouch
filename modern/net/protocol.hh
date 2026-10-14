@@ -39,6 +39,7 @@ public:
 private:
     QTcpSocket *socket_;
     QByteArray buffer_;
+    bool lowDelay_ = false;
 };
 
 } // namespace vt::net

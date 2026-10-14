@@ -8,6 +8,12 @@ void LineChannel::send(const QJsonObject &message)
 {
     QByteArray line = QJsonDocument(message).toJson(QJsonDocument::Compact);
     line.append('\n');
+    // Each message goes out now (no waiting to fill a packet): otherwise a
+    // touch's answer can sit ~40 ms waiting for the other side's ack.
+    if (!lowDelay_ && socket_->state() == QAbstractSocket::ConnectedState) {
+        socket_->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+        lowDelay_ = true;
+    }
     socket_->write(line);
 }
 
