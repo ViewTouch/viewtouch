@@ -10,6 +10,8 @@ ApplicationWindow {
     readonly property EditorController editor: controller.editor
     // Kiosk screens stay full screen; elsewhere F11 switches to a window.
     property bool kiosk: false
+    // A stress test running (vtmodern --stress): its numbers over the screen.
+    property QtObject stress: null
     // The customer display in the second monitor's part of this window (a
     // kiosk's one window spans both monitors). With one screen (trying it
     // out), the right third.
@@ -1253,5 +1255,11 @@ ApplicationWindow {
         target: root.editor
         ignoreUnknownSignals: true
         function onNoticeChanged() { root.toast(root.editor.notice) }
+    }
+
+    StressPanel {
+        visible: root.stress !== null
+        stress: root.stress
+        controller: root.controller
     }
 }

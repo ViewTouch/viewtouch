@@ -12,6 +12,7 @@
 #include "net/standby.hh"
 #include "net/protocol.hh"
 #include "net/remote_session.hh"
+#include "net/stress.hh"
 #include "print/printer_monitor.hh"
 #include "print/spooler.hh"
 #include "print/ticket_printer.hh"
@@ -150,6 +151,16 @@ struct Options {
     QCommandLineOption restore{u"restore"_s,
         u"Put backup <file> in place of the database and exit. ViewTouch must not be running. An encrypted "
          "backup (.vtbak) asks for the backup password (or reads VTM_BACKUP_PASSWORD)."_s, u"file"_s};
+
+    QCommandLineOption stress{u"stress"_s,
+        u"A live stress test: a busy dinner on a throwaway store (a new folder, unless --data-dir names an empty "
+         "one), pretend staff working this screen and handhelds, measured as it runs; a report at the end."_s};
+    QCommandLineOption stressMinutes{u"stress-minutes"_s, u"How long the stress test runs (default 10)."_s,
+        u"minutes"_s, u"10"_s};
+    QCommandLineOption stressSpeed{u"stress-speed"_s,
+        u"Times faster than real life (default 12: a two-hour dinner in ten minutes)."_s, u"times"_s, u"12"_s};
+    QCommandLineOption stressServers{u"stress-servers"_s, u"Pretend servers (default 6)."_s, u"count"_s, u"6"_s};
+    QCommandLineOption stressExit{u"stress-exit"_s, u"Quit when the stress test is done (exit code 0: passed)."_s};
 
     static QString defaultDataDir() { return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation); }
 };
@@ -859,6 +870,10 @@ int runStore(const Args &cli, const Options &o)
     }
     if (!posData)
         posData = seedData;
+    if (cli.isSet(o.stress) && (!posData->closedToday.empty() || !posData->pastDays.empty() || !posData->openChecks.empty())) {
+        qCritical().noquote() << "This store has sales: a stress test runs only on a new folder (leave out --data-dir).";
+        return 1;
+    }
 
     std::unique_ptr<vt::storage::AsyncWriter> writer;
     std::unique_ptr<vt::storage::SqlPosSink> sink;
@@ -1136,7 +1151,7 @@ int runStore(const Args &cli, const Options &o)
     std::unique_ptr<vt::net::PosServer> server;
     std::unique_ptr<vt::net::DiscoveryResponder> discovery;
     std::unique_ptr<QLocalServer> control;
-    if (cli.isSet(o.serve) || cli.isSet(o.headless) || gServeHeadless) {
+    if (!cli.isSet(o.stress) && (cli.isSet(o.serve) || cli.isSet(o.headless) || gServeHeadless)) {
         // Is the store already being served (by the computer that took over
         // while this one was away)? Then this one becomes the standby.
         // Hands this store over to `other` and becomes its standby: this
@@ -1333,8 +1348,47 @@ int runStore(const Args &cli, const Options &o)
         qCritical().noquote() << "That PIN is not recognized.";
         return 1;
     }
+    if (cli.isSet(o.stress))
+        pos.loginWithPin(u"1234"_s);   // the manager watches
     const auto engine = showUi(cli, o, controller);
-    return engine ? qApp->exec() : 1;
+    if (!engine)
+        return 1;
+
+    // The stress test: pretend staff on this store while the screen runs.
+    std::unique_ptr<vt::net::StressRunner> stress;
+    if (cli.isSet(o.stress)) {
+        vt::net::StressOptions so;
+        so.minutes = cli.value(o.stressMinutes).toInt();
+        so.speed = cli.value(o.stressSpeed).toDouble();
+        so.servers = cli.value(o.stressServers).toInt();
+        so.dbPath = dbPath;
+        so.writer = writer.get();
+        vt::net::StressRunner::tablesOn(*layout, so.tables, so.barSeats);
+        stress = std::make_unique<vt::net::StressRunner>(shared, &hub, so);
+        QString error;
+        if (!stress->start(&error)) {
+            qCritical().noquote() << "The stress test could not start:" << error;
+            return 1;
+        }
+        qInfo().noquote() << "Stress test: the store is in" << dataDirOf(cli, o);
+        if (auto *window = qobject_cast<QQuickWindow *>(engine->rootObjects().value(0))) {
+            window->setProperty("stress", QVariant::fromValue(static_cast<QObject *>(stress.get())));
+            vt::net::StressRunner *raw = stress.get();
+            QObject::connect(window, &QQuickWindow::frameSwapped, raw, [raw] { raw->frameDrawn(); });
+        }
+        const QString reportFile = QDir(dataDirOf(cli, o)).filePath(u"stress-report.txt"_s);
+        const bool exitAfter = cli.isSet(o.stressExit);
+        QObject::connect(stress.get(), &vt::net::StressRunner::done, qApp, [&stress, reportFile, exitAfter](bool passed) {
+            QFile f(reportFile);
+            if (f.open(QIODevice::WriteOnly | QIODevice::Text))
+                f.write(stress->report().toUtf8());
+            qInfo().noquote() << stress->report();
+            qInfo().noquote() << "Report saved:" << reportFile;
+            if (exitAfter)
+                QTimer::singleShot(500, qApp, [passed] { QCoreApplication::exit(passed ? 0 : 3); });
+        });
+    }
+    return qApp->exec();
 }
 
 // --- commands to the server running on this machine ------------------------------------
@@ -1750,7 +1804,8 @@ int main(int argc, char *argv[])
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
         o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
-        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.exportDir};
+        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.exportDir,
+        o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressExit};
     cli.addOptions(all);
     cli.process(app);
 
@@ -1772,6 +1827,10 @@ int main(int argc, char *argv[])
 #endif
     if (args.isSet(o.station))
         return runStation(args, o);
+    // A stress test never touches a real store: a folder of its own.
+    if (args.isSet(o.stress))
+        args.setDefault(o.dataDir, QDir(Options::defaultDataDir()).filePath(
+                                       u"stress-tests/"_s + QDateTime::currentDateTime().toString(u"yyyy-MM-dd-HHmmss"_s)));
     if (args.isSet(o.factoryReset)) {
         const int code = runFactoryReset(args, o);
         if (code != 0 || !args.isSet(o.demoData))
