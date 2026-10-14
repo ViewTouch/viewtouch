@@ -1348,8 +1348,10 @@ int runStore(const Args &cli, const Options &o)
         qCritical().noquote() << "That PIN is not recognized.";
         return 1;
     }
-    if (cli.isSet(o.stress))
-        pos.loginWithPin(u"1234"_s);   // the manager watches
+    if (cli.isSet(o.stress)) {
+        shared->settings.setupDone = true;   // no setup guide over the dinner
+        pos.loginWithPin(u"1234"_s);         // the manager watches
+    }
     const auto engine = showUi(cli, o, controller);
     if (!engine)
         return 1;
