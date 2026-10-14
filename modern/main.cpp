@@ -1350,6 +1350,10 @@ int runStore(const Args &cli, const Options &o)
     }
     if (cli.isSet(o.stress)) {
         shared->settings.setupDone = true;   // no setup guide over the dinner
+        // The watching manager stays logged in (nobody touches this screen),
+        // and the screen stays on: the pages keep going around.
+        shared->settings.autoLogoutMinutes = 0;
+        shared->settings.screenSaverMinutes = 0;
         pos.loginWithPin(u"1234"_s);         // the manager watches
     }
     const auto engine = showUi(cli, o, controller);
