@@ -168,7 +168,7 @@ online-check|online-update)
     mkdir -p "$work"
     chmod 700 "$work"
     fetch() {   # name -> $work/name and $work/name.sig, checked
-        curl -fsSL --retry 2 --max-time 600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 (is the internet on?)."
+        curl -fsSL --retry 2 --max-time 600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 from $url (no internet, or nothing published there)."
         curl -fsSL --retry 2 --max-time 60 -o "$work/$1.sig" "$url/$1.sig" || die "$1 has no signature online: not used."
         openssl pkeyutl -verify -pubin -inkey "$key" -rawin -in "$work/$1" -sigfile "$work/$1.sig" >/dev/null 2>&1 ||
             die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
