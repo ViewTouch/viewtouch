@@ -715,6 +715,21 @@ struct StressRunner::Bot {
         // The office: reports during service, an item 86ed and back, the dashboard.
         static const char *reports[] = {"sales", "servers", "hourly", "exceptions", "items", "tips", "kitchen", "foodcost"};
         QList<Op> ops;
+        // Running low: the vendor brings more (a day this long gets deliveries).
+        QHash<QString, QVariantList> byVendor;
+        for (const core::Ingredient &g : run->shared_->ingredients)
+            if (g.lowAt > 0 && g.onHand <= g.lowAt * 2)
+                byVendor[QString::fromStdString(g.vendor)] << QVariantMap{
+                    {u"ingredient"_s, QString::fromStdString(g.id)}, {u"qty"_s, std::max(50.0, g.lowAt * 10)}};
+        if (!byVendor.isEmpty()) {
+            for (auto it = byVendor.cbegin(); it != byVendor.cend(); ++it) {
+                ops << cmd(u"receiveDelivery"_s, {QVariantMap{{u"vendor"_s, it.key()}, {u"lines"_s, it.value()},
+                                                              {u"invoice"_s, u"S-%1"_s.arg(1000 + pick(9000))}}}, true);
+                run->counted("deliveries received");
+            }
+            go(ops, done);
+            return;
+        }
         switch (managerTurn++ % 4) {
         case 0:
         case 2:
