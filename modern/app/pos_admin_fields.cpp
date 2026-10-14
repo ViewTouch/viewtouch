@@ -324,6 +324,25 @@ QVariantList PosService::adminFields(const QString &panel)
             with(with(field(u"checksPerServerHour"_s, tr("Checks a server takes care of in an hour"), u"int"_s,
                             tr("About how many. Reports -> Forecast then says how many servers each hour needs.")),
                       u"min"_s, 1), u"max"_s, 50),
+            with(field(u"laborState"_s, tr("The store's state"), u"enum"_s,
+                       tr("Sets its overtime, double time, meal break and gift card rules below (federal overtime "
+                          "past 40 hours a week applies everywhere). They're the usual rules for restaurant staff: "
+                          "check special cases with your accountant.")),
+                 u"options"_s, [] {
+                     QVariantList o{QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("(not chosen: federal rules only)")}}};
+                     for (const core::StateRules &s : core::stateRules())
+                         o.append(QVariantMap{{u"value"_s, QString::fromLatin1(s.code)}, {u"text"_s, QString::fromLatin1(s.name)}});
+                     return o;
+                 }()),
+            with(with(field(u"doubleTimeDailyHours"_s, tr("Double time after hours in a day"), u"int"_s,
+                            tr("0 = none (12 in California)")), u"min"_s, 0), u"max"_s, 24),
+            field(u"seventhDayRule"_s, tr("Seventh day in a row: time and a half, double past 8 hours"), u"bool"_s,
+                  tr("California: the seventh day worked in a row in the pay week.")),
+            with(with(field(u"mealBreakAfterHours"_s, tr("A meal break is due by (hours on the clock)"), u"int"_s,
+                            tr("0 = none. The person is reminded half an hour before, and Store Check shows who's late (5 in California).")),
+                      u"min"_s, 0), u"max"_s, 12),
+            with(field(u"giftCardCashBelow"_s, tr("Cash out gift card balances under ($)"), u"money"_s,
+                       tr("When the guest asks (California: under $10). 0 = none.")), u"min"_s, 0),
             with(with(field(u"overtimeDailyHours"_s, tr("Overtime after hours in a day"), u"int"_s,
                             tr("0 = no daily rule (e.g. 8 in California)")), u"min"_s, 0), u"max"_s, 24),
             with(with(field(u"overtimeWeeklyHours"_s, tr("Overtime after hours in a week"), u"int"_s,

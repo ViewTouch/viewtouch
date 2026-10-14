@@ -860,3 +860,39 @@ TEST_CASE("Text size and look: a screen's own, a person's own wins while they're
     const auto back = app::settingsFromJson(app::toJson(pos.shared()->settings));
     CHECK(std::ranges::any_of(back.terminals, [](const core::TerminalConfig &t) { return t.textSize == 150; }));
 }
+
+TEST_CASE("Tip pool: a manager who worked a server shift gets nothing from it (the law)", "[staff][tips][tippool][law]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(17);
+    pos.shared()->setClock([&] { return clock; });
+    pos.shared()->settings.tipPool = {{"server", 100}, {"bartender", 100}, {"busser", 50}};
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    for (const char16_t *who : {u"sam", u"jo", u"riley"})
+        REQUIRE(pos.clockInEmployee(QString::fromUtf16(who)));
+    // Morgan (a manager) on the floor as a server too.
+    core::TimePunch shift;
+    shift.id = 9001;
+    shift.employeeId = "manager";
+    shift.clockIn = clock;
+    shift.job = "server";
+    pos.shared()->punches.push_back(shift);
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    for (int i = 0; i < 8; ++i)
+        pos.addItem(u"cobb"_s);
+    REQUIRE(pos.tender(u"credit"_s));
+    pos.entryKey(u"3000"_s);
+    REQUIRE(pos.addTip(0));
+    REQUIRE(pos.closeCheck());
+    pos.logout();
+    clock += 4 * 3'600'000;
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    // $30 out by hours x share among Sam, Jo, Riley only: $12, $12, $6.
+    // (Columns: Staff, Card tips, Gratuity, Into pool, From pools, Paid out, Owed.)
+    CHECK(tipRow(pos, u"Sam"_s).value(4) == u"$12.00"_s);
+    CHECK(tipRow(pos, u"Jo"_s).value(4) == u"$12.00"_s);
+    CHECK(tipRow(pos, u"Riley"_s).value(4) == u"$6.00"_s);
+    CHECK(tipRow(pos, u"Morgan (Manager)"_s).isEmpty());   // not in the pool at all
+}

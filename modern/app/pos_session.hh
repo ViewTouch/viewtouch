@@ -568,6 +568,7 @@ public:
         invoke(QStringLiteral("sellGiftCard"), {number, amountCents});
     }
     Q_INVOKABLE void lookupGiftCard(const QString &number) { invoke(QStringLiteral("lookupGiftCard"), {number}); }
+    Q_INVOKABLE void cashOutGiftCard() { invoke(QStringLiteral("cashOutGiftCard")); }
     Q_INVOKABLE void payWithGiftCard(const QString &number = {}, qint64 amountCents = 0)
     {
         invoke(QStringLiteral("payWithGiftCard"), {number, amountCents});

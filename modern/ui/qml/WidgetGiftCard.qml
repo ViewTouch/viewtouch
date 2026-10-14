@@ -121,6 +121,16 @@ Item {
                     text: qsTr("Pay the Check from This Card")
                     onClicked: w.pos.payWithGiftCard(w.card.number, 0)
                 }
+                // State law (California: under $10): a small balance in cash, when the guest asks.
+                Button {
+                    objectName: "giftCashOut"
+                    visible: w.found && (w.card.cashOut ?? false)
+                    Layout.fillWidth: true
+                    implicitHeight: 56
+                    font.pixelSize: 17
+                    text: qsTr("Cash Out %1 (under %2)").arg(w.card.balance ?? "").arg(w.card.cashOutBelow ?? "")
+                    onClicked: w.pos.cashOutGiftCard()
+                }
             }
 
             ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }

@@ -694,6 +694,16 @@ bool PosService::loginWithPin(const QString &pin)
     if (!e)
         return fail(pinRefused(tr("That PIN is not recognized.")));
     userId_ = e->id;
+    // A meal break the state requires, coming up (or late).
+    if (const int due = s_->settings.mealBreakAfterHours; due > 0)
+        for (const TimePunch &p : s_->punches)
+            if (p.employeeId == e->id && p.open() && !p.mealStartedAt()) {
+                const std::int64_t at = p.mealDueAt(due), t = now();
+                if (t > at)
+                    emit notice(tr("Your meal break was due at %1: take it now.").arg(i18n::timeText(QDateTime::fromMSecsSinceEpoch(at).time())));
+                else if (at - t <= 30 * 60'000)
+                    emit notice(tr("Your meal break is due by %1.").arg(i18n::timeText(QDateTime::fromMSecsSinceEpoch(at).time())));
+            }
     // Back from someone else's turn: the check they were on, if nobody has it.
     if (const auto it = s_->resumeChecks.find(e->id); it != s_->resumeChecks.end()) {
         const std::int64_t id = it->second;

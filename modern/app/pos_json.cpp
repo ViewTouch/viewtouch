@@ -986,7 +986,10 @@ QJsonObject toJson(const PosSettings &s)
         {u"cashMode"_s, qs(toString(s.cashMode))},
         {u"labor"_s, QJsonObject{{u"paidBreaks"_s, s.paidBreaks}, {u"overtimeDailyHours"_s, s.overtimeDailyHours},
                                  {u"checksPerServerHour"_s, s.checksPerServerHour},
-                                 {u"overtimeWeeklyHours"_s, s.overtimeWeeklyHours}, {u"weekStartsOn"_s, s.weekStartsOn}}},
+                                 {u"overtimeWeeklyHours"_s, s.overtimeWeeklyHours}, {u"weekStartsOn"_s, s.weekStartsOn},
+                                 {u"doubleTimeDailyHours"_s, s.doubleTimeDailyHours}, {u"seventhDayRule"_s, s.seventhDayRule},
+                                 {u"state"_s, qs(s.laborState)}, {u"mealBreakAfterHours"_s, s.mealBreakAfterHours},
+                                 {u"giftCardCashBelowCents"_s, qint64(s.giftCardCashBelowCents)}}},
         {u"modifierGroups"_s, modifierGroupsToJson(s.modifierGroups)},
         {u"terminalsHaveDrawer"_s, s.terminalsHaveDrawer},
         {u"serverId"_s, qs(s.serverId)},
@@ -1228,6 +1231,11 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.checksPerServerHour = std::clamp(labor.value(u"checksPerServerHour").toInt(4), 1, 50);
     s.overtimeWeeklyHours = std::clamp(labor.value(u"overtimeWeeklyHours").toInt(40), 0, 168);
     s.weekStartsOn = std::clamp(labor.value(u"weekStartsOn").toInt(0), 0, 6);
+    s.doubleTimeDailyHours = std::clamp(labor.value(u"doubleTimeDailyHours").toInt(0), 0, 24);
+    s.seventhDayRule = labor.value(u"seventhDayRule").toBool(false);
+    s.laborState = ss(labor.value(u"state").toString());
+    s.mealBreakAfterHours = std::clamp(labor.value(u"mealBreakAfterHours").toInt(0), 0, 12);
+    s.giftCardCashBelowCents = std::clamp<qint64>(labor.value(u"giftCardCashBelowCents").toInteger(0), 0, 100000);
     s.modifierGroups = modifierGroupsFromJson(o.value(u"modifierGroups").toArray());
     s.terminalsHaveDrawer = o.value(u"terminalsHaveDrawer").toBool(true);
     s.serverId = ss(o.value(u"serverId").toString());

@@ -454,6 +454,47 @@ Report driverReport(const std::vector<Check> &closed, const ReportContext &ctx)
     return r;
 }
 
+HoursSplit splitHours(const std::vector<std::int64_t> &daysMs, const OvertimeRules &rules)
+{
+    const std::int64_t hour = 3'600'000;
+    HoursSplit out;
+    std::int64_t regularSoFar = 0;
+    for (size_t i = 0; i < daysMs.size(); ++i) {
+        const std::int64_t ms = std::max<std::int64_t>(0, daysMs[i]);
+        std::int64_t regular = ms, ot = 0, dt = 0;
+        const bool seventh = rules.seventhDay && i == 6 && ms > 0
+                             && std::all_of(daysMs.begin(), daysMs.begin() + 6, [](std::int64_t d) { return d > 0; });
+        if (seventh) {
+            ot = std::min(ms, 8 * hour);
+            dt = ms - ot;
+            regular = 0;
+        } else {
+            if (rules.doubleDailyHours > 0 && regular > rules.doubleDailyHours * hour) {
+                dt = regular - rules.doubleDailyHours * hour;
+                regular -= dt;
+            }
+            if (rules.dailyHours > 0 && regular > rules.dailyHours * hour) {
+                ot = regular - rules.dailyHours * hour;
+                regular -= ot;
+            }
+        }
+        // The week: regular hours past its limit are overtime too.
+        if (rules.weeklyHours > 0) {
+            const std::int64_t limit = rules.weeklyHours * hour;
+            if (regularSoFar + regular > limit) {
+                const std::int64_t over = regularSoFar + regular - std::max(limit, regularSoFar);
+                ot += over;
+                regular -= over;
+            }
+        }
+        regularSoFar += regular;
+        out.regular += regular;
+        out.overtime += ot;
+        out.doubleTime += dt;
+    }
+    return out;
+}
+
 Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Employee> &employees,
                    const ReportContext &ctx, const std::vector<TimePunch> &earlier, Money netSales)
 {
@@ -506,6 +547,7 @@ Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Empl
         std::int64_t today = 0;
         double payToday = 0;   // cents: today's shifts at their pay
         std::int64_t otTodayMs = 0;
+        std::int64_t dtTodayMs = 0;
     };
     std::map<std::string, Person> people;
     auto dayKey = [&](std::int64_t ms) { return ctx.dayOf ? ctx.dayOf(ms) : int(ms / (24 * hourMs)); };
@@ -519,32 +561,60 @@ Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Empl
         if (p.clockIn >= ctx.weekStart && people.contains(p.employeeId))
             people[p.employeeId].byDay[dayKey(p.clockIn)] += p.workedMs(ctx.now, s.paidBreaks);
     }
+    // The state's rules (Store Settings -> Staff hours), on the work week a day at a time.
+    const OvertimeRules rules{s.overtimeDailyHours, s.doubleTimeDailyHours, s.overtimeWeeklyHours, s.seventhDayRule};
+    const bool doubles = s.doubleTimeDailyHours > 0 || s.seventhDayRule;
     r.section("Hours and overtime");
-    r.line({"", "Today", "This week", "Regular", "Overtime"});
+    if (doubles)
+        r.line({"", "Today", "This week", "Regular", "Overtime", "Double time"});
+    else
+        r.line({"", "Today", "This week", "Regular", "Overtime"});
+    const int firstDay = dayKey(ctx.weekStart > 0 ? ctx.weekStart : ctx.now);
+    const int today = dayKey(ctx.now);
     for (auto &[id, person] : people) {
-        std::int64_t week = 0, dailyOt = 0;
+        std::vector<std::int64_t> week(size_t(std::clamp(today - firstDay + 1, 1, 7)), 0);
+        std::int64_t total = 0;
         for (const auto &[day, ms] : person.byDay) {
-            week += ms;
-            if (s.overtimeDailyHours > 0)
-                dailyOt += std::max<std::int64_t>(0, ms - s.overtimeDailyHours * hourMs);
+            week[size_t(std::clamp(day - firstDay, 0, int(week.size()) - 1))] += ms;
+            total += ms;
         }
-        const auto weeklyOver = [&](std::int64_t ms) {
-            return s.overtimeWeeklyHours > 0 ? std::max<std::int64_t>(0, ms - s.overtimeWeeklyHours * hourMs) : 0;
-        };
-        const std::int64_t weeklyOt = weeklyOver(week);
-        const std::int64_t ot = std::max(dailyOt, weeklyOt);
-        r.line({nameOf(id), hours(person.today), hours(week), hours(week - ot), ot > 0 ? hours(ot) : "-"});
-        // The overtime that falls on today: today's own daily overtime, or
-        // what today added to the week's.
-        const std::int64_t dailyToday = s.overtimeDailyHours > 0
-                                            ? std::max<std::int64_t>(0, person.today - s.overtimeDailyHours * hourMs) : 0;
-        person.otTodayMs = std::max(dailyToday, weeklyOt - weeklyOver(week - person.today));
+        const HoursSplit all = splitHours(week, rules);
+        // What falls on today: the week with today, less the week without it.
+        std::vector<std::int64_t> before = week;
+        before.back() = 0;
+        const HoursSplit onToday = all - splitHours(before, rules);
+        std::vector<std::string> cells{nameOf(id), hours(person.today), hours(total), hours(all.regular),
+                                       all.overtime > 0 ? hours(all.overtime) : "-"};
+        if (doubles)
+            cells.push_back(all.doubleTime > 0 ? hours(all.doubleTime) : "-");
+        r.line(cells);
+        person.otTodayMs = onToday.overtime;
+        person.dtTodayMs = onToday.doubleTime;
     }
     if (s.overtimeDailyHours == 0 && s.overtimeWeeklyHours == 0)
         r.note("No overtime rule is set (Manager -> Settings).");
 
+    // Meal breaks the state requires (Store Settings -> Staff hours): late or missed.
+    if (s.mealBreakAfterHours > 0) {
+        bool header = false;
+        for (const TimePunch &p : sorted) {
+            if (!p.mealLate(s.mealBreakAfterHours, ctx.now))
+                continue;
+            if (!header) {
+                r.section("Meal breaks late or missed");
+                if (s.laborState == "CA")
+                    r.note("California: an extra hour's pay is owed for each day a meal break is late or missed "
+                           "(unless the employee chose to skip it, in writing).");
+                header = true;
+            }
+            const std::int64_t meal = p.mealStartedAt();
+            r.line({nameOf(p.employeeId), ctx.clock(p.clockIn), meal ? "at " + ctx.clock(meal) : "none",
+                    "due by " + ctx.clock(p.mealDueAt(s.mealBreakAfterHours)), hours(p.spanMs(ctx.now))});
+        }
+    }
+
     // What today's labor costs: each shift at its pay, overtime at time and
-    // a half (the extra half at the average pay of the day).
+    // a half and double time at double (the extra at the average pay of the day).
     double pay = 0, premium = 0;
     bool anyPay = false;
     for (const TimePunch &p : sorted)
@@ -557,7 +627,7 @@ Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Empl
     r.line({"", "Hours", "Pay", "Overtime", "Cost"});
     for (const auto &[id, person] : people) {
         const double avg = person.today > 0 ? person.payToday / (double(person.today) / hourMs) : 0;
-        const double extra = double(person.otTodayMs) / hourMs * avg * 0.5;
+        const double extra = double(person.otTodayMs) / hourMs * avg * 0.5 + double(person.dtTodayMs) / hourMs * avg;
         pay += person.payToday;
         premium += extra;
         r.line({nameOf(id), hours(person.today), ctx.money(Money::fromCents(std::llround(person.payToday))),

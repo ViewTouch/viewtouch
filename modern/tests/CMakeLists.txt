@@ -5,7 +5,7 @@ if(TARGET vtm_layout)
         test_layout.cpp test_navigator.cpp test_seed.cpp test_controller.cpp
         test_editor.cpp test_store.cpp test_edit_mode.cpp test_editor_ui.cpp
         test_pos_service.cpp test_pos_store.cpp test_pos_flow.cpp
-        test_print.cpp test_pos_m4.cpp test_pages_ui.cpp test_net.cpp test_pos_m6.cpp test_pos_m7.cpp test_server_bank.cpp test_pairing.cpp test_phone.cpp test_checks.cpp test_menu.cpp test_reports.cpp test_staff.cpp test_safety.cpp test_customers.cpp test_waitlist.cpp test_kitchen.cpp test_inventory.cpp test_loyalty.cpp test_standby.cpp test_i18n.cpp test_kiosk.cpp test_search.cpp test_phone_orders.cpp test_cards.cpp test_refunds.cpp test_robust.cpp test_receipts.cpp test_menu_builder.cpp test_menu_screens.cpp test_stress.cpp
+        test_print.cpp test_pos_m4.cpp test_pages_ui.cpp test_net.cpp test_pos_m6.cpp test_pos_m7.cpp test_server_bank.cpp test_pairing.cpp test_phone.cpp test_checks.cpp test_menu.cpp test_reports.cpp test_staff.cpp test_safety.cpp test_customers.cpp test_waitlist.cpp test_kitchen.cpp test_inventory.cpp test_loyalty.cpp test_standby.cpp test_i18n.cpp test_kiosk.cpp test_search.cpp test_phone_orders.cpp test_cards.cpp test_refunds.cpp test_robust.cpp test_receipts.cpp test_menu_builder.cpp test_menu_screens.cpp test_stress.cpp test_labor_law.cpp
     test_images.cpp
     )
 endif()

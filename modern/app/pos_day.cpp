@@ -867,9 +867,17 @@ std::map<std::string, TipShare> PosService::allTipShares() const
             jobToday[p.employeeId] = p.job;
     }
     std::vector<Employee> staff = s_->employees;
-    for (Employee &e : staff)
+    for (Employee &e : staff) {
+        // Managers and supervisors may not share in the tip pool or tip-outs
+        // (federal law; California Labor Code 351), whatever job they worked
+        // today: they keep the tips on their own tables only.
+        if (permissionsOf(e).contains(perm::Manager)) {
+            e.role = "manager";
+            continue;
+        }
         if (const auto it = jobToday.find(e.id); it != jobToday.end())
             e.role = it->second;
+    }
     return core::tipShares(s_->closedToday, s_->drawers, s_->settings, staff, hours, cash);
 }
 

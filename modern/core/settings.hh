@@ -196,6 +196,19 @@ struct PosSettings {
     // Staff section says how many servers each hour needs.
     int checksPerServerHour = 4;
     int overtimeWeeklyHours = 40;
+    // Double time past these hours in a day (California: 12; 0 none), and
+    // California's seventh day in a row of the work week.
+    int doubleTimeDailyHours = 0;
+    bool seventhDayRule = false;
+    // The store's state (two letters, "" none chosen): picking one sets its
+    // overtime, meal break and gift card rules below (each can be changed).
+    std::string laborState;
+    // A meal break due by this many hours on the clock (California: 5; 0
+    // none): a reminder for the person and Store Check.
+    int mealBreakAfterHours = 0;
+    // Gift card balances under this are cashed out when asked (California:
+    // $10; 0 none).
+    std::int64_t giftCardCashBelowCents = 0;
     int weekStartsOn = 0;
     // Whether people must close (or hand over) their checks before they
     // check out their bank, unless set per employee.
@@ -530,5 +543,24 @@ struct PosSettings {
 
     bool operator==(const PosSettings &) const = default;
 };
+
+// What each US state's law adds to the federal rules (overtime past 40 hours
+// a week everywhere): daily overtime and double time, the seventh-day rule,
+// when a meal break is due, and gift card balances it must cash out.
+// The usual rule for restaurant staff; exemptions and special cases are
+// for the store's accountant.
+struct StateRules {
+    const char *code;
+    const char *name;
+    int dailyOvertime = 0;
+    int dailyDouble = 0;
+    bool seventhDay = false;
+    int mealBreakAfter = 0;
+    std::int64_t giftCardCashBelowCents = 0;
+};
+const std::vector<StateRules> &stateRules();
+const StateRules *stateRulesFor(const std::string &code);
+// The store's state chosen: its rules into the settings.
+void applyStateRules(PosSettings &s, const std::string &code);
 
 } // namespace vt::core

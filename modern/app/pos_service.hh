@@ -963,6 +963,9 @@ public:
     bool lookupGiftCard(const QString &number);
     // Pay from a card (default: the looked-up one); 0 = keypad, else as much as it covers.
     bool payWithGiftCard(const QString &number = {}, qint64 amountCents = 0);
+    // The looked-up card's small balance in cash, when the guest asks (state
+    // law: California under $10); paid from the drawer (or the person's bank).
+    bool cashOutGiftCard();
     // A payment on the selected customer's account: "cash" | "card" (keypad amount, else all).
     bool payOnAccount(const QString &method, qint64 amountCents = 0);
     QVariantList customerResults() const override;

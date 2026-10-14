@@ -350,7 +350,50 @@ QVariantMap PosService::giftCardInfo() const
         history.append(QVariantMap{{u"at"_s, whenText(it->at)}, {u"amount"_s, format(it->amount)},
                                    {u"what"_s, qs(it->what)}});
     m.insert(u"history"_s, history);
+    const std::int64_t below = s_->settings.giftCardCashBelowCents;
+    m.insert(u"cashOut"_s, below > 0 && g->balance.cents() > 0 && g->balance.cents() < below);
+    m.insert(u"cashOutBelow"_s, below > 0 ? format(Money::fromCents(below)) : QString());
     return m;
+}
+
+bool PosService::cashOutGiftCard()
+{
+    if (!require(perm::Settle, tr("Cashing out a gift card")))
+        return false;
+    GiftCard *g = giftCardNumber_.isEmpty() ? nullptr : s_->giftCard(ss(giftCardNumber_));
+    if (!g)
+        return fail(tr("Look up the card first."));
+    const std::int64_t below = s_->settings.giftCardCashBelowCents;
+    if (below <= 0)
+        return fail(tr("This store doesn't cash out gift cards (Store Settings -> Staff hours)."));
+    if (g->balance.cents() <= 0)
+        return fail(tr("The card is empty."));
+    if (g->balance.cents() >= below)
+        return fail(tr("Only balances under %1 are cashed out.").arg(format(Money::fromCents(below))));
+    DrawerSession *d = serverBank() ? ensureMyBank() : myDrawer();
+    if (!d)
+        return fail(noDrawerMessage());
+    const Money amount = g->balance;
+    CashMovement m;
+    m.id = d->nextMovementId++;
+    m.kind = CashMovement::Kind::Payout;
+    m.amount = amount;
+    m.reason = ss(tr("Gift card %1 cashed out").arg(lastFour(g->number)));
+    m.category = ss(tr("Gift card cash back"));
+    m.by = user()->name;
+    m.at = now();
+    d->movements.push_back(m);
+    g->post(now(), Money::fromCents(-amount.cents()), ss(tr("Cashed out")), 0, "cashout");
+    saveGiftCardRecord(*g);
+    if (s_->sink)
+        s_->sink->saveDrawer(*d);
+    if (s_->printer && !serverBank() && terminalHasDrawer())
+        s_->printer->openDrawer(s_->settings, receiptPrinter());
+    emit notice(tr("Give the guest %1 in cash: the card is empty now.").arg(format(amount)));
+    emit s_->drawerChanged();
+    emit s_->dayChanged();
+    emit checkChanged();
+    return true;
 }
 
 bool PosService::lookupGiftCard(const QString &number)

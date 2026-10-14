@@ -124,6 +124,24 @@ struct TimePunch {
     Money cashTips;
 
     bool open() const { return clockOut == 0; }
+    // A meal break (30 minutes or more) is due `hours` after clocking in
+    // (state law): when it began (0: none yet), and whether it came too late
+    // or not at all in a shift longer than that.
+    std::int64_t mealStartedAt() const
+    {
+        for (const Break &b : breaks)
+            if (b.end == 0 || b.end - b.start >= 30 * 60'000)
+                return b.start;
+        return 0;
+    }
+    std::int64_t mealDueAt(int hours) const { return clockIn + std::int64_t(hours) * 3'600'000; }
+    bool mealLate(int hours, std::int64_t now) const
+    {
+        if (hours <= 0)
+            return false;
+        const std::int64_t meal = mealStartedAt();
+        return meal ? meal > mealDueAt(hours) : (open() ? now : clockOut) > mealDueAt(hours);
+    }
     bool onBreak() const { return !breaks.empty() && breaks.back().end == 0; }
     // Time on the clock / on breaks, up to `now` for what is still running.
     std::int64_t spanMs(std::int64_t now) const { return std::max<std::int64_t>(0, (open() ? now : clockOut) - clockIn); }

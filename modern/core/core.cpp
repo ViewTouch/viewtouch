@@ -1,5 +1,6 @@
 // Implementation of the pure-C++ POS domain (tax, menu, employees, checks).
 
+#include "core/settings.hh"
 #include "core/check.hh"
 #include "core/waitlist.hh"
 #include "core/day.hh"
@@ -596,6 +597,53 @@ Totals Check::totals(const TaxRates &rates) const
     t.balance = t.total + t.rounding - t.paid;
     t.change = t.balance.cents() < 0 ? -t.balance : Money();
     return t;
+}
+
+const std::vector<StateRules> &stateRules()
+{
+    // code, name, daily OT, daily double, 7th day, meal break by (hours), gift card cash-out under (cents)
+    static const std::vector<StateRules> states = {
+        {"AL", "Alabama"}, {"AK", "Alaska", 8}, {"AZ", "Arizona"}, {"AR", "Arkansas"},
+        {"CA", "California", 8, 12, true, 5, 1000}, {"CO", "Colorado", 12, 0, false, 5, 500},
+        {"CT", "Connecticut", 0, 0, false, 7}, {"DE", "Delaware", 0, 0, false, 7}, {"DC", "District of Columbia"},
+        {"FL", "Florida"}, {"GA", "Georgia"}, {"HI", "Hawaii"}, {"ID", "Idaho"},
+        {"IL", "Illinois", 0, 0, false, 5}, {"IN", "Indiana"}, {"IA", "Iowa"}, {"KS", "Kansas"},
+        {"KY", "Kentucky", 0, 0, false, 5}, {"LA", "Louisiana"}, {"ME", "Maine", 0, 0, false, 6, 500},
+        {"MD", "Maryland"}, {"MA", "Massachusetts", 0, 0, false, 6, 500}, {"MI", "Michigan"},
+        {"MN", "Minnesota", 0, 0, false, 8}, {"MS", "Mississippi"}, {"MO", "Missouri"},
+        {"MT", "Montana", 0, 0, false, 0, 500}, {"NE", "Nebraska"}, {"NV", "Nevada", 8, 0, false, 8},
+        {"NH", "New Hampshire", 0, 0, false, 5}, {"NJ", "New Jersey", 0, 0, false, 0, 500},
+        {"NM", "New Mexico"}, {"NY", "New York", 0, 0, false, 6}, {"NC", "North Carolina"},
+        {"ND", "North Dakota", 0, 0, false, 5}, {"OH", "Ohio"}, {"OK", "Oklahoma"},
+        {"OR", "Oregon", 0, 0, false, 5, 500}, {"PA", "Pennsylvania"}, {"RI", "Rhode Island", 0, 0, false, 6, 100},
+        {"SC", "South Carolina"}, {"SD", "South Dakota"}, {"TN", "Tennessee", 0, 0, false, 6}, {"TX", "Texas"},
+        {"UT", "Utah"}, {"VT", "Vermont", 0, 0, false, 0, 100}, {"VA", "Virginia"},
+        {"WA", "Washington", 0, 0, false, 5, 500}, {"WV", "West Virginia", 0, 0, false, 6}, {"WI", "Wisconsin"},
+        {"WY", "Wyoming"},
+    };
+    return states;
+}
+
+const StateRules *stateRulesFor(const std::string &code)
+{
+    for (const StateRules &s : stateRules())
+        if (code == s.code)
+            return &s;
+    return nullptr;
+}
+
+void applyStateRules(PosSettings &s, const std::string &code)
+{
+    const StateRules *r = stateRulesFor(code);
+    if (!r)
+        return;
+    s.laborState = r->code;
+    s.overtimeWeeklyHours = 40;   // federal, everywhere
+    s.overtimeDailyHours = r->dailyOvertime;
+    s.doubleTimeDailyHours = r->dailyDouble;
+    s.seventhDayRule = r->seventhDay;
+    s.mealBreakAfterHours = r->mealBreakAfter;
+    s.giftCardCashBelowCents = r->giftCardCashBelowCents;
 }
 
 } // namespace vt::core

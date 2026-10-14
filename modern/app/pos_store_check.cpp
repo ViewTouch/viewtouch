@@ -80,6 +80,17 @@ QVariantMap PosService::storeCheck() const
                     .arg(samples.join(u", "_s)));
     }
 
+    // Meal breaks the state requires: who's past due right now.
+    if (const int due = s_->settings.mealBreakAfterHours; due > 0) {
+        QStringList late;
+        for (const TimePunch &p : s_->punches)
+            if (p.open() && !p.mealStartedAt() && p.mealLate(due, now()))
+                if (const Employee *e = s_->employee(p.employeeId))
+                    late << tr("%1 (due %2)").arg(qs(e->name), i18n::timeText(QDateTime::fromMSecsSinceEpoch(p.mealDueAt(due)).time()));
+        if (!late.isEmpty())
+            add(u"meals"_s, false, tr("Meal breaks"), tr("Past due: %1").arg(late.join(u", "_s)));
+    }
+
     // Printers: each one answering.
     if (s_->settings.printers.empty())
         add(u"printers"_s, false, tr("Printers"), tr("No printer is set up (Manager → Printers)."));

@@ -272,8 +272,32 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.paidBreaks = record.value(u"paidBreaks"_s).toBool();
         if (record.contains(u"checksPerServerHour"_s))
             s_->settings.checksPerServerHour = std::clamp(record.value(u"checksPerServerHour"_s).toInt(), 1, 50);
-        if (record.contains(u"overtimeDailyHours"_s))
-            s_->settings.overtimeDailyHours = std::clamp(record.value(u"overtimeDailyHours"_s).toInt(), 0, 24);
+        // A state just picked: its rules (the fields below can still say otherwise).
+        bool stateNow = false;
+        if (record.contains(u"laborState"_s)) {
+            const std::string state = ss(record.value(u"laborState"_s).toString());
+            if (state != s_->settings.laborState) {
+                if (state.empty())
+                    s_->settings.laborState.clear();
+                else if (core::stateRulesFor(state))
+                    core::applyStateRules(s_->settings, state), stateNow = true;
+                else
+                    return fail(tr("Choose the store's state from the list."));
+            }
+        }
+        if (!stateNow) {
+            if (record.contains(u"overtimeDailyHours"_s))
+                s_->settings.overtimeDailyHours = std::clamp(record.value(u"overtimeDailyHours"_s).toInt(), 0, 24);
+            if (record.contains(u"doubleTimeDailyHours"_s))
+                s_->settings.doubleTimeDailyHours = std::clamp(record.value(u"doubleTimeDailyHours"_s).toInt(), 0, 24);
+            if (record.contains(u"seventhDayRule"_s))
+                s_->settings.seventhDayRule = record.value(u"seventhDayRule"_s).toBool();
+            if (record.contains(u"mealBreakAfterHours"_s))
+                s_->settings.mealBreakAfterHours = std::clamp(record.value(u"mealBreakAfterHours"_s).toInt(), 0, 12);
+            if (record.contains(u"giftCardCashBelow"_s))
+                s_->settings.giftCardCashBelowCents =
+                    std::clamp<std::int64_t>(std::llround(record.value(u"giftCardCashBelow"_s).toDouble() * 100), 0, 100000);
+        }
         if (record.contains(u"overtimeWeeklyHours"_s))
             s_->settings.overtimeWeeklyHours = std::clamp(record.value(u"overtimeWeeklyHours"_s).toInt(), 0, 168);
         if (record.contains(u"weekStartsOn"_s))

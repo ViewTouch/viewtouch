@@ -91,6 +91,28 @@ Report driverReport(const std::vector<Check> &closed, const ReportContext &ctx);
 // today and this pay week with overtime (`earlier`: this week's punches
 // from earlier days), then what today's labor costs (each shift at the pay
 // it was clocked in at, overtime at time and a half) against `netSales`.
+// Overtime as a state's law has it: hours over `dailyHours` in a day at time
+// and a half, over `doubleDailyHours` at double time; the seventh day in a
+// row of a work week (California): its first 8 hours at time and a half,
+// the rest double. Then regular hours (only those: nothing counts twice)
+// over `weeklyHours` in the week at time and a half. 0: no such rule.
+struct OvertimeRules {
+    int dailyHours = 0;
+    int doubleDailyHours = 0;
+    int weeklyHours = 40;
+    bool seventhDay = false;
+};
+struct HoursSplit {
+    std::int64_t regular = 0, overtime = 0, doubleTime = 0;   // ms
+    HoursSplit operator-(const HoursSplit &o) const
+    {
+        return {regular - o.regular, overtime - o.overtime, doubleTime - o.doubleTime};
+    }
+};
+// One person's work week, a day at a time (day 0 is the week's first; days
+// not worked are 0).
+HoursSplit splitHours(const std::vector<std::int64_t> &daysMs, const OvertimeRules &rules);
+
 Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Employee> &employees,
                    const ReportContext &ctx, const std::vector<TimePunch> &earlier = {}, Money netSales = {});
 Report drawerReport(const std::vector<DrawerSession> &drawers, const std::vector<Check> &closed,
