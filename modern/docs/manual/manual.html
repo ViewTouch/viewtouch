@@ -117,7 +117,7 @@
 <ul>
 <li><b>Start ViewTouch</b>, the big green button.</li>
 <li><b>The store</b> (the main register only): <b>Setup Guide</b>, <b>Menu</b>, <b>Staff</b>, <b>Printers</b>, <b>Add a Screen</b>, <b>Reports</b>: each opens ViewTouch right there once a manager logs in. <b>Back Up Now</b> makes a backup.</li>
-<li><b>This computer:</b> <b>Network</b> (a cable, or Wi-Fi with the on-screen keyboard; always the store's own network, never the guests' Wi-Fi), <b>Date &amp; Time</b> (the time zone, and whether the clock is set from the internet), <b>Updates</b> (everything now, or a new ViewTouch from a USB stick; security updates install by themselves each night), <b>Remote Help</b> (lets a technician connect while it's on), <b>Restart</b>, <b>Shut Down</b>, <b>Reset…</b> (start over and choose again what the computer is, or erase the store; a backup is made first) and <b>About</b>.</li>
+<li><b>This computer:</b> <b>Network</b> (a cable, or Wi-Fi with the on-screen keyboard; always the store's own network, never the guests' Wi-Fi), <b>Date &amp; Time</b> (the time zone, and whether the clock is set from the internet), <b>Updates</b> (everything now, or a new ViewTouch from a USB stick: only a package signed by ViewTouch, with its <i>.sig</i> file beside it; security updates install by themselves each night), <b>Remote Help</b> (lets a technician connect while it's on), <b>Restart</b>, <b>Shut Down</b>, <b>Reset…</b> (start over and choose again what the computer is, or erase the store; a backup is made first) and <b>About</b>.</li>
 </ul>
 <p>The computer's settings (Network, Date &amp; Time, Updates, Remote Help, Reset) ask for <b>this computer's PIN</b>, chosen in the first-time setup. Give it only to managers; it isn't anyone's ViewTouch PIN.</p>
 <p><b>The first time</b> the computer starts, it asks by touch: what it is (main register, register, kitchen screen, self-order kiosk, time clock), its name, the network, the store's time zone (touch it: the computer may start on another one) and the settings PIN. Then ViewTouch starts; the main register opens on the setup guide once a manager logs in.</p>
@@ -594,6 +594,7 @@
 <li>Each customer has their phone, email, address, a note ("peanut allergy"), visits, total spent and last visit.</li>
 <li><b>Put on This Check</b> attaches them to the open check, and they earn points when it's paid.</li>
 <li>Takeout and delivery customers are saved by themselves, and the takeout form suggests regulars as you type.</li>
+<li><b>Forget This Customer…</b> (managers; touch twice): when a guest asks for their information to be deleted (privacy laws such as California's). Their record goes, and their name, phone, address, email and note come off every check and waitlist entry, on every day, on the store's computer and the standby. The sales stay, with no name on them. Not while they owe on a house account. Older backups still hold it until they're replaced; say so in your privacy notice.</li>
 </ul>
 <p class="shot"><img src="shots/m15-takeout-customer.png" width="480" height="270"></p>
 <p class="caption">Takeout: who the order is for.</p>
@@ -611,6 +612,7 @@
 <ul>
 <li><b>Sell</b> or <b>Reload</b>: choose an amount; the card goes on the check and works once that check is paid. No number? One is made up and printed on the receipt.</li>
 <li><b>Pay the Check from This Card</b> takes as much as the card holds.</li>
+<li><b>Cash Out</b>: some states make a small balance redeemable in cash when the guest asks (California: under $10). With the store's state chosen (Store Settings → Staff hours), the button shows for such a card; the cash comes out of the drawer (or your bank) as a recorded pay out, and the card is empty. Gift cards never expire.</li>
 </ul>
 
 <h2>House accounts</h2>
@@ -706,6 +708,7 @@
 <ul>
 <li>Card tips are owed to the server; <b>Cash Out My Tips</b> pays them from the bank or drawer.</li>
 <li><b>Tip-outs</b> (Store Settings): for example "busser 15 tips" and "bartender 2 sales". That share of each server's tips (or sales) is split among the bussers or bartenders who worked today, by hours.</li>
+<li><b>Managers are never in the tip pool or tip-outs</b> (federal law; California Labor Code §351), even on a day they worked a server shift: they keep only the tips from their own tables. Card fees are never taken out of tips.</li>
 <li><b>A cash tip for the server:</b> when a host, manager or cashier takes a table's payment and the guest leaves cash for the server, type the amount and touch <b>Cash tip for the server</b> on the Pay screen. It shows on the check (<i>Cash tip for Sam</i>); the cash stays in the drawer or bank of whoever took it, which then expects that much more, and it's owed to the server like a card tip (Cash Out My Tips, the Tips report and tip-outs all count it).</li>
 </ul>
 
@@ -766,7 +769,7 @@
 <h2>Employees</h2>
 <p class="shot"><img src="shots/m33-employees.png" width="560" height="315"></p>
 <ul>
-<li>Name, role (server, bartender, cashier, host, busser, manager, admin) and a PIN of 4 to 8 digits.</li>
+<li>Name, role (server, bartender, cashier, host, busser, manager, admin) and a PIN of 4 to 8 digits; managers and admins 6 to 8, since they can do the most. Five wrong PINs in a row make a screen wait (30 seconds, then longer each time), and Store Check says someone may be guessing.</li>
 <li>Each permission can be <i>As the role</i>, <i>Yes</i> or <i>No</i> for one person: take orders, take payments, discounts, void sent items, manager screens, edit pages.</li>
 <li>Staff are deactivated, not deleted, so their sales and hours keep a name.</li>
 <li><b>Language</b>: the screens switch to it when this person logs in (chapter 17).</li>
@@ -780,6 +783,8 @@
 <li><b>Find a setting</b>: type a word or two at the top (<i>tip</i>, <i>receipt</i>, <i>kiosk color</i>). The settings that have them show from every section, each with its section's name above it. <b>Clear</b> goes back to the sections.</li>
 <li>A setting that only matters when another is on shows once that one is on: <i>…points per dollar</i> and <i>Rewards</i> with <b>Loyalty points</b>, <i>…clock in up to (minutes) early</i> with the schedule rule, the offline limits with <b>Take cards when the internet is down</b>, the backup password with <b>Encrypt backups</b>.</li>
 <li>Made for fingers: numbers have big <b>−</b> and <b>+</b> keys (or touch the number and type it; 0 shows what it means, like <i>Never</i> or <i>Not in it</i>), on/off settings are switches, and lists are rows: tip-outs (<i>Bussers · 15 · of tips</i>), the tip pool (a row for each job in it, with its share), rewards, tip choices, checklists, kitchen stations, expense categories, the customer display's messages and the chart of accounts. <b>+ Add…</b> adds a row, <b>✕</b> takes one out. The same goes for Menu Items, Employees, Payment Types and the other manager pages.</li>
+<li><b>The store's state</b> (Staff hours): pick yours and its labor and gift card laws are set: daily overtime and double time (California: past 8 and 12 hours), California's seventh day in a row, when a meal break is due (California: by the 5th hour; the person is reminded at login half an hour before, Store Check shows who's late, and Reports → Labor lists late or missed meals, where California owes an hour's pay), and gift card balances to cash out. Federal overtime (past 40 hours a week) applies everywhere. Each can still be changed; these are the usual rules for restaurant staff, so check special cases with your accountant.</li>
+<li><b>Fees on receipts</b>: an automatic gratuity says what it is and who gets it (<i>For 6+ guests; goes to the server.</i>), and the delivery fee says whether it goes to the driver (<b>The delivery fee goes to the driver</b>, off to start: <i>Store's fee, not the driver's tip.</i>). Put these charges on your menu too.</li>
 <li><b>About</b> (the last section): the version the store runs (with its build number), this screen's own version (a tablet can lag behind until it updates), the store's computer, where its data is kept and how big it is, the last backup, <b>Updates on this store</b> (each version it has run and when it arrived) and <b>Recent changes</b> (what the latest versions changed), and the license. The version's last number is the build: it goes up by itself with every new build (0.9.1283, 0.9.1284…).</li>
 <li>What you change is marked <b>changed</b>, its section says how many, and the button says <b>Save 2 changes</b>. Nothing is kept until you touch it; <b>Undo changes</b> puts everything back. Leave the page without saving and your changes are still there when you come back.</li>
 </ul>
@@ -865,6 +870,7 @@
 </ul>
 <h2>Store Check</h2>
 <p><b>Manager → Store Check</b> answers "are we ready to open?": every printer answering, a backup in the last day, room on the disk, the standby computer, the clock (not behind the last sale, which a dead clock battery causes), the cash drawers started and the opening checklist. Each line is ✓ or ⚠, and the top says <b>Ready to open</b> or how many to look at.</p>
+<p>It also notes what keeps the store safe and within the law, without holding up opening: sample staff still on (their PINs are in this manual for anyone to read), the store's state not chosen, backups not encrypted (set a backup password), a full Stripe secret key where a restricted one (<i>rk_…</i>, only Terminal and refunds) would do, and meal breaks past due.</p>
 <p class="shot"><img src="shots/m144-store-check.jpg" width="560" height="315"></p>
 <p>Beside it, <b>Problems, the last 7 days</b>: things that went wrong while nobody was looking. A printer out of paper or not answering, a save to the database or a backup that failed, the standby computer losing touch, and ViewTouch having closed without being told to (a crash, or the power went off). New ones are marked, and the Manager page's button says how many (<b>Store Check ⚠ 2</b>); <b>Mark as seen</b> clears that.</p>
 
@@ -933,7 +939,7 @@
 <tr><td>By Hour</td><td>Sales by the hour.</td></tr>
 <tr><td>Servers</td><td>Each server's sales.</td></tr>
 <tr><td>Tips</td><td>Card tips, gratuity, tip-outs, pool shares, paid and owed.</td></tr>
-<tr><td>Labor</td><td>Clock in/out, breaks, hours today and this week, overtime, and <b>labor cost</b>: each person's pay, overtime at time and a half, and <b>labor % of sales</b>.</td></tr>
+<tr><td>Labor</td><td>Clock in/out, breaks, hours today and this week, regular hours, overtime and double time by the store's state law, late or missed meal breaks, and <b>labor cost</b>: each person's pay, overtime at time and a half, double time at double, and <b>labor % of sales</b>.</td></tr>
 <tr><td>Drawer</td><td>Each bank or drawer: start, cash, pay outs, expected, counted, over/short.</td></tr>
 <tr><td>Expenses</td><td>Cash paid out for expenses, by category (produce, ice, repairs…), then each one with who and why.</td></tr>
 <tr><td>Audit</td><td>Every void, discount, reopen, transfer, move and merge, with who and when.</td></tr>
