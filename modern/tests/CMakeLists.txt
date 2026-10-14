@@ -22,7 +22,7 @@ else()
                                                  VTM_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/pages")
 endif()
 
-include(${VTM_LEGACY_ROOT}/external/catch2/extras/Catch.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../external/catch2/extras/Catch.cmake)
 catch_discover_tests(vtm_tests)
 
 # Every phrase on the screens has its Spanish, with the same %1 placeholders.

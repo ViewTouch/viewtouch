@@ -2,7 +2,7 @@
 # Install ViewTouch on a new Linux machine, then set up what it is.
 #
 # On a fresh Raspberry Pi OS (or Debian 13), one line does everything:
-#   curl -fsSL https://raw.githubusercontent.com/No0ne558/viewtouchFork/Modernization/modern/packaging/install-viewtouch.sh | sudo sh
+#   curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
 # It asks one question: a computer only for ViewTouch (no desktop, locked
 # down, set up by touch on its screen after it restarts), or ViewTouch next to
 # the desktop. To answer it ahead of time:
@@ -22,11 +22,11 @@
 # it builds one from the source.
 set -eu
 
-REPO=${VTM_REPO:-https://github.com/No0ne558/viewtouchFork.git}
-BRANCH=${VTM_BRANCH:-Modernization}
+REPO=${VTM_REPO:-https://github.com/ViewTouch/viewtouch.git}
+BRANCH=${VTM_BRANCH:-main}
 SRC=${VTM_SRC:-/opt/viewtouch-src}
 # Ready-made packages: vtmodern-debian13-arm64.deb, ...
-PACKAGES=${VTM_PACKAGES:-https://github.com/No0ne558/viewtouchFork/releases/download/modern-packages}
+PACKAGES=${VTM_PACKAGES:-https://github.com/ViewTouch/viewtouch/releases/download/modern-packages}
 
 say() { printf '\n== %s\n' "$*"; }
 die() { echo "$*" >&2; exit 1; }

@@ -3186,7 +3186,7 @@ TEST_CASE("UI: ready-made looks recolor every screen; one comes from the logo", 
 TEST_CASE("UI: the store's own font: added once, in every font list, on buttons", "[flow][ui][fonts]")
 {
     Screen s;
-    const QString garamond = QStringLiteral(VTM_SEED_DIR) + u"/../../fonts/ebgaramond/EBGaramond-Regular.ttf"_s;
+    const QString garamond = QStringLiteral(VTM_SEED_DIR) + u"/../tests/data/EBGaramond-Regular.ttf"_s;
     REQUIRE(QFile::exists(garamond));
     REQUIRE(s.pos.loginWithPin(u"1234"_s));
     CHECK_FALSE(s.c.fontFamilies().contains(u"EB Garamond"_s));   // not on this computer

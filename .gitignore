@@ -51,3 +51,4 @@ coverage/
 *.zip
 *.deb
 *.rpm
+!modern/external/catch2/**/*.cmake

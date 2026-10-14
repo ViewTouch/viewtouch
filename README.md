@@ -4,7 +4,6 @@
 
 **The Original Graphical Touchscreen Restaurant Point of Sale Interface**
 
-[![Linux builds (basic)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml/badge.svg)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml)
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![C++](https://img.shields.io/badge/C%2B%2B-23-blue)](https://en.wikipedia.org/wiki/C%2B%2B23)
@@ -17,11 +16,11 @@
 
 ---
 
-## ViewTouch Modern (this branch)
+## ViewTouch Modern
 
-**The `Modernization` branch is a ground-up rewrite of ViewTouch in C++23 and Qt 6 (QML).** It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today. It runs on Linux PCs, touch screens, Raspberry Pi and Android tablets, entirely on site.
+**ViewTouch is now a ground-up rewrite of ViewTouch in C++23 and Qt 6 (QML).** It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today. It runs on Linux PCs, touch screens, Raspberry Pi and Android tablets, entirely on site.
 
-📖 **[User manual (PDF)](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · 🛠️ **[Developer README](modern/README.md)** · 🗺️ **[Plan](modern/docs/PLAN.md)**
+📖 **[User manual (PDF)](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · 🛠️ **[Developer README](modern/README.md)** · 🗺️ **[Plan](modern/docs/PLAN.md)**
 
 <table>
 <tr>
@@ -82,8 +81,8 @@ sudo apt install git g++ cmake ninja-build qt6-base-dev qt6-declarative-dev qt6-
 **2. Get the code and build it**
 
 ```sh
-git clone -b Modernization https://github.com/No0ne558/viewtouchFork.git
-cd viewtouchFork
+git clone https://github.com/ViewTouch/viewtouch.git
+cd viewtouch
 cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build modern/build
 ctest --test-dir modern/build -j4      # optional: 250 tests, under a minute
@@ -115,7 +114,7 @@ sudo vtmodern-setup server      # keeps the data, no screen (back office)
 sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a code from Manager → Terminals)
 ```
 
-Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
+Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
 
 > Card readers and other hardware come later; the user interface is finished first.
 
@@ -123,135 +122,7 @@ Screens start full screen at boot with no way out for staff. Everything else (se
 
 ## The original ViewTouch
 
-The rest of this page describes the original ViewTouch, which is still in this repository's root folders.
-
-## Table of Contents
-
-- [ViewTouch Modern (this branch)](#viewtouch-modern-this-branch)
-- [About](#about)
-- [Quick Start](#quick-start)
-- [Hardware](#hardware)
-- [Screenshots](#screenshots)
-- [History](#history)
-- [Contact & Support](#contact--support)
-- [License](#license)
-
----
-
-## About
-
-ViewTouch is a powerful, open-source Point of Sale system designed specifically for the restaurant and hospitality industry. With over four decades of development, it combines the reliability of Linux with the flexibility of the X Window System to deliver a robust, network-transparent POS solution.
-
-### Key Features
-
-- **Full High Definition Graphical Interface** - ViewTouch runs on (*requires*) displays with 1920 x 1080 resolution
-- **Lightning-fast performance** - Entire transaction history kept in RAM for instant reporting
-- **Network transparency** - Remote display capability via X Window System
-- **Comprehensive reporting** - Real-time drill-down analytics and decision support
-- **Labor management** - Interactive time clock with overtime alerts and cost control
-- **Cross-platform** - Runs on Raspberry Pi 4/5, x86, and ARM architectures
-- **Mobile integration** - Android tableside order entry support
-- **Multilingual support** - Built-in language pack system
-- **Cross platform solution** - Can be used on a wide variaty of linux distros thanks to the universal installer
-
-> **Note:** For build instructions and the latest announcements, visit the [Wiki](../../wiki).
-
----
-
-## Quick Start
-
-### Download Pre-built Image
-
-[Download the latest ViewTouch image](http://www.viewtouch.com/nc.html) for Raspberry Pi (4 or 5). Write the image to a 32GB or larger microSD card, and boot directly to the ViewTouch desktop with full POS functionality.
-
-#### Building
-
-See the [Wiki](../../wiki) for detailed build instructions and development setup.  Make sure your display is 1920 x 1080.
-
-**Basic Build Instructions:**
-
-```bash
-# Install dependencies (Ubuntu/Debian)
-sudo apt-get update
-sudo apt-get install -y build-essential cmake xorg-dev libmotif-dev libfreetype6-dev libcurl4-gnutls-dev
-
-# Clone and build
-git clone https://github.com/ViewTouch/viewtouch.git
-cd viewtouch
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
-cmake --build build --target install
-```
-
-For more detailed instructions and development setup, see the [Wiki](../../wiki).
-
----
-
-## Hardware
-
-### Official ViewTouch Point of Sale Computer
-
-<div align="center">
-
-![ViewTouch Point of Sale Computer with 15.8" Display](https://www.viewtouch.com/poscomputer.avif)
-
-**15.8" All-in-One Touchscreen POS Computer**  
-Powered by Raspberry Pi Compute Module 5  
-Manufactured by Chipsee, Beijing, China
-
-</div>
-
-ViewTouch offers all-in-one Point of Sale computers featuring:
-- 15.8" capacitive touchscreen display (1920×1080 resolution, which is the required resolution for any display running ViewTouch)
-- Raspberry Pi 5 Compute Module
-- Pre-installed ViewTouch software
-- Network-ready for multi-terminal setups
-
-With open-source code and Raspberry Pi hardware, restaurateurs can now fully automate their operations with complete control over their POS system, including source code access.
-
-### Mobile Support
-
-Thanks to Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo for ensuring that with [Xsdl](https://apkpure.com/xserver-xsdl/x.org.server) mobile Android devices as wireless ViewTouch tableside order entry displays.
-
----
-
-## Screenshots
-
-> *Screenshots shown in 1280×1024 resolution, however, note that the Default (*required*) ViewTouch display resolution is 1920×1080 !*
-
-### Time Clock and Secure Log On
-
-![Touchscreen Password, Log On and Timeclock](http://www.viewtouch.com/vtscrn1.png)
-
----
-
-### Order Entry - Lightning Fast Interface
-
-**Order Breakfast, then Display and/or Print in Kitchen**
-
-![Order Breakfast, then Display and/or Print in Kitchen](http://www.viewtouch.com/vtscrn6.png)
-
----
-
-### Labor Management
-
-**Time Clock Review and Edit - Control Labor Expense**  
-Back Office, Comprehensive Labor Costing, Overtime Alerts, Interactive Time Clock Review and Editing
-
-![Time Clock Review and Edit - Control Labor Expense](http://www.viewtouch.com/vtscrn3.png)
-
----
-
-### Real-time Analytics
-
-**Decision Support: Fly-Over, Drill-Down in Real Time**  
-Touch 'n' View Any Day or Any Period Updated Every Minute
-
-![Decision Support: Fly-Over, Drill-Down in Real Time](http://www.viewtouch.com/vtscrn5.png)
-
-ViewTouch doesn't just store your data—it keeps your entire transaction history in RAM for perfect accuracy and lightning speed. Auditors can see compliance across every period. Control non-cash revenue adjustments and labor costs, including non-intuitive details, shift by shift, weekly, monthly, quarterly, and yearly.
-
----
+The original ViewTouch (X11/Motif, 1995–2025) is on the **[`legacy`](../../tree/legacy)** branch, unchanged, and its releases (v25.03.1 and earlier) stay on the [Releases](../../releases) page. New work happens here on `main`.
 
 ## History
 

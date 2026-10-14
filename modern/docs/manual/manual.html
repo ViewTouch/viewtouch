@@ -26,7 +26,7 @@
 <div class="cover">
 <h1 class="first">ViewTouch</h1>
 <p style="font-size:18pt; color:#555">User Manual</p>
-<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.9 (Modernization) · October 2026</p>
+<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.9 · October 2026</p>
 <p class="shot"><img src="shots/m02-tables.png" width="520" height="292"></p>
 </div>
 
@@ -90,7 +90,7 @@
 <h2>One store, any number of screens</h2>
 <p>One computer keeps the store's data: checks, menu, staff and reports. Every other screen (a terminal) connects to it over the network. All screens see the same checks and tables, and a check open on one screen can't be changed on another at the same time.</p>
 <p><b>Setting up a new computer.</b> On a computer with Linux (Raspberry Pi OS 64-bit, Debian 13, Fedora or Ubuntu) and an internet connection, open a terminal and paste:</p>
-<pre>curl -fsSL https://raw.githubusercontent.com/No0ne558/viewtouchFork/Modernization/modern/packaging/install-viewtouch.sh | sudo sh</pre>
+<pre>curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh</pre>
 <p>It asks one question:</p>
 <ol>
 <li><b>Only for ViewTouch</b> (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down and restarts it. From then on everything is by touch: see <i>A computer only for ViewTouch</i> below.</li>
@@ -1108,7 +1108,7 @@
 
 <p>To add a tablet or phone, install the ViewTouch Android app and pair it (chapter 1). Manager → Terminals → <i>Screen layout</i> can force phone or standard pages for a screen.</p>
 <h2>Getting the app</h2>
-<p>On the tablet or phone, download it from <code>github.com/No0ne558/viewtouchFork/releases/tag/modern-packages</code>: <b>ViewTouch-android-arm64.apk</b> (most) or <b>ViewTouch-android-armv7.apk</b> (older or budget ones), open it, and allow installing it. Later versions come from the store's computer: a strip on the tablet says one is ready, and a manager touches <b>Update Now</b>. On a Stripe Reader S700 the app is installed and updated through Stripe (Apps on Devices).</p>
+<p>On the tablet or phone, download it from <code>github.com/ViewTouch/viewtouch/releases/tag/modern-packages</code>: <b>ViewTouch-android-arm64.apk</b> (most) or <b>ViewTouch-android-armv7.apk</b> (older or budget ones), open it, and allow installing it. Later versions come from the store's computer: a strip on the tablet says one is ready, and a manager touches <b>Update Now</b>. On a Stripe Reader S700 the app is installed and updated through Stripe (Apps on Devices).</p>
 <h2>A tablet only for ViewTouch</h2>
 <p>Like the main register, a tablet can be only for ViewTouch: ViewTouch is its home screen and starts when it turns on, it's pinned (no Home, Recents or notifications; the power button's menu still restarts it), there's no lock screen, and staff can't add accounts or install other apps. Set it up once, with a computer and a USB cable, on a tablet just reset to factory settings (no Google account added):</p>
 <ol>

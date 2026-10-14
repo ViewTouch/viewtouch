@@ -20,7 +20,7 @@ install(FILES ${VTM_PKG}/server.conf ${VTM_PKG}/kiosk.conf DESTINATION ${CMAKE_I
 install(FILES ${VTM_PKG}/vtmodern.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES ${VTM_PKG}/vtmodern.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
-install(FILES ${VTM_LEGACY_ROOT}/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
+install(FILES ${VTM_REPO_ROOT}/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
 
 set(CPACK_PACKAGE_NAME vtmodern)
 # The version with this build's number (0.9.1283), as the program shows it.
@@ -31,14 +31,14 @@ if(NOT VTM_PKG_BUILD MATCHES "^[0-9]+$")
 endif()
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${VTM_PKG_BUILD})
 set(CPACK_PACKAGE_VENDOR "ViewTouch")
-set(CPACK_PACKAGE_CONTACT "ViewTouch <https://github.com/No0ne558/viewtouchFork>")
+set(CPACK_PACKAGE_CONTACT "ViewTouch <https://github.com/ViewTouch/viewtouch>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Restaurant point of sale with pages you design yourself")
 set(CPACK_PACKAGE_DESCRIPTION
     "ViewTouch is a touch-screen point of sale for restaurants and bars. Every screen is a page of "
     "buttons you can move, restyle and extend in the built-in page editor. One machine keeps the "
     "data; other terminals, kitchen screens and a headless server join it over the network.")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/No0ne558/viewtouchFork")
-set(CPACK_RESOURCE_FILE_LICENSE ${VTM_LEGACY_ROOT}/LICENSE)
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/ViewTouch/viewtouch")
+set(CPACK_RESOURCE_FILE_LICENSE ${VTM_REPO_ROOT}/LICENSE)
 set(CPACK_PACKAGING_INSTALL_PREFIX /usr)
 set(CPACK_STRIP_FILES ON)
 

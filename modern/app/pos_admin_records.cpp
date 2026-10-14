@@ -464,7 +464,7 @@ QVariantMap PosService::aboutValues() const
              return l.isEmpty() ? unknown : l.join(u'\n');
          }()},
         {u"about.license"_s, tr("GNU General Public License, version 3: free to use, share and change; it comes with no warranty.")},
-        {u"about.source"_s, u"https://github.com/No0ne558/viewtouchFork"_s},
+        {u"about.source"_s, u"https://github.com/ViewTouch/viewtouch"_s},
         {u"about.credits"_s, tr("ViewTouch was created by Gene Mosher (viewtouch.com). This is its modern edition.")},
     };
 }

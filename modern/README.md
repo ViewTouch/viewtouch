@@ -1,6 +1,6 @@
 # ViewTouch Modern
 
-A ground-up rewrite of ViewTouch in C++23 and Qt6/QML. It lives on the `Modernization` branch. The legacy code in the repo root stays as a reference until the new app reaches feature parity.
+A ground-up rewrite of ViewTouch in C++23 and Qt6/QML. The original ViewTouch is on the `legacy` branch.
 
 The full design and milestones are in [docs/PLAN.md](docs/PLAN.md).
 
@@ -45,7 +45,7 @@ Works on Fedora 44, Debian 13 (and Raspberry Pi OS based on it) and Ubuntu 26.04
 **A new machine, from zero:** one command installs everything.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/No0ne558/viewtouchFork/Modernization/modern/packaging/install-viewtouch.sh | sudo sh
+curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
 ```
 
 It asks one question:
@@ -53,7 +53,7 @@ It asks one question:
 1. **Only for ViewTouch** (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down (`vtmodern-lockdown`, below) and restarts. The screen then asks, by touch, what this computer is, its name, the network, the time zone and a settings PIN, and starts ViewTouch. To answer ahead of time: `... | sudo sh -s -- --station` (add `--keep-ssh` to leave SSH on).
 2. **Next to the desktop**: it installs ViewTouch and runs `vtmodern-setup` (below), a text menu.
 
-On Debian 13 and Raspberry Pi OS (64-bit) it downloads the ready-made package from the [modern-packages](https://github.com/No0ne558/viewtouchFork/releases/tag/modern-packages) release (a minute). Elsewhere, or with `--build`, it fetches the source and builds a package for this machine (a few minutes). With a package already at hand: `sudo sh install-viewtouch.sh vtmodern-*.rpm` (or `.deb`). To skip the questions next to a desktop, put the setup after `--`: `sudo sh install-viewtouch.sh -- kitchen auto Grill`.
+On Debian 13 and Raspberry Pi OS (64-bit) it downloads the ready-made package from the [modern-packages](https://github.com/ViewTouch/viewtouch/releases/tag/modern-packages) release (a minute). Elsewhere, or with `--build`, it fetches the source and builds a package for this machine (a few minutes). With a package already at hand: `sudo sh install-viewtouch.sh vtmodern-*.rpm` (or `.deb`). To skip the questions next to a desktop, put the setup after `--`: `sudo sh install-viewtouch.sh -- kitchen auto Grill`.
 
 ### A computer only for ViewTouch
 
@@ -94,7 +94,7 @@ Then it runs **`sudo vtmodern-setup`**, which asks what this machine is (any tim
 
 The Android app is a terminal: it finds the store's server on the Wi-Fi, pairs with it, and then works like any other terminal (same pages, live updates). It needs Android 9 or newer on a 64-bit or 32-bit ARM tablet.
 
-1. **Get the app:** download it on the tablet or phone from the [modern-packages](https://github.com/No0ne558/viewtouchFork/releases/tag/modern-packages) release: `ViewTouch-android-arm64.apk` (most phones and tablets) or `ViewTouch-android-armv7.apk` (older or budget ones). To build it yourself: the *Modern Android* workflow (Actions tab → Modern Android → Run workflow).
+1. **Get the app:** download it on the tablet or phone from the [modern-packages](https://github.com/ViewTouch/viewtouch/releases/tag/modern-packages) release: `ViewTouch-android-arm64.apk` (most phones and tablets) or `ViewTouch-android-armv7.apk` (older or budget ones). To build it yourself: the *Modern Android* workflow (Actions tab → Modern Android → Run workflow).
 2. **Install:** copy the APK to the tablet and open it. Android asks to allow installing apps from that source (Settings → Apps → Special access → Install unknown apps).
 3. **Pair:** open ViewTouch. The Join screen lists the stores on the Wi-Fi. Type a code from Manager → Terminals → **Pair a Device**, name the tablet, and **Join**.
 

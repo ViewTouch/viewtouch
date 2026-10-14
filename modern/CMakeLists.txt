@@ -12,7 +12,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(VTM_BUILD_TESTS "Build ViewTouch Modern unit tests" ON)
 
-set(VTM_LEGACY_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
+# The repository (its LICENSE); everything else the build uses is in modern/.
+set(VTM_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # ---------------------------------------------------------------------------
 # core: pure C++ domain library (no Qt). Always buildable.
@@ -267,8 +268,8 @@ if(Qt6_FOUND)
             QT_ANDROID_MIN_SDK_VERSION 28
             QT_ANDROID_TARGET_SDK_VERSION 35)
         # Pages use DejaVu Sans, which Android doesn't have.
-        qt_add_resources(vtmodern "fonts" PREFIX "/fonts" BASE ${VTM_LEGACY_ROOT}/fonts/dejavu
-            FILES ${VTM_LEGACY_ROOT}/fonts/dejavu/DejaVuSans.ttf ${VTM_LEGACY_ROOT}/fonts/dejavu/DejaVuSans-Bold.ttf)
+        qt_add_resources(vtmodern "fonts" PREFIX "/fonts" BASE ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/DejaVuSans.ttf ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/DejaVuSans-Bold.ttf)
         # Qt for Android has no OpenSSL of its own; the encrypted terminal
         # connection needs it. KDAB's builds, as the Qt docs recommend.
         include(FetchContent)
@@ -285,7 +286,7 @@ if(Qt6_FOUND)
          CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/seed/*.json)
     qt_add_resources(vtm_ui "seed" PREFIX "/" FILES ${VTM_SEED_FILES})
 
-    # Legacy ViewTouch textures under short names (qrc:/textures/<name>.xpm)
+    # The classic ViewTouch textures under short names (qrc:/textures/<name>.xpm)
     set(VTM_TEXTURES
         sand:sand-8 litsand:litsand-6 darksand:darksand-6
         graymarble:graymarble-12 greenmarble:greenmarble-12
@@ -299,13 +300,13 @@ if(Qt6_FOUND)
         string(REPLACE ":" ";" parts ${entry})
         list(GET parts 0 alias)
         list(GET parts 1 file)
-        set(path ${VTM_LEGACY_ROOT}/assets/images/xpm/${file}.xpm)
+        set(path ${CMAKE_CURRENT_SOURCE_DIR}/assets/textures/${file}.xpm)
         set_source_files_properties(${path} PROPERTIES QT_RESOURCE_ALIAS ${alias}.xpm)
         list(APPEND VTM_TEXTURE_FILES ${path})
     endforeach()
     qt_add_resources(vtm_ui "textures" PREFIX "/textures" FILES ${VTM_TEXTURE_FILES})
 
-    set(VTM_BURGER ${VTM_LEGACY_ROOT}/assets/default_images/burger.png)
+    set(VTM_BURGER ${CMAKE_CURRENT_SOURCE_DIR}/assets/images/burger.png)
     set_source_files_properties(${VTM_BURGER} PROPERTIES QT_RESOURCE_ALIAS burger.png)
     qt_add_resources(vtm_ui "images" PREFIX "/images" FILES ${VTM_BURGER})
 
@@ -320,12 +321,12 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
-# Tests (Catch2 v3, vendored in the legacy tree's external/catch2)
+# Tests (Catch2 v3, vendored in external/catch2)
 # ---------------------------------------------------------------------------
 if(VTM_BUILD_TESTS)
     enable_testing()
     if(NOT TARGET Catch2::Catch2WithMain)
-        add_subdirectory(${VTM_LEGACY_ROOT}/external/catch2
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/catch2
                          ${CMAKE_CURRENT_BINARY_DIR}/catch2 EXCLUDE_FROM_ALL)
     endif()
     add_subdirectory(tests)
