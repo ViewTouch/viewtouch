@@ -141,6 +141,17 @@ Every page is designed on a 1920 × 1080 landscape canvas and scaled to the scre
 - `vtmodern --demo-data` fills a store that has no sales yet with demo history, played through the real POS (about 10 seconds): two months of service, the same two months last year, and a few days two and five years back (Find a Check, 5 Years). Staff clock in and take breaks; the opening and closing checklists get ticked; vendors deliver Tuesdays and Fridays; orders with their choices (toppings with No / Extra); the kitchen and expo bump tickets; cards on a (simulated) reader with brand, last four and tips, cash, gift cards, house accounts; phone orders with the guest's name and a promised time, regulars' Same as Last Time; deliveries out with Lou the driver (PIN 7777) and a delivery fee; a manager's voids, staff meals, discounts and refunds (card and cash); banks checked out; End of Day. Then 12 regulars (plus phone-order guests), 8 gift cards, two weeks of shifts with time off and a swap, a posted message, and right now: tables seated with tickets in the kitchen, a bar tab, a phone order cooking, a delivery out, an order for later, a walk-in, the Martinez party's tables held, a table to bus, tonight's waitlist and bookings.
 - Together: `vtmodern --factory-reset --demo-data`.
 
+## Stress test
+
+`vtmodern --stress` plays a busy service on a throwaway store (a new folder under the data folder, `stress-tests/<time>`; it refuses a store with sales) while the screen runs: pretend servers (every other one on a handheld, over the network like the real ones), hosts seating the waitlist and bussing, bartenders' tabs, phone orders, drivers, kitchen and expo screens bumping, a manager running reports, 86ing and approving voids; tickets go to slow pretend printers. A panel on the screen shows the service and how the screen, the handhelds, the printers and the database keep up, and the screen goes around the floor, host stand, kitchen, expo, dashboard and deliveries. At the end every check must be closed and paid in full and the database must hold exactly what the screen does; a whole day also ends with everyone counting their bank and End of Day. The report is saved as `stress-report.txt` in the test's folder.
+
+- `--stress-minutes 10` (how long it runs), `--stress-speed 12` (times faster than real life: a two-hour dinner in ten minutes), `--stress-servers 6`.
+- `--stress-hours 13`: a whole business day instead (a lunch rush, the afternoon lull, a bigger dinner rush), then closing.
+- `--stress-load 3`: three times the staff, tables, guests and handhelds.
+- `--stress-exit`: quit when done (exit code 0 when it passed).
+
+On a ViewTouch computer, stop the home screen first (`sudo systemctl stop vtmodern-station`) and start it again after.
+
 ## Backups
 
 - **Automatic:** the machine that keeps the data backs up when it starts, every 24 hours and after every End of Day, keeping the newest 30. Backups go to `backups/` next to the database (`/var/lib/viewtouch/backups` when installed). A USB stick or network share is safer: set `backup-dir` in the .conf file. `backup-every` and `backup-keep` change the timing and count.
@@ -218,7 +229,8 @@ Reports have a row of periods: *Day* (one business day, as before), *This Week*,
 - **All Day** on the kitchen screen counts everything still to make there ("3 Cobb, 2 Caesar"), for batching.
 - **How things look in the kitchen** (Manager → Menu): *Kitchen name* (what the kitchen screen and kitchen tickets show instead, e.g. "BCN BGR"), *Kitchen highlight* (a color on the kitchen screen), *Don't show in the kitchen* (water, "No side"). Modifier group options take a kitchen name after `|` (`Ranch | RNCH`), or `| -` to leave it off. Checks and receipts keep the real names.
 - **Rush:** on the order screen, Check… → **Rush** (again to turn it off).
-- **Expo Display** (Manager → Expo Display, or a screen started on the `expo` page): every ticket across the stations, each line ticked when its station bumps it, "Waiting on: bar", and blue READY when all of it is made. Touch a ready ticket when it goes out (a ticket not ready yet needs a second touch); Recall brings the last one back.
+- **Expo Display** (Manager → Expo Display, or a screen started on the `expo` page): every ticket across the kitchen's stations, each line ticked when its station bumps it, "Waiting on: Grill", and blue READY when all of it is made. Touch a ready ticket when it goes out (a ticket not ready yet needs a second touch); Recall brings the last one back. Drinks aren't on it (they go out from the bar): Store Settings → Kitchen → *Expo doesn't show* (Bar to start).
+- **Long orders** go on in the next column on a card of their own (*T5 2/3*, **Continued ▸**), so nothing is cut off at the bottom; more orders than fit are a swipe away (**2 more ▸**).
 - **Reports → Kitchen:** tickets per station from sent to bumped, with the average, the longest, how many were late, and the five slowest.
 
 ## Manager approval and practice mode
