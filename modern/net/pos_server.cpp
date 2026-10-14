@@ -15,6 +15,7 @@
 #include <QDir>
 #include <QCryptographicHash>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QLoggingCategory>
 #include <QSslPreSharedKeyAuthenticator>
 #include <QPointer>
@@ -84,6 +85,40 @@ const std::vector<StatePiece> &statePieces()
     return pieces;
 }
 
+// The shared data a list or map's copies point at (the same in every copy
+// of one value; null for small values, compared as usual).
+const void *identity(const QVariant &v)
+{
+    switch (v.metaType().id()) {
+    case QMetaType::QVariantList: {
+        const auto &l = *static_cast<const QVariantList *>(v.constData());
+        return l.isEmpty() ? nullptr : static_cast<const void *>(l.constData());
+    }
+    case QMetaType::QStringList: {
+        const auto &l = *static_cast<const QStringList *>(v.constData());
+        return l.isEmpty() ? nullptr : static_cast<const void *>(l.constData());
+    }
+    case QMetaType::QVariantMap: {
+        const auto &m = *static_cast<const QVariantMap *>(v.constData());
+        return m.isEmpty() ? nullptr : static_cast<const void *>(&*m.constBegin());
+    }
+    default:
+        return nullptr;
+    }
+}
+
+// A value as JSON text.
+QByteArray jsonText(const QVariant &v)
+{
+    const QJsonValue j = QJsonValue::fromVariant(v);
+    if (j.isArray())
+        return QJsonDocument(j.toArray()).toJson(QJsonDocument::Compact);
+    if (j.isObject())
+        return QJsonDocument(j.toObject()).toJson(QJsonDocument::Compact);
+    const QByteArray wrapped = QJsonDocument(QJsonArray{j}).toJson(QJsonDocument::Compact);
+    return wrapped.mid(1, wrapped.size() - 2);
+}
+
 // The bit for a change signal (kAlways for one no piece names).
 quint32 bitOfSignal(const QMetaMethod &signal)
 {
@@ -145,8 +180,12 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
         QElapsedTimer t;
         t.start();
         shared_->beginMemo();
+        inRound_ = true;
         for (auto &c : connections_)
             flush(c.get());
+        inRound_ = false;
+        roundJson_.clear();
+        roundSame_.clear();
         shared_->endMemo();
         updateNsecs_ += t.nsecsElapsed();
         ++updateRounds_;
@@ -556,19 +595,40 @@ void PosServer::flush(Connection *c)
     const quint32 dirty = std::exchange(c->dirty, 0) | kAlways;
     app::PosService *s = c->session.get();
     const i18n::Scope language([s] { return s->language(); });
-    QJsonObject changed;
+    QByteArray changed;
     for (const StatePiece &p : statePieces()) {
         if (!(p.bit & dirty))
             continue;
         const QVariant value = p.property.read(s);
+        const void *id = inRound_ ? identity(value) : nullptr;
         auto it = c->sent.find(p.key);
-        if (it != c->sent.end() && *it == value)
-            continue;
-        changed.insert(p.key, QJsonValue::fromVariant(value));
+        if (it != c->sent.end()) {
+            const void *was = id ? identity(*it) : nullptr;
+            bool same;
+            if (id && was == id) {
+                same = true;   // the very same data
+            } else if (id && was) {
+                const auto pair = qMakePair(was, id);   // compared once for every screen that had it
+                const auto known = roundSame_.constFind(pair);
+                same = known != roundSame_.cend() ? *known : *roundSame_.insert(pair, *it == value);
+            } else {
+                same = *it == value;
+            }
+            if (same)
+                continue;
+        }
+        QByteArray text;
+        if (id) {
+            auto cached = roundJson_.constFind(id);
+            text = cached != roundJson_.cend() ? *cached : *roundJson_.insert(id, jsonText(value));
+        } else {
+            text = jsonText(value);
+        }
+        changed += (changed.isEmpty() ? QByteArray() : QByteArray(",")) + '"' + p.key.toLatin1() + "\":" + text;
         c->sent.insert(p.key, value);
     }
     if (!changed.isEmpty())
-        c->channel->send({{u"t"_s, u"state"_s}, {u"set"_s, changed}});
+        c->channel->sendRaw("{\"t\":\"state\",\"set\":{" + changed + "}}");
     for (const QJsonObject &e : std::exchange(c->events, {}))
         c->channel->send(e);
 }

@@ -17,6 +17,15 @@ void LineChannel::send(const QJsonObject &message)
     socket_->write(line);
 }
 
+void LineChannel::sendRaw(const QByteArray &json)
+{
+    if (!lowDelay_ && socket_->state() == QAbstractSocket::ConnectedState) {
+        socket_->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+        lowDelay_ = true;
+    }
+    socket_->write(json + '\n');
+}
+
 QList<QJsonObject> LineChannel::receive(bool *overflow)
 {
     buffer_.append(socket_->readAll());

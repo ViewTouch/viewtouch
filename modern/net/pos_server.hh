@@ -82,6 +82,12 @@ private:
 
     app::PosShared *shared_;
     qint64 updateNsecs_ = 0;
+    // During a round of updates (every screen at once): what's the same for
+    // all of them is compared and turned into JSON once (by the shared data
+    // it points at; cleared after the round).
+    bool inRound_ = false;
+    QHash<const void *, QByteArray> roundJson_;
+    QHash<QPair<const void *, const void *>, bool> roundSame_;
     int updateRounds_ = 0;
     LayoutHub *layouts_;
     QSslServer server_;

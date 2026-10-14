@@ -33,6 +33,8 @@ public:
     explicit LineChannel(QTcpSocket *socket) : socket_(socket) {}
 
     void send(const QJsonObject &message);
+    // A message already in JSON (one line, no newline).
+    void sendRaw(const QByteArray &json);
     // Complete messages received so far. Sets `overflow` on a runaway line.
     QList<QJsonObject> receive(bool *overflow = nullptr);
 
