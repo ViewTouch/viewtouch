@@ -80,6 +80,12 @@ QVariantMap PosService::storeCheck() const
                     .arg(samples.join(u", "_s)));
     }
 
+    // A newer ViewTouch to install (found once a day).
+    if (!s_->newVersion.isEmpty())
+        add(u"newVersion"_s, false, tr("New ViewTouch"),
+            tr("ViewTouch %1 is out. On the store computer: close ViewTouch, then Updates → Check for a New ViewTouch.")
+                .arg(s_->newVersion), true);
+
     // The law and the store's data: settings worth having (not reasons to wait).
     if (s_->settings.laborState.empty())
         add(u"state"_s, false, tr("The store's state"),

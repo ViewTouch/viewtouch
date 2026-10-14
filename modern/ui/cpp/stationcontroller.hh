@@ -92,6 +92,10 @@ public:
     Q_INVOKABLE void backupNow();
     Q_INVOKABLE void runUpdates();
     Q_INVOKABLE void updateFromUsb();
+    // A newer ViewTouch on the release page: look (online-check), or download
+    // and install it (online-update). Both signed; never an older one.
+    Q_INVOKABLE void checkOnline();
+    Q_INVOKABLE void installOnline();
     Q_INVOKABLE void setRemoteSupport(bool on);
     Q_INVOKABLE void restartComputer();
     Q_INVOKABLE void shutDown();

@@ -457,6 +457,16 @@ void StationController::updateFromUsb()
     run(u"update-usb"_s, {});
 }
 
+void StationController::checkOnline()
+{
+    run(u"online-check"_s, {});
+}
+
+void StationController::installOnline()
+{
+    run(u"online-update"_s, {});
+}
+
 void StationController::setRemoteSupport(bool on)
 {
     run(u"ssh"_s, {on ? u"on"_s : u"off"_s});

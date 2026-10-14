@@ -288,6 +288,8 @@ public:
     };
     QHash<QString, PinGuard> pinGuards;
     std::vector<std::int64_t> wrongPinsLately;
+    // A newer ViewTouch on the release page ("0.9.1360"; empty: none known).
+    QString newVersion;
     std::int64_t storeWaitUntil = 0;
     // Refunds sent to Stripe and not answered yet ("check/payment"), from any terminal.
     QSet<QString> refundsUnderway;

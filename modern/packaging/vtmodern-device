@@ -10,6 +10,8 @@
 #   vtmodern-device timezone ZONE                       e.g. America/New_York
 #   vtmodern-device update                              install every update now
 #   vtmodern-device update-usb                          install the newest ViewTouch package on a USB stick
+#   vtmodern-device online-check                        is there a newer ViewTouch online? (last line: READY version | CURRENT version)
+#   vtmodern-device online-update                       download it (signed), install it, and the newest tablet apps
 #   vtmodern-device usb-open                            the USB sticks plugged in, read-only, for pictures
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
 #   vtmodern-device reboot | poweroff
@@ -151,6 +153,70 @@ update-usb)
     apt-get install -y --allow-downgrades /tmp/vtmodern-update.deb
     rm -f /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig
     echo "Installed $found. Restart the computer to use it."
+    ;;
+online-check|online-update)
+    # The release page (/etc/viewtouch/updates.conf: url=https://...), its
+    # latest.json, each file signed with ViewTouch's key.
+    url=https://github.com/No0ne558/viewtouchFork/releases/download/modern-packages
+    if [ -f /etc/viewtouch/updates.conf ]; then
+        set_url=$(sed -n 's/^url=//p' /etc/viewtouch/updates.conf | tail -1)
+        case "$set_url" in https://*) url=${set_url%/} ;; "") ;; *) die "updates.conf: the url must start with https://" ;; esac
+    fi
+    key=/usr/share/vtmodern/update-signing-key.pub.pem
+    work=/run/vtmodern-online
+    rm -rf "$work"
+    mkdir -p "$work"
+    chmod 700 "$work"
+    fetch() {   # name -> $work/name and $work/name.sig, checked
+        curl -fsSL --retry 2 --max-time 600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 (is the internet on?)."
+        curl -fsSL --retry 2 --max-time 60 -o "$work/$1.sig" "$url/$1.sig" || die "$1 has no signature online: not used."
+        openssl pkeyutl -verify -pubin -inkey "$key" -rawin -in "$work/$1" -sigfile "$work/$1.sig" >/dev/null 2>&1 ||
+            die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
+    }
+    build_of() { printf '%s' "$1" | sed -n 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/p'; }
+    echo "Looking at $url ..."
+    fetch latest.json
+    latest=$(sed -n 's/.*"version" *: *"\([0-9.]*\)".*/\1/p' "$work/latest.json" | head -1)
+    [ -n "$latest" ] || die "latest.json says no version."
+    installed=$(dpkg-query -W -f='${Version}' vtmodern 2>/dev/null || echo 0.0.0)
+    have=$(build_of "$installed"); want=$(build_of "$latest")
+    [ -n "$want" ] || die "latest.json: no build number in $latest."
+    if [ "${have:-0}" -ge "$want" ]; then
+        echo "CURRENT ${installed%%-*}"
+        exit 0
+    fi
+    if [ "$action" = online-check ]; then
+        echo "READY $latest ${installed%%-*}"
+        exit 0
+    fi
+    arch=$(dpkg --print-architecture)
+    pkg=$(sed -n "s/.*\"debian13-$arch\" *: *\"\\([^\"]*\\)\".*/\\1/p" "$work/latest.json" | head -1)
+    [ -n "$pkg" ] || die "No ready-made ViewTouch for this computer ($arch) online."
+    printf '%s' "$pkg" | grep -Eq '^[A-Za-z0-9._-]+\.deb$' || die "latest.json: a strange file name."
+    echo "Downloading ViewTouch $latest ..."
+    fetch "$pkg"
+    got=$(dpkg-deb --field "$work/$pkg" Version)
+    [ "$(build_of "$got")" = "$want" ] || die "The package is $got, not $latest: not installed."
+    export DEBIAN_FRONTEND=noninteractive
+    echo "Installing ViewTouch $latest ..."
+    apt-get install -y "$work/$pkg"
+    # The tablets' app too: the store offers it to tablets that are behind.
+    updates=/var/lib/viewtouch/updates
+    for abi in arm64-v8a armeabi-v7a; do
+        apk=$(sed -n "s/.*\"android-$abi\" *: *\"\\([^\"]*\\)\".*/\\1/p" "$work/latest.json" | head -1)
+        appbuild=$(sed -n "s/.*\"android-$abi-build\" *: *\"\\([0-9]*\\)\".*/\\1/p" "$work/latest.json" | head -1)
+        [ -n "$apk" ] && [ -n "$appbuild" ] || continue
+        printf '%s' "$apk" | grep -Eq '^[A-Za-z0-9._-]+\.apk$' || continue
+        if (fetch "$apk"); then
+            install -d -o vtpos -g vtpos "$updates" 2>/dev/null || install -d "$updates"
+            rm -f "$updates"/ViewTouch-b*-"$abi".apk
+            install -m 644 "$work/$apk" "$updates/ViewTouch-b$appbuild-$abi.apk"
+            chown --reference="$updates" "$updates/ViewTouch-b$appbuild-$abi.apk" 2>/dev/null || true
+            echo "Tablet app ($abi) ready for the tablets."
+        fi
+    done
+    rm -rf "$work"
+    echo "INSTALLED $latest"
     ;;
 usb-open)
     # Each USB stick's partitions under /run/vtmodern-usb/<name>, read-only

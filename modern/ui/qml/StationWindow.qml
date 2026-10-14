@@ -26,6 +26,10 @@ ApplicationWindow {
         (width - root.u * 2.8 - root.u * ((portrait ? 4 : 8) - 1)) / (portrait ? 4 : 8) - 0.5)
     // home | network | time | updates | help | reset | about | setup
     property string panel: station.role === "" ? "setup" : "home"
+    // A newer ViewTouch found online (its version), to install.
+    property string onlineReady: ""
+    Timer { id: restartSoon; interval: 3000; onTriggered: Qt.quit() }
+
     // Settings opened with the PIN stay open for two minutes.
     property bool unlocked: false
     property var afterPin: null
@@ -85,6 +89,8 @@ ApplicationWindow {
                 timezone: [qsTr("Time zone changed."), qsTr("Couldn't change the time zone")],
                 update: [qsTr("Up to date."), qsTr("The update didn't finish")],
                 "update-usb": [qsTr("ViewTouch updated."), qsTr("Nothing installed")],
+                "online-check": ["", qsTr("Couldn't look for a new ViewTouch")],
+                "online-update": ["", qsTr("Not installed")],
                 ssh: [qsTr("Done."), qsTr("Couldn't change remote help")],
                 backup: [qsTr("Backed up."), qsTr("The backup failed")],
                 erase: [qsTr("The store is erased; ViewTouch starts fresh."), qsTr("Not erased")],
@@ -93,6 +99,17 @@ ApplicationWindow {
                 reboot: ["", qsTr("Couldn't restart")],
                 poweroff: ["", qsTr("Couldn't shut down")]
             }[action] ?? [qsTr("Done."), qsTr("That didn't work")]
+            // A newer ViewTouch online: what the helper's last line says.
+            if (ok && action === "online-check") {
+                const words = (message ?? "").split(" ")
+                root.onlineReady = words[0] === "READY" ? words[1] : ""
+                root.say(words[0] === "READY" ? qsTr("ViewTouch %1 is ready (this computer has %2).").arg(words[1]).arg(words[2] ?? "")
+                                              : qsTr("This computer has the newest ViewTouch (%1).").arg(words[1] ?? ""), true)
+            } else if (ok && action === "online-update") {
+                root.onlineReady = ""
+                root.say(qsTr("ViewTouch %1 is installed. Starting it again…").arg((message ?? "").split(" ")[1] ?? ""), true)
+                restartSoon.start()   // the home screen on the new version (its service starts it again)
+            }
             if (ok && what[0] !== "")
                 root.say(what[0], true)
             else if (!ok)
@@ -529,10 +546,30 @@ ApplicationWindow {
         id: updatesPanel
         Panel {
             title: qsTr("Updates")
-            Note { text: qsTr("Security updates install by themselves each night. Update now to get everything at once (a few minutes; the screen stays on this page).") }
+            Note { text: qsTr("A new ViewTouch comes from the internet: Check for a New ViewTouch, then install it (a few minutes; it's checked to be ViewTouch's own, and never an older one). The tablets' app comes with it.") }
             RowLayout {
                 spacing: root.u
-                BigButton { text: qsTr("Update Now"); tint: "#2f6fd6"; enabled: !root.station.busy; onClicked: root.station.runUpdates() }
+                BigButton {
+                    objectName: "checkOnline"
+                    visible: root.onlineReady === ""
+                    text: qsTr("Check for a New ViewTouch")
+                    tint: "#2f6fd6"
+                    enabled: !root.station.busy
+                    onClicked: root.station.checkOnline()
+                }
+                BigButton {
+                    objectName: "installOnline"
+                    visible: root.onlineReady !== ""
+                    text: qsTr("Install ViewTouch %1").arg(root.onlineReady)
+                    tint: "#1f8a4c"
+                    enabled: !root.station.busy
+                    onClicked: root.station.installOnline()
+                }
+            }
+            Note { text: qsTr("Security updates for the computer install by themselves each night; Update Now gets them all at once.") }
+            RowLayout {
+                spacing: root.u
+                BigButton { text: qsTr("Update Now"); enabled: !root.station.busy; onClicked: root.station.runUpdates() }
                 BigButton { text: qsTr("New ViewTouch from a USB Stick"); enabled: !root.station.busy; onClicked: root.station.updateFromUsb() }
             }
             Note { text: qsTr("For a USB stick: put the ViewTouch package (vtmodern_….deb) on it, plug it in, then touch the button.") }

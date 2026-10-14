@@ -1092,6 +1092,39 @@ int runStore(const Args &cli, const Options &o)
 
     // Texts to guests ("your table is ready") go to the store's texting
     // service: a JSON POST of {to, message}, never blocking the screen.
+    // Once a day: is there a newer ViewTouch on the release page? (Store Check
+    // says so; the store computer's home screen installs it.)
+    QNetworkAccessManager updateCheck;
+    QTimer updateTimer;
+    {
+        QString base = u"https://github.com/No0ne558/viewtouchFork/releases/download/modern-packages"_s;
+        QFile conf(u"/etc/viewtouch/updates.conf"_s);
+        if (conf.open(QIODevice::ReadOnly))
+            for (const QByteArray &line : conf.readAll().split('\n'))
+                if (line.startsWith("url=https://"))
+                    base = QString::fromUtf8(line.mid(4)).trimmed();
+        const auto check = [&updateCheck, shared, base] {
+            QNetworkRequest request(QUrl(base + u"/latest.json"_s));
+            request.setTransferTimeout(30000);
+            QNetworkReply *reply = updateCheck.get(request);
+            QObject::connect(reply, &QNetworkReply::finished, shared, [reply, shared] {
+                reply->deleteLater();
+                if (reply->error() != QNetworkReply::NoError)
+                    return;   // offline: next time
+                const QString version = QJsonDocument::fromJson(reply->readAll()).object().value(u"version").toString();
+                const int build = version.section(u'.', 2, 2).toInt();
+                const QString newer = build > vt::net::appBuild().number ? version : QString();
+                if (newer != shared->newVersion) {
+                    shared->newVersion = newer;
+                    emit shared->dayChanged();
+                }
+            });
+        };
+        updateTimer.setInterval(24 * 3600 * 1000);
+        QObject::connect(&updateTimer, &QTimer::timeout, &updateCheck, check);
+        updateTimer.start();
+        QTimer::singleShot(2 * 60 * 1000, &updateCheck, check);   // soon after starting
+    }
     QNetworkAccessManager texting;
     // A text that couldn't go out (the network or the internet down) waits and
     // is tried again every minute, for a day; the texting service saying no
