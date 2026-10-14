@@ -762,3 +762,12 @@ If Qt6 is not found, only the core library and tests are built. To build it from
 ## Signed packages
 
 Every package built by `packaging/build-packages.sh` is signed (an Ed25519 signature, `PACKAGE.sig`) with a key kept on the build computer only, `~/.config/viewtouch/signing/update-signing-key.pem` (`VTM_SIGNING_KEY` to use another); the public key is `packaging/update-signing-key.pub.pem`, installed as `/usr/share/vtmodern/update-signing-key.pub.pem`. **Update from USB** installs only a package whose `.sig` is beside it and checks out, and `install-viewtouch.sh` checks the downloaded package against the same key before installing. Publish with `packaging/publish.sh --apk-arm64 FILE --apk-armv7 FILE`: it uploads the newest packages and tablet apps with `latest.json` (the newest version and its files), each signed. Store computers look there: **Home screen → Updates → Check for a New ViewTouch** (`vtmodern-device online-check` / `online-update`; another page with `url=https://…` in `/etc/viewtouch/updates.conf`), and the store's ViewTouch checks once a day and says so in Store Check. Keep a copy of the private key somewhere safe and offline: without it, new packages can't be signed for stores that have the old key.
+
+### Forks and your own builds
+
+ViewTouch is open source, so the update channel is not tied to one project: which release page store computers check, and which key they trust, are in `packaging/release-channel.conf` and `packaging/update-signing-key.pub.pem`. Pulling or merging code is not affected; private keys are never in the repository.
+
+- **A fork that publishes its own packages:** `packaging/release-channel.sh OWNER/REPO` makes its own signing key (kept outside the repository) and points the channel, the trusted key and `install-viewtouch.sh` at its own releases. Commit those three files; publish with `packaging/publish.sh`. Stores running that fork then update only from it. When sending changes back upstream, leave those three files out of the pull request.
+- **No online updates:** leave `url=` empty in `release-channel.conf`.
+- **On a store computer:** `url=https://…` in `/etc/viewtouch/updates.conf` uses another release page, and a public key (`*.pem`) put in `/etc/viewtouch/trusted-keys/` is trusted too, so a store can install its own builds or another fork's. Those are the administrator's choice; ViewTouch never adds keys by itself.
+- **Installing another fork's package:** `VTM_PACKAGES=https://… VTM_KEY=their-key.pem sh install-viewtouch.sh`.

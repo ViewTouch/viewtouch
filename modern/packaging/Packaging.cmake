@@ -9,7 +9,9 @@ install(PROGRAMS ${VTM_PKG}/vtmodern-setup DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(PROGRAMS ${VTM_PKG}/vtmodern-lockdown DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(PROGRAMS ${VTM_PKG}/vtmodern-device DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/vtmodern)
 # The key ViewTouch packages are signed with: "Update from USB" installs only signed ones.
-install(FILES ${VTM_PKG}/update-signing-key.pub.pem DESTINATION ${CMAKE_INSTALL_DATADIR}/vtmodern)
+# Where to look for a new one online (a fork sets its own: release-channel.sh).
+install(FILES ${VTM_PKG}/update-signing-key.pub.pem ${VTM_PKG}/release-channel.conf
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/vtmodern)
 # systemd looks in <prefix>/lib even where libraries go to lib64
 install(FILES ${VTM_PKG}/vtmodern.service ${VTM_PKG}/vtmodern-kiosk.service ${VTM_PKG}/vtmodern-station.service
         DESTINATION lib/systemd/system)

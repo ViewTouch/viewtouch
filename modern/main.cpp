@@ -1097,13 +1097,28 @@ int runStore(const Args &cli, const Options &o)
     QNetworkAccessManager updateCheck;
     QTimer updateTimer;
     {
-        QString base = u"https://github.com/No0ne558/viewtouchFork/releases/download/modern-packages"_s;
-        QFile conf(u"/etc/viewtouch/updates.conf"_s);
-        if (conf.open(QIODevice::ReadOnly))
+        // This computer's choice, else the page this ViewTouch was built for
+        // (packaging/release-channel.conf; a fork sets its own). None: no check.
+        QString base;
+        for (const QString &path : {u"/etc/viewtouch/updates.conf"_s, u"/usr/share/vtmodern/release-channel.conf"_s}) {
+            QFile conf(path);
+            if (!conf.open(QIODevice::ReadOnly))
+                continue;
+            bool said = false;
             for (const QByteArray &line : conf.readAll().split('\n'))
-                if (line.startsWith("url=https://"))
-                    base = QString::fromUtf8(line.mid(4)).trimmed();
+                if (line.startsWith("url=")) {
+                    said = true;
+                    const QString url = QString::fromUtf8(line.mid(4)).trimmed();
+                    base = url.startsWith(u"https://"_s) ? url : QString();
+                }
+            if (said)
+                break;
+        }
+        while (base.endsWith(u'/'))
+            base.chop(1);
         const auto check = [&updateCheck, shared, base] {
+            if (base.isEmpty())
+                return;
             QNetworkRequest request(QUrl(base + u"/latest.json"_s));
             request.setTransferTimeout(30000);
             QNetworkReply *reply = updateCheck.get(request);

@@ -20,6 +20,16 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 export LC_ALL=C.UTF-8
 
 die() { echo "$*" >&2; exit 1; }
+# FILE SIG: signed by the key this ViewTouch was built with, or one this
+# computer's administrator added to /etc/viewtouch/trusted-keys/ (*.pem: a
+# store's own builds, or another fork's).
+signed_by_trusted() {
+    for k in /usr/share/vtmodern/update-signing-key.pub.pem /etc/viewtouch/trusted-keys/*.pem; do
+        [ -f "$k" ] || continue
+        openssl pkeyutl -verify -pubin -inkey "$k" -rawin -in "$1" -sigfile "$2" >/dev/null 2>&1 && return 0
+    done
+    return 1
+}
 [ "$(id -u)" -eq 0 ] || die "Run this with sudo."
 
 action=${1:-}
@@ -142,10 +152,9 @@ update-usb)
         done
     done
     [ -n "$found" ] || die "No ViewTouch package (vtmodern_....deb) on a USB stick."
-    # Only a package signed by ViewTouch's key (its .sig file beside it).
+    # Only a package signed by a trusted key (its .sig file beside it).
     [ -s /tmp/vtmodern-update.deb.sig ] || { rm -f /tmp/vtmodern-update.deb; die "$found has no signature (.sig file beside it): not installed."; }
-    if ! openssl pkeyutl -verify -pubin -inkey /usr/share/vtmodern/update-signing-key.pub.pem -rawin \
-            -in /tmp/vtmodern-update.deb -sigfile /tmp/vtmodern-update.deb.sig >/dev/null 2>&1; then
+    if ! signed_by_trusted /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig; then
         rm -f /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig
         die "$found isn't signed by ViewTouch (or was changed): not installed."
     fi
@@ -155,14 +164,18 @@ update-usb)
     echo "Installed $found. Restart the computer to use it."
     ;;
 online-check|online-update)
-    # The release page (/etc/viewtouch/updates.conf: url=https://...), its
-    # latest.json, each file signed with ViewTouch's key.
-    url=https://github.com/No0ne558/viewtouchFork/releases/download/modern-packages
-    if [ -f /etc/viewtouch/updates.conf ]; then
-        set_url=$(sed -n 's/^url=//p' /etc/viewtouch/updates.conf | tail -1)
-        case "$set_url" in https://*) url=${set_url%/} ;; "") ;; *) die "updates.conf: the url must start with https://" ;; esac
-    fi
-    key=/usr/share/vtmodern/update-signing-key.pub.pem
+    # The release page: /etc/viewtouch/updates.conf (this computer's choice),
+    # else the one this ViewTouch was built for (release-channel.conf). Its
+    # latest.json and each file signed by a trusted key.
+    url=
+    for conf in /etc/viewtouch/updates.conf /usr/share/vtmodern/release-channel.conf; do
+        [ -f "$conf" ] || continue
+        grep -q '^url=' "$conf" || continue
+        url=$(sed -n 's/^url=//p' "$conf" | tail -1 | tr -d '[:space:]')
+        break
+    done
+    [ -n "$url" ] || die "Online updates aren't set up (no release page in /etc/viewtouch/updates.conf)."
+    case "$url" in https://*) url=${url%/} ;; *) die "The release page must start with https:// ($url)." ;; esac
     work=/run/vtmodern-online
     rm -rf "$work"
     mkdir -p "$work"
@@ -170,7 +183,7 @@ online-check|online-update)
     fetch() {   # name -> $work/name and $work/name.sig, checked
         curl -fsSL --retry 2 --max-time 600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 from $url (no internet, or nothing published there)."
         curl -fsSL --retry 2 --max-time 60 -o "$work/$1.sig" "$url/$1.sig" || die "$1 has no signature online: not used."
-        openssl pkeyutl -verify -pubin -inkey "$key" -rawin -in "$work/$1" -sigfile "$work/$1.sig" >/dev/null 2>&1 ||
+        signed_by_trusted "$work/$1" "$work/$1.sig" ||
             die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
     }
     build_of() { printf '%s' "$1" | sed -n 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/p'; }
