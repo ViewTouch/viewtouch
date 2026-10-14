@@ -12,6 +12,9 @@
 #include "qt_catch.hh"
 
 #include <QElapsedTimer>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QTimeZone>
 #include <QSignalSpy>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -638,4 +641,38 @@ TEST_CASE("Handhelds put the open checks together from the shared part and their
     for (const QString &k : store_.keys())
         if (k != u"minutes"_s)
             CHECK(seenAtBar.value(k) == store_.value(k));
+}
+
+TEST_CASE("The screens' updates as JSON text: the same as Qt's, written straight", "[net][json]")
+{
+    const auto same = [](const QVariant &v) {
+        const QByteArray mine = net::jsonText(v);
+        const QJsonValue want = QJsonValue::fromVariant(v);
+        // Read back, it's the very value Qt would have sent.
+        const QJsonDocument doc = QJsonDocument::fromJson("[" + mine + "]");
+        INFO(mine.toStdString());
+        REQUIRE(doc.isArray());
+        CHECK(doc.array().at(0) == want);
+    };
+    same(QVariant());
+    same(true);
+    same(false);
+    same(0);
+    same(-42);
+    same(qint64(9'007'199'254'740'993));   // past a double's whole numbers
+    same(3.5);
+    same(2.0);
+    same(0.1 + 0.2);
+    same(-1e-7);
+    same(std::numeric_limits<double>::quiet_NaN());
+    same(u""_s);
+    same(u"Café \"Ana\" \\ tab\there\nnew line\r\x01\x1f / 日本 🍔"_s);
+    same(QStringList{u"a"_s, u"b\"c"_s});
+    same(QVariantList{});
+    same(QVariantMap{});
+    same(QVariantList{1, u"x"_s, QVariantMap{{u"z"_s, 1}, {u"a"_s, QVariantList{true, QVariant()}}}, 2.25});
+    same(QVariantMap{{u"total"_s, u"$12.50"_s}, {u"guests"_s, 4}, {u"lines"_s, QVariantList{QVariantMap{{u"name"_s, u"Burger"_s}}}}});
+    // Anything unusual goes Qt's way, the same.
+    same(QVariantMap{{u"at"_s, QDateTime::fromMSecsSinceEpoch(1'700'000'000'000, QTimeZone::UTC)}});
+    same(QVariantHash{{u"b"_s, 1}, {u"a"_s, 2}});
 }
