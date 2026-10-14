@@ -20,6 +20,18 @@ Item {
         if (filter !== "") return pos.openChecks.filter(c => c.label === filter)   // a table's: all of them
         return showAll ? pos.openChecks : pos.openChecks.filter(c => c.forMe)
     }
+    // The closed checks come to a handheld only while a list shows them.
+    readonly property bool wantsClosed: pos !== null && mode === "closed"
+    property bool asked: false
+    function ask(on) {
+        if (on === asked || !pos) return
+        asked = on
+        pos.want("closedChecks", on)
+    }
+    onWantsClosedChanged: ask(wantsClosed)
+    Component.onCompleted: ask(wantsClosed)
+    Component.onDestruction: ask(false)
+
     // Open checks: yours (and the counter's kiosk orders), or everyone's to see.
     property bool showAll: false
     readonly property bool choosesWhose: mode === "" && filter === ""

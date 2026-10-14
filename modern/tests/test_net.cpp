@@ -575,3 +575,67 @@ TEST_CASE("Versions: the builds a store has run are kept with its settings", "[n
     const core::PosSettings back = app::settingsFromJson(app::toJson(s));
     CHECK(back.builds == s.builds);
 }
+
+TEST_CASE("Handhelds get the closed checks only while a list shows them", "[net][remote][want]")
+{
+    Store store;
+    Screen office(store.terminal(u"Office"_s));
+    office.pin("1234");
+    // A check closed on the main computer's own session.
+    PosService counter(&store.shared, u"Counter"_s);
+    REQUIRE(counter.loginWithPin(u"1234"_s));
+    counter.entryKey(u"10000"_s);
+    REQUIRE(counter.openDrawerSession());
+    const auto sell = [&] {
+        REQUIRE(counter.startCheck(core::CheckType::Quick));
+        counter.addItem(u"coffee"_s);
+        REQUIRE(counter.tender(u"cash"_s));
+        if (counter.hasCheck())
+            REQUIRE(counter.closeCheck());
+    };
+    sell();
+    waitFor([] { return false; }, 300);
+    CHECK(office.remote->closedChecks().isEmpty());          // not asked for
+
+    office.remote->want(u"closedChecks"_s, true);            // the Closed Checks list is shown
+    REQUIRE(waitFor([&] { return office.remote->closedChecks().size() == 1; }));
+    sell();                                                   // and kept up to date
+    REQUIRE(waitFor([&] { return office.remote->closedChecks().size() == 2; }));
+
+    office.remote->want(u"closedChecks"_s, false);           // gone from the screen
+    CHECK(office.remote->closedChecks().isEmpty());
+    sell();
+    waitFor([] { return false; }, 300);
+    CHECK(office.remote->closedChecks().isEmpty());
+}
+
+TEST_CASE("Handhelds put the open checks together from the shared part and their own", "[net][remote][want]")
+{
+    Store store;
+    Screen front(store.terminal(u"Front"_s));
+    Screen bar(store.terminal(u"Bar"_s));
+    front.pin("1111");
+    bar.pin("2222");
+    front.c.selectTable(u"T2"_s);
+    front.settle();
+    front.remote->entryKey(u"3"_s);
+    front.settle();
+    front.tap(u"start"_s);                                   // Sam's check, open on Front
+    REQUIRE(waitFor([&] { return bar.remote->openChecks().size() == 1; }));
+    const QVariantMap mineOnFront = front.remote->openChecks().first().toMap();
+    const QVariantMap seenAtBar = bar.remote->openChecks().first().toMap();
+    CHECK(mineOnFront[u"mine"_s].toBool());
+    CHECK(mineOnFront[u"current"_s].toBool());
+    CHECK(mineOnFront[u"forMe"_s].toBool());
+    CHECK(mineOnFront[u"label"_s] == u"T2"_s);
+    CHECK_FALSE(seenAtBar[u"mine"_s].toBool());
+    CHECK_FALSE(seenAtBar[u"current"_s].toBool());
+    CHECK(seenAtBar[u"busyOn"_s] == u"Front"_s);
+    // The same as the store works out for that person on that screen.
+    PosService casey(&store.shared, u"Bar"_s);
+    REQUIRE(casey.loginWithPin(u"2222"_s));
+    const QVariantMap store_ = casey.openChecks().first().toMap();
+    for (const QString &k : store_.keys())
+        if (k != u"minutes"_s)
+            CHECK(seenAtBar.value(k) == store_.value(k));
+}

@@ -59,6 +59,10 @@ class PosSession : public QObject {
     Q_PROPERTY(qint64 selectedLine READ selectedLine WRITE selectLine NOTIFY checkChanged)
     Q_PROPERTY(qint64 selectedPayment READ selectedPayment WRITE selectPayment NOTIFY checkChanged)
     Q_PROPERTY(QVariantList openChecks READ openChecks NOTIFY openChecksChanged)
+    // The same in two parts, for handhelds: what's the same on every screen,
+    // and this screen's own (whose they are, which is open here or elsewhere).
+    Q_PROPERTY(QVariantList openChecksShared READ openChecksShared NOTIFY openChecksChanged)
+    Q_PROPERTY(QVariantMap openChecksViewer READ openChecksViewer NOTIFY openChecksChanged)
     // The host stand's floor: table -> {state: seated | dirty | reserved, ...}
     // (tables not in it are available).
     Q_PROPERTY(QVariantMap floor READ floor NOTIFY openChecksChanged)
@@ -263,6 +267,10 @@ public:
     virtual QVariantList drivers() const = 0;
     virtual QVariantMap floor() const = 0;
     virtual QVariantList openChecks() const = 0;
+    virtual QVariantList openChecksShared() const { return {}; }
+    virtual QVariantMap openChecksViewer() const { return {}; }
+    // The two parts put together: each check with mine, current, forMe, mayOpen, busyOn.
+    static QVariantList mergeOpenChecks(const QVariantList &shared, const QVariantMap &viewer);
     virtual QStringList popularItems() const = 0;
     virtual QVariantList tableChecks() const = 0;
     virtual QString undoText() const = 0;
@@ -387,6 +395,9 @@ public:
 
     // --- touch conveniences for widgets (fire and forget) ------------------------
     Q_INVOKABLE void pinKey(const QString &key) { invoke(QStringLiteral("pinKey"), {key}); }
+    // A screen showing something big that's only sent when asked for
+    // ("closedChecks"): on while it's shown. (On the main computer it's always there.)
+    Q_INVOKABLE virtual void want(const QString &key, bool on) { Q_UNUSED(key) Q_UNUSED(on) }
     Q_INVOKABLE void entryKey(const QString &key) { invoke(QStringLiteral("entryKey"), {key}); }
     Q_INVOKABLE void adjustGuests(int delta) { invoke(QStringLiteral("adjustGuests"), {delta}); }
     Q_INVOKABLE void textKey(const QString &key) { invoke(QStringLiteral("textKey"), {key}); }

@@ -50,6 +50,7 @@ public:
     void saveLayout(const layout::Layout &layout);
 
     void invoke(const QString &method, const QVariantList &args = {}, Reply reply = {}) override;
+    void want(const QString &key, bool on) override;
 
     // The name the server knows this device by (it was paired under it).
     QString terminalName() const override
@@ -86,7 +87,9 @@ public:
     QVariantList payments() const override { return v(u"payments").toList(); }
     qint64 selectedLine() const override { return v(u"selectedLine").toLongLong(); }
     qint64 selectedPayment() const override { return v(u"selectedPayment").toLongLong(); }
-    QVariantList openChecks() const override { return v(u"openChecks").toList(); }
+    QVariantList openChecks() const override;
+    QVariantList openChecksShared() const override { return v(u"openChecksShared").toList(); }
+    QVariantMap openChecksViewer() const override { return v(u"openChecksViewer").toMap(); }
     QVariantMap floor() const override { return v(u"floor").toMap(); }
     QVariantList deliveries() const override { return v(u"deliveries").toList(); }
     QVariantList drivers() const override { return v(u"drivers").toList(); }
@@ -237,6 +240,9 @@ private:
     qint64 nextId_ = 1;
     QHash<qint64, Reply> replies_;
     QVariantMap state_;
+    QHash<QString, int> wanted_;   // what's asked for, by how many on the screen
+    mutable QVariantList openMerged_;   // the open checks put together (until either part changes)
+    mutable bool openMergedValid_ = false;
     layout::Layout layout_;
 
     struct Cached {

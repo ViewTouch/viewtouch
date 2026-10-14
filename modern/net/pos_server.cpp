@@ -19,6 +19,7 @@
 #include <QLoggingCategory>
 #include <QSslPreSharedKeyAuthenticator>
 #include <QPointer>
+#include <QSet>
 #include <QSslSocket>
 
 using namespace Qt::StringLiterals;
@@ -38,6 +39,8 @@ struct PosServer::Connection {
     qint64 since = 0;
     QVariantMap sent;                           // last state sent
     quint32 dirty = ~0u;                        // what may have changed since (StatePiece::bit)
+    bool subscribes = false;                    // asks for the big things it shows (want)
+    QSet<QString> wanted;
     QList<QJsonObject> events;                  // queued until the next flush
     QStringList notices;
     qint64 heard = 0;         // when it last sent anything
@@ -58,6 +61,20 @@ struct StatePiece {
     quint32 bit;
 };
 constexpr quint32 kAlways = 1u << 31;
+
+// Big, and shown on few screens: sent only to a screen that asks (a screen
+// too old to ask gets everything).
+bool onRequest(const QString &key)
+{
+    return key == u"closedChecks";
+}
+
+// Screens that ask for things (this version) get the open checks in two
+// parts (the shared part made and sent once a round); older ones the list.
+bool notFor(bool subscribes, const QString &key)
+{
+    return subscribes ? key == u"openChecks" : key == u"openChecksShared" || key == u"openChecksViewer";
+}
 
 const std::vector<StatePiece> &statePieces()
 {
@@ -175,7 +192,9 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     });
     pingTimer_.start();
     flushTimer_.setSingleShot(true);
-    flushTimer_.setInterval(0);
+    // Every screen's update at most every 80 ms (busy: many changes in one
+    // round); the screen that made a change gets its own at once.
+    flushTimer_.setInterval(80);
     connect(&flushTimer_, &QTimer::timeout, this, [this] {
         QElapsedTimer t;
         t.start();
@@ -367,7 +386,10 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         connect(s, &app::PosSession::checkClosed, this, [c](qint64 id) {
             c->events << QJsonObject{{u"t"_s, u"event"_s}, {u"e"_s, u"checkClosed"_s}, {u"v"_s, id}};
         });
+        c->subscribes = m.value(u"subscribes").toBool();
         c->sent = s->snapshot();
+        for (auto it = c->sent.begin(); it != c->sent.end();)
+            it = (c->subscribes && onRequest(it.key())) || notFor(c->subscribes, it.key()) ? c->sent.erase(it) : std::next(it);
         c->dirty = 0;
         // What the store runs, and an update for this screen if it has one.
         const AppBuild me = appBuild();
@@ -387,6 +409,21 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         c->channel->send({{u"t"_s, u"error"_s}, {u"text"_s, u"say hello first"_s}});
         return;
     }
+    if (type == u"want") {
+        // A screen showing (or not any more) something sent only on request.
+        const QString key = m.value(u"k").toString();
+        if (!onRequest(key))
+            return;
+        c->sent.remove(key);
+        if (m.value(u"on").toBool()) {
+            c->wanted.insert(key);
+            c->dirty = ~0u;
+            flush(c);
+        } else {
+            c->wanted.remove(key);
+        }
+        return;
+    }
     if (type == u"getUpdate") {
         sendUpdate(c);
         return;
@@ -397,7 +434,14 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         QVariant result;
         c->session->invoke(m.value(u"m").toString(), m.value(u"a").toArray().toVariantList(),
                            [&result](const QVariant &r) { result = r; });
-        flush(c);   // state (and events) before the reply
+        // State (and events) before the reply (nothing changes meanwhile: shared parts made once).
+        shared_->beginMemo();
+        inRound_ = true;
+        flush(c);
+        inRound_ = false;
+        roundJson_.clear();
+        roundSame_.clear();
+        shared_->endMemo();
         c->channel->send({{u"t"_s, u"reply"_s}, {u"id"_s, id}, {u"r"_s, QJsonValue::fromVariant(result)}});
         for (const QString &n : std::exchange(c->notices, {}))
             c->channel->send({{u"t"_s, u"notice"_s}, {u"text"_s, n}});
@@ -599,6 +643,8 @@ void PosServer::flush(Connection *c)
     for (const StatePiece &p : statePieces()) {
         if (!(p.bit & dirty))
             continue;
+        if ((c->subscribes && onRequest(p.key) && !c->wanted.contains(p.key)) || notFor(c->subscribes, p.key))
+            continue;   // not shown there, or not this way
         const QVariant value = p.property.read(s);
         const void *id = inRound_ ? identity(value) : nullptr;
         auto it = c->sent.find(p.key);

@@ -2051,6 +2051,16 @@ bool PosService::mayOpen(const Check &c) const
 
 QVariantList PosService::openChecks() const
 {
+    return mergeOpenChecks(openChecksShared(), openChecksViewer());
+}
+
+QVariantList PosService::openChecksShared() const
+{
+    return s_->memo(u"openChecksShared "_s + language(), [this] { return QVariant(openChecksSharedNow()); }).toList();
+}
+
+QVariantList PosService::openChecksSharedNow() const
+{
     QVariantList out;
     const std::int64_t t = now();
     for (const auto &[id, c] : s_->open) {
@@ -2060,16 +2070,34 @@ QVariantList PosService::openChecks() const
             {u"guests"_s, c.guests}, {u"total"_s, format(total)}, {u"totalCents"_s, qint64(total.cents())},
             {u"minutes"_s, qint64((t - c.openedAt) / 60000)}, {u"type"_s, qs(toString(c.type))},
             {u"openedAt"_s, qint64(c.openedAt)}, {u"longAfter"_s, s_->settings.tableLongMinutes},
-            {u"mine"_s, user() && c.serverId == user()->id}, {u"current"_s, id == currentId_},
-            // In "My checks": theirs, and the counter's kiosk orders for whoever takes payments.
-            {u"forMe"_s, user() && (c.serverId == user()->id || (!c.driverId.empty() && c.driverId == user()->id)
-                                    || (c.kiosk && permissionsOf(*user()).contains(perm::Settle)))},
-            {u"mayOpen"_s, mayOpen(c)}, {u"kiosk"_s, c.kiosk},
-            {u"lineCount"_s, int(c.lines.size())}, {u"busyOn"_s, lockHolder(id)},
+            {u"kiosk"_s, c.kiosk}, {u"lineCount"_s, int(c.lines.size())},
             {u"customer"_s, qs(c.customer.name)}, {u"due"_s, c.dueAt ? dueText(c.dueAt) : QString()},
         });
     }
     return out;
+}
+
+QVariantMap PosService::openChecksViewer() const
+{
+    // This screen's: whose they are, the one open here, those it may not
+    // open, and those open on another screen.
+    QVariantList mine, forMe, mayNot;
+    QVariantMap busy;
+    const Employee *me = user();
+    const bool settles = me && permissionsOf(*me).contains(perm::Settle);
+    for (const auto &[id, c] : s_->open) {
+        if (me && c.serverId == me->id)
+            mine << qint64(id);
+        // In "My checks": theirs, and the counter's kiosk orders for whoever takes payments.
+        if (me && (c.serverId == me->id || (!c.driverId.empty() && c.driverId == me->id) || (c.kiosk && settles)))
+            forMe << qint64(id);
+        if (!mayOpen(c))
+            mayNot << qint64(id);
+        if (const QString on = lockHolder(id); !on.isEmpty())
+            busy.insert(QString::number(id), on);
+    }
+    return {{u"mine"_s, mine}, {u"forMe"_s, forMe}, {u"mayNot"_s, mayNot}, {u"busy"_s, busy},
+            {u"current"_s, qint64(currentId_)}};
 }
 
 std::set<std::string> PosService::permissionsOf(const Employee &e) const

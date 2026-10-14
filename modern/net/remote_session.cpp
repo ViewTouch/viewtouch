@@ -53,7 +53,7 @@ Group groupOf(const QString &key)
         {u"pendingTable"_s, Group::Check}, {u"hasCheck"_s, Group::Check}, {u"check"_s, Group::Check}, {u"tableChecks"_s, Group::Check}, {u"undoText"_s, Group::Check},
         {u"lines"_s, Group::Check}, {u"totals"_s, Group::Check}, {u"payments"_s, Group::Check},
         {u"selectedLine"_s, Group::Check}, {u"selectedPayment"_s, Group::Check},
-        {u"openChecks"_s, Group::OpenChecks}, {u"floor"_s, Group::OpenChecks}, {u"deliveries"_s, Group::OpenChecks}, {u"drivers"_s, Group::OpenChecks}, {u"popularItems"_s, Group::OpenChecks}, {u"stockLeft"_s, Group::Day}, {u"dashboard"_s, Group::Day}, {u"checklists"_s, Group::Day}, {u"checkFilter"_s, Group::OpenChecks},
+        {u"openChecks"_s, Group::OpenChecks}, {u"openChecksShared"_s, Group::OpenChecks}, {u"openChecksViewer"_s, Group::OpenChecks}, {u"floor"_s, Group::OpenChecks}, {u"deliveries"_s, Group::OpenChecks}, {u"drivers"_s, Group::OpenChecks}, {u"popularItems"_s, Group::OpenChecks}, {u"stockLeft"_s, Group::Day}, {u"dashboard"_s, Group::Day}, {u"checklists"_s, Group::Day}, {u"checkFilter"_s, Group::OpenChecks},
         {u"kitchenTickets"_s, Group::Kitchen}, {u"drawer"_s, Group::Drawer},
         {u"day"_s, Group::Day}, {u"days"_s, Group::Day}, {u"tipsOwed"_s, Group::Day},
     };
@@ -263,7 +263,9 @@ void RemoteSession::onConnected()
     const AppBuild me = appBuild();
     QJsonObject hello{{u"t"_s, u"hello"_s}, {u"terminal"_s, terminal_}, {u"protocol"_s, ProtocolVersion},
                       {u"version"_s, me.version}, {u"build"_s, me.number}, {u"commit"_s, me.commit},
-                      {u"platform"_s, me.platform}};
+                      {u"platform"_s, me.platform},
+                      // Big things (the closed checks) only while they're shown: see want().
+                      {u"subscribes"_s, true}};
     if (!requestedScreen_.isEmpty())
         hello.insert(u"screen"_s, requestedScreen_);
     send(hello);
@@ -324,6 +326,9 @@ void RemoteSession::handle(const QJsonObject &m)
         storeUpdate_ = m.value(u"update").toObject().toVariantMap();
         emit updateChanged();
         welcomed_ = true;
+        for (auto it = wanted_.cbegin(); it != wanted_.cend(); ++it)
+            if (it.value() > 0)
+                send({{u"t"_s, u"want"_s}, {u"k"_s, it.key()}, {u"on"_s, true}});
         refusals_ = 0;
         failures_ = 0;
         emit onlineChanged();
@@ -363,6 +368,31 @@ void RemoteSession::handle(const QJsonObject &m)
     }
 }
 
+QVariantList RemoteSession::openChecks() const
+{
+    // A store that sends the two parts (this one), or the whole list (older).
+    if (!state_.contains(u"openChecksShared"_s))
+        return v(u"openChecks").toList();
+    if (!openMergedValid_) {
+        openMerged_ = mergeOpenChecks(openChecksShared(), openChecksViewer());
+        openMergedValid_ = true;
+    }
+    return openMerged_;
+}
+
+void RemoteSession::want(const QString &key, bool on)
+{
+    int &n = wanted_[key];
+    const bool was = n > 0;
+    n = std::max(0, n + (on ? 1 : -1));
+    if ((n > 0) == was)
+        return;
+    if (n == 0)
+        state_.remove(key);   // not kept up to date any more: nothing rather than old
+    if (welcomed_)
+        send({{u"t"_s, u"want"_s}, {u"k"_s, key}, {u"on"_s, n > 0}});
+}
+
 void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
 {
     const bool wasLoggedIn = loggedIn();
@@ -372,6 +402,8 @@ void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
         for (int g = 0; g < int(Group::None); ++g)
             changed.insert(Group(g));
     }
+    openMergedValid_ = openMergedValid_ && !replaceAll && !set.contains(u"openChecksShared"_s)
+                       && !set.contains(u"openChecksViewer"_s);
     for (auto it = set.begin(); it != set.end(); ++it) {
         state_.insert(it.key(), it.value().toVariant());
         changed.insert(groupOf(it.key()));

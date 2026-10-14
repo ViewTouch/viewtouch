@@ -848,7 +848,9 @@ QString PosService::tipsOwed() const
     const Employee *e = user();
     if (!e)
         return {};
-    return format(tipShareFor(e->id).owed());
+    // Several screens of one person: worked out once a round.
+    return s_->memo(u"tipsOwed "_s + language() + u' ' + qs(e->id),
+                    [this, e] { return QVariant(format(tipShareFor(e->id).owed())); }).toString();
 }
 
 std::map<std::string, TipShare> PosService::allTipShares() const

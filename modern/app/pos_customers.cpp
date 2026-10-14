@@ -88,6 +88,15 @@ QVariantList PosService::customerResults() const
 {
     if (!user())
         return {};
+    // The same search on several screens: found once a round.
+    return s_->memo(u"customers "_s + language() + u' ' + customerQuery_.trimmed(),
+                    [this] { return QVariant(customerResultsNow()); }).toList();
+}
+
+QVariantList PosService::customerResultsNow() const
+{
+    if (!user())
+        return {};
     const QString query = customerQuery_.trimmed();
     const std::string digits = CustomerRecord::digits(ss(query));
     std::vector<const CustomerRecord *> found;
