@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <set>
+#include <unordered_set>
 #include <map>
 #include <memory>
 #include <optional>
@@ -165,6 +166,12 @@ public:
     void beginMemo() { memo_.emplace(); tipSharesMemo.reset(); }
     void endMemo() { memo_.reset(); tipSharesMemo.reset(); }
     bool memoOn() const { return memo_.has_value(); }
+    // Closed checks with nothing left for the kitchen, or for the expediter:
+    // skipped when making those screens (a busy night has a thousand). Done
+    // stays done, except a recalled ticket, or a check reopened and closed
+    // again (both forget it here).
+    mutable std::unordered_set<qint64> kitchenDone, expoDone;
+    void kitchenAgain(qint64 checkId) { kitchenDone.erase(checkId); expoDone.erase(checkId); }
     // Everyone's tip share, made once a round too (each server's screen shows theirs).
     mutable std::optional<std::map<std::string, core::TipShare>> tipSharesMemo;
     QVariant memo(const QString &key, const std::function<QVariant()> &make) const

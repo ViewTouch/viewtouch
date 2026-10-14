@@ -1283,6 +1283,8 @@ bool PosService::endOfDay()
         s_->printer->printReport(s_->settings, buildReport(u"sales"_s), receiptPrinter());
 
     s_->closedToday.clear();
+    s_->kitchenDone.clear();
+    s_->expoDone.clear();
     s_->refundsToday.clear();
     s_->changesToday.clear();
     // Finished punches stay a week, for weekly overtime.

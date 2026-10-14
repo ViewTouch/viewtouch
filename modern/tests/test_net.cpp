@@ -676,3 +676,39 @@ TEST_CASE("The screens' updates as JSON text: the same as Qt's, written straight
     same(QVariantMap{{u"at"_s, QDateTime::fromMSecsSinceEpoch(1'700'000'000'000, QTimeZone::UTC)}});
     same(QVariantHash{{u"b"_s, 1}, {u"a"_s, 2}});
 }
+
+TEST_CASE("Kitchen and expo screens skip finished closed checks, and see recalled ones again", "[net][kitchen]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    PosShared &shared = *pos.shared();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.addItem(u"classic-burger"_s);
+    pos.addItem(u"medium"_s);
+    REQUIRE(pos.sendOrder());
+    const QVariantMap ticket = pos.kitchenTicketsNow().constFirst().toMap();
+    const qint64 id = ticket[u"checkId"_s].toLongLong(), sentAt = ticket[u"sentAt"_s].toLongLong();
+    // Paid before it's made (a counter): still on both screens.
+    pos.entryKey(u"0"_s);
+    REQUIRE(pos.openDrawerSession());
+    REQUIRE(pos.tender(u"cash"_s, 100000));
+    REQUIRE(pos.closeCheck());
+    CHECK(pos.kitchenTicketsNow().size() == 1);
+    CHECK(pos.expoTicketsNow().size() == 1);
+    CHECK_FALSE(shared.kitchenDone.contains(id));
+    // Made: off the kitchen's screen, and remembered as done there.
+    REQUIRE(pos.bumpTicket(id, sentAt));
+    CHECK(pos.kitchenTicketsNow().isEmpty());
+    CHECK(shared.kitchenDone.contains(id));
+    CHECK(pos.expoTicketsNow().size() == 1);   // not run to the table yet
+    // Recalled: back on the kitchen's screen.
+    REQUIRE(pos.recallTicket());
+    CHECK_FALSE(shared.kitchenDone.contains(id));
+    CHECK(pos.kitchenTicketsNow().size() == 1);
+    // A change to the menu or settings looks at every closed check afresh.
+    REQUIRE(pos.bumpTicket(id, sentAt));
+    CHECK(pos.kitchenTicketsNow().isEmpty());
+    emit shared.adminChanged();
+    CHECK(shared.kitchenDone.empty());
+    CHECK(pos.kitchenTicketsNow().isEmpty());
+}
