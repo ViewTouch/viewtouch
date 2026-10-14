@@ -67,6 +67,19 @@ QVariantMap PosService::storeCheck() const
         ready = ready && (ok || info);
     };
 
+    // The sample staff's PINs (1234, 1111...) are the same in every ViewTouch:
+    // anyone could log in with them while they're on.
+    {
+        QStringList samples;
+        for (const Employee &e : s_->employees)
+            if (e.active && e.sample)
+                samples << qs(e.name);
+        if (!samples.isEmpty())
+            add(u"samples"_s, false, tr("Sample staff"),
+                tr("%1 still on, with PINs anyone could know. Turn them off (Manager → Employees, or the setup guide).")
+                    .arg(samples.join(u", "_s)));
+    }
+
     // Printers: each one answering.
     if (s_->settings.printers.empty())
         add(u"printers"_s, false, tr("Printers"), tr("No printer is set up (Manager → Printers)."));
