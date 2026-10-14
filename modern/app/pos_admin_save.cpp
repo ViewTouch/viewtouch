@@ -461,7 +461,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                                         std::pair{u"closingChecklist"_s, &s_->settings.closingChecklist},
                                         std::pair{u"voidReasons"_s, &s_->settings.voidReasons},
                                         std::pair{u"compReasons"_s, &s_->settings.compReasons},
-                                        std::pair{u"wasteReasons"_s, &s_->settings.wasteReasons}}) {
+                                        std::pair{u"wasteReasons"_s, &s_->settings.wasteReasons},
+                                        std::pair{u"expoSkips"_s, &s_->settings.expoSkips}}) {
             if (!record.contains(key))
                 continue;
             list->clear();

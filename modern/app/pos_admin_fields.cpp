@@ -365,6 +365,10 @@ QVariantList PosService::adminFields(const QString &panel)
                       u"min"_s, 1), u"max"_s, 120),
             with(with(field(u"kitchenLateMinutes"_s, tr("Kitchen: ticket is late (red) after (minutes)"), u"int"_s,
                             tr("Late tickets are counted in the Kitchen report.")), u"min"_s, 1), u"max"_s, 240),
+            asRows(field(u"expoSkips"_s, tr("Expo doesn't show"), u"text"_s,
+                         tr("Stations or printers (Bar, Fryer...) whose items the expediter doesn't run: drinks go out "
+                            "from the bar. Running a ticket leaves them on their own screen.")),
+                   tr("+ Add a station or printer")),
             with(with(field(u"laterLeadMinutes"_s, tr("Orders for later go to the kitchen (minutes before)"), u"int"_s,
                             tr("An order for 6:30 with 20 here reaches the kitchen at 6:10.")), u"min"_s, 0), u"max"_s, 240),
             field(u"requireOrderName"_s, tr("Phone orders need a name before Send"), u"bool"_s,

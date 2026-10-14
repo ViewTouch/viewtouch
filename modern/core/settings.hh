@@ -218,6 +218,9 @@ struct PosSettings {
     // Prep labels print here (a printer id; each screen can say otherwise).
     std::string labelPrinter;
     // Log Waste: why it was thrown away.
+    // Stations or printers (name or id) the expediter doesn't see: drinks go
+    // out from the bar, not through expo.
+    std::vector<std::string> expoSkips{"Bar"};
     std::vector<std::string> wasteReasons{"Dropped or spilled", "Expired or spoiled", "Made wrong",
                                           "Sent back by a guest", "Overcooked or burnt"};
     std::vector<std::string> voidReasons{"Wrong item rung in", "Guest changed their mind", "Took too long",

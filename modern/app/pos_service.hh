@@ -516,6 +516,8 @@ public:
     int ticketsLeft(const core::MenuItem &item) const;
     bool knownStation(const std::string &id) const;
     std::string stationOf(const core::OrderLine &l) const;
+    // Made where the expediter doesn't look (Store Settings -> Kitchen -> Expo doesn't show).
+    bool expoSkips(const core::OrderLine &l) const;
     bool isPart(const core::OrderLine &l, const core::Modifier &m) const;
     bool allMade(const core::OrderLine &l) const;
     bool atStation(const core::OrderLine &l, const std::string &station) const;

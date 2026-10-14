@@ -55,6 +55,10 @@
   "one": "%n more",
   "other": "%n more"
  },
+ "%n more ▸": {
+  "one": "%n more ▸",
+  "other": "%n more ▸"
+ },
  "%n new (below)": {
   "one": "%n new (below)",
   "other": "%n new (below)"

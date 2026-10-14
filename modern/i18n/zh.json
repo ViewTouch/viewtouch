@@ -289,6 +289,10 @@
   "one": "另有 %n 个",
   "other": "另有 %n 个"
  },
+ "%n more ▸": {
+  "one": "还有 %n 单 ▸",
+  "other": "还有 %n 单 ▸"
+ },
  "%n new (below)": {
   "one": "%n 个新问题（见下方）",
   "other": "%n 个新问题（见下方）"
@@ -387,6 +391,7 @@
  "+ Add a reason": "+ 添加原因",
  "+ Add a reward": "+ 添加奖励",
  "+ Add a station": "+ 添加工位",
+ "+ Add a station or printer": "+ 添加工作站或打印机",
  "+ Add a task": "+ 添加任务",
  "+ Add a tip choice": "+ 添加小费选项",
  "+ Add a tip-out": "+ 添加小费分成",
@@ -1133,6 +1138,7 @@
  "Content area width": "内容区宽度",
  "Continue modifier sequence": "继续附加项顺序",
  "Continue to Menu ›": "继续到菜单 ›",
+ "Continued ▸": "接下页 ▸",
  "Cooking": "制作中",
  "Cool": "冷色",
  "Copy": "复制",
@@ -1412,6 +1418,7 @@
  "Expired or spoiled": "过期或变质",
  "Expo": "传菜口",
  "Expo Display": "传菜口屏幕",
+ "Expo doesn't show": "出餐台不显示",
  "Export": "导出",
  "Export Every Page…": "导出所有页面…",
  "Export This Page…": "导出此页面…",
@@ -3012,6 +3019,7 @@
  "Starts your shift.": "开始您的班次。",
  "State": "州/省",
  "Station": "工位",
+ "Stations or printers (Bar, Fryer...) whose items the expediter doesn't run: drinks go out from the bar. Running a ticket leaves them on their own screen.": "出餐员不负责的工作站或打印机（吧台、油炸台……）：饮品由吧台送出。出餐时这些项目仍留在各自的屏幕上。",
  "Station…": "工位…",
  "Status bar": "状态栏",
  "Status colors": "状态颜色",

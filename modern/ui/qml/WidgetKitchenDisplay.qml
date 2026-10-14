@@ -100,6 +100,207 @@ Item {
         return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a, b) => b.count - a.count)
     }
 
+    // What's above a ticket's lines: RUSH / VIP / ready time, the expediter's
+    // "waiting on", the guest's allergies, the note. A continued card shows
+    // only the allergies again.
+    component TicketTop: Column {
+        id: top
+        property var ticket: ({})
+        property bool first: true
+        spacing: 4
+        Text {
+            visible: top.first && (top.ticket.rush || top.ticket.vip || !!top.ticket.due)
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            text: [top.ticket.rush ? qsTr("RUSH") : "", top.ticket.vip ? qsTr("VIP") : "",
+                   top.ticket.due ? qsTr("READY %1").arg(top.ticket.due) : ""]
+                  .filter(s => s).join("  ·  ")
+            color: top.ticket.rush ? "#d62828" : "#9a7b12"
+            font.family: w.face
+            font.pixelSize: 28
+            font.bold: true
+        }
+        Text {
+            visible: top.first && w.expo && !top.ticket.ready
+            width: parent.width
+            wrapMode: Text.WordWrap
+            readonly property bool isArmed: w.armed !== null && w.armed.checkId === top.ticket.checkId
+                                            && w.armed.sentAt === top.ticket.sentAt
+            text: isArmed ? qsTr("Not all made. Touch again to send it out anyway.")
+                          : qsTr("Waiting on: %1").arg((top.ticket.waitingOn ?? []).join(", "))
+            color: isArmed ? "#c92a2a" : "#6b6b6b"
+            font.family: w.face
+            font.pixelSize: 20
+            font.bold: isArmed
+        }
+        // The guest's allergies: big, on red, before anything else is read.
+        Rectangle {
+            objectName: "kdsAllergy"
+            visible: (top.ticket.allergies ?? []).length > 0
+            width: parent.width
+            height: allergyText.implicitHeight + 12
+            radius: 6
+            color: "#c62828"
+            Text {
+                id: allergyText
+                anchors.centerIn: parent
+                width: parent.width - 16
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr("ALLERGY: %1").arg((top.ticket.allergies ?? []).join(", ").toUpperCase())
+                color: "white"
+                font.family: w.face
+                font.pixelSize: 26
+                font.bold: true
+            }
+        }
+        Text {
+            visible: top.first && !!top.ticket.note
+            width: parent.width
+            wrapMode: Text.WordWrap
+            text: qsTr("Note: %1").arg(top.ticket.note ?? "")
+            color: "#b83232"
+            font.family: w.face
+            font.pixelSize: 22
+            font.bold: true
+        }
+    }
+
+    // One item and its choices ("S2 1  Cobb Salad", "› No Onion").
+    component TicketLine: Column {
+        id: line
+        property var line: ({})
+        Text {
+            width: parent.width
+            wrapMode: Text.WordWrap
+            // "S2 1  Cobb Salad", course 2+ marked: the kitchen
+            // plates by seat and knows what was fired later.
+            text: (line.line.seat > 0 ? "S" + line.line.seat + "  " : "")
+                  + (line.line.comment ? "** " + line.line.name + " **"
+                                       : line.line.quantity + "  " + line.line.name)
+                  + (line.line.course > 1 ? "   (course " + line.line.course + ")" : "")
+                  + (w.expo ? "   " + (line.line.made ? "✓" : "· " + line.line.station) : "")
+            color: line.line.comment ? "#b83232"
+                 : w.expo && line.line.made ? "#2b8a3e" : w.inkFor(line.line.color)
+            font.family: w.face
+            font.pixelSize: 26
+            font.bold: true
+            font.italic: line.line.comment === true
+        }
+        Repeater {
+            model: line.line.modifiers ?? []
+            delegate: Text {
+                required property string modelData
+                width: line.width
+                leftPadding: 28
+                wrapMode: Text.WordWrap
+                text: "› " + modelData
+                color: "#444"
+                font.family: w.face
+                font.pixelSize: 22
+            }
+        }
+        Text {
+            visible: (line.line.contains ?? []).length > 0
+            width: line.width
+            leftPadding: 28
+            wrapMode: Text.WordWrap
+            text: qsTr("!! CONTAINS %1").arg((line.line.contains ?? []).join(", ").toUpperCase())
+            color: "#c62828"
+            font.family: w.face
+            font.pixelSize: 22
+            font.bold: true
+        }
+    }
+
+    // Each ticket laid out unseen, to know how tall its parts are.
+    readonly property real cardWidth: 360
+    Item {
+        id: measure
+        visible: false
+        width: w.cardWidth - 28
+        Repeater {
+            id: measured
+            model: w.tickets
+            delegate: Item {
+                required property var modelData
+                property alias firstTop: firstTop
+                property alias moreTop: moreTop
+                property alias lineItems: lineItems
+                TicketTop { id: firstTop; ticket: parent.modelData; first: true; width: measure.width }
+                TicketTop { id: moreTop; ticket: parent.modelData; first: false; width: measure.width }
+                Repeater {
+                    id: lineItems
+                    model: parent.modelData.lines
+                    delegate: TicketLine {
+                        required property var modelData
+                        line: modelData
+                        width: measure.width
+                    }
+                }
+                Text { id: continued; visible: false; text: qsTr("Continued ▸"); font.family: w.face; font.pixelSize: 24; font.bold: true }
+                property alias continued: continued
+            }
+        }
+    }
+
+    // [[{ticket, part, parts, from, to}, ...], ...]: the columns, left to right.
+    property var columns: []
+    function relayout() { Qt.callLater(w.layoutColumns) }
+    onTicketsChanged: relayout()
+    onArmedChanged: relayout()
+    function layoutColumns() {
+        const room = board.height
+        if (room <= 0) return
+        const chrome = 72 + 14 + 22 + 8   // the head, the margins, a little to spare
+        const out = []
+        let column = null, used = 0
+        for (let k = 0; k < w.tickets.length; ++k) {
+            const m = measured.itemAt(k)
+            const t = w.tickets[k]
+            const n = t.lines.length
+            const heights = []
+            for (let i = 0; i < n; ++i) {
+                const it = m ? m.lineItems.itemAt(i) : null
+                heights.push((it ? it.implicitHeight : 40) + 4)
+            }
+            const top = (shown, item) => item && item.implicitHeight > 0 ? item.implicitHeight + 4 : 0
+            const more = m ? m.continued.implicitHeight + 4 : 40
+            // Its parts: as many lines as fit each card (an item stays whole).
+            const parts = []
+            let i = 0
+            while (i < n || parts.length === 0) {
+                const firstPart = parts.length === 0
+                let space = room - chrome - top(true, m ? (firstPart ? m.firstTop : m.moreTop) : null)
+                let rest = 0
+                for (let j = i; j < n; ++j) rest += heights[j]
+                if (rest <= space) {
+                    parts.push({ from: i, to: n, height: chrome + room - chrome - space + rest })
+                    break
+                }
+                space -= more
+                let j = i, sum = 0
+                while (j < n && sum + heights[j] <= space) sum += heights[j++]
+                if (j === i) { sum = heights[j]; ++j }   // an item taller than a card: on its own
+                parts.push({ from: i, to: j, height: room })
+                i = j
+            }
+            for (let p = 0; p < parts.length; ++p) {
+                const piece = { ticket: t, part: p + 1, parts: parts.length, from: parts[p].from, to: parts[p].to }
+                const h = parts[p].height
+                if (column && p === 0 && used + 12 + h <= room) {
+                    column.push(piece)
+                    used += 12 + h
+                } else {
+                    column = [piece]
+                    out.push(column)
+                    used = h
+                }
+            }
+        }
+        w.columns = out
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
@@ -198,25 +399,48 @@ Item {
             Layout.fillHeight: true
             spacing: 12
 
-        Flow {
+        // The tickets in columns as tall as the screen, oldest first: small
+        // ones stack, and one too long for the room left goes on in the
+        // next column on a card of its own ("Continued"). More columns than
+        // fit: swipe sideways.
+        Flickable {
+            id: board
+            objectName: "kdsBoard"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 12
             clip: true
+            contentWidth: columnsRow.implicitWidth
+            contentHeight: height
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            onHeightChanged: w.relayout()
 
-            Repeater {
-                model: w.tickets
-                delegate: Rectangle {
+            Behavior on contentX { enabled: !board.moving; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Row {
+                id: columnsRow
+                spacing: 12
+                Repeater {
+                    model: w.columns
+                    delegate: Column {
+                        id: ticketColumn
+                        required property var modelData
+                        width: w.cardWidth
+                        spacing: 12
+                        Repeater {
+                            model: ticketColumn.modelData
+                            delegate: Rectangle {
                     id: card
                     required property var modelData
-                    width: 360
-                    height: Math.min(parent ? parent.height : 600, body.implicitHeight + 72 + 14 + 22)
+                    readonly property var ticket: modelData.ticket
+                    objectName: "kdsCard-" + ticket.checkId + "-" + modelData.part
+                    width: w.cardWidth
+                    height: Math.min(board.height, body.implicitHeight + 72 + 14 + 22)
                     radius: 10
                     color: "#f4f1ea"
                     // Rush tickets wear a red frame, VIP gold.
-                    border.color: tap.pressed ? "#2f6fd6" : card.modelData.rush ? "#ff3b3b"
-                                : card.modelData.vip ? "#d4af37" : "transparent"
-                    border.width: card.modelData.rush || card.modelData.vip ? 8 : 4
+                    border.color: tap.pressed ? "#2f6fd6" : card.ticket.rush ? "#ff3b3b"
+                                : card.ticket.vip ? "#d4af37" : "transparent"
+                    border.width: card.ticket.rush || card.ticket.vip ? 8 : 4
                     clip: true
 
                     Rectangle {
@@ -224,7 +448,7 @@ Item {
                         width: parent.width
                         height: 72
                         radius: 10
-                        color: w.expo && card.modelData.ready ? w.zone.statusColor("kitchenReady", "#1f6fd6") : w.ageColor(card.modelData)
+                        color: w.expo && card.ticket.ready ? w.zone.statusColor("kitchenReady", "#1f6fd6") : w.ageColor(card.ticket)
                         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 10; color: parent.color }
                         Column {
                             anchors.left: parent.left
@@ -235,7 +459,9 @@ Item {
                             Text {
                                 width: parent.width
                                 elide: Text.ElideRight
-                                text: card.modelData.label
+                                // A long order's cards: "T5  2/3".
+                                text: card.ticket.label + (card.modelData.parts > 1
+                                                           ? "  " + card.modelData.part + "/" + card.modelData.parts : "")
                                 color: "white"
                                 font.family: w.face
                                 font.pixelSize: 28
@@ -244,7 +470,7 @@ Item {
                             Text {
                                 width: parent.width
                                 elide: Text.ElideRight
-                                text: card.modelData.customer || card.modelData.server
+                                text: card.ticket.customer || card.ticket.server
                                 color: "white"
                                 font.family: w.face
                                 font.pixelSize: 18
@@ -256,8 +482,8 @@ Item {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.rightMargin: 14
-                            readonly property bool late: !w.expo && !(card.modelData.ready ?? false)
-                                                         && (w.now - card.modelData.sentAt) / 60000 >= (card.modelData.lateMinutes ?? 15)
+                            readonly property bool late: !w.expo && !(card.ticket.ready ?? false)
+                                                         && (w.now - card.ticket.sentAt) / 60000 >= (card.ticket.lateMinutes ?? 15)
                             Text {
                                 anchors.right: parent.right
                                 visible: timeText.late
@@ -269,10 +495,10 @@ Item {
                             }
                         Text {
                             anchors.right: parent.right
-                            text: w.expo && card.modelData.ready ? qsTr("READY")
-                                : w.elapsed(card.modelData.sentAt)
-                                  + ((card.modelData.targetMinutes ?? 0) > 0 && !timeText.late
-                                     ? " / " + qsTr("%1m").arg(card.modelData.targetMinutes) : "")
+                            text: w.expo && card.ticket.ready ? qsTr("READY")
+                                : w.elapsed(card.ticket.sentAt)
+                                  + ((card.ticket.targetMinutes ?? 0) > 0 && !timeText.late
+                                     ? " / " + qsTr("%1m").arg(card.ticket.targetMinutes) : "")
                             color: "white"
                             font.family: w.face
                             font.pixelSize: timeText.late ? 24 : 26
@@ -288,106 +514,29 @@ Item {
                         anchors.right: parent.right
                         anchors.margins: 14
                         spacing: 4
-                        Text {
-                            visible: card.modelData.rush || card.modelData.vip || !!card.modelData.due
+                        TicketTop {
+                            ticket: card.ticket
+                            first: card.modelData.part === 1
                             width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: [card.modelData.rush ? qsTr("RUSH") : "", card.modelData.vip ? qsTr("VIP") : "",
-                                   card.modelData.due ? qsTr("READY %1").arg(card.modelData.due) : ""]
-                                  .filter(s => s).join("  ·  ")
-                            color: card.modelData.rush ? "#d62828" : "#9a7b12"
-                            font.family: w.face
-                            font.pixelSize: 28
-                            font.bold: true
-                        }
-                        Text {
-                            visible: w.expo && !card.modelData.ready
-                            width: parent.width
-                            wrapMode: Text.WordWrap
-                            readonly property bool isArmed: w.armed !== null && w.armed.checkId === card.modelData.checkId
-                                                            && w.armed.sentAt === card.modelData.sentAt
-                            text: isArmed ? qsTr("Not all made. Touch again to send it out anyway.")
-                                          : qsTr("Waiting on: %1").arg((card.modelData.waitingOn ?? []).join(", "))
-                            color: isArmed ? "#c92a2a" : "#6b6b6b"
-                            font.family: w.face
-                            font.pixelSize: 20
-                            font.bold: isArmed
-                        }
-                        // The guest's allergies: big, on red, before anything else is read.
-                        Rectangle {
-                            objectName: "kdsAllergy"
-                            visible: (card.modelData.allergies ?? []).length > 0
-                            width: parent.width
-                            height: allergyText.implicitHeight + 12
-                            radius: 6
-                            color: "#c62828"
-                            Text {
-                                id: allergyText
-                                anchors.centerIn: parent
-                                width: parent.width - 16
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                text: qsTr("ALLERGY: %1").arg((card.modelData.allergies ?? []).join(", ").toUpperCase())
-                                color: "white"
-                                font.family: w.face
-                                font.pixelSize: 26
-                                font.bold: true
-                            }
-                        }
-                        Text {
-                            visible: !!card.modelData.note
-                            width: parent.width
-                            wrapMode: Text.WordWrap
-                            text: qsTr("Note: %1").arg(card.modelData.note)
-                            color: "#b83232"
-                            font.family: w.face
-                            font.pixelSize: 22
-                            font.bold: true
                         }
                         Repeater {
-                            model: card.modelData.lines
-                            delegate: Column {
-                                id: line
+                            model: card.ticket.lines.slice(card.modelData.from, card.modelData.to)
+                            delegate: TicketLine {
                                 required property var modelData
+                                line: modelData
                                 width: body.width
-                                Text {
-                                    width: parent.width
-                                    wrapMode: Text.WordWrap
-                                    // "S2 1  Cobb Salad", course 2+ marked: the kitchen
-                                    // plates by seat and knows what was fired later.
-                                    text: (line.modelData.seat > 0 ? "S" + line.modelData.seat + "  " : "")
-                                          + (line.modelData.comment ? "** " + line.modelData.name + " **"
-                                                                    : line.modelData.quantity + "  " + line.modelData.name)
-                                          + (line.modelData.course > 1 ? "   (course " + line.modelData.course + ")" : "")
-                                          + (w.expo ? "   " + (line.modelData.made ? "✓" : "· " + line.modelData.station) : "")
-                                    color: line.modelData.comment ? "#b83232"
-                                         : w.expo && line.modelData.made ? "#2b8a3e" : w.inkFor(line.modelData.color)
-                                    font.family: w.face
-                                    font.pixelSize: 26
-                                    font.bold: true
-                                    font.italic: line.modelData.comment === true
-                                }
-                                Repeater {
-                                    model: line.modelData.modifiers
-                                    delegate: Text {
-                                        required property string modelData
-                                        leftPadding: 28
-                                        text: "› " + modelData
-                                        color: "#444"
-                                        font.family: w.face
-                                        font.pixelSize: 22
-                                    }
-                                }
-                                Text {
-                                    visible: (line.modelData.contains ?? []).length > 0
-                                    leftPadding: 28
-                                    text: qsTr("!! CONTAINS %1").arg((line.modelData.contains ?? []).join(", ").toUpperCase())
-                                    color: "#c62828"
-                                    font.family: w.face
-                                    font.pixelSize: 22
-                                    font.bold: true
-                                }
                             }
+                        }
+                        Text {
+                            objectName: "kdsContinued"
+                            visible: card.modelData.part < card.modelData.parts
+                            width: parent.width
+                            horizontalAlignment: Text.AlignRight
+                            text: qsTr("Continued ▸")
+                            color: "#1864ab"
+                            font.family: w.face
+                            font.pixelSize: 24
+                            font.bold: true
                         }
                     }
 
@@ -395,7 +544,7 @@ Item {
                         id: tap
                         onTapped: {
                             if (TouchGuard.covered(point.scenePressPosition)) return   // the keyboard's touch
-                            const t = card.modelData
+                            const t = card.ticket
                             if (!w.expo) {
                                 w.pos.bumpTicket(t.checkId, t.sentAt, w.station)
                             } else if (t.ready || (w.armed && w.armed.checkId === t.checkId && w.armed.sentAt === t.sentAt)) {
@@ -405,6 +554,9 @@ Item {
                                 w.armed = { checkId: t.checkId, sentAt: t.sentAt }   // not ready: touch again to send anyway
                                 disarmExpo.restart()
                             }
+                        }
+                    }
+                }
                         }
                     }
                 }
@@ -455,6 +607,46 @@ Item {
                 Item { Layout.fillHeight: true }
             }
         }
+        }
+    }
+
+    // Orders past the right edge: how many, and a touch goes there.
+    readonly property int hiddenOrders: {
+        const step = w.cardWidth + 12
+        const seen = board.contentX + board.width
+        const ids = new Set()
+        for (let c = 0; c < w.columns.length; ++c)
+            if (c * step + w.cardWidth > seen + 1)
+                for (const piece of w.columns[c])
+                    if (piece.part === 1) ids.add(piece.ticket.checkId + ":" + piece.ticket.sentAt)
+        return ids.size
+    }
+    Rectangle {
+        visible: w.hiddenOrders > 0
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 20
+        width: moreText.implicitWidth + 40
+        height: 64
+        radius: 32
+        color: "#1864ab"
+        border.color: "white"
+        border.width: 2
+        Text {
+            id: moreText
+            objectName: "kdsMore"
+            anchors.centerIn: parent
+            text: qsTr("%n more ▸", "", w.hiddenOrders)
+            color: "white"
+            font.family: w.face
+            font.pixelSize: 26
+            font.bold: true
+        }
+        // (Its own: the order under it isn't bumped.)
+        MouseArea {
+            anchors.fill: parent
+            onClicked: board.contentX = Math.min(Math.max(0, board.contentWidth - board.width),
+                                                 board.contentX + Math.max(w.cardWidth + 12, board.width - w.cardWidth))
         }
     }
 

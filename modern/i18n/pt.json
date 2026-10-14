@@ -289,6 +289,10 @@
   "one": "mais %n",
   "other": "mais %n"
  },
+ "%n more ▸": {
+  "one": "mais %n ▸",
+  "other": "mais %n ▸"
+ },
  "%n new (below)": {
   "one": "%n novo (abaixo)",
   "other": "%n novos (abaixo)"
@@ -387,6 +391,7 @@
  "+ Add a reason": "+ Adicionar motivo",
  "+ Add a reward": "+ Adicionar recompensa",
  "+ Add a station": "+ Adicionar praça",
+ "+ Add a station or printer": "+ Adicionar uma estação ou impressora",
  "+ Add a task": "+ Adicionar tarefa",
  "+ Add a tip choice": "+ Adicionar opção de gorjeta",
  "+ Add a tip-out": "+ Adicionar repasse",
@@ -1133,6 +1138,7 @@
  "Content area width": "Largura da área de conteúdo",
  "Continue modifier sequence": "Continuar sequência de modificadores",
  "Continue to Menu ›": "Seguir para o cardápio ›",
+ "Continued ▸": "Continua ▸",
  "Cooking": "Preparando",
  "Cool": "Frio",
  "Copy": "Copiar",
@@ -1412,6 +1418,7 @@
  "Expired or spoiled": "Vencido ou estragado",
  "Expo": "Expedição",
  "Expo Display": "Tela da expedição",
+ "Expo doesn't show": "Expo não mostra",
  "Export": "Exportar",
  "Export Every Page…": "Exportar todas as páginas…",
  "Export This Page…": "Exportar esta página…",
@@ -3012,6 +3019,7 @@
  "Starts your shift.": "Começa seu turno.",
  "State": "Estado",
  "Station": "Praça",
+ "Stations or printers (Bar, Fryer...) whose items the expediter doesn't run: drinks go out from the bar. Running a ticket leaves them on their own screen.": "Estações ou impressoras (Bar, Fritadeira...) cujos itens o expedidor não despacha: as bebidas saem do bar. Despachar um tíquete os deixa na própria tela.",
  "Station…": "Praça…",
  "Status bar": "Barra de status",
  "Status colors": "Cores de status",

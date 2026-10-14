@@ -8331,3 +8331,103 @@ TEST_CASE("Host stand: free-up times, next up and a regular, a picture", "[.host
     QTest::qWait(150);
     s.shot("host-free-next");
 }
+
+TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut off", "[flow][ui][kitchen][continued]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    const auto order = [&](const QString &table, int burgers, int salads) {
+        REQUIRE(s.pos.selectTable(table) == app::PosService::TableNeedsGuests);
+        REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        const auto add = [&](const char *item) {
+            s.pos.addItem(QString::fromLatin1(item));
+            for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+                if (!g.toMap()[u"done"_s].toBool())
+                    s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+            s.pos.finishChoosing();
+        };
+        for (int i = 0; i < burgers; ++i) {
+            add("bacon-burger");
+            s.pos.addItem(u"medium-rare"_s);
+            s.pos.addItem(u"fries"_s);
+        }
+        for (int i = 0; i < salads; ++i)
+            add("cobb");
+        REQUIRE(s.pos.sendOrder());
+        s.pos.releaseCheck();
+    };
+    order(u"T1"_s, 0, 2);
+    order(u"T5"_s, 14, 6);   // a party of twenty
+    order(u"T2"_s, 1, 1);
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    QTest::qWait(200);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *board = Screen::findBy(root, "objectName", u"kdsBoard"_s);
+    REQUIRE(board);
+
+    // The cards: T5 in parts, each whole inside the board.
+    std::vector<QQuickItem *> cards;
+    std::function<void(QQuickItem *)> collect = [&](QQuickItem *i) {
+        for (QQuickItem *c : i->childItems()) {
+            if (!c->isVisible())
+                continue;
+            if (c->objectName().startsWith(u"kdsCard-"_s))
+                cards.push_back(c);
+            collect(c);
+        }
+    };
+    collect(board);
+    const QVariantList tickets = s.pos.kitchenTickets();
+    REQUIRE(tickets.size() == 3);
+    const qint64 big = tickets[1].toMap()[u"checkId"_s].toLongLong();
+    int parts = 0;
+    for (QQuickItem *c : cards) {
+        if (c->objectName().startsWith(u"kdsCard-%1-"_s.arg(big)))
+            ++parts;
+        // Nothing past the bottom: the card fits, and what's on it fits the card.
+        CHECK(c->height() <= board->height() + 0.5);
+        double content = 0;
+        for (QQuickItem *k : c->childItems())
+            content = std::max(content, k->y() + k->implicitHeight());
+        CHECK(content <= c->height() + 1);
+    }
+    CHECK(parts >= 2);
+    CHECK(Screen::findBy(board, "text", u"Continued ▸"_s));
+    CHECK(Screen::findBy(board, "text", u"T5  1/%1"_s.arg(parts)));
+    CHECK(Screen::findBy(board, "text", u"T5  2/%1"_s.arg(parts)));
+    // Every item once, across the parts.
+    int burgers = 0;
+    std::function<void(QQuickItem *)> count = [&](QQuickItem *i) {
+        for (QQuickItem *c : i->childItems()) {
+            if (!c->isVisible())
+                continue;
+            if (c->property("text").toString() == u"1  BCN BGR"_s)   // its kitchen name
+                ++burgers;
+            count(c);
+        }
+    };
+    count(board);
+    CHECK(burgers == 15);
+    s.shot("kitchen-continued");
+    // T2 is past the right edge: "1 more", and a touch there goes to it.
+    QQuickItem *more = Screen::findBy(root, "objectName", u"kdsMore"_s);
+    REQUIRE(more);
+    CHECK(more->property("text").toString().contains(u"1 more"_s));
+    s.tapItem(more);
+    QTest::qWait(400);
+    CHECK(board->property("contentX").toDouble() > 0);
+
+    // Touching any of its cards bumps the whole order (the cards again: they're
+    // made anew as tickets change).
+    cards.clear();
+    collect(board);
+    REQUIRE(s.pos.kitchenTickets().size() == 3);   // touching "more" bumped nothing
+    QQuickItem *second = nullptr;
+    for (QQuickItem *c : cards)
+        if (c->objectName() == u"kdsCard-%1-2"_s.arg(big))
+            second = c;
+    REQUIRE(second);
+    s.tapItem(second);
+    QTest::qWait(100);
+    CHECK(s.pos.kitchenTickets().size() == 2);
+}

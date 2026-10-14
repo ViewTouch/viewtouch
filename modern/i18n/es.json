@@ -279,6 +279,10 @@
   "other": "%n artículos quitados del menú"
  },
  "%n more": "%n más",
+ "%n more ▸": {
+  "one": "%n más ▸",
+  "other": "%n más ▸"
+ },
  "%n new (below)": {
   "one": "%n nuevo (abajo)",
   "other": "%n nuevos (abajo)"
@@ -374,6 +378,7 @@
  "+ Add a reason": "+ Agregar un motivo",
  "+ Add a reward": "+ Agregar una recompensa",
  "+ Add a station": "+ Agregar una estación",
+ "+ Add a station or printer": "+ Agregar una estación o impresora",
  "+ Add a task": "+ Agregar una tarea",
  "+ Add a tip choice": "+ Agregar una opción de propina",
  "+ Add a tip-out": "+ Agregar un reparto de propinas",
@@ -1146,6 +1151,7 @@
  "Content area width": "Ancho del área de contenido",
  "Continue modifier sequence": "Seguir la secuencia de modificadores",
  "Continue to Menu ›": "Continuar al menú ›",
+ "Continued ▸": "Continúa ▸",
  "Cooking": "En preparación",
  "Cool": "Fríos",
  "Copy": "Copiar",
@@ -1433,6 +1439,7 @@
  "Expired or spoiled": "Caducado o echado a perder",
  "Expo": "Expo",
  "Expo Display": "Pantalla de expo",
+ "Expo doesn't show": "Expo no muestra",
  "Export": "Exportar",
  "Export Every Page…": "Exportar Todas las Páginas…",
  "Export This Page…": "Exportar Esta Página…",
@@ -3077,6 +3084,7 @@
  "Starts your shift.": "Empieza su turno.",
  "State": "Estado",
  "Station": "Estación",
+ "Stations or printers (Bar, Fryer...) whose items the expediter doesn't run: drinks go out from the bar. Running a ticket leaves them on their own screen.": "Estaciones o impresoras (Bar, Freidora...) cuyos artículos no despacha el expedidor: las bebidas salen de la barra. Al despachar un ticket quedan en su propia pantalla.",
  "Station…": "Estación…",
  "Status bar": "Barra de estado",
  "Status colors": "Colores de estado",

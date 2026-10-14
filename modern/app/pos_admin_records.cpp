@@ -119,6 +119,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"targetFoodCostPercent"_s, s_->settings.targetFoodCostPercent},
              {u"labelPrinter"_s, qs(s_->settings.labelPrinter)},
              {u"wasteReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.wasteReasons) l << qs(t); return l.join(u'\n'); }()},
+             {u"expoSkips"_s, [&] { QStringList l; for (const std::string &t : s_->settings.expoSkips) l << qs(t); return l.join(u'\n'); }()},
              {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"compReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.compReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"openingChecklist"_s, [&] { QStringList l; for (const std::string &t : s_->settings.openingChecklist) l << qs(t); return l.join(u'\n'); }()},

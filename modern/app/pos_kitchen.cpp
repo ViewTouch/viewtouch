@@ -194,6 +194,23 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
 
 // --- the expediter -------------------------------------------------------------------------
 
+bool PosService::expoSkips(const OrderLine &l) const
+{
+    if (s_->settings.expoSkips.empty())
+        return false;
+    // Its station and its printer, by id or by name.
+    QStringList where;
+    for (const std::string &id : {stationOf(l), l.printerOf()}) {
+        where << qs(id) << stationName(id);
+        if (const PrinterConfig *p = s_->settings.printer(id))
+            where << qs(p->name);
+    }
+    for (const std::string &skip : s_->settings.expoSkips)
+        if (where.contains(qs(skip).trimmed(), Qt::CaseInsensitive))
+            return true;
+    return false;
+}
+
 QVariantList PosService::expoTicketsNow() const
 {
     // Everything sent and not yet run to the table, a ticket per send, with
@@ -203,7 +220,7 @@ QVariantList PosService::expoTicketsNow() const
     const auto collect = [&](const Check &c) {
         std::map<std::int64_t, std::vector<const OrderLine *>> bySend;
         for (const OrderLine &l : c.lines) {
-            if (l.sent && !l.voided && !l.served && !l.isComment() && l.forKitchen())
+            if (l.sent && !l.voided && !l.served && !l.isComment() && l.forKitchen() && !expoSkips(l))
                 bySend[l.sentAt].push_back(&l);
         }
         for (auto &[sentAt, lines] : bySend)
@@ -309,7 +326,7 @@ bool PosService::expoBump(qint64 checkId, qint64 sentAt)
         return fail(tr("That ticket is gone."));
     int n = 0;
     for (OrderLine &l : c->lines) {
-        if (l.sent && !l.voided && !l.served && l.sentAt == sentAt && l.forKitchen() && !l.isComment()) {
+        if (l.sent && !l.voided && !l.served && l.sentAt == sentAt && l.forKitchen() && !l.isComment() && !expoSkips(l)) {
             if (!l.made) {   // run before the station bumped it: it's made
                 l.made = true;
                 l.madeAt = now();

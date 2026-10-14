@@ -189,21 +189,34 @@ TEST_CASE("Expediter: every station's ticket, ready when all made, run out, reca
     REQUIRE(pos.sendOrder());
     const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
 
+    // Every station's, but the bar's (drinks go out from the bar): Store Settings.
+    pos.shared()->settings.expoSkips.clear();
     QVariantMap t = pos.expoTickets().first().toMap();
     CHECK_FALSE(t[u"ready"_s].toBool());
     CHECK(t[u"lines"_s].toList().size() == 2);
     CHECK(t[u"waitingOn"_s].toStringList() == QStringList{u"Cold Line"_s, u"Bar"_s});   // in order on the ticket
+    pos.shared()->settings.expoSkips = {"Bar"};   // the starting setting
+    t = pos.expoTickets().first().toMap();
+    REQUIRE(t[u"lines"_s].toList().size() == 1);
+    CHECK(t[u"lines"_s].toList().first().toMap()[u"name"_s].toString().contains(u"Cobb"_s));
+    CHECK(t[u"waitingOn"_s].toStringList() == QStringList{u"Cold Line"_s});
     const qint64 sentAt = t[u"sentAt"_s].toLongLong();
 
-    REQUIRE(pos.bumpTicket(id, sentAt, u"kitchen"_s));   // the kitchen is done
-    t = pos.expoTickets().first().toMap();
-    CHECK(t[u"waitingOn"_s].toStringList() == QStringList{u"Bar"_s});
-    REQUIRE(pos.bumpTicket(id, sentAt, u"bar"_s));
+    REQUIRE(pos.bumpTicket(id, sentAt, u"kitchen"_s));   // the kitchen is done: ready, beer or not
     CHECK(pos.expoTickets().first().toMap()[u"ready"_s].toBool());
-    CHECK(pos.kitchenTickets().isEmpty());               // the stations are clear
 
+    // Run out: the beer stays on the bar's screen until the bar bumps it.
     REQUIRE(pos.expoBump(id, sentAt));
     CHECK(pos.expoTickets().isEmpty());
+    REQUIRE(pos.kitchenTickets().size() == 1);
+    CHECK(pos.kitchenTickets().first().toMap()[u"lines"_s].toList().first().toMap()[u"name"_s].toString().contains(u"Beer"_s));
+    REQUIRE(pos.bumpTicket(id, sentAt, u"bar"_s));
+    CHECK(pos.kitchenTickets().isEmpty());               // the stations are clear
+    // A ticket of drinks only never reaches expo.
+    pos.addItem(u"draft-beer"_s);
+    REQUIRE(pos.sendOrder());
+    CHECK(pos.expoTickets().isEmpty());
+    REQUIRE(pos.bumpTicket(id, pos.kitchenTickets().first().toMap()[u"sentAt"_s].toLongLong(), u"bar"_s));
     CHECK_FALSE(pos.expoBump(id, sentAt));
     REQUIRE(pos.expoRecall());
     CHECK(pos.expoTickets().size() == 1);
