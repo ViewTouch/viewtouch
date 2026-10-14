@@ -1,0 +1,56 @@
+# Builds the modern ViewTouch and runs all its tests on every pull request
+# and every push to main, on Debian 13: the Qt (6.8) the Raspberry Pi store
+# computers run. No secrets: it works for pull requests from forks.
+name: Modern checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: modern-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test (Debian 13, Qt 6.8)
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 60
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            ca-certificates git python3 g++ cmake ninja-build \
+            qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev libssl-dev \
+            qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-templates \
+            qml6-module-qtquick-layouts qml6-module-qtquick-shapes qml6-module-qtquick-dialogs \
+            qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qttest \
+            libqt6sql6-sqlite qt6-qpa-plugins fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # every commit: the build number and version history come from them
+
+      - name: Build
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: timeout 2400 ./build/tests/vtm_tests
+
+      - name: Translations
+        run: |
+          for lang in es fr pt zh; do
+            python3 modern/tools/i18n.py check "$lang"
+          done

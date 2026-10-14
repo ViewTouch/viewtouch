@@ -126,10 +126,14 @@ def main():
     if cmd == "check":
         bad = [p for p in all_ if p not in have]
         for key, value in have.items():
-            forms = value.values() if isinstance(value, dict) else [value]
+            forms = value.items() if isinstance(value, dict) else [("", value)]
             want = sorted(re.findall(r"%(?:\d+|n)", key))
-            for f in forms:
-                if sorted(re.findall(r"%(?:\d+|n)", f)) != want:
+            for form, f in forms:
+                got = sorted(re.findall(r"%(?:\d+|n)", f))
+                # The singular may say "its item" instead of "its 1 item(s)".
+                if form == "one" and "%n" in want and "%n" not in got:
+                    got = sorted(got + ["%n"])
+                if got != want:
                     bad.append(f"placeholders differ: {key!r} -> {f!r}")
         for b in bad:
             print(b if b.startswith("placeholders") else f"missing: {b!r}")
