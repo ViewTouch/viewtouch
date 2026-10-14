@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QMutex>
 #include <QHash>
 #include <QJsonDocument>
 #include <QLoggingCategory>
@@ -23,22 +24,43 @@ QHash<QString, QHash<QString, QJsonValue>> &dictionaries()
     return d;
 }
 
-QString &screenLanguage()
+// The screen's and the guests' languages: read from any thread (Qt's own
+// messages are translated on the printing and network threads too).
+QMutex &languageLock()
+{
+    static QMutex m;
+    return m;
+}
+
+QString &screenLanguageCode()
 {
     static QString code = u"en"_s;
     return code;
 }
 
-QString &guest()
+QString screenLanguage()
+{
+    const QMutexLocker lock(&languageLock());
+    return screenLanguageCode();
+}
+
+QString &guestCode()
 {
     static QString code = u"en"_s;
     return code;
 }
 
-// Set by Scope; empty: the screen's.
+QString guest()
+{
+    const QMutexLocker lock(&languageLock());
+    return guestCode();
+}
+
+// Set by Scope; empty: the screen's. Each thread its own: a terminal's
+// operation on the server's thread isn't another thread's language.
 std::function<QString()> &scoped()
 {
-    static std::function<QString()> language;
+    thread_local std::function<QString()> language;
     return language;
 }
 
@@ -111,9 +133,12 @@ QString current()
 bool setLanguage(const QString &code)
 {
     const QString c = code.isEmpty() ? u"en"_s : code;
-    if (c == screenLanguage())
-        return false;
-    screenLanguage() = c;
+    {
+        const QMutexLocker lock(&languageLock());
+        if (c == screenLanguageCode())
+            return false;
+        screenLanguageCode() = c;
+    }
     // The screen's dates and weekdays too (QML's Qt.locale(), QLocale()).
     QLocale::setDefault(locale(c));
     return true;
@@ -151,7 +176,8 @@ QString guestLanguage()
 
 void setGuestLanguage(const QString &code)
 {
-    guest() = code.isEmpty() ? u"en"_s : code;
+    const QMutexLocker lock(&languageLock());
+    guestCode() = code.isEmpty() ? u"en"_s : code;
 }
 
 Scope::Scope(const QString &code)
