@@ -201,11 +201,14 @@ std::string toString(TenderKind k);
 TenderKind tenderKindFromString(const std::string &s);
 
 struct Totals {
-    Money items;         // all non-voided lines
+    Money items;         // all non-voided lines (gift cards sold too)
+    Money giftCardsSold; // the part of `items` that is gift cards sold or reloaded: owed to the guest, not a sale
     Money discounts;     // positive amount taken off
     Money subtotal;      // items - discounts
     Money tax;
     std::map<TaxClass, Money> taxByClass;
+    std::map<TaxClass, Money> taxableByClass;   // what each class's tax is on (after its share of discounts)
+    Money netSales() const { return subtotal - giftCardsSold; }   // sales: without gift cards sold
     Money gratuity;      // service charge on the subtotal (owed to the server)
     Money total;         // subtotal + tax + gratuity
     Money paid;          // cash + card toward the total (tips not included)

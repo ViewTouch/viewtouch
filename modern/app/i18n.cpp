@@ -215,6 +215,13 @@ QString phrase(const QString &code, const QString &english)
 {
     if (english.isEmpty())
         return english;
+    // An indented line ("  of which staff meals (3)"): the words, still indented.
+    if (english.startsWith(u' ')) {
+        qsizetype n = 0;
+        while (n < english.size() && english[n] == u' ')
+            ++n;
+        return english.left(n) + phrase(code, english.mid(n));
+    }
     if (const QString t = lookup(code, english); !t.isEmpty())
         return t;
     if (const qsizetype open = english.indexOf(u" ("_s); open > 0) {

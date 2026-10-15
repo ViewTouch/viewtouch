@@ -232,7 +232,9 @@ TEST_CASE("End of day: blockers, then close, archive, and start over", "[m4][day
     CHECK(t.pos.currentDay().id == 2);
     CHECK(t.pos.closedToday().empty());
     CHECK_FALSE(t.pos.drawerInfo()[u"exists"_s].toBool());
-    CHECK(t.printer.reports.back() == "Sales Summary");
+    REQUIRE(t.printer.reports.size() >= 2);
+    CHECK(t.printer.reports[t.printer.reports.size() - 2] == "Sales Summary");   // then the deposit
+    CHECK(t.printer.reports.back() == "Deposit and Balance");
 
     // Yesterday's reports are kept; today's start empty.
     const QVariantList days = t.pos.days();

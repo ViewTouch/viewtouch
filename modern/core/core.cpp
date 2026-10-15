@@ -514,6 +514,8 @@ Totals Check::totals(const TaxRates &rates) const
     for (const OrderLine &l : lines) {
         const Money lt = l.total();
         t.items += lt;
+        if (l.isGiftCard())
+            t.giftCardsSold += lt;
         if (!l.isGiftCard() && !l.noDiscount)
             discountable += lt;
         if (!l.isGiftCard() && !l.noDiscount && !l.noStaffDiscount)
@@ -544,9 +546,10 @@ Totals Check::totals(const TaxRates &rates) const
     for (const auto &[cls, amount] : byClass)
         taxableTotal += amount;
     // The part of the discount that falls on taxable sales (comments and
-    // untaxed lines take the rest).
-    const Money taxableDiscount = taxableTotal.cents() > 0 && t.items.cents() > 0
-        ? Money::fromCents(t.discounts.cents() * taxableTotal.cents() / t.items.cents())
+    // untaxed lines take the rest; gift cards sold take none: never discounted).
+    const Money discounted = t.items - t.giftCardsSold;
+    const Money taxableDiscount = taxableTotal.cents() > 0 && discounted.cents() > 0
+        ? Money::fromCents(t.discounts.cents() * taxableTotal.cents() / discounted.cents())
         : Money();
     Money allocated;
     TaxClass largest = TaxClass::None;
@@ -571,6 +574,8 @@ Totals Check::totals(const TaxRates &rates) const
             continue;
         const Money net = amount - discountShare[cls];
         const Money tax = net.cents() > 0 ? net.ppm(rates.ratePpm(cls)) : Money();
+        if (net.cents() > 0 && rates.ratePpm(cls) > 0)
+            t.taxableByClass[cls] = net;
         if (tax.cents() != 0)
             t.taxByClass[cls] = tax;
         t.tax += tax;

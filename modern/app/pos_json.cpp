@@ -635,7 +635,7 @@ QJsonObject toJson(const DrawerSession &d)
         movements.append(QJsonObject{
             {u"id"_s, qint64(m.id)}, {u"kind"_s, qs(toString(m.kind))}, {u"amount"_s, qint64(m.amount.cents())},
             {u"reason"_s, qs(m.reason)}, {u"by"_s, qs(m.by)}, {u"employeeId"_s, qs(m.employeeId)},
-            {u"at"_s, qint64(m.at)}, {u"category"_s, qs(m.category)}});
+            {u"at"_s, qint64(m.at)}, {u"category"_s, qs(m.category)}, {u"purpose"_s, qs(m.purpose)}});
     }
     return {{u"id"_s, qint64(d.id)}, {u"name"_s, qs(d.name)}, {u"terminal"_s, qs(d.terminal)},
             {u"employeeId"_s, qs(d.employeeId)},
@@ -672,7 +672,8 @@ DrawerSession drawerFromJson(const QJsonObject &o)
         d.movements.push_back({i64(m.value(u"id")), cashMovementKindFromString(ss(m.value(u"kind").toString())),
                                money(m.value(u"amount")), ss(m.value(u"reason").toString()),
                                ss(m.value(u"by").toString()), ss(m.value(u"employeeId").toString()),
-                               i64(m.value(u"at")), ss(m.value(u"category").toString())});
+                               i64(m.value(u"at")), ss(m.value(u"category").toString()),
+                               ss(m.value(u"purpose").toString())});
     }
     d.nextMovementId = std::max<std::int64_t>(i64(o.value(u"nextMovementId")), 1);
     for (const QJsonValue &v : o.value(u"pieces").toArray()) {
@@ -1525,9 +1526,13 @@ namespace {
 QJsonArray ledgerJson(const std::vector<LedgerEntry> &entries)
 {
     QJsonArray out;
-    for (const LedgerEntry &e : entries)
-        out.append(QJsonObject{{u"at"_s, qint64(e.at)}, {u"amount"_s, qint64(e.amount.cents())},
-                               {u"what"_s, qs(e.what)}, {u"checkId"_s, qint64(e.checkId)}, {u"kind"_s, qs(e.kind)}});
+    for (const LedgerEntry &e : entries) {
+        QJsonObject o{{u"at"_s, qint64(e.at)}, {u"amount"_s, qint64(e.amount.cents())},
+                      {u"what"_s, qs(e.what)}, {u"checkId"_s, qint64(e.checkId)}, {u"kind"_s, qs(e.kind)}};
+        if (!e.method.empty())
+            o.insert(u"method"_s, qs(e.method));
+        out.append(o);
+    }
     return out;
 }
 
@@ -1537,7 +1542,7 @@ std::vector<LedgerEntry> ledgerFromJson(const QJsonArray &a)
     for (const QJsonValue &v : a) {
         const QJsonObject e = v.toObject();
         out.push_back({i64(e.value(u"at")), money(e.value(u"amount")), ss(e.value(u"what").toString()),
-                       i64(e.value(u"checkId")), ss(e.value(u"kind").toString())});
+                       i64(e.value(u"checkId")), ss(e.value(u"kind").toString()), ss(e.value(u"method").toString())});
     }
     return out;
 }

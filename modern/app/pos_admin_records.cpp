@@ -493,6 +493,12 @@ QVariantList PosService::accountKeys() const
     add(u"staffMeals"_s, tr("Staff meals"));
     add(u"rounding"_s, tr("Cash rounding"));
     add(u"giftCardsSold"_s, tr("Gift cards sold"));
+    add(u"refunds"_s, tr("Refunds"));
+    add(u"paidIn"_s, tr("Paid in"));
+    add(u"paidOut"_s, tr("Paid out"));
+    for (const std::string &c : s_->settings.expenseCategories)
+        add(u"paidout:"_s + qs(c).toLower(), tr("Paid out: %1").arg(qs(c)));
+    add(u"overShort"_s, tr("Drawers over or short"));
     for (const Tender &t : s_->settings.tenders)
         add(u"tender:"_s + qs(t.id), tr("Paid by %1").arg(qs(t.name)));
     for (const auto &[key, account] : s_->settings.accounts)   // any other already set

@@ -1135,8 +1135,11 @@ private:
     int searchRequest_ = 0;
     // A report that can cover several days, over `closed`.
     // `refunds`: made in the range (by date); none: those on these checks.
+    // Today's house account payments (from the customers' accounts).
+    std::vector<core::AccountPayment> accountPaymentsToday() const;
     core::Report rangeCapableReport(const QString &id, const std::vector<core::Check> &closed,
-                                    const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr) const;
+                                    const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr,
+                                    const core::DayMoney *day = nullptr) const;
     qint64 addParty(const QVariantMap &r, bool reservation);
     core::Party *party(qint64 id);
     void saveParty(const core::Party &p);

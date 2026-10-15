@@ -32,6 +32,10 @@ struct CashMovement {
     std::string employeeId;    // TipPayout: whose tips
     std::int64_t at = 0;
     std::string category;      // Payout: what it was for (Produce, Ice, Repairs...)
+    // Not an expense or a float: "houseAccount" (PaidIn: a customer paying
+    // their account), "giftCard" (Payout: a gift card cashed out) or
+    // "refund" (Payout: cash given back on a check), for the books.
+    std::string purpose;
 
     // Effect on the cash in the drawer.
     Money effect() const { return kind == Kind::PaidIn ? amount : kind == Kind::NoSale ? Money() : -amount; }

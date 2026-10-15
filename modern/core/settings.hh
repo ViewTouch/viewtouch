@@ -271,7 +271,8 @@ struct PosSettings {
     std::int64_t adFundBp = 0;
     // Chart of accounts for the Accounting report's journal: key -> "4010 Food sales".
     // Keys: sales, sales:<family>, tax, tax:<class>, gratuity, tips, discounts,
-    // staffMeals, rounding, giftCardsSold, tender:<tender id>.
+    // staffMeals, rounding, giftCardsSold, refunds, paidIn, paidOut,
+    // paidout:<expense category>, overShort, tender:<tender id>.
     std::map<std::string, std::string> accounts;
     std::vector<std::string> expenseCategories{"Food & supplies", "Produce", "Ice", "Cleaning", "Repairs", "Other"};
     // Self-order kiosk: send orders to the kitchen as soon as the guest

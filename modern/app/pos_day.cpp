@@ -1279,8 +1279,12 @@ bool PosService::endOfDay()
     if (s_->sink)
         s_->sink->saveDay(s_->day, reports);
     s_->pastDays.insert(s_->pastDays.begin(), PastDay{s_->day, reports});
-    if (s_->printer)
+    // For the books: what was sold, and the money (cash to the bank, the
+    // card batch, drawers over or short, money in and out besides sales).
+    if (s_->printer) {
         s_->printer->printReport(s_->settings, buildReport(u"sales"_s), receiptPrinter());
+        s_->printer->printReport(s_->settings, buildReport(u"deposit"_s), receiptPrinter());
+    }
 
     s_->closedToday.clear();
     s_->kitchenDone.clear();
@@ -1348,8 +1352,12 @@ Report PosService::buildReport(const QString &id) const
         return tableTurns(s_->closedToday, ctx);
     if (id == u"customers")
         return customersReport(s_->closedToday, ctx);
-    if (id == u"royalty" || id == u"accounting")
+    if (id == u"royalty")
         return rangeCapableReport(id, s_->closedToday, ctx);
+    if (id == u"accounting") {
+        const DayMoney day{&s_->drawers, s_->refundsToday, accountPaymentsToday()};
+        return rangeCapableReport(id, s_->closedToday, ctx, nullptr, &day);
+    }
     if (id == u"kitchen") {
         std::vector<const Check *> checks;
         for (const Check &c : s_->closedToday)
@@ -1375,9 +1383,20 @@ Report PosService::buildReport(const QString &id) const
         for (const auto &[cid, c] : s_->open)
             if (!c.training)
                 open.push_back(&c);
-        return depositReport(s_->drawers, s_->closedToday, open, ctx, s_->refundsToday);
+        return depositReport(s_->drawers, s_->closedToday, open, ctx, s_->refundsToday, accountPaymentsToday());
     }
     return salesSummary(s_->closedToday, ctx, &s_->refundsToday);
+}
+
+std::vector<AccountPayment> PosService::accountPaymentsToday() const
+{
+    std::vector<AccountPayment> out;
+    for (const CustomerRecord &c : s_->customers)
+        for (const LedgerEntry &e : c.account)
+            if (e.kind == "payment" && !e.method.empty() && e.at >= s_->day.openedAt)
+                out.push_back({c.name, -e.amount, e.method, e.at});
+    std::ranges::sort(out, {}, &AccountPayment::at);
+    return out;
 }
 
 // --- reports over a range ---------------------------------------------------------
@@ -1389,7 +1408,7 @@ const QStringList kRangeReports = {u"sales"_s, u"items"_s, u"categories"_s, u"ho
 } // namespace
 
 Report PosService::rangeCapableReport(const QString &id, const std::vector<Check> &closed, const ReportContext &ctx,
-                                      const std::vector<Refund> *refunds) const
+                                      const std::vector<Refund> *refunds, const DayMoney *day) const
 {
     std::vector<const Check *> ptrs;
     for (const Check &c : closed)
@@ -1423,8 +1442,8 @@ Report PosService::rangeCapableReport(const QString &id, const std::vector<Check
     if (id == u"accounting") {
         std::map<std::string, std::string> familyOf;
         for (const MenuItem &m : s_->menu)
-            familyOf[m.id] = m.family;
-        return accountingReport(closed, familyOf, ctx);
+            familyOf[m.id] = ss(qs(m.family).toLower());   // the chart's keys are lower case
+        return accountingReport(closed, familyOf, ctx, day);
     }
     return salesSummary(closed, ctx, refunds);
 }
