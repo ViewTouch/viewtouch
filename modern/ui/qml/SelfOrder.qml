@@ -9,6 +9,11 @@ import QtQuick.Layouts
 // as a 21.5" floor stand): big photo cards, with the categories and the order
 // bar at the bottom, in reach; "Easy Reach" brings everything into the lower
 // part of the screen for guests in a wheelchair, and children.
+// For guests who can't see the screen well or can't touch it: every button
+// has a name a screen reader says (Accessible), and works from a keyboard or
+// a tactile keypad (Tab or the arrows move, Enter or Space presses, with a
+// yellow ring around the one chosen); "Accessibility" makes the text larger
+// with high contrast.
 // No way to the staff pages from here: a manager holds the top-left corner
 // for three seconds and types their PIN (`managerExit`).
 Rectangle {
@@ -26,18 +31,21 @@ Rectangle {
     readonly property bool portrait: height > width * 1.15
     // One unit: about 6 mm on a 21.5" portrait kiosk (26 px of 1080), 20 px
     // on a 1280x800 landscape screen.
-    readonly property real u: look.size * (portrait ? Math.max(14, width / 42) : Math.max(12, Math.min(width / 64, height / 40)))
+    readonly property real u: look.size * (access ? 1.3 : 1) * (portrait ? Math.max(14, width / 42) : Math.max(12, Math.min(width / 64, height / 40)))
 
     // The store's look for its kiosk (Store Settings -> Self-order kiosk).
     readonly property var lookSet: info.look ?? ({})
     readonly property var look: ({ size: lookSet.size || 1 })
-    readonly property color bg: lookSet.background || "#14181f"
-    readonly property color card: lookSet.card || "#2a313d"
-    readonly property color panel: lookSet.card ? Qt.darker(card, 1.25) : "#1d232c"
-    readonly property color go: lookSet.go || "#1f8a4c"
-    readonly property color ink: lookSet.text || "white"
-    readonly property color muted: Qt.rgba(ink.r, ink.g, ink.b, 0.62)
-    readonly property color soft: Qt.rgba(ink.r, ink.g, ink.b, 0.8)
+    // Accessibility: larger text, white on black, the store's colors aside.
+    property bool access: false
+    readonly property color bg: access ? "black" : lookSet.background || "#14181f"
+    readonly property color card: access ? "#1c1c1c" : lookSet.card || "#2a313d"
+    readonly property color panel: access ? "black" : lookSet.card ? Qt.darker(card, 1.25) : "#1d232c"
+    readonly property color go: access ? "#0b6b2f" : lookSet.go || "#1f8a4c"
+    readonly property color ink: access ? "white" : lookSet.text || "white"
+    readonly property color muted: Qt.rgba(ink.r, ink.g, ink.b, access ? 0.9 : 0.62)
+    readonly property color soft: Qt.rgba(ink.r, ink.g, ink.b, access ? 0.95 : 0.8)
+    readonly property color ring: "#ffd600"   // around the button chosen from a keypad
     readonly property string face: lookSet.font || Qt.application.font.family
     // Readable text on any button color: dark on light ones, white on dark ones.
     function textOn(c) { return 0.299 * c.r + 0.587 * c.g + 0.114 * c.b > 0.6 ? "#1b1b1b" : "white" }
@@ -69,10 +77,44 @@ Rectangle {
         reviewing = false
         orderOpen = false
         family = ""
-        if (!done)   // cancelled: the next guest starts with the full screen
+        if (!done) {   // cancelled: the next guest starts with the full screen
             easyReach = false
+            access = false
+        }
     }
-    onDoneChanged: if (!done) easyReach = false   // the number shown, then the next guest
+    onDoneChanged: if (!done) { easyReach = false; access = false }   // the number shown, then the next guest
+
+    // A keypad or keyboard: the arrows move between buttons like Tab, Enter
+    // or Space on the pictures starts an order. A button chosen this way is
+    // scrolled into view.
+    focus: visible
+    onVisibleChanged: if (visible) forceActiveFocus()
+    Keys.onPressed: event => {
+        k.touched()
+        const fwd = event.key === Qt.Key_Right || event.key === Qt.Key_Down
+        if (fwd || event.key === Qt.Key_Left || event.key === Qt.Key_Up) {
+            const from = Window.activeFocusItem ?? k
+            const next = from.nextItemInFocusChain(fwd)
+            if (next)
+                next.forceActiveFocus(fwd ? Qt.TabFocusReason : Qt.BacktabFocusReason)
+            event.accepted = true
+        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space)
+                   && !k.ordering && !k.choosingType && !k.done) {
+            k.lookSet.askWhere === false ? k.pos.kioskStart(false) : k.choosingType = true
+            event.accepted = true
+        }
+    }
+    function reveal(item) {
+        for (let p = item.parent; p; p = p.parent)
+            if (p.contentY !== undefined && p.contentItem !== undefined && p.height > 0) {
+                const at = item.mapToItem(p.contentItem, 0, 0)
+                if (at.y < p.contentY)
+                    p.contentY = at.y
+                else if (at.y + item.height > p.contentY + p.height)
+                    p.contentY = at.y + item.height - p.height
+                return
+            }
+    }
 
     // --- idle: an order nobody is finishing is cleared ---------------------------------
     property int idleLeft: 0
@@ -179,11 +221,22 @@ Rectangle {
     component Big: Rectangle {
         id: big
         property string text
+        property string spoken: ""   // what a screen reader says, when the text isn't enough ("×")
         property color base: k.card
         property real size: 1.4
         signal clicked()
         radius: k.u * 0.6
         color: !enabled ? "#20252e" : tap.pressed ? Qt.lighter(base, 1.3) : base
+        border.width: activeFocus ? Math.max(3, k.u * 0.22) : k.access ? 2 : 0
+        border.color: activeFocus ? k.ring : "#9aa3b5"
+        activeFocusOnTab: enabled && visible
+        onActiveFocusChanged: if (activeFocus) k.reveal(big)
+        Keys.onReturnPressed: big.clicked()
+        Keys.onEnterPressed: big.clicked()
+        Keys.onSpacePressed: big.clicked()
+        Accessible.role: Accessible.Button
+        Accessible.name: big.spoken || big.text
+        Accessible.onPressAction: big.clicked()
         implicitHeight: k.u * 3.4
         Text {
             font.family: k.face
@@ -208,6 +261,17 @@ Rectangle {
     component Card: Item {
         id: card
         required property var modelData
+        function add() { if (card.modelData.available) k.pos.kioskAdd(card.modelData.id) }
+        activeFocusOnTab: true
+        onActiveFocusChanged: if (activeFocus) k.reveal(card)
+        Keys.onReturnPressed: card.add()
+        Keys.onEnterPressed: card.add()
+        Keys.onSpacePressed: card.add()
+        Accessible.role: Accessible.Button
+        Accessible.name: card.modelData.name + ", " + card.modelData.price
+                         + (card.modelData.available ? "" : ", " + qsTr("SOLD OUT"))
+        Accessible.description: card.modelData.description ?? ""
+        Accessible.onPressAction: card.add()
         Rectangle {
             anchors.fill: parent
             anchors.margins: k.u * 0.35
@@ -303,12 +367,22 @@ Rectangle {
                 }
             }
         }
+        // Its outline (high contrast) and the keypad's ring, over the photo.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: k.u * 0.35
+            radius: k.u * 0.6
+            color: "transparent"
+            visible: card.activeFocus || k.access
+            border.width: card.activeFocus ? Math.max(3, k.u * 0.22) : 2
+            border.color: card.activeFocus ? k.ring : "#9aa3b5"
+        }
         // A MouseArea: it works inside the scrolling grid (a drag still scrolls).
         MouseArea {
             id: cardTap
             anchors.fill: parent
             enabled: card.modelData.available
-            onClicked: k.pos.kioskAdd(card.modelData.id)
+            onClicked: card.add()
         }
     }
 
@@ -352,6 +426,7 @@ Rectangle {
                 Layout.preferredWidth: k.u * 2.6
                 Layout.preferredHeight: k.u * 2.6
                 text: "×"
+                spoken: qsTr("Remove %1").arg(row.modelData.name)
                 size: 1.4
                 base: "#3a2a2e"
                 onClicked: k.pos.kioskRemove(row.modelData.id)
@@ -604,6 +679,16 @@ Rectangle {
                         Text { font.family: k.face; text: qsTr("Total"); color: k.ink; font.pixelSize: k.u * 1.2; font.bold: true; Layout.fillWidth: true }
                         Text { font.family: k.face; text: k.total; color: k.ink; font.pixelSize: k.u * 1.4; font.bold: true }
                     }
+                    Big {
+                        objectName: "kioskAccess"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: k.u * 2.6
+                        text: k.access ? qsTr("Accessibility: on") : qsTr("Accessibility: larger text, high contrast")
+                        spoken: k.access ? qsTr("Accessibility on: larger text, high contrast") : qsTr("Accessibility: larger text, high contrast")
+                        size: 0.8
+                        base: k.access ? Qt.darker(k.accent, 1.3) : k.card
+                        onClicked: k.access = !k.access
+                    }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: k.u * 0.5
@@ -726,6 +811,16 @@ Rectangle {
                     size: 0.85
                     base: k.easyReach ? Qt.darker(k.accent, 1.3) : k.card
                     onClicked: k.easyReach = !k.easyReach
+                }
+                Big {
+                    objectName: "kioskAccess"
+                    Layout.preferredWidth: k.u * 6
+                    Layout.fillHeight: true
+                    text: qsTr("Accessibility")
+                    spoken: k.access ? qsTr("Accessibility on: larger text, high contrast") : qsTr("Accessibility: larger text, high contrast")
+                    size: 0.75
+                    base: k.access ? Qt.darker(k.accent, 1.3) : k.card
+                    onClicked: k.access = !k.access
                 }
                 Big {
                     objectName: "kioskOrderBar"

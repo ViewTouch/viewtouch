@@ -548,6 +548,10 @@
  "About how many. Reports -> Forecast then says how many servers each hour needs.": "大约多少张。报表 -> 预测 会据此显示每小时需要几位服务员。",
  "Accented letters (PC858)": "带重音字母 (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "爱普生和大多数收据打印机支持带重音字母（ñ, é）、¿ ¡、£ 和 €；显示错误的打印机请用普通字母。",
+ "Accessibility": "无障碍",
+ "Accessibility on: larger text, high contrast": "无障碍已开启：大字体、高对比度",
+ "Accessibility: larger text, high contrast": "无障碍：大字体、高对比度",
+ "Accessibility: on": "无障碍：已开启",
  "Account": "科目",
  "Account payment: %1": "账户还款：%1",
  "Account payments": "账户还款",
@@ -2778,6 +2782,7 @@
  "Reloaded on check #%1": "在账单 #%1 上充值",
  "Remote Help": "远程协助",
  "Remove": "移除",
+ "Remove %1": "移除 %1",
  "Remove %1 from the menu?": "从菜单移除 %1？",
  "Remove %1?": "移除 %1？",
  "Remove %n item(s)": {

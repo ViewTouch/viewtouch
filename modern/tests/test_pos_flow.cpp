@@ -6,6 +6,7 @@
 #include "layoutcontroller.hh"
 #include "print/raster.hh"
 #include "editorcontroller.hh"
+#include <QAccessible>
 #include <QBuffer>
 #include <QColor>
 #include <QImage>
@@ -8537,4 +8538,61 @@ TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut 
     s.tapItem(second);
     QTest::qWait(100);
     CHECK(s.pos.kitchenTickets().size() == 2);
+}
+
+TEST_CASE("UI: a guest orders on the kiosk with a keypad, and a screen reader names the buttons", "[flow][ui][kiosk][access]")
+{
+    Screen s;
+    s.pos.enableSelfOrder();
+    QTest::qWait(60);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    QQuickItem *kiosk = find(u"selfOrder"_s);
+    REQUIRE(kiosk);
+    const auto spoken = [](QQuickItem *item) {
+        QAccessibleInterface *a = item ? QAccessible::queryAccessibleInterface(item) : nullptr;
+        return a ? a->text(QAccessible::Name) : QString();
+    };
+    const auto key = [&](Qt::Key k) {
+        QTest::keyClick(s.window, k);
+        QTest::qWait(30);
+    };
+    const auto focused = [&] { return s.window->activeFocusItem(); };
+
+    key(Qt::Key_Return);                                   // "Touch to Order", from the keypad
+    REQUIRE(find(u"kioskForHere"_s)->isVisible());
+    for (int i = 0; i < 6 && focused() != find(u"kioskForHere"_s); ++i)
+        key(Qt::Key_Right);
+    REQUIRE(focused() == find(u"kioskForHere"_s));
+    CHECK(spoken(focused()) == find(u"kioskForHere"_s)->property("text").toString());
+    key(Qt::Key_Return);
+    REQUIRE(s.pos.selfOrderInfo()[u"ordering"_s].toBool());
+    QTest::qWait(60);
+
+    // To a dish: its name and price are said; Enter adds it.
+    QString said;
+    for (int i = 0; i < 40 && !said.startsWith(u"Classic Burger"_s); ++i) {
+        key(Qt::Key_Tab);
+        said = spoken(focused());
+    }
+    CHECK(said.startsWith(u"Classic Burger, $"_s));
+    key(Qt::Key_Return);
+    QTest::qWait(60);
+    CHECK(find(u"kioskChoicesDone"_s)->isVisible());     // how it's cooked: asked as on touch
+
+    // Larger text and high contrast, and back for the next guest.
+    s.pos.kioskCancel();
+    QTest::qWait(60);
+    s.tapItem(find(u"kioskAttract"_s));
+    QTest::qWait(60);
+    s.tapItem(find(u"kioskForHere"_s));
+    QTest::qWait(60);
+    const qreal unit = kiosk->property("u").toReal();
+    s.tapItem(find(u"kioskAccess"_s));
+    QTest::qWait(30);
+    CHECK(kiosk->property("access").toBool());
+    CHECK(kiosk->property("u").toReal() > unit * 1.2);
+    s.shot("kiosk-access");
+    s.pos.kioskCancel();
+    QTest::qWait(30);
+    CHECK_FALSE(kiosk->property("access").toBool());
 }

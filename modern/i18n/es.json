@@ -541,6 +541,10 @@
  "About how many. Reports -> Forecast then says how many servers each hour needs.": "Más o menos cuántas. Informes -> Pronóstico dice entonces cuántos meseros necesita cada hora.",
  "Accented letters (PC858)": "Letras con acento (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "Letras con acento (ñ, é), ¿ ¡, £ y € en Epson y la mayoría de impresoras de recibos; letras sin acento para una impresora que las muestre mal.",
+ "Accessibility": "Accesibilidad",
+ "Accessibility on: larger text, high contrast": "Accesibilidad activada: texto más grande, alto contraste",
+ "Accessibility: larger text, high contrast": "Accesibilidad: texto más grande, alto contraste",
+ "Accessibility: on": "Accesibilidad: activada",
  "Account": "Cuenta",
  "Account payment: %1": "Pago a cuenta: %1",
  "Account payments": "Pagos a cuenta",
@@ -2831,6 +2835,7 @@
  "Reloaded on check #%1": "Recargada en la cuenta #%1",
  "Remote Help": "Ayuda remota",
  "Remove": "Quitar",
+ "Remove %1": "Quitar %1",
  "Remove %1 from the menu?": "¿Quitar %1 del menú?",
  "Remove %1?": "¿Quitar %1?",
  "Remove %n item(s)": {
