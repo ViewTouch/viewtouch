@@ -216,6 +216,9 @@ struct PosSettings {
     // Gift card balances under this are cashed out when asked (California:
     // $10; 0 none).
     std::int64_t giftCardCashBelowCents = 0;
+    // IRS Form 8027: tips are allocated when reported tips fall under this
+    // share of gross receipts (8%; lower only with the IRS's approval, 2% at least).
+    std::int64_t tipAllocationBp = 800;
     int weekStartsOn = 0;
     // Whether people must close (or hand over) their checks before they
     // check out their bank, unless set per employee.

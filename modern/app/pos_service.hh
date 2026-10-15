@@ -1151,7 +1151,8 @@ private:
     std::vector<core::AccountPayment> accountPaymentsToday() const;
     core::Report rangeCapableReport(const QString &id, const std::vector<core::Check> &closed,
                                     const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr,
-                                    const core::DayMoney *day = nullptr) const;
+                                    const core::DayMoney *day = nullptr,
+                                    const std::vector<core::TimePunch> *punches = nullptr) const;
     qint64 addParty(const QVariantMap &r, bool reservation);
     core::Party *party(qint64 id);
     void saveParty(const core::Party &p);

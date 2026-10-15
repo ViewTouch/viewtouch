@@ -1927,4 +1927,146 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
     return r;
 }
 
+// --- IRS Form 8027 ------------------------------------------------------------------------
+
+Report irs8027Report(const std::vector<Check> &closed, const std::vector<TimePunch> &punches,
+                     const std::vector<Employee> &employees, const ReportContext &ctx, std::int64_t allocationBp)
+{
+    Report r;
+    r.id = "irs8027";
+    r.title = "Tip Report (IRS Form 8027)";
+    r.subtitle = ctx.period;
+    r.columns = {"", "Amount"};
+    const TaxRates &rates = ctx.settings.tax;
+
+    // Who's directly tipped: servers and bartenders, and anyone with tips on
+    // checks of their own. Everyone else who reports tips: indirectly.
+    std::map<std::string, std::string> roleOf, nameOf;
+    for (const Employee &e : employees) {
+        roleOf[e.id] = e.role;
+        nameOf[e.id] = e.name;
+    }
+    std::set<std::string> direct;
+    for (const Employee &e : employees)
+        if (e.role == "server" || e.role == "bartender")
+            direct.insert(e.id);
+
+    Money line1, line2, line3, line5, reportedDirect, reportedIndirect;
+    std::map<std::string, Money> receiptsOf, reportedOf;   // directly tipped: their gross receipts, their tips
+    for (const Check &c : closed) {
+        if (c.training)
+            continue;
+        const Totals t = c.totals(rates);
+        for (const Payment &p : c.payments)
+            if (p.kind == TenderKind::Card)
+                line1 += p.tip;   // tips on charge receipts
+        // Service charges under 10% paid to staff are wages (line 3).
+        if (t.gratuity.cents() > 0 && c.gratuityBp < 1000)
+            line3 += t.gratuity;
+        // Gross receipts: food and drink served on site, without tax, tips,
+        // gift cards or merchandise; carryout and checks with a 10% or more
+        // service charge are nonallocable.
+        const bool carryout = c.type == CheckType::Takeout || c.type == CheckType::Delivery;
+        const bool bigCharge = t.gratuity.cents() > 0 && c.gratuityBp >= 1000;
+        Money merch;
+        for (const OrderLine &l : c.lines)
+            if (!l.voided && !l.isGiftCard() && (l.taxClass == TaxClass::Merchandise || l.taxClass == TaxClass::Room))
+                merch += l.total();
+        Money food = t.netSales() - merch;
+        if (food.cents() < 0)
+            food = Money();
+        Money cardTips;
+        for (const Payment &p : c.payments)
+            if (p.kind == TenderKind::Card)
+                cardTips += p.tip;
+        if (!c.serverId.empty() && cardTips.cents() > 0)
+            direct.insert(c.serverId);
+        if (!c.serverId.empty())
+            reportedOf[c.serverId] += cardTips + c.cashTip;
+        if (carryout || bigCharge)
+            continue;
+        line5 += food;
+        if (!c.serverId.empty())
+            receiptsOf[c.serverId] += food;
+        // Line 2: the part of it paid on charge receipts with a tip.
+        Money tipped, paid;
+        for (const Payment &p : c.payments) {
+            if (p.kind == TenderKind::Discount)
+                continue;
+            paid += p.amount;
+            if (p.kind == TenderKind::Card && p.tip.cents() > 0)
+                tipped += p.amount;
+        }
+        if (tipped.cents() > 0 && paid.cents() > 0)
+            line2 += Money::fromCents(food.cents() * std::min(tipped.cents(), paid.cents()) / paid.cents());
+    }
+    // Cash tips each person told at clock out.
+    std::set<std::string> worked;
+    for (const TimePunch &p : punches) {
+        if (!p.cashTipsDeclared)
+            continue;
+        reportedOf[p.employeeId] += p.cashTips;
+    }
+    for (const TimePunch &p : punches)
+        if (direct.contains(p.employeeId))
+            worked.insert(p.employeeId);
+    for (const auto &[id, tips] : reportedOf)
+        (direct.contains(id) ? reportedDirect : reportedIndirect) += tips;
+    for (const auto &[id, _] : receiptsOf)
+        if (direct.contains(id))
+            worked.insert(id);
+
+    const Money line4c = reportedDirect + reportedIndirect;
+    const Money line6 = line5.percent(allocationBp);
+    const Money line7 = line6 > line4c ? line6 - line4c : Money();
+    const std::string rate = std::to_string(allocationBp / 100) + (allocationBp % 100 ? "." + std::to_string(allocationBp % 100) : "");
+
+    r.note("For a large food or beverage establishment (tipping customary, more than 10 employees on a typical business "
+           "day): filed by the end of February for the year before. Check every line against your payroll records.");
+    r.section("Form 8027");
+    r.line({"1  Charged tips", ctx.money(line1)});
+    r.line({"2  Charge receipts showing charged tips", ctx.money(line2)});
+    r.line({"3  Service charges under 10% paid as wages", ctx.money(line3)});
+    r.line({"4a Tips reported by indirectly tipped employees", ctx.money(reportedIndirect)});
+    r.line({"4b Tips reported by directly tipped employees", ctx.money(reportedDirect)});
+    r.total({"4c Total tips reported", ctx.money(line4c)});
+    r.line({"5  Gross receipts from food or beverage", ctx.money(line5)});
+    r.line({"6  Line 5 times " + rate + "%", ctx.money(line6)});
+    r.total({"7  Allocated tips", ctx.money(line7)});
+    r.line({"8  Directly tipped employees", count(std::int64_t(worked.size()))});
+    r.note("Tips are counted with whoever earned them (card tips on their checks, cash tips told at clock out); "
+           "tip pools and tip-outs move them between people, not the total. Carryout and checks with a 10% or more "
+           "service charge aren't gross receipts.");
+
+    // Line 7, gross receipts method: each directly tipped employee's share of
+    // 8% of gross receipts (less what indirectly tipped employees reported),
+    // by their gross receipts; the shortfalls share the allocation.
+    if (line7.cents() > 0) {
+        Money directReceipts;
+        for (const auto &[id, rec] : receiptsOf)
+            if (direct.contains(id))
+                directReceipts += rec;
+        const Money pool = line6 - reportedIndirect;
+        std::map<std::string, Money> shortfall;
+        Money shortTotal;
+        for (const auto &[id, rec] : receiptsOf) {
+            if (!direct.contains(id) || directReceipts.cents() == 0)
+                continue;
+            const Money share = Money::fromCents(pool.cents() * rec.cents() / directReceipts.cents());
+            const Money got = reportedOf.contains(id) ? reportedOf.at(id) : Money();
+            if (share > got) {
+                shortfall[id] = share - got;
+                shortTotal += share - got;
+            }
+        }
+        r.section("Allocated tips by employee (gross receipts method)");
+        for (const auto &[id, s] : shortfall) {
+            const Money a = shortTotal.cents() ? Money::fromCents(line7.cents() * s.cents() / shortTotal.cents()) : Money();
+            r.line({nameOf.contains(id) ? nameOf.at(id) : id, ctx.money(a)});
+        }
+        r.note("Allocated tips go on each employee's W-2 (box 8); they aren't wages for withholding.");
+    }
+    return r;
+}
+
 } // namespace vt::core

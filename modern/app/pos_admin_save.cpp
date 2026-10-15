@@ -302,6 +302,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.terminalsHaveDrawer = record.value(u"terminalsHaveDrawer"_s).toBool();
         if (record.contains(u"paidBreaks"_s))
             s_->settings.paidBreaks = record.value(u"paidBreaks"_s).toBool();
+        if (record.contains(u"tipAllocation"_s))
+            s_->settings.tipAllocationBp = std::clamp<std::int64_t>(std::llround(record.value(u"tipAllocation"_s).toDouble() * 100), 200, 800);
         if (record.contains(u"checksPerServerHour"_s))
             s_->settings.checksPerServerHour = std::clamp(record.value(u"checksPerServerHour"_s).toInt(), 1, 50);
         // A state just picked: its rules (the fields below can still say otherwise).

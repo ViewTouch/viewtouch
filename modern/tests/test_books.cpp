@@ -317,3 +317,63 @@ TEST_CASE("Books: a tax-exempt sale keeps its certificate; receipts show each di
         [](std::int64_t) { return std::string(); }, [](std::int64_t) { return std::string(); }, 0}), 42);
     CHECK(text.find("-$5.00") != std::string::npos);
 }
+
+TEST_CASE("Books: IRS Form 8027 from the year's checks and the tips people told", "[books][tips]")
+{
+    const core::PosSettings settings = test::seedPosData().settings;   // food 8.25%
+    const auto line = [](const char *name, std::int64_t cents) {
+        core::OrderLine l;
+        l.name = name;
+        l.unitPrice = Money::fromCents(cents);
+        l.quantity = 1;
+        return l;
+    };
+    const auto card = [](std::int64_t amount, std::int64_t tip) {
+        core::Payment p;
+        p.kind = core::TenderKind::Card;
+        p.tenderName = "Credit";
+        p.amount = Money::fromCents(amount);
+        p.tip = Money::fromCents(tip);
+        return p;
+    };
+    std::vector<core::Check> checks(3);
+    // Sam's table: $100 food, paid by card with a $15 tip.
+    checks[0].serverId = "sam";
+    checks[0].lines = {line("Steak", 10000)};
+    checks[0].payments = {card(10825, 1500)};
+    // Sam's other table: $50, paid in cash (no charged tip).
+    checks[1].serverId = "sam";
+    checks[1].lines = {line("Pasta", 5000)};
+    core::Payment cash;
+    cash.kind = core::TenderKind::Cash;
+    cash.amount = Money::fromCents(5413);
+    checks[1].payments = {cash};
+    // A takeout order: not gross receipts (carryout).
+    checks[2].type = core::CheckType::Takeout;
+    checks[2].serverId = "rosa";
+    checks[2].lines = {line("Burger", 2000)};
+    checks[2].payments = {card(2165, 300)};
+    // Sam told $2 in cash tips; a busser told $1.
+    core::TimePunch p1, p2;
+    p1.employeeId = "sam"; p1.cashTipsDeclared = true; p1.cashTips = Money::fromCents(200);
+    p2.employeeId = "bob"; p2.cashTipsDeclared = true; p2.cashTips = Money::fromCents(100);
+    std::vector<core::Employee> staff(3);
+    staff[0].id = "sam"; staff[0].name = "Sam"; staff[0].role = "server";
+    staff[1].id = "rosa"; staff[1].name = "Rosa"; staff[1].role = "server";
+    staff[2].id = "bob"; staff[2].name = "Bob"; staff[2].role = "busser";
+    const core::ReportContext ctx{settings, "2025", [](std::int64_t) { return std::string(); }};
+
+    const core::Report r = core::irs8027Report(checks, {p1, p2}, staff, ctx, 2000);   // 20% to make an allocation
+    CHECK(value(r, "1  Charged tips") == "$18.00");                               // $15 + $3
+    CHECK(value(r, "2  Charge receipts showing charged tips") == "$100.00");      // Sam's carded table
+    CHECK(value(r, "4a Tips reported by indirectly tipped employees") == "$1.00");
+    CHECK(value(r, "4b Tips reported by directly tipped employees") == "$20.00"); // $15 + $3 + $2
+    CHECK(value(r, "4c Total tips reported") == "$21.00");
+    CHECK(value(r, "5  Gross receipts from food or beverage") == "$150.00");     // the takeout left out
+    CHECK(value(r, "6  Line 5 times 20%") == "$30.00");
+    CHECK(value(r, "7  Allocated tips") == "$9.00");
+    CHECK(value(r, "Sam") == "$9.00");   // all of the gross receipts were Sam's
+
+    // At 8%: $12.00 is under the $21 reported, nothing to allocate.
+    CHECK(value(core::irs8027Report(checks, {p1, p2}, staff, ctx), "7  Allocated tips") == "$0.00");
+}

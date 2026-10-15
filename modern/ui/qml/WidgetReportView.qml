@@ -51,6 +51,7 @@ Item {
         { id: "turns", label: qsTr("Turns") },
         { id: "checklists", label: qsTr("Checklists") },
         { id: "drivers", label: qsTr("Drivers") },
+        { id: "irs8027", label: qsTr("IRS 8027") },
     ]
     property string reportId: zone && zone.props && zone.props.report ? zone.props.report : "sales"
     property int dayIndex: 0
@@ -67,6 +68,7 @@ Item {
         { id: "day", label: qsTr("Day") }, { id: "week", label: qsTr("This Week") },
         { id: "lastWeek", label: qsTr("Last Week") }, { id: "month", label: qsTr("This Month") },
         { id: "lastMonth", label: qsTr("Last Month") }, { id: "year", label: qsTr("This Year") },
+        { id: "lastYear", label: qsTr("Last Year") },
         { id: "custom", label: qsTr("Dates…") },
     ]
     readonly property var range: pos ? pos.rangeReport : ({})

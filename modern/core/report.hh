@@ -170,6 +170,14 @@ Report customersReport(const std::vector<Check> &closed, const ReportContext &ct
 Report royaltyReport(const std::vector<Check> &closed, const ReportContext &ctx);
 // The sales as a balanced journal by account (Chart of Accounts): its CSV
 // goes to QuickBooks or an accountant. `familyOf`: menu item id -> family.
+// IRS Form 8027 (large food or beverage establishments: tipping customary,
+// more than 10 employees on a typical day), for a calendar year: charged
+// tips, reported tips, gross receipts from food and drink served on site, 8%
+// (or `allocationBp`) of them, and tips to allocate to directly tipped
+// employees (gross receipts method) when reported tips fall short.
+Report irs8027Report(const std::vector<Check> &closed, const std::vector<TimePunch> &punches,
+                     const std::vector<Employee> &employees, const ReportContext &ctx, std::int64_t allocationBp = 800);
+
 // With `day`, the money outside the checks too (refunds, paid outs and ins,
 // tips paid from drawers, house account payments, drawers over or short).
 Report accountingReport(const std::vector<Check> &closed, const std::map<std::string, std::string> &familyOf,

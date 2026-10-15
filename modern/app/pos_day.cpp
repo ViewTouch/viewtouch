@@ -1385,7 +1385,7 @@ Report PosService::buildReport(const QString &id) const
         return tableTurns(s_->closedToday, ctx);
     if (id == u"customers")
         return customersReport(s_->closedToday, ctx);
-    if (id == u"royalty")
+    if (id == u"royalty" || id == u"irs8027")
         return rangeCapableReport(id, s_->closedToday, ctx);
     if (id == u"accounting") {
         const DayMoney day{&s_->drawers, s_->refundsToday, accountPaymentsToday()};
@@ -1435,13 +1435,13 @@ std::vector<AccountPayment> PosService::accountPaymentsToday() const
 // --- reports over a range ---------------------------------------------------------
 
 namespace {
-const QStringList kRangeReports = {u"sales"_s, u"items"_s, u"categories"_s, u"hourly"_s, u"servers"_s,
+const QStringList kRangeReports = {u"sales"_s, u"items"_s, u"categories"_s, u"hourly"_s, u"servers"_s, u"irs8027"_s,
                                    u"kitchen"_s, u"audit"_s, u"foodcost"_s, u"engineering"_s, u"turns"_s, u"exceptions"_s, u"customers"_s,
                                    u"royalty"_s, u"accounting"_s};
 } // namespace
 
 Report PosService::rangeCapableReport(const QString &id, const std::vector<Check> &closed, const ReportContext &ctx,
-                                      const std::vector<Refund> *refunds, const DayMoney *day) const
+                                      const std::vector<Refund> *refunds, const DayMoney *day, const std::vector<TimePunch> *punches) const
 {
     std::vector<const Check *> ptrs;
     for (const Check &c : closed)
@@ -1472,6 +1472,8 @@ Report PosService::rangeCapableReport(const QString &id, const std::vector<Check
         return customersReport(closed, ctx);
     if (id == u"royalty")
         return royaltyReport(closed, ctx);
+    if (id == u"irs8027")
+        return irs8027Report(closed, punches ? *punches : s_->punches, s_->employees, ctx, s_->settings.tipAllocationBp);
     if (id == u"accounting") {
         std::map<std::string, std::string> familyOf;
         for (const MenuItem &m : s_->menu)
@@ -1500,6 +1502,9 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
         to = QDate(today.year(), today.month(), 1).addDays(-1);
     } else if (period == u"year") {
         from = QDate(today.year(), 1, 1);
+    } else if (period == u"lastYear") {
+        from = QDate(today.year() - 1, 1, 1);
+        to = QDate(today.year() - 1, 12, 31);
     } else {
         from = QDate::fromString(fromText.trimmed(), u"yyyy-MM-dd"_s);
         to = QDate::fromString(toText.trimmed(), u"yyyy-MM-dd"_s);
@@ -1526,11 +1531,23 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
     // Read the checks away from the screen, then build here.
     auto history = s_->history;
     auto refundHistory = s_->refundHistory;
+    // The tip report: the punches too (cash tips told at clock out).
+    auto punchHistory = id == u"irs8027" ? s_->punchHistory : nullptr;
+    std::vector<TimePunch> punchesNow;
+    for (const auto *list : {&s_->punches, &s_->earlierPunches})
+        for (const TimePunch &p : *list)
+            if (id == u"irs8027" && p.clockIn >= a && p.clockIn < b)
+                punchesNow.push_back(p);
     std::vector<Check> today_ = s_->closedToday;
     std::vector<Refund> refundsToday = s_->refundsToday;
     QPointer<PosService> self(this);
-    QThreadPool::globalInstance()->start([=, today_ = std::move(today_), refundsToday = std::move(refundsToday)]() mutable {
+    QThreadPool::globalInstance()->start([=, today_ = std::move(today_), refundsToday = std::move(refundsToday),
+                                          punchesNow = std::move(punchesNow)]() mutable {
         std::vector<Check> now = history ? history(a, b) : std::vector<Check>{};
+        std::vector<TimePunch> punches = punchHistory ? punchHistory(a, b) : std::vector<TimePunch>{};
+        for (TimePunch &p : punchesNow)   // not written yet, or not read back: the ones in memory count
+            if (std::ranges::none_of(punches, [&](const TimePunch &x) { return x.id == p.id; }))
+                punches.push_back(std::move(p));
         std::vector<Check> before = history && compare ? history(a0, b0) : std::vector<Check>{};
         // Refunds by when they were made (today's may not be written yet).
         std::vector<Refund> refundsNow = refundHistory ? refundHistory(a, b) : std::vector<Refund>{};
@@ -1546,13 +1563,14 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
         }
         const bool byDate = bool(refundHistory) || !refundsNow.empty();
         QMetaObject::invokeMethod(self, [self, request, id, label, beforeLabel, compare, now = std::move(now),
+                                         punches = std::move(punches),
                                          before = std::move(before), refundsNow = std::move(refundsNow),
                                          refundsBefore = std::move(refundsBefore), byDate] {
             if (!self || request != self->rangeRequest_)
                 return;   // a newer request replaced it
             const ReportContext ctx = self->reportContext(label);
             Report r = self->rangeCapableReport(kRangeReports.contains(id) ? id : u"sales"_s, now, ctx,
-                                                byDate ? &refundsNow : nullptr);
+                                                byDate ? &refundsNow : nullptr, nullptr, &punches);
             if (!kRangeReports.contains(id))
                 r.note(tr("That report is one day at a time (pick Day). Showing sales.").toStdString());
             if (compare) {

@@ -994,7 +994,8 @@ QJsonObject toJson(const PosSettings &s)
                                  {u"overtimeWeeklyHours"_s, s.overtimeWeeklyHours}, {u"weekStartsOn"_s, s.weekStartsOn},
                                  {u"doubleTimeDailyHours"_s, s.doubleTimeDailyHours}, {u"seventhDayRule"_s, s.seventhDayRule},
                                  {u"state"_s, qs(s.laborState)}, {u"mealBreakAfterHours"_s, s.mealBreakAfterHours},
-                                 {u"giftCardCashBelowCents"_s, qint64(s.giftCardCashBelowCents)}}},
+                                 {u"giftCardCashBelowCents"_s, qint64(s.giftCardCashBelowCents)},
+                                 {u"tipAllocationBp"_s, qint64(s.tipAllocationBp)}}},
         {u"modifierGroups"_s, modifierGroupsToJson(s.modifierGroups)},
         {u"terminalsHaveDrawer"_s, s.terminalsHaveDrawer},
         {u"serverId"_s, qs(s.serverId)},
@@ -1245,6 +1246,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.laborState = ss(labor.value(u"state").toString());
     s.mealBreakAfterHours = std::clamp(labor.value(u"mealBreakAfterHours").toInt(0), 0, 12);
     s.giftCardCashBelowCents = std::clamp<qint64>(labor.value(u"giftCardCashBelowCents").toInteger(0), 0, 100000);
+    s.tipAllocationBp = std::clamp<qint64>(labor.value(u"tipAllocationBp").toInteger(800), 200, 800);
     s.modifierGroups = modifierGroupsFromJson(o.value(u"modifierGroups").toArray());
     s.terminalsHaveDrawer = o.value(u"terminalsHaveDrawer").toBool(true);
     s.serverId = ss(o.value(u"serverId").toString());

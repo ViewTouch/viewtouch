@@ -141,7 +141,7 @@ inline QVariantList storeSections(const QVariantList &fields)
           "expenseCategories"}},
         {"reasons", PosService::tr("Voids and comps"), {"askReasons", "voidReasons", "compReasons"}},
         {"hours", PosService::tr("Staff hours"),
-         {"laborState", "paidBreaks", "overtimeDailyHours", "doubleTimeDailyHours", "seventhDayRule", "overtimeWeeklyHours", "mealBreakAfterHours", "giftCardCashBelow", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes", "checksPerServerHour"}},
+         {"laborState", "paidBreaks", "overtimeDailyHours", "doubleTimeDailyHours", "seventhDayRule", "overtimeWeeklyHours", "mealBreakAfterHours", "giftCardCashBelow", "tipAllocation", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes", "checksPerServerHour"}},
         {"tips", PosService::tr("Tips"),
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},

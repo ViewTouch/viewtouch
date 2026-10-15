@@ -206,7 +206,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
              {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},
              {u"paidBreaks"_s, s_->settings.paidBreaks}, {u"overtimeDailyHours"_s, s_->settings.overtimeDailyHours},
-             {u"laborState"_s, qs(s_->settings.laborState)}, {u"doubleTimeDailyHours"_s, s_->settings.doubleTimeDailyHours},
+             {u"laborState"_s, qs(s_->settings.laborState)}, {u"tipAllocation"_s, double(s_->settings.tipAllocationBp) / 100}, {u"doubleTimeDailyHours"_s, s_->settings.doubleTimeDailyHours},
              {u"seventhDayRule"_s, s_->settings.seventhDayRule}, {u"mealBreakAfterHours"_s, s_->settings.mealBreakAfterHours},
              {u"giftCardCashBelow"_s, double(s_->settings.giftCardCashBelowCents) / 100.0},
              {u"checksPerServerHour"_s, s_->settings.checksPerServerHour},
