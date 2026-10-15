@@ -67,6 +67,11 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastProblemId(data.lastProblemId)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
+    // What goes to the kitchen and the expediter follows the menu and settings.
+    connect(this, &PosShared::adminChanged, this, [this] {
+        kitchenDone.clear();
+        expoDone.clear();
+    });
     for (Check &c : data.openChecks) {
         lastCheckId = std::max(lastCheckId, c.id);
         open.emplace(c.id, std::move(c));
@@ -1789,6 +1794,7 @@ bool PosService::closeCheck()
         s_->sink->saveCheck(*c);
     if (cash && s_->printer && !serverBank() && terminalHasDrawer())
         s_->printer->openDrawer(s_->settings, receiptPrinter());
+    s_->kitchenAgain(c->id);   // closed again after a reopen: looked at afresh
     s_->closedToday.push_back(*c);
     lastClosedId_ = c->id;
     receiptAfterClosing(s_->closedToday.back());   // printed, or offered (this terminal's choice)

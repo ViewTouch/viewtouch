@@ -33,12 +33,14 @@ QVariantList PosService::kitchenTicketsNow() const
         }
         for (auto &[sentAt, lines] : bySend)
             tickets.push_back({&c, sentAt, std::move(lines)});
+        return !bySend.empty();
     };
     for (const auto &[id, c] : s_->open)
         if (!c.training)   // practice never reaches the kitchen
             collect(c);
     for (const Check &c : s_->closedToday)
-        collect(c);
+        if (!s_->kitchenDone.contains(c.id) && !collect(c))
+            s_->kitchenDone.insert(c.id);
     // Rush orders first, then the oldest.
     std::ranges::sort(tickets, [](const Ticket &a, const Ticket &b) {
         return a.check->rush != b.check->rush ? a.check->rush : a.sentAt < b.sentAt;
@@ -184,7 +186,7 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
     if (n == 0)
         return fail(tr("That ticket was already bumped."));
     if (learned)
-        s_->saveSettings();
+        s_->savePrepTimes();
     s_->bumped.push_back({checkId, sentAt, where});
     if (s_->sink)
         s_->sink->saveCheck(*c);
@@ -225,12 +227,14 @@ QVariantList PosService::expoTicketsNow() const
         }
         for (auto &[sentAt, lines] : bySend)
             tickets.push_back({&c, sentAt, std::move(lines)});
+        return !bySend.empty();
     };
     for (const auto &[id, c] : s_->open)
         if (!c.training)   // practice never reaches the kitchen
             collect(c);
     for (const Check &c : s_->closedToday)
-        collect(c);
+        if (!s_->expoDone.contains(c.id) && !collect(c))
+            s_->expoDone.insert(c.id);
     std::ranges::sort(tickets, [](const Ticket &a, const Ticket &b) {
         return a.check->rush != b.check->rush ? a.check->rush : a.sentAt < b.sentAt;
     });
@@ -365,6 +369,7 @@ bool PosService::expoRecall()
                 l.servedAt = 0;
             }
         }
+        s_->kitchenAgain(c->id);
         if (s_->sink)
             s_->sink->saveCheck(*c);
         emit s_->checksChanged();
@@ -396,6 +401,7 @@ bool PosService::recallTicket()
                 }
             }
         }
+        s_->kitchenAgain(c->id);
         if (s_->sink)
             s_->sink->saveCheck(*c);
         emit s_->checksChanged();

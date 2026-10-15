@@ -995,9 +995,13 @@ bool StressRunner::start(QString *error)
     int n = 0;
     for (const Who &w : who) {
         auto bot = std::make_unique<Bot>(this, w.job, w.name, w.pin, w.id, quint32(20261013 + n));
-        // Every other server, the kitchen screen and the driver: handhelds.
-        bot->remote = (w.job == Bot::Job::Server && n % 2 == 1) || w.job == Bot::Job::Kitchen || w.job == Bot::Job::Driver;
-        const QString terminal = u"%1's %2"_s.arg(w.name, bot->remote ? u"handheld"_s : u"screen"_s);
+        // As in a store: the manager at this computer (the office: reports,
+        // deliveries); everyone else at a screen or handheld of their own,
+        // over the network. What they ask is this computer's work; what
+        // their own screens do with the answers isn't.
+        bot->remote = w.job != Bot::Job::Manager;
+        const QString terminal = !bot->remote ? u"%1 at this computer"_s.arg(w.name)
+                                 : u"%1's %2"_s.arg(w.name, w.job == Bot::Job::Server || w.job == Bot::Job::Driver ? u"handheld"_s : u"screen"_s);
         if (bot->remote) {
             // On a handhelds' thread: made, connected and working there.
             const Credentials c = credentials(terminal);
@@ -1479,13 +1483,14 @@ void StressRunner::finish()
 
     const QVariantMap st = stats();
     const QVariantMap local = st[u"local"_s].toMap(), remote = st[u"remote"_s].toMap();
+    const auto away = std::ranges::count_if(bots_, [](const auto &b) { return b->remote; });
     QString r;
     r += u"ViewTouch stress test - %1\n"_s.arg(QDateTime::currentDateTime().toString(u"yyyy-MM-dd h:mm AP"_s));
-    r += longDay() ? u"%1 minutes at %2x (a %3-hour business day), %4x load: %5 pretend staff, %6 handhelds, %7 tables.\n\n"_s
+    r += longDay() ? u"%1 minutes at %2x (a %3-hour business day), %4x load: %5 pretend staff (%6 on screens and handhelds of their own), %7 tables.\n\n"_s
                          .arg(o_.minutes).arg(o_.speed).arg(double(o_.minutes) * o_.speed / 60.0, 0, 'f', 1).arg(o_.load)
-                         .arg(bots_.size()).arg(st[u"handhelds"_s].toInt()).arg(o_.tables.size() + o_.barSeats.size())
-                   : u"%1 minutes at %2x (a %3-minute dinner), %4x load: %5 pretend staff, %6 handhelds.\n\n"_s.arg(o_.minutes)
-                         .arg(o_.speed).arg(int(o_.minutes * o_.speed)).arg(o_.load).arg(bots_.size()).arg(st[u"handhelds"_s].toInt());
+                         .arg(bots_.size()).arg(away).arg(o_.tables.size() + o_.barSeats.size())
+                   : u"%1 minutes at %2x (a %3-minute dinner), %4x load: %5 pretend staff (%6 on screens and handhelds of their own).\n\n"_s.arg(o_.minutes)
+                         .arg(o_.speed).arg(int(o_.minutes * o_.speed)).arg(o_.load).arg(bots_.size()).arg(away);
     r += passed_ ? u"RESULT: PASSED\n"_s : u"RESULT: PROBLEMS FOUND\n"_s;
     for (const QString &p : problems)
         r += u"  ! "_s + p + u'\n';
@@ -1505,14 +1510,14 @@ void StressRunner::finish()
     r += u"  on this computer: %1, typical %2 ms, 1 in 20: %3 ms, worst %4 ms\n"_s.arg(local[u"n"_s].toInt())
              .arg(local[u"p50"_s].toDouble(), 0, 'f', 2).arg(local[u"p95"_s].toDouble(), 0, 'f', 2)
              .arg(local[u"worst"_s].toDouble(), 0, 'f', 1);
-    r += u"  from handhelds (round trip): %1, typical %2 ms, 1 in 20: %3 ms, worst %4 ms\n"_s.arg(remote[u"n"_s].toInt())
+    r += u"  from other screens and handhelds (round trip): %1, typical %2 ms, 1 in 20: %3 ms, worst %4 ms\n"_s.arg(remote[u"n"_s].toInt())
              .arg(remote[u"p50"_s].toDouble(), 0, 'f', 2).arg(remote[u"p95"_s].toDouble(), 0, 'f', 2)
              .arg(remote[u"worst"_s].toDouble(), 0, 'f', 1);
     // The slowest kinds.
     std::vector<std::pair<double, QString>> slow;
     for (const auto *h : {&local_, &remote_})
         for (auto it = h->cbegin(); it != h->cend(); ++it)
-            slow.emplace_back(double(it->worst) / 1e6, it.key() + (h == &remote_ ? u" (handheld)"_s : QString()));
+            slow.emplace_back(double(it->worst) / 1e6, it.key() + (h == &remote_ ? u" (over the network)"_s : QString()));
     std::ranges::sort(slow, std::greater<>());
     r += u"  slowest:"_s;
     for (size_t i = 0; i < std::min<size_t>(6, slow.size()); ++i)

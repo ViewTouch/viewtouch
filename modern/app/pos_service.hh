@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <set>
+#include <unordered_set>
 #include <map>
 #include <memory>
 #include <optional>
@@ -162,8 +163,17 @@ public:
     // While the server makes every screen's update at once (nothing changes
     // meanwhile), what's the same for all of them (the kitchen's tickets, the
     // menu) is made once: `memo` keeps it until `endMemo`.
-    void beginMemo() { memo_.emplace(); }
-    void endMemo() { memo_.reset(); }
+    void beginMemo() { memo_.emplace(); tipSharesMemo.reset(); }
+    void endMemo() { memo_.reset(); tipSharesMemo.reset(); }
+    bool memoOn() const { return memo_.has_value(); }
+    // Closed checks with nothing left for the kitchen, or for the expediter:
+    // skipped when making those screens (a busy night has a thousand). Done
+    // stays done, except a recalled ticket, or a check reopened and closed
+    // again (both forget it here).
+    mutable std::unordered_set<qint64> kitchenDone, expoDone;
+    void kitchenAgain(qint64 checkId) { kitchenDone.erase(checkId); expoDone.erase(checkId); }
+    // Everyone's tip share, made once a round too (each server's screen shows theirs).
+    mutable std::optional<std::map<std::string, core::TipShare>> tipSharesMemo;
     QVariant memo(const QString &key, const std::function<QVariant()> &make) const
     {
         if (!memo_)
@@ -343,6 +353,11 @@ public:
     }
     // Save the settings and tell every terminal (paired devices changed...).
     void saveSettings();
+    // The kitchen's learned prep times: saved quietly, at most once a minute
+    // (no screen needs telling; the tickets show them anyway). Any other
+    // save of the settings saves them too.
+    void savePrepTimes();
+    std::int64_t prepSavedAt = 0;
     // Open a pairing (replacing any open one) and return its code.
     QString startPairing(bool standby = false);
 
@@ -1078,6 +1093,7 @@ public:
 
     // Tips after tip-outs and pools (see core::tipShares), everyone / one person.
     std::map<std::string, core::TipShare> allTipShares() const;
+    std::map<std::string, core::TipShare> allTipSharesNow() const;
     core::TipShare tipShareFor(const std::string &employeeId) const;
     bool stopPairing();
 

@@ -20,6 +20,9 @@ class LayoutHub;
 // on the shared store, and receives its state as it changes. Connections
 // are encrypted and only paired devices get in (see net/pairing.hh); a
 // device pairing with the manager's code gets its key and is let go.
+// A value as compact JSON text (what the updates to the screens are made of).
+QByteArray jsonText(const QVariant &v);
+
 class PosServer : public QObject {
     Q_OBJECT
 

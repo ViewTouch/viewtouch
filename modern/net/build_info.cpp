@@ -41,6 +41,7 @@ QString buildText(const QString &version, int number, const QString &commit, boo
 
 QVariantList appHistory()
 {
+    static const QVariantList made = [] {   // the same all day: made once
     static const char history[] =
 #include "vtm_history.inc"   // generated: a line a build, fields apart by \x1f
         ;
@@ -55,6 +56,8 @@ QVariantList appHistory()
                                {QStringLiteral("change"), f.mid(4).join(QChar(0x1f))}});
     }
     return out;
+    }();
+    return made;
 }
 
 } // namespace vt::net

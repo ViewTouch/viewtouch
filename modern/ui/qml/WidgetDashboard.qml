@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 // Manager -> Dashboard: today so far. Sales against the same day last week
@@ -66,6 +67,17 @@ Item {
         font.pixelSize: w.unit * 0.8
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
+    }
+    // A card's list: scrolls inside the card when it's longer (a busy day's
+    // staff), with a bar on the side saying there's more.
+    component List: ListView {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.minimumHeight: w.unit * 1.4
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        spacing: w.unit * 0.25
+        ScrollIndicator.vertical: ScrollIndicator { active: true }
     }
     component Row2: RowLayout {
         property string label
@@ -172,9 +184,12 @@ Item {
             columnSpacing: w.unit * 0.6
             Card {
                 title: qsTr("On the clock (%1)").arg((w.labor.onClock ?? []).length)
-                Repeater {
+                List {
+                    objectName: "dashOnClock"
+                    visible: count > 0
                     model: w.labor.onClock ?? []
                     delegate: Row2 {
+                        width: ListView.view.width - w.unit * 0.6   // room for the scroll bar
                         required property var modelData
                         label: modelData.name + "  ·  " + modelData.job
                                + (modelData.overtime === "over" ? "  ·  " + qsTr("overtime")
@@ -185,14 +200,16 @@ Item {
                     }
                 }
                 Small { visible: (w.labor.onClock ?? []).length === 0; text: qsTr("Nobody is clocked in.") }
-                Item { Layout.fillHeight: true }
+                Item { Layout.fillHeight: true; visible: (w.labor.onClock ?? []).length === 0 }
             }
             Card {
                 objectName: "dashTop"
                 title: qsTr("Best sellers today")
-                Repeater {
+                List {
+                    visible: count > 0
                     model: w.d.top ?? []
                     delegate: Row2 {
+                        width: ListView.view.width - w.unit * 0.6   // room for the scroll bar
                         required property var modelData
                         required property int index
                         label: (index + 1) + ".  " + modelData.name
@@ -200,14 +217,16 @@ Item {
                     }
                 }
                 Small { visible: (w.d.top ?? []).length === 0; text: qsTr("No sales yet.") }
-                Item { Layout.fillHeight: true }
+                Item { Layout.fillHeight: true; visible: (w.d.top ?? []).length === 0 }
             }
             Card {
                 objectName: "dashLow"
                 title: qsTr("Running low")
-                Repeater {
+                List {
+                    visible: count > 0
                     model: w.d.low ?? []
                     delegate: Row2 {
+                        width: ListView.view.width - w.unit * 0.6   // room for the scroll bar
                         required property var modelData
                         label: modelData.name
                         value: modelData.out ? qsTr("OUT") : modelData.left
@@ -223,7 +242,7 @@ Item {
                     visible: (w.d.low ?? []).length === 0 && (w.d.soldOut ?? []).length === 0
                     text: qsTr("Nothing is running low.")
                 }
-                Item { Layout.fillHeight: true }
+                Item { Layout.fillHeight: true; visible: (w.d.low ?? []).length === 0 }
             }
         }
         RowLayout {

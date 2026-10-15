@@ -18,7 +18,7 @@ Item {
                                         : Math.max(14, Math.min(28, w.width * 0.022))
     readonly property var targets: {
         // Compared, not just read: an unused read is compiled away (no refresh).
-        if (!pos || !pos.openChecks || !pos.lines) return []
+        if (!pos || pos.checksRevision < 0 || !pos.lines) return []
         return pos.splitTargets()
     }
     readonly property var chosen: pos && pos.lines ? (pos.lines.find(l => l.selected) ?? null) : null

@@ -21,6 +21,12 @@
 #include <QPointer>
 #include <QSet>
 #include <QSslSocket>
+#include <QLocale>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <utility>
 
 using namespace Qt::StringLiterals;
 
@@ -124,8 +130,8 @@ const void *identity(const QVariant &v)
     }
 }
 
-// A value as JSON text.
-QByteArray jsonText(const QVariant &v)
+// A value as JSON text, through Qt's JSON classes (anything unusual).
+QByteArray qtJsonText(const QVariant &v)
 {
     const QJsonValue j = QJsonValue::fromVariant(v);
     if (j.isArray())
@@ -135,6 +141,124 @@ QByteArray jsonText(const QVariant &v)
     const QByteArray wrapped = QJsonDocument(QJsonArray{j}).toJson(QJsonDocument::Compact);
     return wrapped.mid(1, wrapped.size() - 2);
 }
+
+void appendJsonString(QByteArray &out, const QString &s)
+{
+    out += '"';
+    const QByteArray utf8 = s.toUtf8();
+    qsizetype from = 0;
+    for (qsizetype i = 0; i < utf8.size(); ++i) {
+        const auto ch = static_cast<unsigned char>(utf8[i]);
+        if (ch >= 0x20 && ch != '"' && ch != '\\')
+            continue;
+        out.append(utf8.constData() + from, i - from);
+        from = i + 1;
+        switch (ch) {
+        case '"': out += "\\\""; break;
+        case '\\': out += "\\\\"; break;
+        case '\n': out += "\\n"; break;
+        case '\r': out += "\\r"; break;
+        case '\t': out += "\\t"; break;
+        case '\b': out += "\\b"; break;
+        case '\f': out += "\\f"; break;
+        default: {
+            char u[7];
+            std::snprintf(u, sizeof u, "\\u%04x", ch);
+            out += u;
+        }
+        }
+    }
+    out.append(utf8.constData() + from, utf8.size() - from);
+    out += '"';
+}
+
+bool appendJson(QByteArray &out, const QVariant &v)
+{
+    switch (v.metaType().id()) {
+    case QMetaType::UnknownType:
+    case QMetaType::Nullptr:
+        out += "null";
+        return true;
+    case QMetaType::Bool:
+        out += v.toBool() ? "true" : "false";
+        return true;
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::Long:
+    case QMetaType::LongLong:
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        out += QByteArray::number(v.toLongLong());
+        return true;
+    case QMetaType::Double:
+    case QMetaType::Float: {
+        const double d = v.toDouble();
+        if (!std::isfinite(d))
+            out += "null";
+        else if (d == std::trunc(d) && std::abs(d) < 1e15)
+            out += QByteArray::number(qint64(d));
+        else
+            out += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
+        return true;
+    }
+    case QMetaType::QString:
+        appendJsonString(out, *static_cast<const QString *>(v.constData()));
+        return true;
+    case QMetaType::QStringList: {
+        out += '[';
+        bool first = true;
+        for (const QString &s : *static_cast<const QStringList *>(v.constData())) {
+            if (!std::exchange(first, false))
+                out += ',';
+            appendJsonString(out, s);
+        }
+        out += ']';
+        return true;
+    }
+    case QMetaType::QVariantList: {
+        out += '[';
+        bool first = true;
+        for (const QVariant &e : *static_cast<const QVariantList *>(v.constData())) {
+            if (!std::exchange(first, false))
+                out += ',';
+            if (!appendJson(out, e))
+                return false;
+        }
+        out += ']';
+        return true;
+    }
+    case QMetaType::QVariantMap: {   // sorted by key, as QJsonObject writes it
+        out += '{';
+        bool first = true;
+        const auto &m = *static_cast<const QVariantMap *>(v.constData());
+        for (auto it = m.cbegin(); it != m.cend(); ++it) {
+            if (!std::exchange(first, false))
+                out += ',';
+            appendJsonString(out, it.key());
+            out += ':';
+            if (!appendJson(out, it.value()))
+                return false;
+        }
+        out += '}';
+        return true;
+    }
+    default:
+        return false;   // anything else: Qt's way
+    }
+}
+
+} // namespace
+
+// A value as JSON text: written straight from the data (the updates to every
+// screen are mostly this), or Qt's way for anything unusual.
+QByteArray jsonText(const QVariant &v)
+{
+    QByteArray out;
+    out.reserve(256);
+    return appendJson(out, v) ? out : qtJsonText(v);
+}
+
+namespace {
 
 // The bit for a change signal (kAlways for one no piece names).
 quint32 bitOfSignal(const QMetaMethod &signal)
@@ -193,7 +317,10 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     pingTimer_.start();
     flushTimer_.setSingleShot(true);
     // Every screen's update at most every 80 ms (busy: many changes in one
-    // round); the screen that made a change gets its own at once.
+    // round); the screen that made a change gets its own at once. A round
+    // that took long (many screens, a big day) waits twice that before the
+    // next, so the updates never take more than a third of this computer's
+    // time and its own screen stays quick.
     flushTimer_.setInterval(80);
     connect(&flushTimer_, &QTimer::timeout, this, [this] {
         QElapsedTimer t;
@@ -208,6 +335,7 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
         shared_->endMemo();
         updateNsecs_ += t.nsecsElapsed();
         ++updateRounds_;
+        flushTimer_.setInterval(std::clamp(int(2 * t.elapsed()), 80, 2000));
     });
     tickTimer_.setInterval(30'000);
     // Now and then everything (times that move on their own: minutes seated).

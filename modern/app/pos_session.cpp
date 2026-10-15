@@ -1,6 +1,7 @@
 #include "app/pos_session.hh"
 
 #include <QSet>
+#include <QTimer>
 
 #include "app/i18n.hh"
 
@@ -109,17 +110,39 @@ QVariantMap PosSession::snapshot() const
     };
 }
 
+PosSession::PosSession(QObject *parent)
+    : QObject(parent)
+{
+    // First of all the signal's connections: before any screen asks again.
+    connect(this, &PosSession::openChecksChanged, this, [this] {
+        tables_.reset();
+        ++checksRevision_;
+    });
+}
+
 QVariantMap PosSession::tableStatus(const QString &label) const
 {
+    if (!tables_) {
+        TableData d;
+        for (const QVariant &v : openChecks()) {
+            const QVariantMap c = v.toMap();
+            if (c.value(u"type"_s).toString() == u"dineIn")
+                d.checks[c.value(u"label"_s).toString()].append(c);
+        }
+        d.floor = floor();
+        tables_ = std::move(d);
+        // Kept for this round of drawing only: minutes and nudges move on.
+        QTimer::singleShot(0, this, [this] { tables_.reset(); });
+    }
+    if (const auto it = tables_->status.constFind(label); it != tables_->status.cend())
+        return *it;
     QVariantMap status{{u"open"_s, false}};
     int count = 0;
     qint64 total = 0;
     bool current = false;
     QString busy;
-    for (const QVariant &v : openChecks()) {
+    for (const QVariant &v : tables_->checks.value(label)) {
         const QVariantMap c = v.toMap();
-        if (c.value(u"type"_s).toString() != u"dineIn" || c.value(u"label"_s).toString() != label)
-            continue;
         if (count++ == 0) {
             status = {{u"open"_s, true}, {u"checkId"_s, c.value(u"id"_s)}, {u"server"_s, c.value(u"server"_s)},
                       {u"guests"_s, c.value(u"guests"_s)}, {u"mine"_s, c.value(u"mine"_s)},
@@ -137,7 +160,7 @@ QVariantMap PosSession::tableStatus(const QString &label) const
         status.insert(u"busyOn"_s, busy);   // open on another terminal
     }
     // The host stand: needs bussing, held for a party, or pushed together with another table.
-    const QVariantMap f = floor().value(label).toMap();
+    const QVariantMap f = tables_->floor.value(label).toMap();
     if (count > 0)
         status.insert(u"nudge"_s, f.value(u"nudge"_s));   // nothing ordered, or a while since the last order
     const QString state = f.value(u"state"_s).toString();
@@ -151,6 +174,7 @@ QVariantMap PosSession::tableStatus(const QString &label) const
         status.insert(u"with"_s, f.value(u"with"_s));
         status.insert(u"server"_s, f.value(u"server"_s));
     }
+    tables_->status.insert(label, status);
     return status;
 }
 
