@@ -64,9 +64,25 @@ void PosShared::startDay()
 
 QString PosService::dayPeriod(const BusinessDay &day) const
 {
-    const QString date = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(day.openedAt).date(), QLocale::LongFormat);
-    return day.closedAt ? tr("%1, %2 to %3").arg(date, clockText(day.openedAt), clockText(day.closedAt))
-                        : tr("%1, since %2").arg(date, clockText(day.openedAt));
+    // A business day starts when the last one closed (the night before): its
+    // date is the one it ended on, counting up to 5 AM as the night before,
+    // and its hours run from its first check.
+    const std::int64_t end = day.closedAt ? day.closedAt : now();
+    const QString date = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(end - 5 * 3'600'000).date(),
+                                                 QLocale::LongFormat);
+    std::int64_t first = 0;
+    if (day.id == s_->day.id) {
+        for (const Check &c : s_->closedToday)
+            if (c.openedAt && (!first || c.openedAt < first))
+                first = c.openedAt;
+        for (const auto &[id, c] : s_->open)
+            if (c.openedAt && (!first || c.openedAt < first))
+                first = c.openedAt;
+    }
+    if (!first)
+        return day.closedAt ? tr("%1, closed at %2").arg(date, clockText(day.closedAt)) : date;
+    return day.closedAt ? tr("%1, %2 to %3").arg(date, clockText(first), clockText(day.closedAt))
+                        : tr("%1, since %2").arg(date, clockText(first));
 }
 
 Report PosService::pastReport(const BusinessDay &day, const QJsonObject &stored) const

@@ -5,6 +5,8 @@
 
 #include <QJsonObject>
 
+#include "app/i18n.hh"
+
 using namespace Qt::StringLiterals;
 using namespace vt;
 using vt::app::PosService;
@@ -212,5 +214,24 @@ TEST_CASE("Books: a day's reports say its date and hours, kept and printed later
     QJsonObject old = past.reports.value(u"deposit"_s).toObject();
     old.insert(u"subtitle"_s, u"Today, since 10:31 AM"_s);
     past.reports.insert(u"deposit"_s, old);
-    CHECK(pos.report(u"deposit"_s, past.day.id)[u"subtitle"_s].toString() == kept);
+    const QString dated = pos.report(u"deposit"_s, past.day.id)[u"subtitle"_s].toString();
+    CHECK(dated.startsWith(kept.left(kept.indexOf(u", "_s, kept.indexOf(u", "_s) + 2))));   // its date
+    CHECK(dated.contains(u"closed at"_s));                              // its opening hour isn't known
+}
+
+TEST_CASE("Books: a day that closes after midnight is the night before's", "[books]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    // Tuesday 6 PM local: the day's first check; it closes Wednesday 1:30 AM.
+    const QDateTime tuesday(QDate(2026, 10, 13), QTime(18, 0));
+    std::int64_t clock = tuesday.toMSecsSinceEpoch();
+    pos.shared()->setClock([&clock] { return clock; });
+    pos.shared()->day.openedAt = clock - 20 * 3'600'000;   // when Monday closed
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    cashSale(pos, u"cobb"_s);
+    clock = QDateTime(QDate(2026, 10, 14), QTime(1, 30)).toMSecsSinceEpoch();
+    const QString tue = i18n::locale().toString(QDate(2026, 10, 13), QLocale::LongFormat);
+    CHECK(pos.report(u"sales"_s)[u"subtitle"_s].toString().startsWith(tue + u", since "_s));
 }

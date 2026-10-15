@@ -220,6 +220,7 @@
  "%1, %2 people: about %3 minutes": "%1, %2 personas: unos %3 minutos",
  "%1, %2 to %3": "%1, de %2 a %3",
  "%1, build %2": "%1, compilación %2",
+ "%1, closed at %2": "%1, cerrado a las %2",
  "%1, in %2": "%1, en %2",
  "%1, since %2": "%1, desde las %2",
  "%1: %2 instead of %3": "%1: %2 en vez de %3",
