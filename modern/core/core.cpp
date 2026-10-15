@@ -535,8 +535,8 @@ Totals Check::totals(const TaxRates &rates) const
         if (p.staffMeal)
             t.staffMeals += off;
     }
-    if (t.discounts > t.items)
-        t.discounts = t.items;
+    if (t.discounts > t.items - t.giftCardsSold)   // nothing comes off a gift card bought
+        t.discounts = t.items - t.giftCardsSold;
     t.subtotal = t.items - t.discounts;
 
     // Spread the discount over tax classes in proportion to their sales,
@@ -582,7 +582,7 @@ Totals Check::totals(const TaxRates &rates) const
     }
 
     // Gratuity: on the (discounted) subtotal, not taxed, added after tax.
-    t.gratuity = t.subtotal.percent(gratuityBp);
+    t.gratuity = t.netSales().percent(gratuityBp);   // not on gift cards bought
     t.total = t.subtotal + t.tax + t.gratuity;
     for (const Payment &p : payments) {
         t.tips += p.tip;

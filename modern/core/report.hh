@@ -131,7 +131,7 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
 // What was changed on the manager screens, the Menu Builder and the pages, newest first.
 Report changesReport(const std::vector<Change> &changes, const ReportContext &ctx);
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
-                        const ReportContext &ctx);
+                        const ReportContext &ctx, const std::vector<Refund> &refunds = {});
 // The original's Deposit / Book Balance: the cash to take to the bank (each
 // drawer counted, less the starting cash kept for tomorrow), card payments
 // to settle, and whether what was collected matches what was sold.

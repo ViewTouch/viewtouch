@@ -1290,6 +1290,11 @@ private:
     QVariantList sizesOf(const core::MenuItem &m) const;
     core::ReportContext reportContext(const QString &period) const;
     QString dayLabel(const core::BusinessDay &day) const;
+    // A day's reports' period: its date and hours ("Wednesday, October 14,
+    // 2026, 10:31 AM to 2:05 AM"; "since" while it's open).
+    QString dayPeriod(const core::BusinessDay &day) const;
+    // A closed day's saved report (one saved saying "Today" gets its date).
+    core::Report pastReport(const core::BusinessDay &day, const QJsonObject &stored) const;
     bool saveMenuRecord(int index, const QVariantMap &record);
     bool saveEmployeeRecord(int index, const QVariantMap &record);
     bool saveTenderRecord(int index, const QVariantMap &record);

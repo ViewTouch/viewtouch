@@ -247,10 +247,18 @@ Report itemSales(const std::vector<Check> &closed, const std::vector<MenuItem> &
 
     struct Tally { std::int64_t qty = 0; Money sales; };
     std::map<std::string, std::map<std::string, Tally>> families;   // family -> item name -> tally
+    Tally giftCards;   // sold and reloaded: not sales
+    Money discounts;
     for (const Check &c : closed) {
+        discounts += c.totals(ctx.settings.tax).discounts;
         for (const OrderLine &l : c.lines) {
             if (l.voided || l.isComment())
                 continue;
+            if (l.isGiftCard()) {
+                giftCards.qty += l.counted();
+                giftCards.sales += l.total();
+                continue;
+            }
             const auto it = familyOf.find(l.itemId);
             Tally &t = families[it == familyOf.end() ? "other" : it->second][l.name];
             t.qty += l.counted();
@@ -273,10 +281,18 @@ Report itemSales(const std::vector<Check> &closed, const std::vector<MenuItem> &
         grand += sum;
         grandQty += qty;
     }
-    if (families.empty())
+    if (families.empty()) {
         r.note("No sales yet.");
-    else
+    } else {
         r.total({"All items", count(grandQty), ctx.money(grand)});
+        // Down to the Sales Summary's net sales: prices above are before discounts.
+        r.line({"Discounts & comps", "", ctx.money(-discounts)});
+        r.total({"Net sales", "", ctx.money(grand - discounts)});
+    }
+    if (giftCards.qty > 0) {
+        r.section("Not sales");
+        r.line({"Gift cards sold and reloaded", count(giftCards.qty), ctx.money(giftCards.sales)});
+    }
 
     // Menu items chosen with another (a combo's side and drink): how many
     // went out, and what they added (already in the items above).
@@ -331,7 +347,7 @@ Report hourlySales(const std::vector<Check> &closed, const ReportContext &ctx)
     for (const Check &c : closed) {
         const int h = ctx.hourOf ? ctx.hourOf(c.closedAt) : int((c.closedAt / 3'600'000) % 24);
         Tally &t = hours[h];
-        const Money net = c.totals(ctx.settings.tax).subtotal;
+        const Money net = c.totals(ctx.settings.tax).netSales();
         t.checks += 1;
         t.guests += c.guests;
         t.net += net;
@@ -360,12 +376,17 @@ Report categorySales(const std::vector<Check> &closed, const std::vector<MenuIte
         familyOf[m.id] = m.family.empty() ? "other" : m.family;
     struct Tally { std::int64_t qty = 0; Money sales; };
     std::map<std::string, Tally> families;
-    Money total;
+    Money total, discounts, giftCards;
     std::int64_t qty = 0;
     for (const Check &c : closed) {
+        discounts += c.totals(ctx.settings.tax).discounts;
         for (const OrderLine &l : c.lines) {
             if (l.voided || l.isComment())
                 continue;
+            if (l.isGiftCard()) {   // not sales
+                giftCards += l.total();
+                continue;
+            }
             const auto it = familyOf.find(l.itemId);
             Tally &t = families[it == familyOf.end() ? "other" : it->second];
             t.qty += l.counted();
@@ -378,10 +399,15 @@ Report categorySales(const std::vector<Check> &closed, const std::vector<MenuIte
     std::ranges::sort(sorted, [](const auto &a, const auto &b) { return a.second.sales > b.second.sales; });
     for (const auto &[family, t] : sorted)
         r.line({capitalized(family), count(t.qty), ctx.money(t.sales), percent(t.sales, total)});
-    if (sorted.empty())
+    if (sorted.empty()) {
         r.note("No sales yet.");
-    else
+    } else {
         r.total({"All categories", count(qty), ctx.money(total), "100.0%"});
+        r.line({"Discounts & comps", "", ctx.money(-discounts), ""});
+        r.total({"Net sales", "", ctx.money(total - discounts), ""});
+    }
+    if (giftCards.cents() != 0)
+        r.note("Not sales, on the Sales Summary: gift cards sold (" + ctx.money(giftCards) + ")");
     return r;
 }
 
@@ -391,14 +417,16 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
     r.id = "audit";
     r.title = "Audit Trail";
     r.subtitle = ctx.period;
-    r.columns = {"What", "Check", "Who", "Time"};
+    r.columns = {"What", "Check", "Who", "Time", "Amount"};
     struct Row { std::int64_t at; const Check *check; const CheckEvent *event; };
     std::vector<Row> rows;
     std::map<std::string, std::int64_t> counts;
+    std::map<std::string, Money> amounts;
     for (const Check *c : checks) {
         for (const CheckEvent &e : c->events) {
             rows.push_back({e.at, c, &e});
             counts[e.kind.empty() ? "other" : e.kind] += 1;
+            amounts[e.kind.empty() ? "other" : e.kind] += e.amount;
         }
     }
     std::ranges::sort(rows, {}, &Row::at);
@@ -407,17 +435,23 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
         return r;
     }
     r.section("Summary");
+    // How many of each, and what they were worth (a void's item, a discount,
+    // a payment taken back).
     const std::pair<const char *, const char *> kinds[] = {
-        {"void", "Voids"}, {"discount", "Discounts"}, {"reopen", "Reopened checks"},
+        {"void", "Voids"}, {"discount", "Discounts"}, {"undiscount", "Discounts taken off"},
+        {"unpay", "Payments taken back"}, {"reopen", "Reopened checks"},
         {"transfer", "Transfers"}, {"move", "Table moves"}, {"merge", "Merges"}};
     for (const auto &[kind, label] : kinds) {
-        if (const auto it = counts.find(kind); it != counts.end())
-            r.line({label, "", "", count(it->second)});
+        if (const auto it = counts.find(kind); it != counts.end()) {
+            const Money m = amounts[kind];
+            r.line({label, "", "", count(it->second), m.cents() ? ctx.money(m) : ""});
+        }
     }
     r.section("Everything, in order");
     for (const Row &row : rows)
-        r.line({row.event->what, row.check->label + " #" + std::to_string(row.check->id), row.event->who,
-                ctx.clock(row.at)});
+        r.line({row.event->what + (row.event->reason.empty() ? std::string() : " (" + row.event->reason + ")"),
+                row.check->label + " #" + std::to_string(row.check->id), row.event->who, ctx.clock(row.at),
+                row.event->amount.cents() ? ctx.money(row.event->amount) : ""});
     return r;
 }
 
@@ -435,7 +469,7 @@ Report serverSales(const std::vector<Check> &closed, const ReportContext &ctx)
         Tally &t = servers[c.serverName.empty() ? "(unknown)" : c.serverName];
         ++t.checks;
         t.guests += c.guests;
-        t.net += c.totals(ctx.settings.tax).subtotal;
+        t.net += c.totals(ctx.settings.tax).netSales();
     }
     Tally all;
     for (const auto &[name, t] : servers) {
@@ -466,7 +500,7 @@ Report driverReport(const std::vector<Check> &closed, const ReportContext &ctx)
         Tally &t = drivers[c.driverName.empty() ? "(not sent out)" : c.driverName];
         ++t.runs;
         const Totals totals = c.totals(ctx.settings.tax);
-        t.sales += totals.subtotal;
+        t.sales += totals.netSales();
         t.tips += totals.tips;
         for (const OrderLine &l : c.lines)
             if (l.isFee() && !l.voided)
@@ -749,7 +783,7 @@ Report expensesReport(const std::vector<DrawerSession> &drawers, const ReportCon
 }
 
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
-                        const ReportContext &ctx)
+                        const ReportContext &ctx, const std::vector<Refund> &refunds)
 {
     Report r;
     r.id = "exceptions";
@@ -897,8 +931,39 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
         r.total({"All", count(all), ""});
     }
 
+    // Money given back after a check closed, by who approved it.
+    if (!refunds.empty()) {
+        any = true;
+        r.section("Refunds");
+        std::map<std::string, Tally> byWho;
+        for (const Refund &x : refunds) {
+            Tally &t = byWho[x.by.empty() ? std::string("(nobody logged in)") : x.by];
+            ++t.times;
+            t.amount += x.amount;
+        }
+        Tally all;
+        for (const auto &[who, t] : byWho) {
+            r.line({who, count(t.times), ctx.money(t.amount)});
+            all.times += t.times;
+            all.amount += t.amount;
+        }
+        r.total({"All", count(all.times), ctx.money(all.amount)});
+    }
+
+    // Drawers counted short or over, and who counted them.
+    bool offDrawers = false;
+    for (const DrawerSession &d : drawers) {
+        if (d.open() || d.overShort().cents() == 0)
+            continue;
+        if (!offDrawers)
+            r.section("Drawers short or over");
+        offDrawers = any = true;
+        r.line({d.name + " (" + d.closedBy + ")", "", ctx.money(d.overShort())});
+    }
+
     if (!any) {
-        r.note("No voids, discounts, payments taken back, reopened or moved checks, or drawers opened with no sale.");
+        r.note("No voids, discounts, payments taken back, reopened or moved checks, refunds, drawers short or over, "
+               "or drawers opened with no sale.");
         return r;
     }
     if (!biggest.empty()) {
@@ -1189,7 +1254,7 @@ std::map<std::string, TipShare> tipShares(const std::vector<Check> &closed, cons
         s.tips += t.tips + c.cashTip;   // card tips, and cash ones handed to whoever took the payment
         s.gratuity += t.gratuity;
         s.earned += t.tips + t.gratuity + c.cashTip;
-        sales[c.serverId] += t.subtotal;
+        sales[c.serverId] += t.netSales();   // gift cards sold aren't sales
     }
     std::map<std::string, const Employee *> byId;
     for (const Employee &e : employees) {
@@ -1546,7 +1611,7 @@ Report tableTurns(const std::vector<Check> &closed, const ReportContext &ctx)
         if (c.type != CheckType::DineIn || c.closedAt <= c.openedAt)
             continue;
         const std::int64_t minutes = (c.closedAt - c.openedAt) / 60'000;
-        const Money total = c.totals(ctx.settings.tax).total;
+        const Money total = c.totals(ctx.settings.tax).netSales();   // as the Sales Summary's averages
         const int band = c.guests <= 2 ? 1 : c.guests <= 4 ? 3 : c.guests <= 6 ? 5 : 7;
         for (Tally *t : {&bySize[band], &byTable[c.label], &all}) {
             ++t->checks;
@@ -1651,13 +1716,10 @@ Report royaltyReport(const std::vector<Check> &closed, const ReportContext &ctx)
         if (c.training)
             continue;
         const Totals t = c.totals(ctx.settings.tax);
-        gross += t.items;
+        gross += t.items - t.giftCardsSold;   // gift cards sold aren't sales yet
         discounts += t.discounts;
-        net += t.subtotal;
+        net += t.netSales();
         ++checks;
-        for (const OrderLine &l : c.lines)   // gift cards sold aren't sales yet
-            if (l.isGiftCard() && !l.voided)
-                net -= l.total();
     }
     const auto pct = [](std::int64_t bp) {
         return std::to_string(bp / 100) + (bp % 100 ? "." + std::to_string(100 + bp % 100).substr(1) : "") + "%";

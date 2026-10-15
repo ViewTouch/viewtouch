@@ -3,6 +3,8 @@
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
+#include <QJsonObject>
+
 using namespace Qt::StringLiterals;
 using namespace vt;
 using vt::app::PosService;
@@ -184,4 +186,31 @@ TEST_CASE("Books: End of Day prints the sales and the deposit", "[books]")
     REQUIRE(printer.reports.size() >= 2);
     CHECK(std::vector<std::string>(printer.reports.end() - 2, printer.reports.end())
           == std::vector<std::string>{"sales", "deposit"});
+}
+
+TEST_CASE("Books: a day's reports say its date and hours, kept and printed later", "[books]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    cashSale(pos, u"cobb"_s);
+    const QString open = pos.report(u"sales"_s)[u"subtitle"_s].toString();
+    CHECK(open.contains(u", since "_s));
+    CHECK_FALSE(open.startsWith(u"Today"_s));
+    pos.entryKey(QString::number(core::expectedCash(pos.shared()->drawers.back(), pos.shared()->closedToday,
+                                                    pos.shared()->settings.tax).cents()));
+    REQUIRE(pos.countDrawer());
+    REQUIRE(pos.endOfDay());
+
+    app::PastDay &past = pos.shared()->pastDays.front();
+    const QString kept = pos.report(u"sales"_s, past.day.id)[u"subtitle"_s].toString();
+    CHECK(kept.contains(u" to "_s));                                   // opened to closed
+    CHECK(kept.startsWith(open.left(open.indexOf(u", since "_s))));     // the same date
+
+    // One saved the old way ("Today, since ...") shows its date too.
+    QJsonObject old = past.reports.value(u"deposit"_s).toObject();
+    old.insert(u"subtitle"_s, u"Today, since 10:31 AM"_s);
+    past.reports.insert(u"deposit"_s, old);
+    CHECK(pos.report(u"deposit"_s, past.day.id)[u"subtitle"_s].toString() == kept);
 }

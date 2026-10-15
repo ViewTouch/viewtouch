@@ -155,7 +155,7 @@ bool PosService::chargeHold(std::int64_t percentBp, std::int64_t tipCents)
     const Totals t = c->totals(s_->settings.tax);
     if (t.balance.cents() <= 0)
         return fail(tr("Nothing is owed on this check."));
-    const Money tip = percentBp > 0 ? (t.subtotal + t.tax).percent(percentBp) : Money::fromCents(std::max<std::int64_t>(0, tipCents));
+    const Money tip = percentBp > 0 ? (t.netSales() + t.tax).percent(percentBp) : Money::fromCents(std::max<std::int64_t>(0, tipCents));
     const Money balance = t.balance;
     const Money want = balance + tip;
     const CardHold hold = c->hold;

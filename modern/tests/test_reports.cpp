@@ -91,11 +91,14 @@ TEST_CASE("Audit trail: voids, discounts, reopened, transferred", "[reports][aud
     REQUIRE(pos.reopenCheck(id));
 
     const QVariantMap audit = pos.report(u"audit"_s);
-    CHECK(cellsOf(audit, u"Voids"_s).last() == u"1"_s);
-    CHECK(cellsOf(audit, u"Discounts"_s).last() == u"1"_s);
-    CHECK(cellsOf(audit, u"Reopened checks"_s).last() == u"1"_s);
+    // How many, and what they were worth.
+    CHECK(cellsOf(audit, u"Voids"_s).value(3) == u"1"_s);
+    CHECK(cellsOf(audit, u"Voids"_s).value(4) == u"$2.50"_s);
+    CHECK(cellsOf(audit, u"Discounts"_s).value(3) == u"1"_s);
+    CHECK(cellsOf(audit, u"Reopened checks"_s).value(3) == u"1"_s);
     const QStringList voided = cellsOf(audit, u"Voided Tea ($2.50)"_s);
-    REQUIRE(voided.size() == 4);
+    REQUIRE(voided.size() == 5);
+    CHECK(voided[4] == u"$2.50"_s);
     CHECK(voided[1] == u"T4 #%1"_s.arg(id));
     CHECK(voided[2].startsWith(u"Morgan"_s));
 }

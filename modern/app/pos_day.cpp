@@ -62,6 +62,23 @@ void PosShared::startDay()
         sink->saveDay(day, {});
 }
 
+QString PosService::dayPeriod(const BusinessDay &day) const
+{
+    const QString date = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(day.openedAt).date(), QLocale::LongFormat);
+    return day.closedAt ? tr("%1, %2 to %3").arg(date, clockText(day.openedAt), clockText(day.closedAt))
+                        : tr("%1, since %2").arg(date, clockText(day.openedAt));
+}
+
+Report PosService::pastReport(const BusinessDay &day, const QJsonObject &stored) const
+{
+    Report r = reportFromJson(stored);
+    // Saved before reports named their day (Today, since 10:31 AM).
+    const QString today = tr("Today, since %1");
+    if (qs(r.subtitle).startsWith(today.left(today.indexOf(u"%1"_s))) || r.subtitle.starts_with("Today, since "))
+        r.subtitle = ss(dayPeriod(day));
+    return r;
+}
+
 QString PosService::dayLabel(const BusinessDay &day) const
 {
     const QDateTime opened = QDateTime::fromMSecsSinceEpoch(day.openedAt);
@@ -1009,7 +1026,7 @@ bool PosService::addTip(std::int64_t percentBp)
     const Totals t = c->totals(s_->settings.tax);
     Money tip;
     if (percentBp > 0) {
-        tip = (t.subtotal + t.tax).percent(percentBp);   // on the check before gratuity
+        tip = (t.netSales() + t.tax).percent(percentBp);   // on the check before gratuity (not gift cards bought)
     } else {
         if (entry_.isEmpty())
             return fail(tr("Type the tip on the keypad, then Tip."));
@@ -1029,7 +1046,7 @@ Money PosService::tipFor(const Check &c) const
         return {};
     if (tipChoice_.percentBp > 0) {
         const Totals t = c.totals(s_->settings.tax);
-        return (t.subtotal + t.tax).percent(tipChoice_.percentBp);
+        return (t.netSales() + t.tax).percent(tipChoice_.percentBp);
     }
     return tipChoice_.amount;
 }
@@ -1080,7 +1097,7 @@ QVariantMap PosService::customerPrompt() const
     if (mine) {
         const Totals t = c->totals(s_->settings.tax);
         for (int p : s_->settings.tipPercents)
-            choices.append(QVariantMap{{u"percent"_s, p}, {u"amount"_s, format((t.subtotal + t.tax).percent(p * 100))}});
+            choices.append(QVariantMap{{u"percent"_s, p}, {u"amount"_s, format((t.netSales() + t.tax).percent(p * 100))}});
     }
     // Loyalty: who is on the check, their points, what this check earns.
     QVariantMap loyalty{{u"enabled"_s, s_->settings.loyaltyEnabled}};
@@ -1149,7 +1166,7 @@ QVariantMap PosService::dayInfoNow() const
     }
     Money net;
     for (const Check &c : s_->closedToday)
-        net += c.totals(s_->settings.tax).subtotal;
+        net += c.totals(s_->settings.tax).netSales();
     const bool anyOpen = std::ranges::any_of(s_->drawers, &DrawerSession::open);
     // Who's still on the clock: closing up, or they forgot (over 12 hours).
     QVariantList clockedIn;
@@ -1272,10 +1289,10 @@ bool PosService::endOfDay()
             return fail(tr("Count %1 first.").arg(qs(d.name)));
     }
 
+    s_->day.closedAt = now();   // first: the reports say when the day ended
     QJsonObject reports;
     for (const QString &id : kReportIds)
         reports.insert(id, toJson(buildReport(id)));
-    s_->day.closedAt = now();
     if (s_->sink)
         s_->sink->saveDay(s_->day, reports);
     s_->pastDays.insert(s_->pastDays.begin(), PastDay{s_->day, reports});
@@ -1312,7 +1329,7 @@ bool PosService::endOfDay()
 
 Report PosService::buildReport(const QString &id) const
 {
-    const ReportContext ctx = reportContext(tr("Today, since %1").arg(clockText(s_->day.openedAt)));
+    const ReportContext ctx = reportContext(dayPeriod(s_->day));
     if (id == u"items")
         return itemSales(s_->closedToday, s_->menu, ctx);
     if (id == u"checklists")
@@ -1325,7 +1342,7 @@ Report PosService::buildReport(const QString &id) const
         Money net;
         for (const Check &c : s_->closedToday)
             if (!c.training)
-                net += c.totals(s_->settings.tax).subtotal;
+                net += c.totals(s_->settings.tax).netSales();
         return laborReport(s_->punches, s_->employees, ctx, s_->earlierPunches, net);
     }
     if (id == u"drawer")
@@ -1376,7 +1393,7 @@ Report PosService::buildReport(const QString &id) const
         for (const auto &[id, c] : s_->open)
             if (!c.training)
                 checks.push_back(&c);
-        return id == u"audit" ? auditReport(checks, ctx) : exceptionsReport(checks, s_->drawers, ctx);
+        return id == u"audit" ? auditReport(checks, ctx) : exceptionsReport(checks, s_->drawers, ctx, s_->refundsToday);
     }
     if (id == u"deposit") {
         std::vector<const Check *> open;
@@ -1553,7 +1570,7 @@ QVariantMap PosService::report(const QString &id, qint64 dayId)
             const QJsonObject stored = p.reports.value(id).toObject();
             if (stored.isEmpty())
                 return {{u"title"_s, tr("No report")}, {u"rows"_s, QVariantList()}};
-            return toVariant(reportFromJson(stored));
+            return toVariant(pastReport(p.day, stored));
         }
     }
     return {{u"title"_s, tr("No such day")}, {u"rows"_s, QVariantList()}};
@@ -1575,7 +1592,7 @@ bool PosService::printReport(const QString &id, qint64 dayId)
     } else {
         for (const PastDay &p : s_->pastDays) {
             if (p.day.id == dayId)
-                r = reportFromJson(p.reports.value(id).toObject());
+                r = pastReport(p.day, p.reports.value(id).toObject());
         }
     }
     s_->printer->printReport(s_->settings, r, receiptPrinter());

@@ -934,15 +934,15 @@
 <p class="caption">Reports: the report along the top, the period below.</p>
 <table border="1" cellpadding="5" cellspacing="0" width="100%">
 <tr><th>Report</th><th>Shows</th></tr>
-<tr><td>Sales</td><td>Checks, guests, item sales, discounts, tax, payments by type, card tips, averages.</td></tr>
-<tr><td>Items / Categories</td><td>What sold, how many and for how much.</td></tr>
+<tr><td>Sales</td><td>The one for the books (printed at End of Day). Checks, guests, item sales, discounts and <b>net sales</b>; <b>Sales tax</b> for the tax return: taxable sales for each kind of tax, non-taxable sales and the tax; gratuity and <b>gift cards sold</b> (on their own line: money owed to the guest until it's spent, not a sale); payments by type, with how much of what was collected is cash and cards, gift cards (paid for before) and house accounts (to collect); card tips; refunds; averages and voids.</td></tr>
+<tr><td>Items / Categories</td><td>What sold, how many and for how much (prices before discounts), then the discounts and the <b>net sales</b>, the same as the Sales report. Gift cards sold are listed apart: they aren't sales.</td></tr>
 <tr><td>By Hour</td><td>Sales by the hour.</td></tr>
 <tr><td>Servers</td><td>Each server's sales.</td></tr>
 <tr><td>Tips</td><td>Card tips, gratuity, tip-outs, pool shares, paid and owed.</td></tr>
 <tr><td>Labor</td><td>Clock in/out, breaks, hours today and this week, regular hours, overtime and double time by the store's state law, late or missed meal breaks, and <b>labor cost</b>: each person's pay, overtime at time and a half, double time at double, and <b>labor % of sales</b>.</td></tr>
 <tr><td>Drawer</td><td>Each bank or drawer: start, cash, pay outs, expected, counted, over/short.</td></tr>
-<tr><td>Expenses</td><td>Cash paid out for expenses, by category (produce, ice, repairs…), then each one with who and why.</td></tr>
-<tr><td>Audit</td><td>Every void, discount, reopen, transfer, move and merge, with who and when.</td></tr>
+<tr><td>Expenses</td><td>Cash paid out for expenses, by category (produce, ice, repairs…), then each one with who and why. Cash refunds and gift cards cashed out come out of the drawer too, but aren't expenses: they're on the Deposit report.</td></tr>
+<tr><td>Audit</td><td>Every void, discount, reopen, transfer, move and merge, with who, when, why and what it was worth; the summary counts each kind and adds up its money.</td></tr>
 <tr><td>Gift Cards</td><td>Cards sold and spent, what's still on cards, house accounts.</td></tr>
 <tr><td>Kitchen</td><td>Ticket times by station, late tickets, the slowest.</td></tr>
 <tr><td>Food Cost</td><td>Each item's sales and recipe cost, and stock. <b>Prices to look at</b> lists every item that costs more than the store's target to make (Store Settings → Inventory → <i>Food cost to stay under</i>, 30% to start) at today's costs, with its price now and one that brings it back (<i>$12.00 → $13.75</i>). When a delivery comes in at higher prices, it says which items just went over.</td></tr>
@@ -974,13 +974,13 @@
 <td><img src="shots/m48-report-accounting.png" width="190" height="107"><br><small>Accounting</small></td>
 </tr></table>
 <ul>
-<li><b>Exceptions:</b> by employee, every void of something already sent, every discount and comp, payments and discounts taken back, reopened checks, moved or merged checks, and each time the drawer opened with no sale. Then voids and comps by reason, and the biggest ones. The first report to read when the cash is short.
+<li><b>Exceptions:</b> by employee, every void of something already sent, every discount and comp, payments and discounts taken back, reopened checks, moved or merged checks, refunds (by who approved them), drawers counted short or over (and who counted), and each time the drawer opened with no sale. Then voids and comps by reason, and the biggest ones. The first report to read when the cash is short.
 <br><b>Unusual</b> sections come first: anyone who did one of these far more than everyone else on the shift (3 times or more, and at least 3 times as often as whoever else did it most), with the most anyone else did beside it. There's often a good reason (a new server, a tough table); it's a place to start, not an accusation.</li>
 <li><b>Changes:</b> who changed what, newest first: each setting, employee, payment type or other manager-screen record saved (the field, from what to what; a PIN only as changed), menu prices and names, items added or removed, and pages edited. Kept with each day at End of Day.</li>
 <li><b>Customers:</b> who comes back. Each customer's visits, spending, average check, last visit and favorite item, best customers first, for any dates.</li>
 <li><b>Royalty:</b> for a franchise, the royalty and advertising fund on net sales (Store Settings sets the percents), for any dates.</li>
-<li><b>Accounting:</b> the sales as a journal, debits and credits by account (Store Settings → <i>Chart of accounts</i>). Touch <b>CSV</b> to save it for QuickBooks or your accountant; the two totals always match.</li>
-<li><b>Deposit:</b> tonight's trip to the bank. Each drawer's cash (counted, or what should be there), less the starting cash kept for tomorrow, is the deposit. Then the card batch the processor will pay, and the book balance: what was sold against what was collected, and whether the drawers were over or short.</li>
+<li><b>Accounting:</b> the day as a journal, debits and credits by account (Store Settings → <i>Chart of accounts</i>): sales by category, discounts, tax, gratuity, tips, gift cards sold, each payment type, and the money outside the checks: refunds, house account payments, cash paid in and out (by expense category), gift cards cashed out, tips paid from the drawers and drawers over or short. Touch <b>CSV</b> to save it for QuickBooks or your accountant; the two totals always match. (Over several days it has the sales and payments; each day's own report has the rest.)</li>
+<li><b>Deposit:</b> tonight's trip to the bank (printed at End of Day). Each drawer's cash (counted, or what should be there), less the starting cash kept for tomorrow, is the deposit. Then the card batch the processor will pay (house accounts paid by card are in it), and the book balance: what was sold against what was collected, and whether the drawers were over or short. Last, <b>other money in and out</b> that isn't sales: house account payments, cash paid in and out, gift cards cashed out, tips paid out and cash refunds.</li>
 </ul>
 <p class="shot"><img src="shots/m140-changes.jpg" width="560" height="315"></p>
 <p class="caption">The Changes report.</p>
@@ -990,7 +990,7 @@
 <p class="shot"><img src="shots/m45-end-of-day.png" width="480" height="270"></p>
 <ul>
 <li>It lists anything still in the way (open checks, drawers or banks not counted).</li>
-<li>Once everything is settled, <b>Close the Day</b> (touch twice) saves the day's reports and starts a new day.</li>
+<li>Once everything is settled, <b>Close the Day</b> (touch twice) saves the day's reports and starts a new day. It prints the <b>Sales</b> and <b>Deposit</b> reports for the books. Each report says its day's date and hours (<i>Wednesday, October 14, 2026, 10:31 AM to 11:58 PM</i>), on screen, printed and saved, whenever you look at it later.</li>
 <li>It also shows the last backup and a <b>Back Up Now</b> button.</li>
 <li><b>Note for the Next Shift…</b> leaves a note for whoever comes in next (<i>Walk-in cooler is making noise; the repair is coming at 10</i>). Each manager sees new notes once, when they log in, and touches <b>Got It</b>. Notes are kept a week.</li>
 </ul>
