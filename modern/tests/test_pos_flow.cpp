@@ -2320,6 +2320,35 @@ TEST_CASE("UI: dishes running low show how many are left", "[flow][ui][stock]")
     s.shot("69-stock-left");
 }
 
+TEST_CASE("UI: a busy day's staff list scrolls inside its dashboard card", "[flow][ui][dashboard]")
+{
+    Screen s;
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    // Forty people on the clock: more than the card has room for.
+    const core::Employee model = s.pos.shared()->employees.front();
+    for (int i = 0; i < 40; ++i) {
+        core::Employee e = model;
+        e.id = "busy" + std::to_string(i);
+        e.name = "Busy Person " + std::to_string(i + 1);
+        s.pos.shared()->employees.push_back(e);
+        s.pos.shared()->punches.push_back({9000 + i, e.id, now - 3'600'000, 0, {}, "server", vt::Money::fromCents(1200)});
+    }
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    s.c.activate(u"dashboard"_s);
+    QTest::qWait(120);
+    REQUIRE(s.c.pageId() == u"dashboard"_s);
+    auto *list = qobject_cast<QQuickItem *>(Screen::findBy(s.window->contentItem(), "objectName", u"dashOnClock"_s));
+    REQUIRE(list);
+    CHECK(list->property("count").toInt() == 40);
+    // The list ends inside its card (nobody runs off the bottom) and scrolls.
+    QQuickItem *card = list->parentItem()->parentItem();
+    const QPointF bottom = list->mapToItem(card, QPointF(0, list->height()));
+    CHECK(bottom.y() <= card->height() + 0.5);
+    CHECK(list->property("contentHeight").toReal() > list->height());
+    s.shot("70b-dashboard-busy");
+}
+
 TEST_CASE("Time Punches reaches a month back; the dashboard refreshes", "[flow][punches][older]")
 {
     Screen s;
