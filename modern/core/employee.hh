@@ -152,10 +152,29 @@ struct TimePunch {
             ms += std::max<std::int64_t>(0, (b.end == 0 ? (open() ? now : clockOut) : b.end) - b.start);
         return ms;
     }
-    // Paid time: breaks count only if they are paid.
+    // Breaks long enough to be unpaid: 20 minutes or more. Shorter rest
+    // breaks are work time by federal law (29 CFR 785.18) and every state's.
+    std::int64_t unpaidBreakMs(std::int64_t now) const
+    {
+        std::int64_t ms = 0;
+        for (const Break &b : breaks) {
+            const std::int64_t len = std::max<std::int64_t>(0, (b.end == 0 ? (open() ? now : clockOut) : b.end) - b.start);
+            if (len >= 20 * 60'000)
+                ms += len;
+        }
+        return ms;
+    }
+    // Paid time: breaks of 20 minutes or more count only if they are paid.
     std::int64_t workedMs(std::int64_t now, bool paidBreaks) const
     {
-        return paidBreaks ? spanMs(now) : std::max<std::int64_t>(0, spanMs(now) - breakMs(now));
+        return paidBreaks ? spanMs(now) : std::max<std::int64_t>(0, spanMs(now) - unpaidBreakMs(now));
+    }
+    // A paid rest break is due every `hours` worked (state law): since the
+    // last break that began (or clocking in).
+    std::int64_t restDueAt(int hours) const
+    {
+        const std::int64_t since = breaks.empty() ? clockIn : std::max(clockIn, breaks.back().end ? breaks.back().end : clockIn);
+        return since + std::int64_t(hours) * 3'600'000;
     }
     bool operator==(const TimePunch &) const = default;
 };

@@ -213,6 +213,9 @@ struct PosSettings {
     // A meal break due by this many hours on the clock (California: 5; 0
     // none): a reminder for the person and Store Check.
     int mealBreakAfterHours = 0;
+    // A paid 10-minute rest break every this many hours worked (California
+    // and six other states: 4; 0 none): a reminder at login.
+    int restBreakEveryHours = 0;
     // Gift card balances under this are cashed out when asked (California:
     // $10; 0 none).
     std::int64_t giftCardCashBelowCents = 0;
@@ -571,10 +574,24 @@ struct StateRules {
     bool seventhDay = false;
     int mealBreakAfter = 0;
     std::int64_t giftCardCashBelowCents = 0;
+    int restBreakEvery = 0;   // a paid 10-minute rest break every this many hours worked
 };
 const std::vector<StateRules> &stateRules();
 const StateRules *stateRulesFor(const std::string &code);
 // The store's state chosen: its rules into the settings.
 void applyStateRules(PosSettings &s, const std::string &code);
+
+// Each state's minimum wage, and the least cash wage for tipped employees
+// (the same where no tip credit is allowed), from the US Department of
+// Labor's tables (July 1, 2026; Florida's September 30, 2026). Where a state
+// has several (New York, Oregon by region; Connecticut by job) the lowest, so
+// a warning is never wrong; cities may have higher ones of their own.
+struct MinimumWage {
+    const char *code;
+    std::int64_t cents = 0;
+    std::int64_t tippedCents = 0;
+};
+inline constexpr const char *kMinimumWagesAsOf = "2026-09-30";
+const MinimumWage &minimumWageFor(const std::string &state);   // federal ($7.25, $2.13) when not chosen
 
 } // namespace vt::core

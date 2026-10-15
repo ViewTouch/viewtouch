@@ -709,6 +709,11 @@ bool PosService::loginWithPin(const QString &pin)
                 else if (at - t <= 30 * 60'000)
                     emit notice(tr("Your meal break is due by %1.").arg(i18n::timeText(QDateTime::fromMSecsSinceEpoch(at).time())));
             }
+    // A paid rest break the state requires, due about now.
+    if (const int every = s_->settings.restBreakEveryHours; every > 0)
+        for (const TimePunch &p : s_->punches)
+            if (p.employeeId == e->id && p.open() && !p.onBreak() && now() >= p.restDueAt(every) - 15 * 60'000)
+                emit notice(tr("A paid 10-minute rest break is due (one every %n hour(s) worked).", "", every));
     // Back from someone else's turn: the check they were on, if nobody has it.
     if (const auto it = s_->resumeChecks.find(e->id); it != s_->resumeChecks.end()) {
         const std::int64_t id = it->second;

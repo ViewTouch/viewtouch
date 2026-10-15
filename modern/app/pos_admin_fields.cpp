@@ -354,6 +354,10 @@ QVariantList PosService::adminFields(const QString &panel)
             with(with(field(u"mealBreakAfterHours"_s, tr("A meal break is due by (hours on the clock)"), u"int"_s,
                             tr("0 = none. The person is reminded half an hour before, and Store Check shows who's late (5 in California).")),
                       u"min"_s, 0), u"max"_s, 12),
+            with(with(field(u"restBreakEveryHours"_s, tr("A paid 10-minute rest break every (hours worked)"), u"int"_s,
+                            tr("0 = none (4 in California, Colorado, Kentucky, Minnesota, Nevada, Oregon and Washington). "
+                               "The person is reminded at login. Breaks under 20 minutes are always paid.")),
+                      u"min"_s, 0), u"max"_s, 8),
             with(field(u"giftCardCashBelow"_s, tr("Cash out gift card balances under ($)"), u"money"_s,
                        tr("When the guest asks (California: under $10). 0 = none.")), u"min"_s, 0),
             with(with(field(u"tipAllocation"_s, tr("Tip allocation rate, IRS Form 8027 (%)"), u"percent"_s,

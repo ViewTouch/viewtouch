@@ -317,6 +317,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                 s_->settings.doubleTimeDailyHours = std::clamp(record.value(u"doubleTimeDailyHours"_s).toInt(), 0, 24);
             if (record.contains(u"seventhDayRule"_s))
                 s_->settings.seventhDayRule = record.value(u"seventhDayRule"_s).toBool();
+            if (record.contains(u"restBreakEveryHours"_s))
+                s_->settings.restBreakEveryHours = std::clamp(record.value(u"restBreakEveryHours"_s).toInt(), 0, 8);
             if (record.contains(u"mealBreakAfterHours"_s))
                 s_->settings.mealBreakAfterHours = std::clamp(record.value(u"mealBreakAfterHours"_s).toInt(), 0, 12);
             if (record.contains(u"giftCardCashBelow"_s))

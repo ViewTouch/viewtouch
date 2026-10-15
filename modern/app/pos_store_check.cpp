@@ -109,6 +109,35 @@ QVariantMap PosService::storeCheck() const
                     .arg(double(t.foodPpm) / 10000).arg(double(t.alcoholPpm) / 10000).arg(double(t.merchandisePpm) / 10000),
                 true);
     }
+    // Pay under the minimum wage (the state's, or federal): tipped jobs
+    // against the least cash wage for them. Managers and pay not set aside.
+    {
+        const core::MinimumWage &min = core::minimumWageFor(s_->settings.laborState);
+        const auto tipped = [](const std::string &role) {
+            return role == "server" || role == "bartender" || role == "busser" || role == "driver";
+        };
+        QStringList under;
+        for (const Employee &e : s_->employees) {
+            if (!e.active || e.sample || e.role == "manager" || e.role == "admin")
+                continue;
+            std::vector<core::Job> jobs{{e.role, e.payRate}};
+            jobs.insert(jobs.end(), e.otherJobs.begin(), e.otherJobs.end());
+            for (const core::Job &j : jobs) {
+                const std::int64_t least = tipped(j.role) ? min.tippedCents : min.cents;
+                if (j.rate.cents() > 0 && j.rate.cents() < least)
+                    under << tr("%1 (%2, %3; at least %4)").arg(qs(e.name), qs(j.role), format(j.rate),
+                                                               format(Money::fromCents(least)));
+            }
+        }
+        if (!under.isEmpty())
+            add(u"minimumWage"_s, false, tr("Minimum wage"),
+                tr("Under the %1 minimum wage: %2. Your city's may be higher still.")
+                    .arg(core::stateRulesFor(s_->settings.laborState) ? QString::fromLatin1(core::stateRulesFor(s_->settings.laborState)->name)
+                                                                       : tr("federal"),
+                         under.join(u"; "_s)),
+                true);
+    }
+
     // An automatic gratuity, not taxed, in a state where it may be.
     if (s_->settings.gratuityBp > 0 && !s_->settings.tax.taxGratuity)
         add(u"gratuityTax"_s, false, tr("Tax on the automatic gratuity"),
