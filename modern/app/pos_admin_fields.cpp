@@ -358,6 +358,15 @@ QVariantList PosService::adminFields(const QString &panel)
                             tr("0 = none (4 in California, Colorado, Kentucky, Minnesota, Nevada, Oregon and Washington). "
                                "The person is reminded at login. Breaks under 20 minutes are always paid.")),
                       u"min"_s, 0), u"max"_s, 8),
+            with(with(field(u"scheduleNoticeDays"_s, tr("Post the schedule this many days ahead (fair workweek)"), u"int"_s,
+                            tr("0 = no such law here. 14 in New York City, Chicago, Seattle, Philadelphia, San Francisco, "
+                               "Los Angeles and Oregon (for the larger employers each names). Shifts changed inside it are "
+                               "logged in Reports -> Changes: predictability pay may be owed.")),
+                      u"min"_s, 0), u"max"_s, 31),
+            with(with(field(u"restBetweenShiftsHours"_s, tr("Hours off between shifts, at least"), u"int"_s,
+                            tr("0 = none. 10 under most fair workweek laws, 11 in New York City: a closing shift and the next "
+                               "morning's closer than that are warned about and marked.")),
+                      u"min"_s, 0), u"max"_s, 16),
             with(field(u"giftCardCashBelow"_s, tr("Cash out gift card balances under ($)"), u"money"_s,
                        tr("When the guest asks (California: under $10). 0 = none.")), u"min"_s, 0),
             with(with(field(u"tipAllocation"_s, tr("Tip allocation rate, IRS Form 8027 (%)"), u"percent"_s,

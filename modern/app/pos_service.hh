@@ -1131,6 +1131,8 @@ private:
     const core::Shift *shiftNow(const std::string &employeeId) const;
     // Why `e` can't clock in now ("" = they can).
     QString scheduleCheck(const core::Employee &e) const;
+    double shortRest(const core::Shift &s) const;
+    QString scheduleChangeNote(const core::Shift &s, bool added);
     int scheduleWeek_ = 0;
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;

@@ -216,6 +216,16 @@ struct PosSettings {
     // A paid 10-minute rest break every this many hours worked (California
     // and six other states: 4; 0 none): a reminder at login.
     int restBreakEveryHours = 0;
+    // Fair workweek (predictive scheduling) laws: NYC, Chicago, Seattle,
+    // Philadelphia, San Francisco, Los Angeles, Evanston, Berkeley, Emeryville
+    // and Oregon, mostly for chains and large employers. The schedule is
+    // posted this many days ahead (14; 0 off): a shift added or taken off
+    // inside it is logged (Changes report) and the manager told that
+    // predictability pay may be owed. And at least this many hours between
+    // one shift's end and the next start (10, NYC 11; 0 off): less is
+    // warned about, and marked on the schedule.
+    int scheduleNoticeDays = 0;
+    int restBetweenShiftsHours = 0;
     // Gift card balances under this are cashed out when asked (California:
     // $10; 0 none).
     std::int64_t giftCardCashBelowCents = 0;

@@ -109,6 +109,15 @@ Item {
                                         Label { text: chip.modelData.name; font.bold: true; width: parent.width; elide: Text.ElideRight }
                                         Label { text: chip.modelData.time; font.pixelSize: 12; width: parent.width; elide: Text.ElideRight }
                                         Label {
+                                            visible: chip.modelData.shortRest ?? false
+                                            text: qsTr("Short rest")
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            color: "#ffb74d"
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                        }
+                                        Label {
                                             visible: chip.modelData.note !== ""
                                             text: chip.modelData.note
                                             font.pixelSize: 11
