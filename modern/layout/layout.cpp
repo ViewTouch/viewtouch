@@ -191,10 +191,93 @@ QString Layout::fingerprint(const Page &page)
             .toHex());
 }
 
+const QStringList &Layout::newStarterButtons()
+{
+    static const QStringList buttons = {u"check-options#tax-exempt"_s};
+    return buttons;
+}
+
+namespace {
+
+// A new starter button onto a page edited here: where the starter has it if
+// that's free; else into its column of buttons (the same x and width) after
+// the one above it in the starter, the column's buttons made shorter to fit
+// in the same space (no shorter than a finger: 64 units).
+bool placeNewButton(Page &mine, const Page &fresh, Zone zone)
+{
+    const auto free = [&](const QRect &r) {
+        return std::ranges::none_of(mine.zones, [&](const Zone &z) { return z.rect.intersects(r); });
+    };
+    if (free(zone.rect)) {
+        mine.zones.append(zone);
+        return true;
+    }
+    const Zone *above = nullptr;
+    for (const Zone &z : fresh.zones)
+        if (z.rect.x() == zone.rect.x() && z.rect.width() == zone.rect.width() && z.rect.bottom() < zone.rect.top()
+            && (!above || z.rect.bottom() > above->rect.bottom()) && mine.zone(z.id))
+            above = &z;
+    if (!above)
+        return false;
+    const Zone *anchor = mine.zone(above->id);
+    // The column here: the anchor and the buttons right under it, one after another.
+    QList<Zone *> column;
+    for (Zone &z : mine.zones)
+        if (z.rect.x() == anchor->rect.x() && z.rect.width() == anchor->rect.width() && z.rect.top() >= anchor->rect.top())
+            column << &z;
+    std::ranges::sort(column, {}, [](const Zone *z) { return z->rect.top(); });
+    int gap = 0;
+    for (qsizetype i = 1; i < column.size(); ++i) {
+        const int g = column[i]->rect.top() - column[i - 1]->rect.bottom() - 1;
+        if (g < 0 || (i > 1 && g != gap) || g > 40) {
+            column.resize(i);
+            break;
+        }
+        gap = g;
+    }
+    if (column.size() == 1)
+        gap = 12;
+    const int top = column.front()->rect.top(), bottom = column.back()->rect.bottom();
+    const int n = int(column.size()) + 1;
+    const int h = ((bottom - top + 1) - gap * (n - 1)) / n;
+    if (h < 64)
+        return false;
+    const qsizetype at = std::ranges::find(column, mine.zone(anchor->id)) - column.begin() + 1;
+    zone.rect.setWidth(anchor->rect.width());
+    zone.rect.moveLeft(anchor->rect.x());
+    // Pointers into mine.zones: lay out first, then append (which may move them).
+    QList<QRect> rects;
+    for (int i = 0, y = top; i < n; ++i, y += h + gap)
+        rects << QRect(anchor->rect.x(), y, anchor->rect.width(), h);
+    for (qsizetype i = 0, r = 0; i < column.size(); ++i, ++r) {
+        if (r == at)
+            ++r;
+        column[i]->rect = rects[r];
+    }
+    zone.rect = rects[at];
+    mine.zones.append(zone);
+    return true;
+}
+
+} // namespace
+
 Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QStringList &seen,
                                                 const QHash<QString, QString> &installed)
 {
     StarterUpdate out;
+    const bool buttonsTracked = std::ranges::any_of(seen, [](const QString &s) { return s.contains(u'#'); });
+    // Buttons new in this version, onto a starter page kept but edited here.
+    const auto addNewButtons = [&](Page &mine, const Page &fresh) {
+        for (const Zone &z : fresh.zones) {
+            const QString key = fresh.id + u'#' + z.id;
+            if (mine.zone(z.id) || seen.contains(key) || (!buttonsTracked && !newStarterButtons().contains(key)))
+                continue;
+            if (placeNewButton(mine, fresh, z))
+                out.buttonsAdded << key;
+            else
+                out.buttonsNoRoom << key;
+        }
+    };
     for (const Page &fresh : starter.pages) {
         const QString print = fingerprint(fresh);
         Page *mine = page(fresh.id);
@@ -207,8 +290,10 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
             continue;
         }
         const auto was = installed.constFind(fresh.id);
-        if (was == installed.cend())
+        if (was == installed.cend()) {
+            addNewButtons(*mine, fresh);
             continue;   // not known to be the starter version: leave it
+        }
         if (*was == print) {
             out.installed.insert(fresh.id, print);   // unchanged starter page
         } else if (fingerprint(*mine) == *was) {   // never edited: take the new one
@@ -217,6 +302,7 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
             out.installed.insert(fresh.id, print);
         } else {
             out.installed.insert(fresh.id, *was);   // edited here: keep theirs
+            addNewButtons(*mine, fresh);
         }
     }
     syncVariants();

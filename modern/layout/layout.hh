@@ -63,8 +63,14 @@ public:
     struct StarterUpdate {
         QStringList added;
         QStringList updated;
+        QStringList buttonsAdded;            // "page id#zone id": new starter buttons put on pages edited here
+        QStringList buttonsNoRoom;           // ... and those with no free place for them
         QHash<QString, QString> installed;   // page id -> fingerprint of the starter version installed
     };
+    // Starter buttons new since buttons were tracked ("page id#zone id" in
+    // `seen`): before that, these are known to be new; any other missing one
+    // was taken off on purpose.
+    static const QStringList &newStarterButtons();
     StarterUpdate updateFromStarter(const Layout &starter, const QStringList &seen,
                                     const QHash<QString, QString> &installed);
     static QString fingerprint(const Page &page);
