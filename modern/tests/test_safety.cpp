@@ -405,15 +405,18 @@ TEST_CASE("Demo data: months of real service, everything in use, then refuses a 
     CHECK(std::ranges::any_of(s->stockCounts, [](const core::StockCount &c) { return c.value().cents() < 0; }));
     // Regulars remember their last order; card payments say which card.
     CHECK(std::ranges::any_of(s->customers, [](const core::CustomerRecord &c) { return !c.lastOrder.empty(); }));
-    // (Once there are card payments today: before 11 AM there may be none.)
-    bool anyCard = false, named = false;
+    // (Once there are enough card payments today: early in the day there are
+    // few, and about a third are keyed in, without the card's last four.)
+    int cardPayments = 0;
+    bool named = false;
     for (const core::Check &c : s->closedToday)
         for (const core::Payment &p : c.payments)
             if (p.kind == core::TenderKind::Card) {
-                anyCard = true;
+                ++cardPayments;
                 named = named || !p.last4.empty();
             }
-    CHECK(named == anyCard);
+    if (cardPayments >= 10)
+        CHECK(named);
 
     // Right now: tables seated, a tab, a phone order, a delivery out, one for later.
     REQUIRE(pos.loginWithPin(u"1234"_s));
