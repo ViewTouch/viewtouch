@@ -2234,6 +2234,31 @@ TEST_CASE("UI: ring items in by number (keyboard, or Find)", "[flow][ui][plu]")
         }
 }
 
+TEST_CASE("UI: no stress test, no page tour: the screen stays where it is", "[flow][ui][stress]")
+{
+    Screen s;
+    // The stress panel is always there (hidden); its tour of the pages must
+    // not run without a stress test, or a store's screen changes by itself.
+    // Hidden (no stress test), so looked for among hidden items too.
+    const std::function<QQuickItem *(QQuickItem *)> find = [&find](QQuickItem *root) -> QQuickItem * {
+        for (QQuickItem *item : root->childItems()) {
+            if (item->objectName() == u"stressPanel"_s)
+                return item;
+            if (QQuickItem *hit = find(item))
+                return hit;
+        }
+        return nullptr;
+    };
+    QQuickItem *panel = find(s.window->contentItem());
+    REQUIRE(panel);
+    QObject *tour = panel->findChild<QObject *>(u"stressPageTour"_s);
+    REQUIRE(tour);
+    CHECK_FALSE(tour->property("running").toBool());
+    const QString page = s.c.pageId();
+    QTest::qWait(200);
+    CHECK(s.c.pageId() == page);
+}
+
 TEST_CASE("UI: the manager's dashboard: today so far", "[flow][ui][dashboard]")
 {
     Screen s;
