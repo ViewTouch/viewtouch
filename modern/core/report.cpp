@@ -91,17 +91,22 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     r.subtitle = ctx.period;
     r.columns = {"", "Amount"};
 
-    Money items, giftCards, discounts, net, tax, total, change, rounding, gratuity, tips, staffMeals;
+    Money items, giftCards, discounts, net, tax, total, change, rounding, gratuity, tips, staffMeals, taxedGratuity;
     std::int64_t staffMealChecks = 0;
     std::map<TaxClass, Money> taxByClass, taxableByClass;
     std::map<std::string, Money> byTender;           // tender name -> amount
     std::map<std::string, TenderKind> kindOf;
     std::vector<std::string> tenderOrder;
     int guests = 0, voidCount = 0;
-    Money voidValue;
+    Money voidValue, exemptSales;
+    std::int64_t exemptChecks = 0;
 
     for (const Check &c : closed) {
         const Totals t = c.totals(rates);
+        if (!c.taxExempt.empty()) {
+            exemptSales += t.netSales();
+            ++exemptChecks;
+        }
         items += t.items - t.giftCardsSold;
         giftCards += t.giftCardsSold;
         discounts += t.discounts;
@@ -114,6 +119,7 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
         if (t.staffMeals.cents() > 0)
             ++staffMealChecks;
         gratuity += t.gratuity;
+        taxedGratuity += t.taxableGratuity;
         tips += t.tips;
         guests += c.guests;
         for (const auto &[cls, amount] : t.taxByClass)
@@ -157,6 +163,10 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
         taxable += amount;
     }
     r.line({"Non-taxable sales", ctx.money(net - taxable)});
+    if (exemptChecks > 0)
+        r.line({"  of which tax-exempt, with certificates (" + count(exemptChecks) + ")", ctx.money(exemptSales)});
+    if (taxedGratuity.cents() != 0)
+        r.line({"Taxable gratuity (service charges)", ctx.money(taxedGratuity)});
     for (const auto &[cls, amount] : taxByClass)
         r.line({capitalized(toString(cls)) + " tax", ctx.money(amount)});
     r.total({"Sales tax", ctx.money(tax)});
@@ -438,7 +448,7 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
     // How many of each, and what they were worth (a void's item, a discount,
     // a payment taken back).
     const std::pair<const char *, const char *> kinds[] = {
-        {"void", "Voids"}, {"discount", "Discounts"}, {"undiscount", "Discounts taken off"},
+        {"void", "Voids"}, {"discount", "Discounts"}, {"undiscount", "Discounts taken off"}, {"exempt", "Tax exempt"},
         {"unpay", "Payments taken back"}, {"reopen", "Reopened checks"},
         {"transfer", "Transfers"}, {"move", "Table moves"}, {"merge", "Merges"}};
     for (const auto &[kind, label] : kinds) {
@@ -798,6 +808,7 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
         {"Discounts and comps", {"discount"}, true},
         {"Payments and discounts taken back", {"unpay", "undiscount"}, true},
         {"Reopened checks", {"reopen"}, true},
+        {"Tax-exempt sales (tax not charged)", {"exempt"}, true},
         {"Moved, transferred or merged", {"move", "transfer", "merge"}, false},
     };
     struct Big { Money amount; std::string what; const Check *check; std::string who; };

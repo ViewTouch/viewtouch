@@ -82,6 +82,8 @@ bool PosService::setStoreState(const std::string &state, bool *applied)
     if (!core::stateRulesFor(state))
         return fail(tr("Choose the store's state from the list."));
     core::applyStateRules(s_->settings, state);
+    // A mandatory gratuity is taxable there (CDTFA Reg. 1603(h); Florida Rule 12A-1.0161).
+    s_->settings.tax.taxGratuity = state == "CA" || state == "FL";
     if (applied)
         *applied = true;
     return true;

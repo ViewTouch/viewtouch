@@ -595,6 +595,9 @@ public:
 
     // Rush ("rush") or VIP ("vip") on the current check, on or off.
     bool toggleFlag(const QString &flag);
+    // A buyer's exemption certificate (number and who): the check is tax-free
+    // ("" taxes it again). Managers.
+    bool setTaxExempt(const QString &certificate);
 
     // --- seats and courses --------------------------------------------------------
     // The seat / course new items go to; also changes the selected line.

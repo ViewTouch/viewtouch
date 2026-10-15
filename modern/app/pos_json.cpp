@@ -163,6 +163,7 @@ QJsonObject toJson(const Check &c)
         {u"nextLineId"_s, qint64(c.nextLineId)}, {u"nextPaymentId"_s, qint64(c.nextPaymentId)},
         {u"businessDay"_s, qint64(c.businessDay)}, {u"drawerSession"_s, qint64(c.drawerSession)},
         {u"gratuityBp"_s, qint64(c.gratuityBp)}, {u"autoGratuity"_s, c.autoGratuity},
+        {u"taxExempt"_s, qs(c.taxExempt)},
         {u"customer"_s, QJsonObject{{u"name"_s, qs(c.customer.name)}, {u"phone"_s, qs(c.customer.phone)},
                                     {u"address"_s, qs(c.customer.address)}, {u"note"_s, qs(c.customer.note)}}},
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
@@ -266,6 +267,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.businessDay = i64(o.value(u"businessDay"));
     c.drawerSession = i64(o.value(u"drawerSession"));
     c.gratuityBp = i64(o.value(u"gratuityBp"));
+    c.taxExempt = ss(o.value(u"taxExempt").toString());
     c.firedCourse = std::max(1, o.value(u"firedCourse").toInt(1));
     c.autoGratuity = o.value(u"autoGratuity").toBool();
     const QJsonObject cust = o.value(u"customer").toObject();
@@ -961,6 +963,7 @@ QJsonObject toJson(const PosSettings &s)
              {u"food"_s, percentFromPpm(s.tax.foodPpm)}, {u"alcohol"_s, percentFromPpm(s.tax.alcoholPpm)},
              {u"merchandise"_s, percentFromPpm(s.tax.merchandisePpm)}, {u"room"_s, percentFromPpm(s.tax.roomPpm)},
              {u"taxTakeoutFood"_s, s.tax.taxTakeoutFood}, {u"cashRounding"_s, s.tax.cashRoundingCents},
+             {u"taxGratuity"_s, s.tax.taxGratuity},
              {u"zip"_s, qs(s.storeZip)}, {u"where"_s, qs(s.taxWhere)}, {u"areaAsOf"_s, qs(s.taxAreaAsOf)}}},
         {u"tenders"_s, tenders}, {u"tendersV2"_s, true},
         {u"printers"_s, printers},
@@ -1195,6 +1198,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.tax.merchandisePpm = ppmFromPercent(tax.value(u"merchandise").toDouble());
     s.tax.roomPpm = ppmFromPercent(tax.value(u"room").toDouble());
     s.tax.taxTakeoutFood = tax.value(u"taxTakeoutFood").toBool(true);
+    s.tax.taxGratuity = tax.value(u"taxGratuity").toBool(false);
     s.tax.cashRoundingCents = tax.value(u"cashRounding").toInt(0);
     s.storeZip = ss(tax.value(u"zip").toString());
     s.taxWhere = ss(tax.value(u"where").toString());

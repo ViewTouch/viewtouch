@@ -610,6 +610,7 @@ public:
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }
     Q_INVOKABLE void releaseHold() { invoke(QStringLiteral("releaseHold"), {}); }
     Q_INVOKABLE void applyCoupon(const QString &code) { invoke(QStringLiteral("applyCoupon"), {code}); }
+    Q_INVOKABLE void setTaxExempt(const QString &certificate) { invoke(QStringLiteral("setTaxExempt"), {certificate}); }
     Q_INVOKABLE void removeCoupon(const QString &id) { invoke(QStringLiteral("removeCoupon"), {id}); }
     Q_INVOKABLE void customerJoin(const QString &phone) { invoke(QStringLiteral("customerJoin"), {phone}); }
     Q_INVOKABLE void sendReceipt(const QString &how, const QString &to = {})

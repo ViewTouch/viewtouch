@@ -1925,6 +1925,7 @@ QVariantMap PosService::checkInfo() const
         {u"seat"_s, seat_}, {u"course"_s, course_}, {u"firedCourse"_s, c->firedCourse},
         {u"heldCount"_s, c->heldCount()}, {u"roundSize"_s, int(lastRound(*c).size())},
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
+        {u"taxExempt"_s, qs(c->taxExempt)},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
         {u"coupons"_s, checkCoupons()}, {u"hold"_s, holdInfo(*c)}, {u"tab"_s, c->type == CheckType::Tab},
         {u"tabHold"_s, s_->settings.tabHold > 0 ? format(Money::fromCents(s_->settings.tabHold)) : QString()},

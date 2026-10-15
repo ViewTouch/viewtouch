@@ -215,7 +215,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
     } else if (panel == u"taxes") {
         // Where the store is: its state (and that state's labor rules), its
         // ZIP code and which rate in it.
-        if (record.contains(u"state"_s) && !setStoreState(ss(record.value(u"state"_s).toString())))
+        bool stateNow = false;   // a state just chosen: its gratuity rule over the form's
+        if (record.contains(u"state"_s) && !setStoreState(ss(record.value(u"state"_s).toString()), &stateNow))
             return false;
         bool zipChanged = false;
         if (record.contains(u"zip"_s)) {
@@ -253,6 +254,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         }
         s_->settings.tax.roomPpm = ppmFromPercent(rates[3]);
         s_->settings.tax.taxTakeoutFood = record.value(u"taxTakeoutFood"_s).toBool();
+        if (record.contains(u"taxGratuity"_s) && !stateNow)
+            s_->settings.tax.taxGratuity = record.value(u"taxGratuity"_s).toBool();
         if (record.contains(u"cashRounding"_s)) {
             const int step = record.value(u"cashRounding"_s).toInt();
             if (step != 0 && step != 5 && step != 10)

@@ -6,6 +6,8 @@
 #include <QJsonObject>
 
 #include "app/i18n.hh"
+#include "print/document.hh"
+#include "print/tickets.hh"
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -234,4 +236,84 @@ TEST_CASE("Books: a day that closes after midnight is the night before's", "[boo
     clock = QDateTime(QDate(2026, 10, 14), QTime(1, 30)).toMSecsSinceEpoch();
     const QString tue = i18n::locale().toString(QDate(2026, 10, 13), QLocale::LongFormat);
     CHECK(pos.report(u"sales"_s)[u"subtitle"_s].toString().startsWith(tue + u", since "_s));
+}
+
+TEST_CASE("Books: an automatic gratuity taxed where the state says so", "[books][tax]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    pos.shared()->settings.gratuityBp = 2000;   // 20%
+    core::Check c;
+    c.lines.push_back({});
+    c.lines.back().unitPrice = Money::fromCents(10000);
+    c.lines.back().quantity = 1;
+    c.gratuityBp = 2000;
+    core::TaxRates rates = pos.shared()->settings.tax;   // food 8.25%
+    CHECK(c.totals(rates).tax.cents() == 825);              // $100 food
+    rates.taxGratuity = true;
+    const core::Totals t = c.totals(rates);
+    CHECK(t.tax.cents() == 825 + 165);                      // and 8.25% of the $20 gratuity
+    CHECK(t.taxableGratuity.cents() == 2000);
+    CHECK(t.total.cents() == 10000 + 990 + 2000);
+
+    // Choosing California turns it on; Store Check asks when it's off.
+    QVariantMap taxes = pos.adminRecords(u"taxes"_s).value(0).toMap();
+    taxes.insert(u"state"_s, u"CA"_s);
+    REQUIRE(pos.adminSave(u"taxes"_s, 0, taxes));
+    CHECK(pos.shared()->settings.tax.taxGratuity);
+    pos.shared()->settings.tax.taxGratuity = false;
+    bool asked = false;
+    for (const QVariant &v : pos.storeCheck()[u"checks"_s].toList())
+        asked = asked || v.toMap()[u"id"_s] == u"gratuityTax"_s;
+    CHECK(asked);
+}
+
+TEST_CASE("Books: a tax-exempt sale keeps its certificate; receipts show each discount's real amount", "[books][tax]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1111"_s));   // a server
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    pos.addItem(u"cobb"_s);
+    pos.finishChoosing();
+    CHECK_FALSE(pos.setTaxExempt(u"12-3456789 St. Mary's School"_s));   // managers only
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.releaseCheck();
+    pos.logout();
+
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    REQUIRE(pos.openCheck(id));
+    REQUIRE(pos.setTaxExempt(u"12-3456789 St. Mary's School"_s));
+    CHECK(pos.checkInfo()[u"taxExempt"_s] == u"12-3456789 St. Mary's School"_s);
+    CHECK(pos.totals()[u"tax"_s] == u"$0.00"_s);
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+
+    const core::Check &c = pos.shared()->closedToday.back();
+    const std::string receipt = print::renderText(print::receipt(c, print::TicketContext{pos.shared()->settings,
+        [](std::int64_t) { return std::string(); }, [](std::int64_t) { return std::string(); }, 0}), 42);
+    CHECK(receipt.find("Tax exempt: 12-3456789 St. Mary's School") != std::string::npos);
+    const core::Report sales = pos.buildReport(u"sales"_s);
+    CHECK(value(sales, "  of which tax-exempt, with certificates (1)") == "$12.50");
+    CHECK(value(sales, "Taxable food sales").empty());
+    const core::Report audit = pos.buildReport(u"audit"_s);
+    CHECK(audit.find("Tax exempt").at(3) == "1");
+    CHECK(audit.find("Tax exempt").at(4) == "$1.03");   // the tax it took off
+
+    // A fixed amount off (a reward): the receipt says what it took off.
+    core::Check r = c;
+    r.taxExempt.clear();
+    core::Payment off;
+    off.id = 99;
+    off.kind = core::TenderKind::Discount;
+    off.tenderName = "Reward";
+    off.amount = Money::fromCents(500);
+    r.payments.push_back(off);
+    const std::string text = print::renderText(print::receipt(r, print::TicketContext{pos.shared()->settings,
+        [](std::int64_t) { return std::string(); }, [](std::int64_t) { return std::string(); }, 0}), 42);
+    CHECK(text.find("-$5.00") != std::string::npos);
 }

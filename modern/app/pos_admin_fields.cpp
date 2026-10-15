@@ -297,6 +297,9 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"merchandise"_s, tr("Merchandise tax %"), u"percent"_s),
             field(u"room"_s, tr("Room tax %"), u"percent"_s),
             field(u"taxTakeoutFood"_s, tr("Tax takeout food"), u"bool"_s),
+            field(u"taxGratuity"_s, tr("Tax the automatic gratuity"), u"bool"_s,
+                  tr("A charge the guest can't decline is taxable in California and Florida (on when the state is "
+                     "chosen) and in most states under conditions; tips the guest chooses never are. Ask your accountant.")),
             with(field(u"cashRounding"_s, tr("Cash rounding"), u"enum"_s,
                        tr("Where pennies are gone: checks paid in cash are rounded to the nearest 5 or 10 cents. Cards are exact.")),
                  u"options"_s, options({{"0", "None (to the cent)"}, {"5", "Nearest 5 cents"}, {"10", "Nearest 10 cents"}})),

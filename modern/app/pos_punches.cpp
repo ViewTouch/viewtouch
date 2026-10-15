@@ -145,8 +145,10 @@ void PosService::logPunchChange(const TimePunch &p, const QString &what, const Q
     const Employee *e = s_->employee(p.employeeId);
     s_->settings.punchChanges.push_back({now(), p.id, user() ? user()->name : std::string(),
                                          e ? e->name : p.employeeId, ss(what), ss(why)});
-    if (s_->settings.punchChanges.size() > 500)
-        s_->settings.punchChanges.erase(s_->settings.punchChanges.begin());
+    // Kept four years: time records and their changes are payroll records
+    // (federal law: 3 years; California: 3 to 4).
+    const std::int64_t fourYears = std::int64_t(4) * 366 * 24 * 3'600'000;
+    std::erase_if(s_->settings.punchChanges, [&](const PosSettings::PunchChange &c) { return c.at < now() - fourYears; });
     s_->saveSettings();
 }
 

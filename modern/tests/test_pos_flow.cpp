@@ -789,6 +789,32 @@ TEST_CASE("UI: a guest orders on the self-order kiosk", "[flow][ui][kiosk]")
     CHECK_FALSE(kiosk->isVisible());
 }
 
+TEST_CASE("UI: Check -> Tax Exempt takes the tax off with the buyer's certificate", "[flow][ui][tax]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"water"_s);
+    s.pos.addItem(u"cobb"_s);
+    s.pos.finishChoosing();
+    REQUIRE(s.c.jumpTo(u"check-options"_s));
+    s.c.activate(u"tax-exempt"_s);
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *sheet = Screen::findBy(root, "objectName", u"exemptSheet"_s);
+    REQUIRE(sheet);
+    QQuickItem *cert = Screen::findBy(sheet, "objectName", u"exemptCert"_s);
+    REQUIRE(cert);
+    cert->setProperty("text", u"12-3456789 St. Mary's School"_s);
+    QTest::qWait(30);
+    s.shot("tax-exempt");
+    s.tapItem(Screen::findBy(sheet, "objectName", u"exemptApply"_s));
+    QTest::qWait(80);
+    CHECK_FALSE(sheet->isVisible());
+    CHECK(s.pos.checkInfo()[u"taxExempt"_s] == u"12-3456789 St. Mary's School"_s);
+    CHECK(s.pos.totals()[u"tax"_s] == u"$0.00"_s);
+}
+
 TEST_CASE("UI: switch user keeps each person's check for when they're back", "[flow][ui][switch]")
 {
     Screen s;

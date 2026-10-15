@@ -532,6 +532,7 @@ Totals Check::totals(const TaxRates &rates) const
         // Percent off what may be discounted, or a fixed amount (rewards, promotions).
         const Money off = (p.staffMeal ? staffDiscountable : discountable).percent(p.percentBp) + p.amount;
         t.discounts += off;
+        t.discountOf[p.id] = off;
         if (p.staffMeal)
             t.staffMeals += off;
     }
@@ -570,6 +571,8 @@ Totals Check::totals(const TaxRates &rates) const
         discountShare[largest] += taxableDiscount - allocated;
 
     for (const auto &[cls, amount] : byClass) {
+        if (!taxExempt.empty())
+            break;   // an exemption certificate: no tax
         if (cls == TaxClass::Food && type == CheckType::Takeout && !rates.taxTakeoutFood)
             continue;
         const Money net = amount - discountShare[cls];
@@ -583,6 +586,13 @@ Totals Check::totals(const TaxRates &rates) const
 
     // Gratuity: on the (discounted) subtotal, not taxed, added after tax.
     t.gratuity = t.netSales().percent(gratuityBp);   // not on gift cards bought
+    // Taxed too where the state says so: at the food rate.
+    if (rates.taxGratuity && taxExempt.empty() && t.gratuity.cents() > 0 && rates.ratePpm(TaxClass::Food) > 0) {
+        const Money tax = t.gratuity.ppm(rates.ratePpm(TaxClass::Food));
+        t.taxableGratuity = t.gratuity;
+        t.taxByClass[TaxClass::Food] += tax;
+        t.tax += tax;
+    }
     t.total = t.subtotal + t.tax + t.gratuity;
     for (const Payment &p : payments) {
         t.tips += p.tip;

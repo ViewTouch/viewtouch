@@ -1813,7 +1813,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
     };
     // Widgets' own buttons that change the screen, not the store: the widget does them.
     if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon"
-        || name == u"cardOnFile") {
+        || name == u"cardOnFile" || name == u"taxExempt") {
         emit widgetCommand(name, args);
         return done(true);
     }

@@ -34,7 +34,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Ready Later\u2026",
+      "label": "Ready Later…",
       "actions": [
         {
           "type": "jump",
@@ -115,11 +115,11 @@
         "x": 932,
         "y": 112,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Customer\u2026",
+      "label": "Customer…",
       "actions": [
         {
           "type": "jump",
@@ -129,17 +129,36 @@
       ]
     },
     {
+      "id": "tax-exempt",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 214,
+        "w": 972,
+        "h": 90
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Tax Exempt…",
+      "actions": [
+        {
+          "type": "command",
+          "name": "taxExempt"
+        }
+      ]
+    },
+    {
       "id": "gift-card",
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 230,
+        "y": 316,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Sell / Check a Gift Card\u2026",
+      "label": "Sell / Check a Gift Card…",
       "actions": [
         {
           "type": "jump",
@@ -153,13 +172,13 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 348,
+        "y": 418,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Transfer to Another Server\u2026",
+      "label": "Transfer to Another Server…",
       "actions": [
         {
           "type": "jump",
@@ -173,13 +192,13 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 466,
+        "y": 520,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Move to Another Table\u2026",
+      "label": "Move to Another Table…",
       "actions": [
         {
           "type": "jump",
@@ -193,13 +212,13 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 584,
+        "y": 622,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Merge Another Check Into This One\u2026",
+      "label": "Merge Another Check Into This One…",
       "actions": [
         {
           "type": "jump",
@@ -213,13 +232,13 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 702,
+        "y": 724,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Reopen a Closed Check\u2026 (manager)",
+      "label": "Reopen a Closed Check… (manager)",
       "actions": [
         {
           "type": "jump",
@@ -233,13 +252,13 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 820,
+        "y": 826,
         "w": 972,
-        "h": 104
+        "h": 90
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Sold Out (86)\u2026",
+      "label": "Sold Out (86)…",
       "actions": [
         {
           "type": "jump",
@@ -259,7 +278,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "\u2039 Back to the Order",
+      "label": "‹ Back to the Order",
       "actions": [
         {
           "type": "jump",
@@ -278,7 +297,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Allergy\u2026",
+      "label": "Allergy…",
       "actions": [
         {
           "type": "command",

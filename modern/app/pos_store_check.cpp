@@ -109,6 +109,11 @@ QVariantMap PosService::storeCheck() const
                     .arg(double(t.foodPpm) / 10000).arg(double(t.alcoholPpm) / 10000).arg(double(t.merchandisePpm) / 10000),
                 true);
     }
+    // An automatic gratuity, not taxed, in a state where it may be.
+    if (s_->settings.gratuityBp > 0 && !s_->settings.tax.taxGratuity)
+        add(u"gratuityTax"_s, false, tr("Tax on the automatic gratuity"),
+            tr("The automatic gratuity isn't taxed. In most states a charge the guest can't decline is taxable "
+               "(always in California and Florida): ask your accountant, then Store Settings → Taxes."), true);
     if (s_->settings.backupKey.empty())
         add(u"backupPassword"_s, false, tr("Encrypted backups"),
             tr("Backups are plain copies of everything (customers, staff, sales). Set a backup password: Store Settings → Backups."), true);
