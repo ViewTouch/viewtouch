@@ -155,6 +155,13 @@ struct PosSettings {
     };
     std::vector<PriceChange> priceChanges;
     TaxRates tax;
+    // Where the store is, for the rates suggested there (Store Settings ->
+    // Taxes; the state is laborState): its ZIP code, which rate in the ZIP
+    // applies (the table's words; "" the usual one), and the table's date
+    // when its rates were last taken ("" never).
+    std::string storeZip;
+    std::string taxWhere;
+    std::string taxAreaAsOf;
     std::vector<Tender> tenders;
     std::vector<PrinterConfig> printers;
     std::string receiptHeader;   // lines under the store name

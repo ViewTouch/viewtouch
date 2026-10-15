@@ -84,7 +84,10 @@ QVariantList PosService::adminRecords(const QString &panel)
         }
     } else if (panel == u"taxes") {
         const TaxRates &t = s_->settings.tax;
-        add({{u"food"_s, percentFromPpm(t.foodPpm)}, {u"alcohol"_s, percentFromPpm(t.alcoholPpm)},
+        add({{u"state"_s, qs(s_->settings.laborState)}, {u"zip"_s, qs(s_->settings.storeZip)},
+             {u"taxWhere"_s, qs(s_->settings.taxWhere)}, {u"suggested"_s, taxAreaText(taxHere())},
+             {u"useSuggested"_s, false},
+             {u"food"_s, percentFromPpm(t.foodPpm)}, {u"alcohol"_s, percentFromPpm(t.alcoholPpm)},
              {u"merchandise"_s, percentFromPpm(t.merchandisePpm)}, {u"room"_s, percentFromPpm(t.roomPpm)},
              {u"taxTakeoutFood"_s, t.taxTakeoutFood}, {u"cashRounding"_s, QString::number(t.cashRoundingCents)}},
             tr("Tax rates"), QString());

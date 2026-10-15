@@ -119,6 +119,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
              return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString())); }},
         {u"setupLogo"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupLogo(a.value(0).toString(), a.value(1).toBool())); }},
+        {u"setupTaxArea"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setupTaxArea(a.value(0).toString())); }},
         {u"setupTaxes"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupTaxes(a.value(0).toDouble(), a.value(1).toDouble())); }},
         {u"setupAddItem"_s, [](PosService &p, const QVariantList &a) {

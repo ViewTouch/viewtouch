@@ -5349,6 +5349,33 @@ TEST_CASE("Qualifiers: a finger on No, Extra... or Cancel presses nothing behind
     CHECK(chosen() == beforeCancel);
 }
 
+TEST_CASE("Setup guide: the store's ZIP code finds its tax rates", "[ui][setup][tax]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.c.openSetup();
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    for (int i = 0; i < 4; ++i) {   // welcome, store, logo, look: to taxes
+        s.tapItem(by(u"setupNext"_s));
+        QTest::qWait(80);
+    }
+    QQuickItem *zip = by(u"setupZip"_s);
+    REQUIRE(zip);
+    zip->setProperty("text", u"90012"_s);
+    QMetaObject::invokeMethod(zip, "textEdited");
+    QTest::qWait(50);
+    s.tapItem(by(u"setupFindRate"_s));
+    QTest::qWait(150);
+    // Los Angeles: the rates in the fields, the state and ZIP code saved.
+    CHECK(by(u"setupFood"_s)->property("text").toString() == u"10.25"_s);
+    CHECK(by(u"setupAlcohol"_s)->property("text").toString() == u"10.25"_s);
+    CHECK(s.pos.shared()->settings.storeZip == "90012");
+    CHECK(s.pos.shared()->settings.laborState == "CA");
+    s.shot("setup-tax-zip");
+}
+
 TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
 {
     Screen s(false, 412, 915, u"phone"_s);
@@ -5367,7 +5394,7 @@ TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
         CHECK(screen.contains(r));
     };
     const QList<QStringList> fields = {{}, {u"setupStoreName"_s, u"setupReceipt"_s}, {u"setupLogoAdd"_s},
-                                       {}, {u"setupFood"_s, u"setupAlcohol"_s},
+                                       {}, {u"setupZip"_s, u"setupFindRate"_s, u"setupFood"_s, u"setupAlcohol"_s},
                                        {u"setupItemName"_s, u"setupItemPrice"_s, u"setupItemFamily"_s, u"setupItemAdd"_s},
                                        {u"setupStaffName"_s, u"setupStaffRole"_s, u"setupStaffPin"_s, u"setupStaffAdd"_s}, {}};
     for (int step = 0; step < fields.size(); ++step) {

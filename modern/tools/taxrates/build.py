@@ -128,12 +128,25 @@ def main():
             s["confirm"] = CONFIRM[st]
         states[st] = s
 
+    # Each ZIP code's state by its first three digits (for ZIP codes the
+    # table doesn't list: a state with one rate everywhere), from the Census.
+    fips_state = {v: k for k, v in tables.FIPS.items()}
+    from collections import Counter, defaultdict
+    by_prefix = defaultdict(Counter)
+    with open(f"{c}/census/tab20_zcta520_county20_natl.txt", encoding="utf-8-sig") as f:
+        for line in f:
+            p = line.split("|")
+            if len(p) > 9 and p[1].isdigit() and p[9][:2] in fips_state:
+                by_prefix[p[1][:3]][fips_state[p[9][:2]]] += int(p[16] or 0) if len(p) > 16 and p[16].isdigit() else 1
+    prefixes = {k: v.most_common(1)[0][0] for k, v in sorted(by_prefix.items())}
+
     out = {
         "about": "Sales tax rates by US ZIP code, from each state's published rates. A suggestion for the "
                  "store to confirm: rates can differ within a ZIP code, and local restaurant taxes are noted, "
                  "not always included. Check with the store's accountant.",
         "asOf": f"{a.on[:4]}-{a.on[4:6]}-{a.on[6:]}",
         "states": states,
+        "prefixes": prefixes,
         "zips": dict(sorted(zips.items())),
     }
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)

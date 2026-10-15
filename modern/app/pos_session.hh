@@ -544,6 +544,7 @@ public:
     Q_INVOKABLE void setupStore(const QString &name, const QString &lines) { invoke(QStringLiteral("setupStore"), {name, lines}); }
     Q_INVOKABLE void setupLogo(const QString &ref, bool onReceipts) { invoke(QStringLiteral("setupLogo"), {ref, onReceipts}); }
     Q_INVOKABLE void setupTaxes(double food, double alcohol) { invoke(QStringLiteral("setupTaxes"), {food, alcohol}); }
+    Q_INVOKABLE void setupTaxArea(const QString &zip) { invoke(QStringLiteral("setupTaxArea"), {zip}); }
     Q_INVOKABLE void setupAddItem(const QString &name, double price, const QString &family)
     {
         invoke(QStringLiteral("setupAddItem"), {name, price, family});

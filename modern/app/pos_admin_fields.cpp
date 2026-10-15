@@ -281,6 +281,17 @@ QVariantList PosService::adminFields(const QString &panel)
     }
     if (panel == u"taxes") {
         return {
+            // Where the store is: the rate there, from each state's published rates.
+            with(field(u"state"_s, tr("The store's state"), u"enum"_s,
+                       tr("Also sets its overtime, meal break and gift card rules (Staff hours).")),
+                 u"options"_s, stateOptions()),
+            field(u"zip"_s, tr("ZIP code"), u"string"_s, tr("Where the store is. Save, and the rate there shows below.")),
+            with(field(u"taxWhere"_s, tr("Where in the ZIP code"), u"enum"_s,
+                       tr("Some ZIP codes have more than one rate: inside a city's limits or outside it. Choose the store's.")),
+                 u"options"_s, taxWhereOptions()),
+            field(u"suggested"_s, tr("The rate here"), u"info"_s),
+            field(u"useSuggested"_s, tr("Set the rates below to these"), u"bool"_s,
+                  tr("Food, alcohol and merchandise, then Save. Rates change: Store Check says when the table has a new one.")),
             field(u"food"_s, tr("Food tax %"), u"percent"_s),
             field(u"alcohol"_s, tr("Alcohol tax %"), u"percent"_s),
             field(u"merchandise"_s, tr("Merchandise tax %"), u"percent"_s),
@@ -328,10 +339,9 @@ QVariantList PosService::adminFields(const QString &panel)
                        tr("Sets its overtime, double time, meal break and gift card rules below (federal overtime "
                           "past 40 hours a week applies everywhere). They're the usual rules for restaurant staff: "
                           "check special cases with your accountant.")),
-                 u"options"_s, [] {
-                     QVariantList o{QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("(not chosen: federal rules only)")}}};
-                     for (const core::StateRules &s : core::stateRules())
-                         o.append(QVariantMap{{u"value"_s, QString::fromLatin1(s.code)}, {u"text"_s, QString::fromLatin1(s.name)}});
+                 u"options"_s, [this] {
+                     QVariantList o = stateOptions();
+                     o[0] = QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("(not chosen: federal rules only)")}};
                      return o;
                  }()),
             with(with(field(u"doubleTimeDailyHours"_s, tr("Double time after hours in a day"), u"int"_s,

@@ -10,6 +10,7 @@
 #include "core/settings.hh"
 #include "core/waitlist.hh"
 #include "app/pos_session.hh"
+#include "app/tax_areas.hh"
 
 #include <QJsonObject>
 #include <QSet>
@@ -803,6 +804,8 @@ public:
     bool setupStore(const QString &name, const QString &receiptLines);
     bool setupLogo(const QString &ref, bool onReceipts);
     bool setupTaxes(double foodPercent, double alcoholPercent);
+    // The store's ZIP code: its state and the rates there (the next step can change them).
+    bool setupTaxArea(const QString &zip);
     bool setupAddItem(const QString &name, double price, const QString &family);
     bool setupAddEmployee(const QString &name, const QString &role, const QString &pin);
     bool setupRetireSamples();
@@ -1136,6 +1139,12 @@ private:
     // A report that can cover several days, over `closed`.
     // `refunds`: made in the range (by date); none: those on these checks.
     // Today's house account payments (from the customers' accounts).
+    // Where the store is (Store Settings -> Taxes; pos_tax_area.cpp).
+    QVariantList stateOptions() const;
+    TaxSuggestion taxHere() const;
+    QVariantList taxWhereOptions() const;
+    QString taxAreaText(const TaxSuggestion &s) const;
+    bool setStoreState(const std::string &state, bool *applied = nullptr);
     std::vector<core::AccountPayment> accountPaymentsToday() const;
     core::Report rangeCapableReport(const QString &id, const std::vector<core::Check> &closed,
                                     const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr,

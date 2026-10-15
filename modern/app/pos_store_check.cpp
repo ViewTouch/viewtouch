@@ -4,6 +4,7 @@
 #include "app/i18n.hh"
 #include "app/pos_service.hh"
 
+#include <cmath>
 #include <QDateTime>
 
 #include <algorithm>
@@ -90,6 +91,24 @@ QVariantMap PosService::storeCheck() const
     if (s_->settings.laborState.empty())
         add(u"state"_s, false, tr("The store's state"),
             tr("Not chosen: overtime, meal breaks and gift cards follow federal rules only. Store Settings → Staff hours."), true);
+    // The tax rate where the store is: its ZIP code, and a newer rate than
+    // the one the store took (a store that changed its rates after taking
+    // them, say for a local meals tax, isn't asked again until the next table).
+    if (s_->settings.storeZip.empty()) {
+        add(u"taxArea"_s, false, tr("Where the store is"),
+            tr("No ZIP code: Store Settings → Taxes can show the sales tax rate there."), true);
+    } else if (const TaxSuggestion here = taxHere(); here.found && qs(s_->settings.taxAreaAsOf) < here.asOf) {
+        const auto ppm = [](double pct) { return std::llround(pct * 10000); };
+        const core::TaxRates &t = s_->settings.tax;
+        if (ppm(here.food) != t.foodPpm || ppm(here.alcohol) != t.alcoholPpm || ppm(here.sales) != t.merchandisePpm)
+            add(u"taxArea"_s, false, tr("Tax rates"),
+                tr("The rates for %1 (as of %2): food %3%, alcohol %4%, merchandise %5%. This store charges %6%, %7%, %8%. "
+                   "Store Settings → Taxes.")
+                    .arg(qs(s_->settings.storeZip), here.asOf)
+                    .arg(here.food).arg(here.alcohol).arg(here.sales)
+                    .arg(double(t.foodPpm) / 10000).arg(double(t.alcoholPpm) / 10000).arg(double(t.merchandisePpm) / 10000),
+                true);
+    }
     if (s_->settings.backupKey.empty())
         add(u"backupPassword"_s, false, tr("Encrypted backups"),
             tr("Backups are plain copies of everything (customers, staff, sales). Set a backup password: Store Settings → Backups."), true);
