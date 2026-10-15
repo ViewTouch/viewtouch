@@ -1,0 +1,10 @@
+{
+ "state": "MS",
+ "name": "Mississippi",
+ "stateRate": 7,
+ "everywhere": 7,
+ "source": "Mississippi DOR: 7% state; Jackson adds a 1% special sales tax",
+ "cities": {
+  "Jackson": 8
+ }
+}

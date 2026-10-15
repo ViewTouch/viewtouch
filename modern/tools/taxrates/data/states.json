@@ -1,0 +1,300 @@
+{
+ "_about": "Each state's sales tax rate (percent) and what's different for restaurants. meals / alcohol: {\"rate\": R} replaces the state rate on prepared food / drinks served (local taxes still added, unless \"noLocal\"), {\"add\": A} adds to the total. notes: local restaurant taxes not in the rate (the store checks its own). Checked October 2026 against the sources named.",
+ "AL": {
+  "rate": 4
+ },
+ "AK": {
+  "rate": 0,
+  "notes": [
+   "No state sales tax; many boroughs and cities have their own (in the rate), and some add alcohol or bed taxes."
+  ]
+ },
+ "AZ": {
+  "rate": 5.6,
+  "notes": [
+   "Arizona cities tax restaurants and bars at their own rate (the rate here is for restaurants where the city publishes one)."
+  ]
+ },
+ "AR": {
+  "rate": 6.5,
+  "notes": [
+   "Many cities add an advertising and promotion (hotel and restaurant) tax on prepared food, usually 1 to 3%.",
+   "Mixed drinks served: a 4% mixed drink tax and a 10% supplemental tax."
+  ]
+ },
+ "CA": {
+  "rate": 7.25
+ },
+ "CO": {
+  "rate": 2.9,
+  "notes": [
+   "Home-rule cities collect their own sales tax: register with the city as well."
+  ]
+ },
+ "CT": {
+  "rate": 6.35,
+  "meals": {
+   "rate": 7.35
+  },
+  "alcohol": {
+   "rate": 7.35
+  },
+  "source": "CT DRS PS 2019(5): meals 7.35% since October 1, 2019"
+ },
+ "DE": {
+  "rate": 0
+ },
+ "DC": {
+  "rate": 6,
+  "meals": {
+   "rate": 10
+  },
+  "alcohol": {
+   "rate": 10
+  },
+  "source": "DC OTR: general 6% through September 30, 2027 (the increase to 7% postponed); restaurant meals and drinks 10%"
+ },
+ "FL": {
+  "rate": 6,
+  "notes": [
+   "Miami-Dade County: a food and beverage tax (up to 2%) at restaurants licensed to serve alcohol."
+  ]
+ },
+ "GA": {
+  "rate": 4
+ },
+ "HI": {
+  "rate": 4,
+  "notes": [
+   "The general excise tax is on the business; it may be passed on to guests at up to 4.712% (with the county's 0.5%)."
+  ]
+ },
+ "ID": {
+  "rate": 6,
+  "notes": [
+   "Resort cities (Ketchum, Sun Valley, McCall and others) add a local option tax, up to 3%."
+  ]
+ },
+ "IL": {
+  "rate": 6.25,
+  "notes": [
+   "Chicago adds a 0.5% restaurant tax, and 1% more in the Metropolitan Pier and Exposition area; other cities have their own."
+  ]
+ },
+ "IN": {
+  "rate": 7,
+  "notes": [
+   "Many counties and cities add a food and beverage tax, usually 1 to 2%."
+  ]
+ },
+ "IA": {
+  "rate": 6
+ },
+ "KS": {
+  "rate": 6.5
+ },
+ "KY": {
+  "rate": 6,
+  "notes": [
+   "Some cities add a restaurant tax, up to 3%."
+  ]
+ },
+ "LA": {
+  "rate": 5,
+  "source": "Louisiana 5% since January 1, 2025"
+ },
+ "ME": {
+  "rate": 5.5,
+  "meals": {
+   "rate": 8
+  },
+  "alcohol": {
+   "rate": 8
+  },
+  "source": "Maine Revenue Services: prepared food and liquor served 8%"
+ },
+ "MD": {
+  "rate": 6,
+  "alcohol": {
+   "rate": 9
+  },
+  "source": "Comptroller of Maryland: alcoholic beverages 9% since July 1, 2011"
+ },
+ "MA": {
+  "rate": 6.25,
+  "notes": [
+   "Most cities and towns (Boston among them) add a 0.75% local meals tax: 7% in all."
+  ]
+ },
+ "MI": {
+  "rate": 6
+ },
+ "MN": {
+  "rate": 6.875,
+  "alcohol": {
+   "add": 2.5
+  },
+  "notes": [
+   "Minneapolis and some other cities add a food and beverage tax (downtown Minneapolis 3%)."
+  ]
+ },
+ "MS": {
+  "rate": 7,
+  "notes": [
+   "Many cities add a tourism tax on restaurants, usually 1 to 3%."
+  ]
+ },
+ "MO": {
+  "rate": 4.225
+ },
+ "MT": {
+  "rate": 0,
+  "notes": [
+   "Resort towns (Whitefish, Big Sky, West Yellowstone and others) add a resort tax, up to 4%."
+  ]
+ },
+ "NE": {
+  "rate": 5.5,
+  "notes": [
+   "Some cities add an occupation tax on restaurants (Omaha 2.5%)."
+  ]
+ },
+ "NV": {
+  "rate": 6.85
+ },
+ "NH": {
+  "rate": 0,
+  "meals": {
+   "rate": 8.5
+  },
+  "alcohol": {
+   "rate": 8.5
+  },
+  "source": "NH meals and rooms tax 8.5% since October 1, 2021 (a 2026 bill to raise it failed)"
+ },
+ "NJ": {
+  "rate": 6.625,
+  "notes": [
+   "Urban Enterprise Zones may charge half the rate; Atlantic City adds a luxury tax on drinks."
+  ]
+ },
+ "NM": {
+  "rate": 4.875,
+  "notes": [
+   "Gross receipts tax: on the business, usually passed on to guests."
+  ]
+ },
+ "NY": {
+  "rate": 4
+ },
+ "NC": {
+  "rate": 4.75,
+  "notes": [
+   "Some counties add a 1% prepared food and beverage tax (Mecklenburg, Wake, Durham, Dare and others)."
+  ]
+ },
+ "ND": {
+  "rate": 5,
+  "notes": [
+   "Some cities add a restaurant and lodging tax (Bismarck, Fargo and others)."
+  ]
+ },
+ "OH": {
+  "rate": 5.75
+ },
+ "OK": {
+  "rate": 4.5
+ },
+ "OR": {
+  "rate": 0,
+  "notes": [
+   "Ashland adds a 5% food and beverage tax."
+  ]
+ },
+ "PA": {
+  "rate": 6,
+  "notes": [
+   "Allegheny County adds a 7% drink tax on poured drinks; Philadelphia a 10% liquor tax on drinks."
+  ]
+ },
+ "RI": {
+  "rate": 7,
+  "meals": {
+   "add": 1
+  },
+  "alcohol": {
+   "add": 1
+  },
+  "source": "RI Division of Taxation: 1% local meals and beverage tax"
+ },
+ "SC": {
+  "rate": 6,
+  "notes": [
+   "Many cities and counties add a local hospitality tax on prepared food, up to 2%."
+  ]
+ },
+ "SD": {
+  "rate": 4.2,
+  "notes": [
+   "Many cities add a municipal gross receipts tax on restaurants, up to 1%. The state rate goes back to 4.5% on July 1, 2027."
+  ]
+ },
+ "TN": {
+  "rate": 7,
+  "alcohol": {
+   "add": 15
+  },
+  "source": "TN Department of Revenue: liquor-by-the-drink tax 15%, on top of sales tax"
+ },
+ "TX": {
+  "rate": 6.25,
+  "alcohol": {
+   "rate": 8.25,
+   "noLocal": true
+  },
+  "source": "Texas Comptroller: mixed beverage sales tax 8.25% on drinks served, instead of sales tax"
+ },
+ "UT": {
+  "rate": 4.85,
+  "notes": [
+   "Most counties add a 1% restaurant tax."
+  ]
+ },
+ "VT": {
+  "rate": 6,
+  "meals": {
+   "rate": 9
+  },
+  "alcohol": {
+   "rate": 10
+  },
+  "notes": [
+   "Some towns add a 1% local option meals and alcohol tax."
+  ],
+  "source": "Vermont Department of Taxes: meals 9%, alcohol served 10%"
+ },
+ "VA": {
+  "rate": 4.3,
+  "notes": [
+   "Most counties and cities add a local meals tax, usually 4 to 7.5%."
+  ]
+ },
+ "WA": {
+  "rate": 6.5,
+  "notes": [
+   "Spirits served are taxed by the liter as well."
+  ]
+ },
+ "WV": {
+  "rate": 6
+ },
+ "WI": {
+  "rate": 5,
+  "notes": [
+   "Some cities add a food and beverage tax; premier resort areas a resort tax."
+  ]
+ },
+ "WY": {
+  "rate": 4
+ }
+}
