@@ -1258,6 +1258,7 @@ ApplicationWindow {
     }
 
     StressPanel {
+        objectName: "stressPanel"
         visible: root.stress !== null
         stress: root.stress
         controller: root.controller
