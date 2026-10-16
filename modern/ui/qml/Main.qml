@@ -1257,10 +1257,14 @@ ApplicationWindow {
         function onNoticeChanged() { root.toast(root.editor.notice) }
     }
 
-    StressPanel {
-        objectName: "stressPanel"
-        visible: root.stress !== null
-        stress: root.stress
-        controller: root.controller
+    // The stress test's numbers (vtmodern --stress). Only built then: a
+    // store's window has no panel, and no tour of the pages.
+    Loader {
+        anchors.fill: parent
+        z: 95
+        active: root.stress !== null
+        sourceComponent: Item {
+            StressPanel { stress: root.stress; controller: root.controller }
+        }
     }
 }
