@@ -14,28 +14,28 @@ Dialog {
     width: Math.min(parent.width - 40, 760)
     modal: true
     onOpened: severalText.text = ""
-    // What will be added (the store reads it the same way).
-    readonly property var preview: {
+    // What will be added (the store reads it the same way). Callbacks, not
+    // loops that change their own variables: Qt 6.10's compiler ran out of
+    // memory on those (the Ubuntu 26.04 package build was killed).
+    function parse(text, start) {
         const out = []
-        let category = menu.category ? menu.category.name : ""
-        for (let line of severalText.text.split("\n")) {
-            line = line.trim()
-            if (!line) continue
-            const colon = line.indexOf(":")
-            if (colon > 0 && !/\d/.test(line.slice(0, colon))) {
-                category = line.slice(0, colon).trim()
-                line = line.slice(colon + 1).trim()
-            }
-            for (let part of line.split(/,(?!\d{1,2}\s*(?:,|$))/)) {
-                part = part.trim()
-                if (!part) continue
-                const m = part.match(/^(.*?)[\s\-–:]*\$?\s*(\d+(?:[.,]\d{1,2})?)\s*$/)
-                out.push(m && m[1].trim() ? { name: m[1].trim(), price: Number(m[2].replace(",", ".")).toFixed(2), category: category }
-                                          : { name: part, price: "", category: category })
-            }
-        }
+        let category = start
+        text.split("\n").map(l => l.trim()).filter(l => l !== "").forEach(l => {
+            const colon = l.indexOf(":")
+            const named = colon > 0 && !/\d/.test(l.slice(0, colon))
+            if (named)
+                category = l.slice(0, colon).trim()
+            const cat = category
+            const rest = named ? l.slice(colon + 1) : l
+            rest.split(/,(?!\d{1,2}\s*(?:,|$))/).map(p => p.trim()).filter(p => p !== "").forEach(p => {
+                const m = p.match(/^(.*?)[\s\-–:]*\$?\s*(\d+(?:[.,]\d{1,2})?)\s*$/)
+                out.push(m && m[1].trim() ? { name: m[1].trim(), price: Number(m[2].replace(",", ".")).toFixed(2), category: cat }
+                                          : { name: p, price: "", category: cat })
+            })
+        })
         return out
     }
+    readonly property var preview: parse(severalText.text, menu.category ? menu.category.name : "")
     ColumnLayout {
         anchors.fill: parent
         spacing: 8
