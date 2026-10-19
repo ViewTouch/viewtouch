@@ -31,15 +31,15 @@ Rectangle {
     border.color: done ? (st.passed ? "#2fa35a" : "#d64545") : "#3a4250"
     border.width: done ? 3 : 1
 
-    // Around the restaurant: a page every 15 seconds (only in a stress test:
-    // the panel is always there, hidden).
+    // Around the restaurant: a page every 15 seconds. (Main.qml builds this
+    // panel only during a stress test: a store's screen is never toured.)
     Timer {
         objectName: "stressPageTour"
         readonly property var pages: ["tables", "seating", "kitchen", "expo", "dashboard", "deliveries"]
         property int at: 0
         interval: 15000
         repeat: true
-        running: panel.stress !== null && panel.autoPages && !panel.done && panel.controller !== null
+        running: panel.autoPages && !panel.done && panel.controller !== null
         onTriggered: { at = (at + 1) % pages.length; panel.controller.jumpTo(pages[at]) }
     }
 

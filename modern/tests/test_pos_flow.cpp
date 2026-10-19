@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "net/build_info.hh"
+#include "net/stress.hh"
 #include "layout_fixture.hh"
 #include "layoutcontroller.hh"
 #include "print/raster.hh"
@@ -2261,29 +2262,26 @@ TEST_CASE("UI: ring items in by number (keyboard, or Find)", "[flow][ui][plu]")
         }
 }
 
-TEST_CASE("UI: no stress test, no page tour: the screen stays where it is", "[flow][ui][stress]")
+TEST_CASE("UI: no stress test, no stress panel: the screen stays where it is", "[flow][ui]")
 {
     Screen s;
-    // The stress panel is always there (hidden); its tour of the pages must
-    // not run without a stress test, or a store's screen changes by itself.
-    // Hidden (no stress test), so looked for among hidden items too.
-    const std::function<QQuickItem *(QQuickItem *)> find = [&find](QQuickItem *root) -> QQuickItem * {
-        for (QQuickItem *item : root->childItems()) {
-            if (item->objectName() == u"stressPanel"_s)
-                return item;
-            if (QQuickItem *hit = find(item))
-                return hit;
-        }
-        return nullptr;
-    };
-    QQuickItem *panel = find(s.window->contentItem());
-    REQUIRE(panel);
-    QObject *tour = panel->findChild<QObject *>(u"stressPageTour"_s);
+    // A store's window never builds the stress panel (Main.qml loads it only
+    // for a stress test), so there is no tour of the pages to move its screen.
+    CHECK_FALSE(s.window->findChild<QObject *>(u"stressPanel"_s));
+    CHECK_FALSE(s.window->findChild<QObject *>(u"stressPageTour"_s));
+
+    // The control: a stress test on the window brings the panel, tour running,
+    // so the two names above are live rather than stale.
+    net::StressRunner stress(s.pos.shared(), nullptr, {});   // never started: just something to show
+    s.window->setProperty("stress", QVariant::fromValue(static_cast<QObject *>(&stress)));
+    QTest::qWait(20);
+    QObject *tour = s.window->findChild<QObject *>(u"stressPageTour"_s);
     REQUIRE(tour);
-    CHECK_FALSE(tour->property("running").toBool());
-    const QString page = s.c.pageId();
-    QTest::qWait(200);
-    CHECK(s.c.pageId() == page);
+    REQUIRE(tour->inherits("QQmlTimer"));
+    CHECK(tour->property("running").toBool());
+    s.window->setProperty("stress", QVariant::fromValue(static_cast<QObject *>(nullptr)));   // before `stress` dies
+    QTest::qWait(20);   // the Loader deletes its item with deleteLater(); qWait flushes DeferredDelete
+    CHECK_FALSE(s.window->findChild<QObject *>(u"stressPanel"_s));
 }
 
 TEST_CASE("UI: the manager's dashboard: today so far", "[flow][ui][dashboard]")
