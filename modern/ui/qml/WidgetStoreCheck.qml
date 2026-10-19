@@ -30,6 +30,10 @@ Item {
         }
         ColumnLayout {
             Layout.fillWidth: true
+            // The row's width, not the text's: long details wrap (they ran
+            // under the scrollbar).
+            Layout.preferredWidth: Math.max(0, row.width - 38)
+            Layout.maximumWidth: Math.max(0, row.width - 38)
             spacing: 0
             Label {
                 Layout.fillWidth: true
@@ -40,6 +44,7 @@ Item {
             }
             Label {
                 Layout.fillWidth: true
+                Layout.maximumWidth: Math.max(0, row.width - 38)
                 text: row.modelData.detail
                 font.pixelSize: 14
                 opacity: 0.75
@@ -99,7 +104,7 @@ Item {
                         font.pixelSize: 20
                         font.bold: true
                     }
-                    Button {
+                    PosButton {
                         objectName: "problemsSeen"
                         visible: (w.info.unseen ?? 0) > 0
                         text: qsTr("Mark as seen")

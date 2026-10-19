@@ -40,7 +40,7 @@ Item {
     }
 
     // A choice: solid blue when it's the one picked.
-    component Pick: Button {
+    component Pick: PosButton {
         palette.button: highlighted ? "#2f6fd6" : "#343c49"
         palette.buttonText: "white"
     }
@@ -143,7 +143,7 @@ Item {
 
             Item { Layout.fillHeight: true }
 
-            Button {
+            PosButton {
                 objectName: "laterAsap"
                 Layout.fillWidth: true
                 implicitHeight: zone ? zone.touch(56) : 56

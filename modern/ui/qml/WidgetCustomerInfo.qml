@@ -103,7 +103,7 @@ Item {
                 visible: w.searching !== ""
                 Repeater {
                     model: w.searching !== "" && w.pos ? w.pos.customers.slice(0, 4) : []
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         text: (modelData.name || "") + "  " + (modelData.phone || "")
                               + (modelData.visits ? "  ·  " + (modelData.visits === 1 ? qsTr("1 visit") : qsTr("%1 visits").arg(modelData.visits)) : "")

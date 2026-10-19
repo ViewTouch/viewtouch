@@ -117,7 +117,7 @@ Item {
                         opacity: 0.6
                     }
                 }
-                Button {
+                PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 48
                     text: qsTr("+ New Customer")
@@ -143,7 +143,7 @@ Item {
                 Layout.fillHeight: true
                 contentHeight: details.implicitHeight
                 clip: true
-                ScrollBar.vertical: TouchScrollBar { id: formBar }
+                ScrollBar.vertical: TouchScrollBar { id: formBar; needed: details.visible && form.contentHeight > form.height + 8 }
 
                 ColumnLayout {
                     id: details
@@ -151,7 +151,7 @@ Item {
                     spacing: 8
                     visible: w.creating || (w.chosen.id ?? "") !== ""
 
-                    Button {
+                    PosButton {
                         visible: w.narrow
                         text: qsTr("‹ Search")
                         onClicked: { w.creating = false; w.pos.selectCustomer("") }
@@ -173,7 +173,7 @@ Item {
                         }
                         Repeater {
                             model: w.pos && (w.chosen.onCheck ?? false) ? ((w.pos.customerPrompt.loyalty ?? {}).rewards ?? []) : []
-                            delegate: Button {
+                            delegate: PosButton {
                                 required property var modelData
                                 text: qsTr("%1 off (%2 pts)").arg(modelData.value).arg(modelData.points)
                                 enabled: modelData.ready
@@ -262,11 +262,11 @@ Item {
                                     placeholderText: qsTr("all")
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                 }
-                                Button {
+                                PosButton {
                                     text: qsTr("Paid Cash")
                                     onClicked: { w.pos.payOnAccount("cash", w.cents(payAmount.text)); payAmount.text = "" }
                                 }
-                                Button {
+                                PosButton {
                                     text: qsTr("Paid Card")
                                     onClicked: { w.pos.payOnAccount("card", w.cents(payAmount.text)); payAmount.text = "" }
                                 }
@@ -288,7 +288,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.topMargin: 6
                         spacing: 10
-                        Button {
+                        PosButton {
                             text: qsTr("Save")
                             implicitHeight: 52
                             implicitWidth: 140
@@ -296,7 +296,7 @@ Item {
                             onClicked: w.save()
                         }
                         // Privacy laws: a guest may ask to be forgotten (managers; touch twice).
-                        Button {
+                        PosButton {
                             id: forget
                             property bool armed: false
                             visible: !w.creating && w.pos !== null && w.pos.can("manager")
@@ -310,7 +310,7 @@ Item {
                             }
                             Timer { id: disarm; interval: 4000; onTriggered: forget.armed = false }
                         }
-                        Button {
+                        PosButton {
                             text: (w.chosen.onCheck ?? false) ? qsTr("On this check ✓") : qsTr("Put on This Check")
                             implicitHeight: 52
                             enabled: w.pos !== null && w.pos.hasCheck && !w.creating && !(w.chosen.onCheck ?? false)

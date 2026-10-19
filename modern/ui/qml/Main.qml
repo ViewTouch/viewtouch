@@ -1259,8 +1259,10 @@ ApplicationWindow {
         objectName: "toast"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        // At the top while the keyboard is up (not over the field being typed in).
-        anchors.bottomMargin: root.keyboardUp ? root.height - height - 24 : 24
+        // Above the row of buttons most pages have at the bottom (not over
+        // their labels); at the top while the keyboard is up (not over the
+        // field being typed in).
+        anchors.bottomMargin: root.keyboardUp ? root.height - height - 24 : Math.max(24, root.height * 0.135)
         width: Math.min(toastText.implicitWidth + 40, root.width - 40)
         height: toastText.implicitHeight + 20
         radius: 18

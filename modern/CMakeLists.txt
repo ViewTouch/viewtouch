@@ -155,6 +155,7 @@ if(Qt6_FOUND)
             ui/qml/PhoneScreens.qml
             ui/qml/ActionListEditor.qml
             ui/qml/WidgetKey.qml
+            ui/qml/PosButton.qml
             ui/qml/WidgetTable.qml
             ui/qml/WidgetTableGrid.qml
             ui/qml/WidgetStaffPicker.qml

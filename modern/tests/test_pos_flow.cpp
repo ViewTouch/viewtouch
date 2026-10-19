@@ -8594,3 +8594,25 @@ TEST_CASE("UI: a guest orders on the kiosk with a keypad, and a screen reader na
     QTest::qWait(30);
     CHECK_FALSE(kiosk->property("access").toBool());
 }
+
+TEST_CASE("Terminal audit: every page on a 1600x900 terminal", "[.][termaudit]")
+{
+    Screen s(false, 1600, 900);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    s.c.finishChoosing();
+    s.pos.addItem(u"water"_s);
+    QStringList ids;
+    for (const layout::Page &p : s.c.layout().pages)
+        if (p.formFactor.isEmpty() && p.kind != u"template" && p.kind != u"library")
+            ids << p.id;
+    ids.sort();
+    for (const QString &id : ids) {
+        if (!s.c.jumpTo(id))
+            continue;
+        QTest::qWait(80);
+        s.shot((u"term-"_s + id).toUtf8().constData());
+    }
+    QTest::qWait(30);
+}

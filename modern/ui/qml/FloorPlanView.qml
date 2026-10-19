@@ -51,7 +51,7 @@ ColumnLayout {
         spacing: v.unit * 0.3
         Repeater {
             model: v.plans
-            delegate: Button {
+            delegate: PosButton {
                 required property var modelData
                 objectName: v.tabPrefix + modelData.id
                 text: qsTranslate("Page", modelData.name)

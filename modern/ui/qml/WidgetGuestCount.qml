@@ -36,7 +36,9 @@ Item {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: w.pos && w.pos.pendingTable !== "" ? qsTr("guests at %1").arg(w.pos.pendingTable) : qsTr("guests")
+                readonly property int n: w.pos ? w.pos.entryGuests : 1
+                text: w.pos && w.pos.pendingTable !== "" ? (n === 1 ? qsTr("guest at %1") : qsTr("guests at %1")).arg(w.pos.pendingTable)
+                      : n === 1 ? qsTr("guest") : qsTr("guests")
                 color: "#8a94a6"
                 font.family: w.zone.st.font ?? "DejaVu Sans"
                 font.pixelSize: w.height * 0.13

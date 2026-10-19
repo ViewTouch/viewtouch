@@ -179,7 +179,7 @@ ApplicationWindow {
                     color: "#ff9a9e"
                     font.pixelSize: root.u
                 }
-                Button {
+                PosButton {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.u * 3.4
                     text: root.join.busy ? qsTr("Joining…") : qsTr("Join")
@@ -207,7 +207,7 @@ ApplicationWindow {
                     spacing: root.u * 0.3
                     Repeater {
                         model: parent.modelData.split("")
-                        delegate: Button {
+                        delegate: PosButton {
                             required property string modelData
                             Layout.fillWidth: true
                             Layout.preferredHeight: root.u * 2.6
@@ -229,7 +229,7 @@ ApplicationWindow {
                     }
                 }
             }
-            Button {
+            PosButton {
                 Layout.fillWidth: true
                 Layout.preferredHeight: root.u * 2.6
                 text: qsTr("space")

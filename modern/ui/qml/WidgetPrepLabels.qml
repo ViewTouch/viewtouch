@@ -81,7 +81,7 @@ Item {
                     cellHeight: 58
                     model: w.choices
                     ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         objectName: "label-" + modelData.id
                         width: grid.cellWidth - 6
@@ -143,7 +143,7 @@ Item {
                     columnSpacing: 6
                     Repeater {
                         model: w.keeps
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             objectName: "keeps-" + modelData.h
                             text: modelData.t
@@ -168,7 +168,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    Button {
+                    PosButton {
                         objectName: "labelsLess"
                         text: "−"
                         implicitWidth: 52
@@ -184,7 +184,7 @@ Item {
                         font.pixelSize: 20
                         font.bold: true
                     }
-                    Button {
+                    PosButton {
                         objectName: "labelsMore"
                         text: "+"
                         implicitWidth: 52
@@ -192,7 +192,7 @@ Item {
                         font.pixelSize: 20
                         onClicked: w.count = Math.min(50, w.count + 1)
                     }
-                    Button {
+                    PosButton {
                         objectName: "printLabels"
                         Layout.fillWidth: true
                         text: qsTr("Print %n label(s)", "", w.count)

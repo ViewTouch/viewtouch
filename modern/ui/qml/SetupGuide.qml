@@ -120,7 +120,7 @@ Rectangle {
                 contentWidth: width - stepBar.room
                 contentHeight: stepStack.implicitHeight
                 boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: TouchScrollBar { id: stepBar }
+                ScrollBar.vertical: TouchScrollBar { id: stepBar; needed: stepArea.contentHeight > stepArea.height + 24 }
             StackLayout {
                 id: stepStack
                 width: stepArea.width - stepBar.room
@@ -205,7 +205,7 @@ Rectangle {
                             }
                         }
                         ColumnLayout {
-                            Button {
+                            PosButton {
                                 objectName: "setupLogoAdd"
                                 text: qsTr("Add Picture…")
                                 font.pixelSize: 18
@@ -309,7 +309,7 @@ Rectangle {
                             text: g.zip
                             onTextEdited: g.zip = text
                         }
-                        Button {
+                        PosButton {
                             objectName: "setupFindRate"
                             text: qsTr("Find the Rate")
                             font.pixelSize: 18
@@ -397,7 +397,7 @@ Rectangle {
                             font.pixelSize: 18
                             model: g.info.families ?? []
                         }
-                        Button {
+                        PosButton {
                             objectName: "setupItemAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -467,7 +467,7 @@ Rectangle {
                             inputMethodHints: Qt.ImhDigitsOnly
                             validator: RegularExpressionValidator { regularExpression: /[0-9]{0,8}/ }
                         }
-                        Button {
+                        PosButton {
                             objectName: "setupStaffAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -504,7 +504,7 @@ Rectangle {
                             }
                         }
                     }
-                    Button {
+                    PosButton {
                         objectName: "setupRetire"
                         visible: (g.info.samples ?? 0) > 0
                         text: qsTr("Turn Off the Sample Staff")
@@ -551,7 +551,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 spacing: 12
-                Button {
+                PosButton {
                     objectName: "setupLater"
                     text: qsTr("Finish Later")
                     font.pixelSize: 18
@@ -559,7 +559,7 @@ Rectangle {
                     onClicked: g.controller.closeSetup()
                 }
                 Item { Layout.fillWidth: true }
-                Button {
+                PosButton {
                     objectName: "setupBack"
                     visible: g.step > 0
                     text: qsTr("‹ Back")
@@ -568,7 +568,7 @@ Rectangle {
                     implicitWidth: g.narrow ? 96 : 160
                     onClicked: g.step = Math.max(0, g.step - 1)
                 }
-                Button {
+                PosButton {
                     objectName: "setupNext"
                     text: g.current === "done" ? qsTr("Finish") : qsTr("Next ›")
                     highlighted: true

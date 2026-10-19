@@ -238,7 +238,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Reopen a Closed Check… (manager)",
+      "label": "Reopen a Closed Check (manager)…",
       "actions": [
         {
           "type": "jump",

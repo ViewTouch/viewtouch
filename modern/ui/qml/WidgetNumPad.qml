@@ -31,7 +31,12 @@ Item {
                 anchors.rightMargin: 16
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
+                // Nothing typed yet: what to type (props.hint: "amount" on the
+                // drawer, "guests" by the guest count), or the check's balance.
+                readonly property string hint: (w.zone.props ?? {}).hint ?? ""
                 text: !w.pos ? "" : w.weight ? w.weightText(w.pos.entry) + (w.weighing.comesTo ? "  ·  " + w.weighing.comesTo : "")
+                    : w.pos.entry === "" && hint === "amount" ? qsTr("Amount")
+                    : w.pos.entry === "" && hint === "guests" ? qsTr("or type the number")
                     : w.amount ? (w.pos.entry !== "" ? w.pos.entryAmount
                                                 : w.pos.hasCheck ? qsTr("Balance due") : w.pos.entryAmount)
                                               : (w.pos.entry === "" ? "0" : w.pos.entry)

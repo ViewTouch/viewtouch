@@ -179,7 +179,7 @@ ApplicationWindow {
         TapHandler { id: tap; onTapped: tile.tapped() }
     }
 
-    component BigButton: Button {
+    component BigButton: PosButton {
         id: big
         property color tint: "#2d3440"
         Layout.preferredHeight: root.u * 3.6

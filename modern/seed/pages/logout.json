@@ -14,9 +14,9 @@
       "id": "title",
       "kind": "label",
       "rect": {
-        "x": 560,
+        "x": 355,
         "y": 40,
-        "w": 800,
+        "w": 1210,
         "h": 90
       },
       "shape": "rect",
@@ -27,9 +27,9 @@
       "id": "panel",
       "kind": "logoutPanel",
       "rect": {
-        "x": 560,
+        "x": 355,
         "y": 150,
-        "w": 800,
+        "w": 1210,
         "h": 400
       },
       "shape": "rect",
@@ -39,10 +39,10 @@
       "id": "clock-out",
       "kind": "button",
       "rect": {
-        "x": 560,
-        "y": 580,
+        "x": 355,
+        "y": 576,
         "w": 390,
-        "h": 140
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -58,10 +58,10 @@
       "id": "tips",
       "kind": "button",
       "rect": {
-        "x": 560,
-        "y": 900,
+        "x": 1175,
+        "y": 576,
         "w": 390,
-        "h": 120
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -82,14 +82,14 @@
       "id": "bank",
       "kind": "button",
       "rect": {
-        "x": 970,
-        "y": 900,
+        "x": 765,
+        "y": 722,
         "w": 390,
-        "h": 120
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "My Bank\u2026",
+      "label": "My Bank…",
       "actions": [
         {
           "type": "jump",
@@ -102,10 +102,10 @@
       "id": "break",
       "kind": "button",
       "rect": {
-        "x": 970,
-        "y": 580,
+        "x": 765,
+        "y": 576,
         "w": 390,
-        "h": 140
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -121,10 +121,10 @@
       "id": "logout",
       "kind": "button",
       "rect": {
-        "x": 560,
-        "y": 740,
+        "x": 1175,
+        "y": 868,
         "w": 390,
-        "h": 140
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -145,10 +145,10 @@
       "id": "cancel",
       "kind": "button",
       "rect": {
-        "x": 970,
-        "y": 740,
+        "x": 765,
+        "y": 868,
         "w": 390,
-        "h": 140
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -164,10 +164,10 @@
       "id": "practice",
       "kind": "button",
       "rect": {
-        "x": 1380,
-        "y": 900,
+        "x": 355,
+        "y": 868,
         "w": 390,
-        "h": 120
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
@@ -188,14 +188,14 @@
       "id": "message",
       "kind": "button",
       "rect": {
-        "x": 150,
-        "y": 900,
+        "x": 1175,
+        "y": 722,
         "w": 390,
-        "h": 120
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Send a Message\u2026",
+      "label": "Send a Message…",
       "actions": [
         {
           "type": "jump",
@@ -213,14 +213,14 @@
       "id": "checklists",
       "kind": "button",
       "rect": {
-        "x": 150,
-        "y": 740,
+        "x": 355,
+        "y": 722,
         "w": 390,
-        "h": 140
+        "h": 130
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Checklists\u2026",
+      "label": "Checklists…",
       "actions": [
         {
           "type": "jump",

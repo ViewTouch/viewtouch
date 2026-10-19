@@ -69,7 +69,7 @@ Item {
                     spacing: 6
                     Repeater {
                         model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             objectName: "vendor-" + modelData.id
                             text: modelData.name
@@ -176,13 +176,13 @@ Item {
                     Layout.fillHeight: false
                     spacing: 10
                     Label { text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
-                    Button {
+                    PosButton {
                         text: qsTr("Clear")
                         implicitHeight: 52
                         font.pixelSize: 16
                         onClicked: w.clear()
                     }
-                    Button {
+                    PosButton {
                         objectName: "receiveDelivery"
                         text: qsTr("Receive Delivery")
                         highlighted: true

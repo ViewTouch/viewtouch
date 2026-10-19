@@ -54,7 +54,7 @@ Item {
                         // A card reader types the number and Enter.
                         onAccepted: w.lookUp()
                     }
-                    Button { text: qsTr("Look Up")
+                    PosButton { text: qsTr("Look Up")
                         font.pixelSize: 17; implicitHeight: 48; onClicked: w.lookUp() }
                 }
 
@@ -64,7 +64,7 @@ Item {
                     columns: 4
                     Repeater {
                         model: [2500, 5000, 7500, 10000]
-                        delegate: Button {
+                        delegate: PosButton {
                             required property int modelData
                             Layout.fillWidth: true
                             implicitHeight: 56
@@ -92,7 +92,7 @@ Item {
 
                 Item { Layout.fillHeight: true }
 
-                Button {
+                PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
                     font.pixelSize: 18
@@ -112,7 +112,7 @@ Item {
                     opacity: 0.6
                     text: qsTr("No number? A new one is made and printed on the receipt. A card works once its check is paid.")
                 }
-                Button {
+                PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
                     font.pixelSize: 18
@@ -122,7 +122,7 @@ Item {
                     onClicked: w.pos.payWithGiftCard(w.card.number, 0)
                 }
                 // State law (California: under $10): a small balance in cash, when the guest asks.
-                Button {
+                PosButton {
                     objectName: "giftCashOut"
                     visible: w.found && (w.card.cashOut ?? false)
                     Layout.fillWidth: true

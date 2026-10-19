@@ -643,8 +643,16 @@ QVariantList PosService::menuItemsNow() const
     if (!user())
         return out;
     const std::string period = currentMealPeriod();
+    // A category's name as the store wrote it ("Breakfast Plates"), not its id.
+    const auto familyName = [&](const std::string &id) {
+        for (const core::MenuCategory &c : s_->settings.menuCategories)
+            if (c.id == id && !c.name.empty())
+                return qs(c.name);
+        return qs(id);
+    };
     for (const MenuItem &m : s_->menu) {
         out.append(QVariantMap{{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}, {u"family"_s, qs(m.family)},
+                               {u"familyName"_s, familyName(m.family)},
                                {u"price"_s, format(m.priceDuring(period))}, {u"modifier"_s, m.isModifier},
                                {u"regularPrice"_s, format(m.price)},
                                {u"available"_s, m.available && ticketsLeft(m) != 0}, {u"image"_s, qs(m.image)},

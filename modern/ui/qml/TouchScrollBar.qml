@@ -33,7 +33,9 @@ ScrollBar {
     readonly property real thickness: onPhone ? Math.round(Math.max(10, 16 / drawnScale))
                                               : Math.round(Math.max(28, 40 / drawnScale, Math.min(44, Screen.pixelDensity * 8)))
     implicitWidth: thickness
-    width: thickness
+    // Its width: the list it is attached to sets it from implicitWidth, and
+    // places it by that at the same time (a width of its own lagged behind:
+    // the bar sat in from the edge, over the rows).
     padding: 3
     minimumSize: 0.12
 

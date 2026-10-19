@@ -902,7 +902,7 @@ Item {
                     }
                 }
                 // Prices set to change later.
-                Button {
+                PosButton {
                     objectName: "builderPriceChanges"
                     readonly property var list: w.pos ? w.pos.priceChanges : []
                     visible: list.length > 0

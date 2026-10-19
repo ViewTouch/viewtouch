@@ -49,20 +49,20 @@ Popup {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
             }
-            Button {
+            PosButton {
                 objectName: "pictureUsb"
                 text: qsTr("USB Stick")
                 implicitHeight: 52
                 font.pixelSize: 16
                 onClicked: { if (picker.pos) picker.pos.openUsbSticks(); picker.refresh() }
             }
-            Button {
+            PosButton {
                 text: qsTr("Browse…")
                 implicitHeight: 52
                 font.pixelSize: 16
                 onClicked: browse.open()
             }
-            Button {
+            PosButton {
                 text: qsTr("Cancel")
                 implicitHeight: 52
                 font.pixelSize: 16
