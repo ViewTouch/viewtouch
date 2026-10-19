@@ -122,10 +122,11 @@ TEST_CASE("Breaks: unpaid by default, ended by clocking out", "[staff][breaks]")
     REQUIRE(p.breaks.size() == 2);
     CHECK(p.breaks.back().end == todayAt(15, 15));
 
-    // 6h15m on the clock, 45 min on breaks: 5.50 h worked.
+    // 6h15m on the clock, 45 min on breaks: the 15-minute one is paid (rest
+    // breaks under 20 minutes are work time), so 5.75 h worked.
     const auto labor = pos.buildReport(u"labor"_s);
     CHECK(row(labor, "Sam")[3] == "0.75");
-    CHECK(row(labor, "Sam")[4] == "5.50");
+    CHECK(row(labor, "Sam")[4] == "5.75");
     pos.shared()->settings.paidBreaks = true;
     CHECK(row(pos.buildReport(u"labor"_s), "Sam")[4] == "6.25");
 

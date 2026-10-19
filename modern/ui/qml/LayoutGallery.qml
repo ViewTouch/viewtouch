@@ -85,7 +85,7 @@ Popup {
                 font.pixelSize: 22
                 font.bold: true
             }
-            Button { text: qsTr("Close"); onClicked: gal.close() }
+            PosButton { text: qsTr("Close"); onClicked: gal.close() }
         }
         Label {
             Layout.fillWidth: true
@@ -152,21 +152,21 @@ Popup {
             Layout.fillWidth: true
             Layout.fillHeight: false
             spacing: 8
-            Button {
+            PosButton {
                 objectName: "useFileHere"
                 text: qsTr("Use a Page File for This Page…")
                 onClicked: files.run("importPageHere")
             }
-            Button { text: qsTr("Add a Page from a File…"); onClicked: files.run("importPage") }
-            Button { text: qsTr("Export This Page…"); onClicked: files.run("exportPage") }
+            PosButton { text: qsTr("Add a Page from a File…"); onClicked: files.run("importPage") }
+            PosButton { text: qsTr("Export This Page…"); onClicked: files.run("exportPage") }
         }
         Label { text: qsTr("The whole restaurant (every page)"); font.bold: true; font.pixelSize: 15 }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: false
             spacing: 8
-            Button { text: qsTr("Export Every Page…"); onClicked: files.run("exportLayout") }
-            Button {
+            PosButton { text: qsTr("Export Every Page…"); onClicked: files.run("exportLayout") }
+            PosButton {
                 objectName: "replaceAll"
                 text: qsTr("Replace Every Page from a File…")
                 onClicked: confirm.open()

@@ -84,9 +84,13 @@ QVariantList PosService::adminRecords(const QString &panel)
         }
     } else if (panel == u"taxes") {
         const TaxRates &t = s_->settings.tax;
-        add({{u"food"_s, percentFromPpm(t.foodPpm)}, {u"alcohol"_s, percentFromPpm(t.alcoholPpm)},
+        add({{u"state"_s, qs(s_->settings.laborState)}, {u"zip"_s, qs(s_->settings.storeZip)},
+             {u"taxWhere"_s, qs(s_->settings.taxWhere)}, {u"suggested"_s, taxAreaText(taxHere())},
+             {u"useSuggested"_s, false},
+             {u"food"_s, percentFromPpm(t.foodPpm)}, {u"alcohol"_s, percentFromPpm(t.alcoholPpm)},
              {u"merchandise"_s, percentFromPpm(t.merchandisePpm)}, {u"room"_s, percentFromPpm(t.roomPpm)},
-             {u"taxTakeoutFood"_s, t.taxTakeoutFood}, {u"cashRounding"_s, QString::number(t.cashRoundingCents)}},
+             {u"taxTakeoutFood"_s, t.taxTakeoutFood}, {u"cashRounding"_s, QString::number(t.cashRoundingCents)},
+             {u"taxGratuity"_s, t.taxGratuity}},
             tr("Tax rates"), QString());
     } else if (panel == u"store") {
         // The tip pool, one job a line ("busser 50"), in the jobs' usual order.
@@ -202,8 +206,8 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
              {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},
              {u"paidBreaks"_s, s_->settings.paidBreaks}, {u"overtimeDailyHours"_s, s_->settings.overtimeDailyHours},
-             {u"laborState"_s, qs(s_->settings.laborState)}, {u"doubleTimeDailyHours"_s, s_->settings.doubleTimeDailyHours},
-             {u"seventhDayRule"_s, s_->settings.seventhDayRule}, {u"mealBreakAfterHours"_s, s_->settings.mealBreakAfterHours},
+             {u"laborState"_s, qs(s_->settings.laborState)}, {u"tipAllocation"_s, double(s_->settings.tipAllocationBp) / 100}, {u"doubleTimeDailyHours"_s, s_->settings.doubleTimeDailyHours},
+             {u"seventhDayRule"_s, s_->settings.seventhDayRule}, {u"mealBreakAfterHours"_s, s_->settings.mealBreakAfterHours}, {u"restBreakEveryHours"_s, s_->settings.restBreakEveryHours}, {u"scheduleNoticeDays"_s, s_->settings.scheduleNoticeDays}, {u"restBetweenShiftsHours"_s, s_->settings.restBetweenShiftsHours},
              {u"giftCardCashBelow"_s, double(s_->settings.giftCardCashBelowCents) / 100.0},
              {u"checksPerServerHour"_s, s_->settings.checksPerServerHour},
              {u"overtimeWeeklyHours"_s, s_->settings.overtimeWeeklyHours},
@@ -493,6 +497,12 @@ QVariantList PosService::accountKeys() const
     add(u"staffMeals"_s, tr("Staff meals"));
     add(u"rounding"_s, tr("Cash rounding"));
     add(u"giftCardsSold"_s, tr("Gift cards sold"));
+    add(u"refunds"_s, tr("Refunds"));
+    add(u"paidIn"_s, tr("Paid in"));
+    add(u"paidOut"_s, tr("Paid out"));
+    for (const std::string &c : s_->settings.expenseCategories)
+        add(u"paidout:"_s + qs(c).toLower(), tr("Paid out: %1").arg(qs(c)));
+    add(u"overShort"_s, tr("Drawers over or short"));
     for (const Tender &t : s_->settings.tenders)
         add(u"tender:"_s + qs(t.id), tr("Paid by %1").arg(qs(t.name)));
     for (const auto &[key, account] : s_->settings.accounts)   // any other already set

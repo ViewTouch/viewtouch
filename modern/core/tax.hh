@@ -21,6 +21,10 @@ struct TaxRates {
     std::int64_t roomPpm = 0;
     // Legacy tax_takeout_food: when false, takeout food is not taxed.
     bool taxTakeoutFood = true;
+    // The automatic gratuity (a charge the guest can't decline) taxed at the
+    // food rate: where the state says it's taxable (California, Florida, and
+    // most states under conditions).
+    bool taxGratuity = false;
     // Where pennies are gone: a check paid in cash is rounded to the
     // nearest 5 (or 10) cents. 0: no rounding. Cards are never rounded.
     int cashRoundingCents = 0;

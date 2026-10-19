@@ -131,13 +131,27 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
 // What was changed on the manager screens, the Menu Builder and the pages, newest first.
 Report changesReport(const std::vector<Change> &changes, const ReportContext &ctx);
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
-                        const ReportContext &ctx);
+                        const ReportContext &ctx, const std::vector<Refund> &refunds = {});
 // The original's Deposit / Book Balance: the cash to take to the bank (each
 // drawer counted, less the starting cash kept for tomorrow), card payments
 // to settle, and whether what was collected matches what was sold.
+// A house account paid (from the customers' accounts), for the day's books.
+struct AccountPayment {
+    std::string customer;
+    Money amount;
+    std::string method;   // "cash" (in a drawer as a paid in) or "card"
+    std::int64_t at = 0;
+};
+// The day's money outside its checks: the Accounting journal's other entries.
+struct DayMoney {
+    const std::vector<DrawerSession> *drawers = nullptr;
+    std::vector<Refund> refunds;
+    std::vector<AccountPayment> accountPayments;
+};
+
 Report depositReport(const std::vector<DrawerSession> &drawers, const std::vector<Check> &closed,
                      const std::vector<const Check *> &open, const ReportContext &ctx,
-                     const std::vector<Refund> &refunds = {});
+                     const std::vector<Refund> &refunds = {}, const std::vector<AccountPayment> &accountPayments = {});
 // Gift cards sold and spent since `since`, what is still on cards (owed by
 // the store), and house account charges, payments and balances.
 Report accountsReport(const std::vector<GiftCard> &cards, const std::vector<CustomerRecord> &customers,
@@ -156,8 +170,18 @@ Report customersReport(const std::vector<Check> &closed, const ReportContext &ct
 Report royaltyReport(const std::vector<Check> &closed, const ReportContext &ctx);
 // The sales as a balanced journal by account (Chart of Accounts): its CSV
 // goes to QuickBooks or an accountant. `familyOf`: menu item id -> family.
+// IRS Form 8027 (large food or beverage establishments: tipping customary,
+// more than 10 employees on a typical day), for a calendar year: charged
+// tips, reported tips, gross receipts from food and drink served on site, 8%
+// (or `allocationBp`) of them, and tips to allocate to directly tipped
+// employees (gross receipts method) when reported tips fall short.
+Report irs8027Report(const std::vector<Check> &closed, const std::vector<TimePunch> &punches,
+                     const std::vector<Employee> &employees, const ReportContext &ctx, std::int64_t allocationBp = 800);
+
+// With `day`, the money outside the checks too (refunds, paid outs and ins,
+// tips paid from drawers, house account payments, drawers over or short).
 Report accountingReport(const std::vector<Check> &closed, const std::map<std::string, std::string> &familyOf,
-                        const ReportContext &ctx);
+                        const ReportContext &ctx, const DayMoney *day = nullptr);
 // `now` with two more columns: the same row's last value in `before`, and
 // the change in percent (rows matched by kind and first cell).
 Report compareReports(const Report &now, const Report &before, const std::string &beforeLabel);

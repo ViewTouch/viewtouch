@@ -91,19 +91,26 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     r.subtitle = ctx.period;
     r.columns = {"", "Amount"};
 
-    Money items, discounts, net, tax, total, change, rounding, gratuity, tips, staffMeals;
+    Money items, giftCards, discounts, net, tax, total, change, rounding, gratuity, tips, staffMeals, taxedGratuity;
     std::int64_t staffMealChecks = 0;
-    std::map<TaxClass, Money> taxByClass;
+    std::map<TaxClass, Money> taxByClass, taxableByClass;
     std::map<std::string, Money> byTender;           // tender name -> amount
+    std::map<std::string, TenderKind> kindOf;
     std::vector<std::string> tenderOrder;
     int guests = 0, voidCount = 0;
-    Money voidValue;
+    Money voidValue, exemptSales;
+    std::int64_t exemptChecks = 0;
 
     for (const Check &c : closed) {
         const Totals t = c.totals(rates);
-        items += t.items;
+        if (!c.taxExempt.empty()) {
+            exemptSales += t.netSales();
+            ++exemptChecks;
+        }
+        items += t.items - t.giftCardsSold;
+        giftCards += t.giftCardsSold;
         discounts += t.discounts;
-        net += t.subtotal;
+        net += t.netSales();
         tax += t.tax;
         total += t.total;
         change += t.change;
@@ -112,16 +119,20 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
         if (t.staffMeals.cents() > 0)
             ++staffMealChecks;
         gratuity += t.gratuity;
+        taxedGratuity += t.taxableGratuity;
         tips += t.tips;
         guests += c.guests;
         for (const auto &[cls, amount] : t.taxByClass)
             taxByClass[cls] += amount;
+        for (const auto &[cls, amount] : t.taxableByClass)
+            taxableByClass[cls] += amount;
         for (const Payment &p : c.payments) {
             if (p.kind == TenderKind::Discount)
                 continue;
             if (!byTender.contains(p.tenderName))
                 tenderOrder.push_back(p.tenderName);
             byTender[p.tenderName] += p.amount;
+            kindOf[p.tenderName] = p.kind;
         }
         for (const OrderLine &l : c.lines) {
             if (l.voided) {
@@ -133,6 +144,8 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
         }
     }
 
+    // Sales: what was sold, without the gift cards (money held for guests
+    // until they spend it, when it's a sale).
     r.section("Sales");
     r.line({"Checks", count(std::int64_t(closed.size()))});
     r.line({"Guests", count(guests)});
@@ -141,15 +154,44 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     if (staffMeals.cents() > 0)
         r.line({"  of which staff meals (" + count(staffMealChecks) + ")", ctx.money(-staffMeals)});
     r.total({"Net sales", ctx.money(net)});
+
+    // For the sales tax return: what each tax is on, and what had none.
+    r.section("Sales tax");
+    Money taxable;
+    for (const auto &[cls, amount] : taxableByClass) {
+        r.line({"Taxable " + toString(cls) + " sales", ctx.money(amount)});   // "Taxable food sales"
+        taxable += amount;
+    }
+    r.line({"Non-taxable sales", ctx.money(net - taxable)});
+    if (exemptChecks > 0)
+        r.line({"  of which tax-exempt, with certificates (" + count(exemptChecks) + ")", ctx.money(exemptSales)});
+    if (taxedGratuity.cents() != 0)
+        r.line({"Taxable gratuity (service charges)", ctx.money(taxedGratuity)});
     for (const auto &[cls, amount] : taxByClass)
         r.line({capitalized(toString(cls)) + " tax", ctx.money(amount)});
+    r.total({"Sales tax", ctx.money(tax)});
+
+    r.section("Total");
+    r.line({"Net sales", ctx.money(net)});
+    r.line({"Sales tax", ctx.money(tax)});
     if (gratuity.cents() != 0)
         r.line({"Gratuity", ctx.money(gratuity)});
+    if (giftCards.cents() != 0)
+        r.line({"Gift cards sold (owed to guests, not sales)", ctx.money(giftCards)});
     r.total({"Total with tax", ctx.money(total)});
 
+    // Payments: new money (cash and cards), and payments with money taken
+    // before (gift cards) or still to come (house accounts).
     r.section("Payments");
-    for (const std::string &name : tenderOrder)
+    Money cashAndCards, giftCardsUsed, houseCharged;
+    for (const std::string &name : tenderOrder) {
         r.line({name, ctx.money(byTender[name])});
+        switch (kindOf[name]) {
+        case TenderKind::GiftCard: giftCardsUsed += byTender[name]; break;
+        case TenderKind::HouseAccount: houseCharged += byTender[name]; break;
+        default: cashAndCards += byTender[name]; break;
+        }
+    }
     if (change.cents() > 0)
         r.line({"Change given", ctx.money(-change)});
     if (rounding.cents() != 0)
@@ -158,8 +200,18 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     for (const auto &[name, amount] : byTender)
         collected += amount;
     r.total({"Collected", ctx.money(collected)});
+    if (giftCardsUsed.cents() != 0 || houseCharged.cents() != 0) {
+        r.line({"  cash and cards", ctx.money(cashAndCards - change)});
+        if (giftCardsUsed.cents() != 0)
+            r.line({"  gift cards (paid for before)", ctx.money(giftCardsUsed)});
+        if (houseCharged.cents() != 0)
+            r.line({"  house accounts (to collect)", ctx.money(houseCharged)});
+    }
     if (tips.cents() != 0)
         r.line({"Card tips (owed to staff)", ctx.money(tips)});
+    if (collected != total + rounding)
+        r.note("Collected and the total differ by " + ctx.money(collected - total - rounding)
+               + ": a check may have been closed with a balance.");
 
     // Money given back: on the day it went back (or, over a range, on these checks).
     std::vector<Refund> onChecks;
@@ -205,10 +257,18 @@ Report itemSales(const std::vector<Check> &closed, const std::vector<MenuItem> &
 
     struct Tally { std::int64_t qty = 0; Money sales; };
     std::map<std::string, std::map<std::string, Tally>> families;   // family -> item name -> tally
+    Tally giftCards;   // sold and reloaded: not sales
+    Money discounts;
     for (const Check &c : closed) {
+        discounts += c.totals(ctx.settings.tax).discounts;
         for (const OrderLine &l : c.lines) {
             if (l.voided || l.isComment())
                 continue;
+            if (l.isGiftCard()) {
+                giftCards.qty += l.counted();
+                giftCards.sales += l.total();
+                continue;
+            }
             const auto it = familyOf.find(l.itemId);
             Tally &t = families[it == familyOf.end() ? "other" : it->second][l.name];
             t.qty += l.counted();
@@ -231,10 +291,18 @@ Report itemSales(const std::vector<Check> &closed, const std::vector<MenuItem> &
         grand += sum;
         grandQty += qty;
     }
-    if (families.empty())
+    if (families.empty()) {
         r.note("No sales yet.");
-    else
+    } else {
         r.total({"All items", count(grandQty), ctx.money(grand)});
+        // Down to the Sales Summary's net sales: prices above are before discounts.
+        r.line({"Discounts & comps", "", ctx.money(-discounts)});
+        r.total({"Net sales", "", ctx.money(grand - discounts)});
+    }
+    if (giftCards.qty > 0) {
+        r.section("Not sales");
+        r.line({"Gift cards sold and reloaded", count(giftCards.qty), ctx.money(giftCards.sales)});
+    }
 
     // Menu items chosen with another (a combo's side and drink): how many
     // went out, and what they added (already in the items above).
@@ -289,7 +357,7 @@ Report hourlySales(const std::vector<Check> &closed, const ReportContext &ctx)
     for (const Check &c : closed) {
         const int h = ctx.hourOf ? ctx.hourOf(c.closedAt) : int((c.closedAt / 3'600'000) % 24);
         Tally &t = hours[h];
-        const Money net = c.totals(ctx.settings.tax).subtotal;
+        const Money net = c.totals(ctx.settings.tax).netSales();
         t.checks += 1;
         t.guests += c.guests;
         t.net += net;
@@ -318,12 +386,17 @@ Report categorySales(const std::vector<Check> &closed, const std::vector<MenuIte
         familyOf[m.id] = m.family.empty() ? "other" : m.family;
     struct Tally { std::int64_t qty = 0; Money sales; };
     std::map<std::string, Tally> families;
-    Money total;
+    Money total, discounts, giftCards;
     std::int64_t qty = 0;
     for (const Check &c : closed) {
+        discounts += c.totals(ctx.settings.tax).discounts;
         for (const OrderLine &l : c.lines) {
             if (l.voided || l.isComment())
                 continue;
+            if (l.isGiftCard()) {   // not sales
+                giftCards += l.total();
+                continue;
+            }
             const auto it = familyOf.find(l.itemId);
             Tally &t = families[it == familyOf.end() ? "other" : it->second];
             t.qty += l.counted();
@@ -336,10 +409,15 @@ Report categorySales(const std::vector<Check> &closed, const std::vector<MenuIte
     std::ranges::sort(sorted, [](const auto &a, const auto &b) { return a.second.sales > b.second.sales; });
     for (const auto &[family, t] : sorted)
         r.line({capitalized(family), count(t.qty), ctx.money(t.sales), percent(t.sales, total)});
-    if (sorted.empty())
+    if (sorted.empty()) {
         r.note("No sales yet.");
-    else
+    } else {
         r.total({"All categories", count(qty), ctx.money(total), "100.0%"});
+        r.line({"Discounts & comps", "", ctx.money(-discounts), ""});
+        r.total({"Net sales", "", ctx.money(total - discounts), ""});
+    }
+    if (giftCards.cents() != 0)
+        r.note("Not sales, on the Sales Summary: gift cards sold (" + ctx.money(giftCards) + ")");
     return r;
 }
 
@@ -349,14 +427,16 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
     r.id = "audit";
     r.title = "Audit Trail";
     r.subtitle = ctx.period;
-    r.columns = {"What", "Check", "Who", "Time"};
+    r.columns = {"What", "Check", "Who", "Time", "Amount"};
     struct Row { std::int64_t at; const Check *check; const CheckEvent *event; };
     std::vector<Row> rows;
     std::map<std::string, std::int64_t> counts;
+    std::map<std::string, Money> amounts;
     for (const Check *c : checks) {
         for (const CheckEvent &e : c->events) {
             rows.push_back({e.at, c, &e});
             counts[e.kind.empty() ? "other" : e.kind] += 1;
+            amounts[e.kind.empty() ? "other" : e.kind] += e.amount;
         }
     }
     std::ranges::sort(rows, {}, &Row::at);
@@ -365,17 +445,23 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
         return r;
     }
     r.section("Summary");
+    // How many of each, and what they were worth (a void's item, a discount,
+    // a payment taken back).
     const std::pair<const char *, const char *> kinds[] = {
-        {"void", "Voids"}, {"discount", "Discounts"}, {"reopen", "Reopened checks"},
+        {"void", "Voids"}, {"discount", "Discounts"}, {"undiscount", "Discounts taken off"}, {"exempt", "Tax exempt"},
+        {"unpay", "Payments taken back"}, {"reopen", "Reopened checks"},
         {"transfer", "Transfers"}, {"move", "Table moves"}, {"merge", "Merges"}};
     for (const auto &[kind, label] : kinds) {
-        if (const auto it = counts.find(kind); it != counts.end())
-            r.line({label, "", "", count(it->second)});
+        if (const auto it = counts.find(kind); it != counts.end()) {
+            const Money m = amounts[kind];
+            r.line({label, "", "", count(it->second), m.cents() ? ctx.money(m) : ""});
+        }
     }
     r.section("Everything, in order");
     for (const Row &row : rows)
-        r.line({row.event->what, row.check->label + " #" + std::to_string(row.check->id), row.event->who,
-                ctx.clock(row.at)});
+        r.line({row.event->what + (row.event->reason.empty() ? std::string() : " (" + row.event->reason + ")"),
+                row.check->label + " #" + std::to_string(row.check->id), row.event->who, ctx.clock(row.at),
+                row.event->amount.cents() ? ctx.money(row.event->amount) : ""});
     return r;
 }
 
@@ -393,7 +479,7 @@ Report serverSales(const std::vector<Check> &closed, const ReportContext &ctx)
         Tally &t = servers[c.serverName.empty() ? "(unknown)" : c.serverName];
         ++t.checks;
         t.guests += c.guests;
-        t.net += c.totals(ctx.settings.tax).subtotal;
+        t.net += c.totals(ctx.settings.tax).netSales();
     }
     Tally all;
     for (const auto &[name, t] : servers) {
@@ -424,7 +510,7 @@ Report driverReport(const std::vector<Check> &closed, const ReportContext &ctx)
         Tally &t = drivers[c.driverName.empty() ? "(not sent out)" : c.driverName];
         ++t.runs;
         const Totals totals = c.totals(ctx.settings.tax);
-        t.sales += totals.subtotal;
+        t.sales += totals.netSales();
         t.tips += totals.tips;
         for (const OrderLine &l : c.lines)
             if (l.isFee() && !l.voided)
@@ -671,16 +757,22 @@ Report expensesReport(const std::vector<DrawerSession> &drawers, const ReportCon
     struct Row { const CashMovement *m; const DrawerSession *d; };
     std::vector<Row> rows;
     std::map<std::string, Money> byCategory;
-    Money total;
+    Money total, notExpenses;
     for (const DrawerSession &d : drawers) {
         for (const CashMovement &m : d.movements) {
             if (m.kind != CashMovement::Kind::Payout)
                 continue;
+            if (!m.purpose.empty()) {   // cash given back on a check, a gift card cashed out: not a cost
+                notExpenses += m.amount;
+                continue;
+            }
             rows.push_back({&m, &d});
             byCategory[m.category.empty() ? "Not sorted" : m.category] += m.amount;
             total += m.amount;
         }
     }
+    if (notExpenses.cents() != 0)
+        r.note("Not expenses, on the Deposit report: cash refunds and gift cards cashed out (" + ctx.money(notExpenses) + ")");
     if (rows.empty()) {
         r.note("No cash was paid out.");
         return r;
@@ -701,7 +793,7 @@ Report expensesReport(const std::vector<DrawerSession> &drawers, const ReportCon
 }
 
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
-                        const ReportContext &ctx)
+                        const ReportContext &ctx, const std::vector<Refund> &refunds)
 {
     Report r;
     r.id = "exceptions";
@@ -716,6 +808,7 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
         {"Discounts and comps", {"discount"}, true},
         {"Payments and discounts taken back", {"unpay", "undiscount"}, true},
         {"Reopened checks", {"reopen"}, true},
+        {"Tax-exempt sales (tax not charged)", {"exempt"}, true},
         {"Moved, transferred or merged", {"move", "transfer", "merge"}, false},
     };
     struct Big { Money amount; std::string what; const Check *check; std::string who; };
@@ -849,8 +942,39 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
         r.total({"All", count(all), ""});
     }
 
+    // Money given back after a check closed, by who approved it.
+    if (!refunds.empty()) {
+        any = true;
+        r.section("Refunds");
+        std::map<std::string, Tally> byWho;
+        for (const Refund &x : refunds) {
+            Tally &t = byWho[x.by.empty() ? std::string("(nobody logged in)") : x.by];
+            ++t.times;
+            t.amount += x.amount;
+        }
+        Tally all;
+        for (const auto &[who, t] : byWho) {
+            r.line({who, count(t.times), ctx.money(t.amount)});
+            all.times += t.times;
+            all.amount += t.amount;
+        }
+        r.total({"All", count(all.times), ctx.money(all.amount)});
+    }
+
+    // Drawers counted short or over, and who counted them.
+    bool offDrawers = false;
+    for (const DrawerSession &d : drawers) {
+        if (d.open() || d.overShort().cents() == 0)
+            continue;
+        if (!offDrawers)
+            r.section("Drawers short or over");
+        offDrawers = any = true;
+        r.line({d.name + " (" + d.closedBy + ")", "", ctx.money(d.overShort())});
+    }
+
     if (!any) {
-        r.note("No voids, discounts, payments taken back, reopened or moved checks, or drawers opened with no sale.");
+        r.note("No voids, discounts, payments taken back, reopened or moved checks, refunds, drawers short or over, "
+               "or drawers opened with no sale.");
         return r;
     }
     if (!biggest.empty()) {
@@ -888,7 +1012,8 @@ Report changesReport(const std::vector<Change> &changes, const ReportContext &ct
 }
 
 Report depositReport(const std::vector<DrawerSession> &drawers, const std::vector<Check> &closed,
-                     const std::vector<const Check *> &open, const ReportContext &ctx, const std::vector<Refund> &refunds)
+                     const std::vector<const Check *> &open, const ReportContext &ctx, const std::vector<Refund> &refunds,
+                     const std::vector<AccountPayment> &accountPayments)
 {
     const TaxRates &rates = ctx.settings.tax;
     Report r;
@@ -902,11 +1027,7 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
     Money deposit, overShort;
     bool uncounted = false;
     for (const DrawerSession &d : drawers) {
-        Money cash;
-        for (const Check &c : closed)
-            if (c.drawerSession == d.id)
-                cash += cashIntoDrawer(c, rates);
-        const Money inDrawer = d.open() ? d.startingCash + cash + d.movementsTotal() : d.counted;
+        const Money inDrawer = d.open() ? expectedCash(d, closed, rates) : d.counted;
         if (d.open())
             uncounted = true;
         else
@@ -949,7 +1070,12 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
             cardRefunds += x.amount;
     if (cardRefunds.cents() != 0)
         r.line({"Card refunds", ctx.money(-cardRefunds)});
-    r.total({"Card batch", ctx.money(cards + cardTips - cardRefunds)});
+    Money accountCards, accountCash;
+    for (const AccountPayment &a : accountPayments)
+        (a.method == "card" ? accountCards : accountCash) += a.amount;
+    if (accountCards.cents() != 0)
+        r.line({"House account payments by card", ctx.money(accountCards)});
+    r.total({"Card batch", ctx.money(cards + cardTips - cardRefunds + accountCards)});
 
     r.section("Book balance");
     r.line({"Sold (with tax)", ctx.money(due)});
@@ -972,6 +1098,41 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
         for (const Check *c : open)
             owed += c->totals(rates).balance;
         r.line({"Still open: " + count(std::int64_t(open.size())) + " checks", ctx.money(owed)});
+    }
+
+    // What the deposit and the batch hold besides today's sales, so they
+    // add up with the books.
+    Money paidIn, paidOut, giftCashBack, tipsPaid;
+    for (const DrawerSession &d : drawers)
+        for (const CashMovement &m : d.movements) {
+            if (m.kind == CashMovement::Kind::PaidIn && m.purpose != "houseAccount")
+                paidIn += m.amount;
+            else if (m.kind == CashMovement::Kind::Payout && m.purpose != "refund")   // refunds: below
+                (m.purpose == "giftCard" ? giftCashBack : paidOut) += m.amount;
+            else if (m.kind == CashMovement::Kind::TipPayout)
+                tipsPaid += m.amount;
+        }
+    Money cashRefunds;
+    for (const Refund &x : refunds)
+        if (x.method == "cash")
+            cashRefunds += x.amount;
+    if (accountCash.cents() || accountCards.cents() || paidIn.cents() || paidOut.cents() || giftCashBack.cents()
+        || tipsPaid.cents() || cashRefunds.cents()) {
+        r.section("Other money in and out (not sales)");
+        if (accountCash.cents() != 0)
+            r.line({"House account payments in cash", ctx.money(accountCash)});
+        if (accountCards.cents() != 0)
+            r.line({"House account payments by card", ctx.money(accountCards)});
+        if (paidIn.cents() != 0)
+            r.line({"Paid in", ctx.money(paidIn)});
+        if (paidOut.cents() != 0)
+            r.line({"Paid out (expenses)", ctx.money(-paidOut)});
+        if (giftCashBack.cents() != 0)
+            r.line({"Gift cards cashed out", ctx.money(-giftCashBack)});
+        if (tipsPaid.cents() != 0)
+            r.line({"Tips paid out in cash", ctx.money(-tipsPaid)});
+        if (cashRefunds.cents() != 0)
+            r.line({"Cash refunds", ctx.money(-cashRefunds)});
     }
     return r;
 }
@@ -1104,7 +1265,7 @@ std::map<std::string, TipShare> tipShares(const std::vector<Check> &closed, cons
         s.tips += t.tips + c.cashTip;   // card tips, and cash ones handed to whoever took the payment
         s.gratuity += t.gratuity;
         s.earned += t.tips + t.gratuity + c.cashTip;
-        sales[c.serverId] += t.subtotal;
+        sales[c.serverId] += t.netSales();   // gift cards sold aren't sales
     }
     std::map<std::string, const Employee *> byId;
     for (const Employee &e : employees) {
@@ -1461,7 +1622,7 @@ Report tableTurns(const std::vector<Check> &closed, const ReportContext &ctx)
         if (c.type != CheckType::DineIn || c.closedAt <= c.openedAt)
             continue;
         const std::int64_t minutes = (c.closedAt - c.openedAt) / 60'000;
-        const Money total = c.totals(ctx.settings.tax).total;
+        const Money total = c.totals(ctx.settings.tax).netSales();   // as the Sales Summary's averages
         const int band = c.guests <= 2 ? 1 : c.guests <= 4 ? 3 : c.guests <= 6 ? 5 : 7;
         for (Tally *t : {&bySize[band], &byTable[c.label], &all}) {
             ++t->checks;
@@ -1566,13 +1727,10 @@ Report royaltyReport(const std::vector<Check> &closed, const ReportContext &ctx)
         if (c.training)
             continue;
         const Totals t = c.totals(ctx.settings.tax);
-        gross += t.items;
+        gross += t.items - t.giftCardsSold;   // gift cards sold aren't sales yet
         discounts += t.discounts;
-        net += t.subtotal;
+        net += t.netSales();
         ++checks;
-        for (const OrderLine &l : c.lines)   // gift cards sold aren't sales yet
-            if (l.isGiftCard() && !l.voided)
-                net -= l.total();
     }
     const auto pct = [](std::int64_t bp) {
         return std::to_string(bp / 100) + (bp % 100 ? "." + std::to_string(100 + bp % 100).substr(1) : "") + "%";
@@ -1593,7 +1751,7 @@ Report royaltyReport(const std::vector<Check> &closed, const ReportContext &ctx)
 }
 
 Report accountingReport(const std::vector<Check> &closed, const std::map<std::string, std::string> &familyOf,
-                        const ReportContext &ctx)
+                        const ReportContext &ctx, const DayMoney *day)
 {
     Report r;
     r.id = "accounting";
@@ -1602,6 +1760,12 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
     r.columns = {"Account", "Debit", "Credit"};
     std::map<std::string, Money> debit, credit;   // by key
     std::map<std::string, std::string> tenderNames;
+    std::string cashTender = "tender:cash";   // the store's cash tender
+    for (const Tender &t : ctx.settings.tenders)
+        if (t.kind == TenderKind::Cash) {
+            cashTender = "tender:" + t.id;
+            break;
+        }
     for (const Check &c : closed) {
         if (c.training)
             continue;
@@ -1619,7 +1783,7 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
         for (const auto &[cls, amount] : t.taxByClass)
             credit["tax:" + toString(cls)] += amount;
         credit["gratuity"] += t.gratuity;
-        credit["tips"] += t.tips;
+        credit["tips"] += t.tips + c.cashTip;   // a cash tip handed over for the server is in the drawer too
         credit["rounding"] += t.rounding;
         debit["discounts"] += t.discounts - t.staffMeals;
         debit["staffMeals"] += t.staffMeals;
@@ -1629,8 +1793,8 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
             const std::string key = "tender:" + p.tenderId;
             switch (p.kind) {
             case TenderKind::Cash:
-                if (!cashBooked)   // cash kept: tendered less change, once a check
-                    debit[key] += t.cashNet();
+                if (!cashBooked)   // cash kept: tendered less change (and a cash tip), once a check
+                    debit[key] += t.cashNet() + c.cashTip;
                 cashBooked = true;
                 break;
             case TenderKind::Card: debit[key] += p.amount + p.tip; break;
@@ -1639,15 +1803,92 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
             case TenderKind::Discount: break;
             }
         }
+        if (!cashBooked && c.cashTip.cents() != 0)   // paid by card, the tip handed over in cash
+            debit[cashTender] += c.cashTip;
     }
+    // The day's money outside the checks.
+    if (day) {
+        // Each kind of tender's account (the first such tender), for money
+        // that came or went without a payment on a check.
+        const auto tenderKey = [&](TenderKind kind, const std::string &fallback) {
+            for (const Tender &t : ctx.settings.tenders)
+                if (t.kind == kind) {
+                    tenderNames.try_emplace(t.id, t.name);
+                    return "tender:" + t.id;
+                }
+            return "tender:" + fallback;
+        };
+        const std::string cash = tenderKey(TenderKind::Cash, "cash"), card = tenderKey(TenderKind::Card, "card"),
+                          house = tenderKey(TenderKind::HouseAccount, "house");
+        // Refunds: sales given back, out of the drawer or back on the card.
+        for (const Refund &x : day->refunds) {
+            debit["refunds"] += x.amount;
+            std::string key = x.method == "cash" ? cash : card;
+            if (x.method != "cash")
+                for (const Tender &t : ctx.settings.tenders)
+                    if (t.name == x.tenderName && t.kind == TenderKind::Card)
+                        key = "tender:" + t.id;
+            credit[key] += x.amount;
+        }
+        // House accounts paid: what they owed comes in.
+        for (const AccountPayment &a : day->accountPayments) {
+            debit[a.method == "cash" ? cash : card] += a.amount;
+            credit[house] += a.amount;
+        }
+        if (day->drawers)
+            for (const DrawerSession &d : *day->drawers) {
+                for (const CashMovement &m : d.movements) {
+                    switch (m.kind) {
+                    case CashMovement::Kind::PaidIn:
+                        if (m.purpose == "houseAccount")
+                            break;   // with the account payments above
+                        debit[cash] += m.amount;
+                        credit["paidIn"] += m.amount;
+                        break;
+                    case CashMovement::Kind::Payout:
+                        if (m.purpose == "refund")
+                            break;   // with the refunds above
+                        debit[m.purpose == "giftCard" ? std::string("giftCardsSold")   // owed to the guest, paid
+                                  : m.category.empty() ? std::string("paidOut")
+                                                       : "paidOut:" + m.category] += m.amount;
+                        credit[cash] += m.amount;
+                        break;
+                    case CashMovement::Kind::TipPayout:   // tips owed to staff, paid in cash
+                        debit["tips"] += m.amount;
+                        credit[cash] += m.amount;
+                        break;
+                    case CashMovement::Kind::NoSale:
+                        break;
+                    }
+                }
+                if (!d.open() && d.overShort().cents() != 0) {   // counted more (or less) than expected
+                    const Money diff = d.overShort();
+                    if (diff.cents() > 0) {
+                        debit[cash] += diff;
+                        credit["overShort"] += diff;
+                    } else {
+                        debit["overShort"] -= diff;
+                        credit[cash] -= diff;
+                    }
+                }
+            }
+    }
+
     // The store's account for a key, else the general one ("sales" for
     // "sales:burgers"), else the key itself.
+    // (Keys match whatever their capitals: Store Settings saves them in lower case.)
+    const auto lower = [](std::string s) {
+        std::ranges::transform(s, s.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+        return s;
+    };
+    std::map<std::string, std::string> chart;
+    for (const auto &[k, v] : ctx.settings.accounts)
+        chart[lower(k)] = v;
     const auto account = [&](const std::string &key) {
-        const auto &chart = ctx.settings.accounts;
-        if (const auto it = chart.find(key); it != chart.end())
+        if (const auto it = chart.find(lower(key)); it != chart.end())
             return it->second;
         if (const auto colon = key.find(':'); colon != std::string::npos)
-            if (const auto it = chart.find(key.substr(0, colon)); it != chart.end())
+            if (const auto it = chart.find(lower(key.substr(0, colon))); it != chart.end())
                 return it->second + " (" + key.substr(colon + 1) + ")";
         if (key.starts_with("tender:") && tenderNames.contains(key.substr(7)))
             return tenderNames.at(key.substr(7));
@@ -1680,6 +1921,151 @@ Report accountingReport(const std::vector<Check> &closed, const std::map<std::st
     r.total({"Total", ctx.money(debits), ctx.money(credits)});
     if (debits != credits)
         r.note("Off by " + ctx.money(debits - credits) + ": a check may have been closed with a balance.");
+    if (!day)
+        r.note("Over several days: sales and payments only. Each day's own report has its refunds, paid outs and ins, "
+               "tips paid from drawers, house account payments and drawers over or short.");
+    return r;
+}
+
+// --- IRS Form 8027 ------------------------------------------------------------------------
+
+Report irs8027Report(const std::vector<Check> &closed, const std::vector<TimePunch> &punches,
+                     const std::vector<Employee> &employees, const ReportContext &ctx, std::int64_t allocationBp)
+{
+    Report r;
+    r.id = "irs8027";
+    r.title = "Tip Report (IRS Form 8027)";
+    r.subtitle = ctx.period;
+    r.columns = {"", "Amount"};
+    const TaxRates &rates = ctx.settings.tax;
+
+    // Who's directly tipped: servers and bartenders, and anyone with tips on
+    // checks of their own. Everyone else who reports tips: indirectly.
+    std::map<std::string, std::string> roleOf, nameOf;
+    for (const Employee &e : employees) {
+        roleOf[e.id] = e.role;
+        nameOf[e.id] = e.name;
+    }
+    std::set<std::string> direct;
+    for (const Employee &e : employees)
+        if (e.role == "server" || e.role == "bartender")
+            direct.insert(e.id);
+
+    Money line1, line2, line3, line5, reportedDirect, reportedIndirect;
+    std::map<std::string, Money> receiptsOf, reportedOf;   // directly tipped: their gross receipts, their tips
+    for (const Check &c : closed) {
+        if (c.training)
+            continue;
+        const Totals t = c.totals(rates);
+        for (const Payment &p : c.payments)
+            if (p.kind == TenderKind::Card)
+                line1 += p.tip;   // tips on charge receipts
+        // Service charges under 10% paid to staff are wages (line 3).
+        if (t.gratuity.cents() > 0 && c.gratuityBp < 1000)
+            line3 += t.gratuity;
+        // Gross receipts: food and drink served on site, without tax, tips,
+        // gift cards or merchandise; carryout and checks with a 10% or more
+        // service charge are nonallocable.
+        const bool carryout = c.type == CheckType::Takeout || c.type == CheckType::Delivery;
+        const bool bigCharge = t.gratuity.cents() > 0 && c.gratuityBp >= 1000;
+        Money merch;
+        for (const OrderLine &l : c.lines)
+            if (!l.voided && !l.isGiftCard() && (l.taxClass == TaxClass::Merchandise || l.taxClass == TaxClass::Room))
+                merch += l.total();
+        Money food = t.netSales() - merch;
+        if (food.cents() < 0)
+            food = Money();
+        Money cardTips;
+        for (const Payment &p : c.payments)
+            if (p.kind == TenderKind::Card)
+                cardTips += p.tip;
+        if (!c.serverId.empty() && cardTips.cents() > 0)
+            direct.insert(c.serverId);
+        if (!c.serverId.empty())
+            reportedOf[c.serverId] += cardTips + c.cashTip;
+        if (carryout || bigCharge)
+            continue;
+        line5 += food;
+        if (!c.serverId.empty())
+            receiptsOf[c.serverId] += food;
+        // Line 2: the part of it paid on charge receipts with a tip.
+        Money tipped, paid;
+        for (const Payment &p : c.payments) {
+            if (p.kind == TenderKind::Discount)
+                continue;
+            paid += p.amount;
+            if (p.kind == TenderKind::Card && p.tip.cents() > 0)
+                tipped += p.amount;
+        }
+        if (tipped.cents() > 0 && paid.cents() > 0)
+            line2 += Money::fromCents(food.cents() * std::min(tipped.cents(), paid.cents()) / paid.cents());
+    }
+    // Cash tips each person told at clock out.
+    std::set<std::string> worked;
+    for (const TimePunch &p : punches) {
+        if (!p.cashTipsDeclared)
+            continue;
+        reportedOf[p.employeeId] += p.cashTips;
+    }
+    for (const TimePunch &p : punches)
+        if (direct.contains(p.employeeId))
+            worked.insert(p.employeeId);
+    for (const auto &[id, tips] : reportedOf)
+        (direct.contains(id) ? reportedDirect : reportedIndirect) += tips;
+    for (const auto &[id, _] : receiptsOf)
+        if (direct.contains(id))
+            worked.insert(id);
+
+    const Money line4c = reportedDirect + reportedIndirect;
+    const Money line6 = line5.percent(allocationBp);
+    const Money line7 = line6 > line4c ? line6 - line4c : Money();
+    const std::string rate = std::to_string(allocationBp / 100) + (allocationBp % 100 ? "." + std::to_string(allocationBp % 100) : "");
+
+    r.note("For a large food or beverage establishment (tipping customary, more than 10 employees on a typical business "
+           "day): filed by the end of February for the year before. Check every line against your payroll records.");
+    r.section("Form 8027");
+    r.line({"1  Charged tips", ctx.money(line1)});
+    r.line({"2  Charge receipts showing charged tips", ctx.money(line2)});
+    r.line({"3  Service charges under 10% paid as wages", ctx.money(line3)});
+    r.line({"4a Tips reported by indirectly tipped employees", ctx.money(reportedIndirect)});
+    r.line({"4b Tips reported by directly tipped employees", ctx.money(reportedDirect)});
+    r.total({"4c Total tips reported", ctx.money(line4c)});
+    r.line({"5  Gross receipts from food or beverage", ctx.money(line5)});
+    r.line({"6  Line 5 times " + rate + "%", ctx.money(line6)});
+    r.total({"7  Allocated tips", ctx.money(line7)});
+    r.line({"8  Directly tipped employees", count(std::int64_t(worked.size()))});
+    r.note("Tips are counted with whoever earned them (card tips on their checks, cash tips told at clock out); "
+           "tip pools and tip-outs move them between people, not the total. Carryout and checks with a 10% or more "
+           "service charge aren't gross receipts.");
+
+    // Line 7, gross receipts method: each directly tipped employee's share of
+    // 8% of gross receipts (less what indirectly tipped employees reported),
+    // by their gross receipts; the shortfalls share the allocation.
+    if (line7.cents() > 0) {
+        Money directReceipts;
+        for (const auto &[id, rec] : receiptsOf)
+            if (direct.contains(id))
+                directReceipts += rec;
+        const Money pool = line6 - reportedIndirect;
+        std::map<std::string, Money> shortfall;
+        Money shortTotal;
+        for (const auto &[id, rec] : receiptsOf) {
+            if (!direct.contains(id) || directReceipts.cents() == 0)
+                continue;
+            const Money share = Money::fromCents(pool.cents() * rec.cents() / directReceipts.cents());
+            const Money got = reportedOf.contains(id) ? reportedOf.at(id) : Money();
+            if (share > got) {
+                shortfall[id] = share - got;
+                shortTotal += share - got;
+            }
+        }
+        r.section("Allocated tips by employee (gross receipts method)");
+        for (const auto &[id, s] : shortfall) {
+            const Money a = shortTotal.cents() ? Money::fromCents(line7.cents() * s.cents() / shortTotal.cents()) : Money();
+            r.line({nameOf.contains(id) ? nameOf.at(id) : id, ctx.money(a)});
+        }
+        r.note("Allocated tips go on each employee's W-2 (box 8); they aren't wages for withholding.");
+    }
     return r;
 }
 

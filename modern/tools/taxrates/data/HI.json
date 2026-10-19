@@ -1,0 +1,13 @@
+{
+ "state": "HI",
+ "name": "Hawaii",
+ "stateRate": 4,
+ "source": "Hawaii Department of Taxation: general excise tax 4% plus a 0.5% county surcharge in Honolulu, Hawaii, Kauai and Maui counties",
+ "counties": {
+  "Honolulu": 4.5,
+  "Hawaii": 4.5,
+  "Kauai": 4.5,
+  "Maui": 4.5,
+  "Kalawao": 4
+ }
+}

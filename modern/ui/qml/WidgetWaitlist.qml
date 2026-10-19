@@ -76,7 +76,7 @@ Item {
     readonly property bool narrow: zone ? zone.narrow : false
     property bool adding: false
     readonly property bool listShown: !narrow || (!adding && chosen === null)
-    readonly property real zoom: zone ? zone.formZoom(narrow ? 360 : 719, narrow ? 0 : 330) : 1
+    readonly property real zoom: zone ? zone.formZoom(narrow ? 360 : 719, narrow ? 0 : 400) : 1
     Item {
         width: w.width / w.zoom
         height: w.height / w.zoom
@@ -169,7 +169,7 @@ Item {
                     text: qsTr("Seated today %1  ·  average wait %2 min  ·  no-shows %3")
                           .arg(w.info.seatedToday ?? 0).arg(w.info.averageWait ?? 0).arg(w.info.noShows ?? 0)
                 }
-                Button {
+                PosButton {
                     visible: w.narrow
                     Layout.fillWidth: true
                     implicitHeight: 52
@@ -187,7 +187,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 8
-                Button {
+                PosButton {
                     visible: w.narrow
                     text: qsTr("‹ List")
                     onClicked: w.adding = false
@@ -214,23 +214,23 @@ Item {
                     }
                     Label { text: qsTr("Party") }
                     RowLayout {
-                        Button { text: "−"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.max(1, w.newSize - 1) }
+                        PosButton { text: "−"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.max(1, w.newSize - 1) }
                         Label { text: w.newSize; font.pixelSize: 24; font.bold: true; horizontalAlignment: Text.AlignHCenter; Layout.preferredWidth: 50 }
-                        Button { text: "+"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.min(99, w.newSize + 1) }
+                        PosButton { text: "+"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.min(99, w.newSize + 1) }
                     }
                     Label { text: w.reservation ? qsTr("When") : qsTr("Quote") }
                     RowLayout {
                         visible: !w.reservation
-                        Button { text: "−5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote = Math.max(0, w.quote - 5) } }
+                        PosButton { text: "−5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote = Math.max(0, w.quote - 5) } }
                         Label { text: qsTr("%1 min").arg(w.quote); font.pixelSize: 20; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
-                        Button { text: "+5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote += 5 } }
+                        PosButton { text: "+5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote += 5 } }
                     }
                     ColumnLayout {
                         visible: w.reservation
                         RowLayout {
                             Repeater {
                                 model: [qsTr("Today"), qsTr("Tomorrow"), "+2", "+3", "+4", "+5", "+6"]
-                                delegate: Button {
+                                delegate: PosButton {
                                     required property string modelData
                                     required property int index
                                     text: modelData
@@ -259,7 +259,7 @@ Item {
                     }
                 }
                 Item { Layout.fillHeight: true }
-                Button {
+                PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
                     font.pixelSize: 19
@@ -276,7 +276,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 8
-                Button {
+                PosButton {
                     visible: w.narrow
                     text: qsTr("‹ List")
                     onClicked: w.chosenId = null
@@ -299,41 +299,41 @@ Item {
                     columns: 2
                     columnSpacing: 8
                     rowSpacing: 8
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 64
                         visible: w.chosen && w.chosen.status !== "booked"
                         text: w.chosen && w.chosen.status === "notified" ? qsTr("Notify Again") : qsTr("Table Ready: Notify")
                         onClicked: w.pos.notifyParty(w.chosen.id)
                     }
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 64
                         visible: w.chosen && w.chosen.status === "booked"
                         text: qsTr("They're Here")
                         onClicked: { w.pos.checkInParty(w.chosen.id); tabs.currentIndex = 0 }
                     }
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 64
                         highlighted: true
                         text: qsTr("Seat Them…")
                         onClicked: w.seating = true
                     }
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 56
                         text: w.chosen && w.chosen.status === "booked" ? qsTr("Cancel Booking") : qsTr("Left the Line")
                         onClicked: { w.pos.partyGone(w.chosen.id, false); w.chosenId = null }
                     }
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 56
                         visible: w.chosen && w.chosen.status === "booked"
                         text: qsTr("No-Show")
                         onClicked: { w.pos.partyGone(w.chosen.id, true); w.chosenId = null }
                     }
-                    Button {
+                    PosButton {
                         Layout.fillWidth: true
                         implicitHeight: 56
                         text: qsTr("‹ Done")
@@ -363,7 +363,7 @@ Item {
                     cellHeight: 84
                     model: w.freeTables
                     ScrollBar.vertical: TouchScrollBar { id: tablesBar; needed: Math.ceil(tables.count / 3) * 84 > tables.height }
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         required property int index
                         width: tables.cellWidth - 8
@@ -387,7 +387,7 @@ Item {
                         opacity: 0.6
                     }
                 }
-                Button {
+                PosButton {
                     visible: w.seating
                     text: qsTr("‹ Back")
                     implicitHeight: 48

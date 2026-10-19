@@ -163,6 +163,7 @@ QJsonObject toJson(const Check &c)
         {u"nextLineId"_s, qint64(c.nextLineId)}, {u"nextPaymentId"_s, qint64(c.nextPaymentId)},
         {u"businessDay"_s, qint64(c.businessDay)}, {u"drawerSession"_s, qint64(c.drawerSession)},
         {u"gratuityBp"_s, qint64(c.gratuityBp)}, {u"autoGratuity"_s, c.autoGratuity},
+        {u"taxExempt"_s, qs(c.taxExempt)},
         {u"customer"_s, QJsonObject{{u"name"_s, qs(c.customer.name)}, {u"phone"_s, qs(c.customer.phone)},
                                     {u"address"_s, qs(c.customer.address)}, {u"note"_s, qs(c.customer.note)}}},
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
@@ -266,6 +267,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.businessDay = i64(o.value(u"businessDay"));
     c.drawerSession = i64(o.value(u"drawerSession"));
     c.gratuityBp = i64(o.value(u"gratuityBp"));
+    c.taxExempt = ss(o.value(u"taxExempt").toString());
     c.firedCourse = std::max(1, o.value(u"firedCourse").toInt(1));
     c.autoGratuity = o.value(u"autoGratuity").toBool();
     const QJsonObject cust = o.value(u"customer").toObject();
@@ -635,7 +637,7 @@ QJsonObject toJson(const DrawerSession &d)
         movements.append(QJsonObject{
             {u"id"_s, qint64(m.id)}, {u"kind"_s, qs(toString(m.kind))}, {u"amount"_s, qint64(m.amount.cents())},
             {u"reason"_s, qs(m.reason)}, {u"by"_s, qs(m.by)}, {u"employeeId"_s, qs(m.employeeId)},
-            {u"at"_s, qint64(m.at)}, {u"category"_s, qs(m.category)}});
+            {u"at"_s, qint64(m.at)}, {u"category"_s, qs(m.category)}, {u"purpose"_s, qs(m.purpose)}});
     }
     return {{u"id"_s, qint64(d.id)}, {u"name"_s, qs(d.name)}, {u"terminal"_s, qs(d.terminal)},
             {u"employeeId"_s, qs(d.employeeId)},
@@ -672,7 +674,8 @@ DrawerSession drawerFromJson(const QJsonObject &o)
         d.movements.push_back({i64(m.value(u"id")), cashMovementKindFromString(ss(m.value(u"kind").toString())),
                                money(m.value(u"amount")), ss(m.value(u"reason").toString()),
                                ss(m.value(u"by").toString()), ss(m.value(u"employeeId").toString()),
-                               i64(m.value(u"at")), ss(m.value(u"category").toString())});
+                               i64(m.value(u"at")), ss(m.value(u"category").toString()),
+                               ss(m.value(u"purpose").toString())});
     }
     d.nextMovementId = std::max<std::int64_t>(i64(o.value(u"nextMovementId")), 1);
     for (const QJsonValue &v : o.value(u"pieces").toArray()) {
@@ -959,7 +962,9 @@ QJsonObject toJson(const PosSettings &s)
         {u"tax"_s, QJsonObject{
              {u"food"_s, percentFromPpm(s.tax.foodPpm)}, {u"alcohol"_s, percentFromPpm(s.tax.alcoholPpm)},
              {u"merchandise"_s, percentFromPpm(s.tax.merchandisePpm)}, {u"room"_s, percentFromPpm(s.tax.roomPpm)},
-             {u"taxTakeoutFood"_s, s.tax.taxTakeoutFood}, {u"cashRounding"_s, s.tax.cashRoundingCents}}},
+             {u"taxTakeoutFood"_s, s.tax.taxTakeoutFood}, {u"cashRounding"_s, s.tax.cashRoundingCents},
+             {u"taxGratuity"_s, s.tax.taxGratuity},
+             {u"zip"_s, qs(s.storeZip)}, {u"where"_s, qs(s.taxWhere)}, {u"areaAsOf"_s, qs(s.taxAreaAsOf)}}},
         {u"tenders"_s, tenders}, {u"tendersV2"_s, true},
         {u"printers"_s, printers},
         {u"receiptHeader"_s, qs(s.receiptHeader)}, {u"receiptLogo"_s, s.receiptLogo},
@@ -989,7 +994,11 @@ QJsonObject toJson(const PosSettings &s)
                                  {u"overtimeWeeklyHours"_s, s.overtimeWeeklyHours}, {u"weekStartsOn"_s, s.weekStartsOn},
                                  {u"doubleTimeDailyHours"_s, s.doubleTimeDailyHours}, {u"seventhDayRule"_s, s.seventhDayRule},
                                  {u"state"_s, qs(s.laborState)}, {u"mealBreakAfterHours"_s, s.mealBreakAfterHours},
-                                 {u"giftCardCashBelowCents"_s, qint64(s.giftCardCashBelowCents)}}},
+                                 {u"giftCardCashBelowCents"_s, qint64(s.giftCardCashBelowCents)},
+                                 {u"tipAllocationBp"_s, qint64(s.tipAllocationBp)},
+                                 {u"restBreakEveryHours"_s, s.restBreakEveryHours},
+                                 {u"scheduleNoticeDays"_s, s.scheduleNoticeDays},
+                                 {u"restBetweenShiftsHours"_s, s.restBetweenShiftsHours}}},
         {u"modifierGroups"_s, modifierGroupsToJson(s.modifierGroups)},
         {u"terminalsHaveDrawer"_s, s.terminalsHaveDrawer},
         {u"serverId"_s, qs(s.serverId)},
@@ -1193,7 +1202,11 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.tax.merchandisePpm = ppmFromPercent(tax.value(u"merchandise").toDouble());
     s.tax.roomPpm = ppmFromPercent(tax.value(u"room").toDouble());
     s.tax.taxTakeoutFood = tax.value(u"taxTakeoutFood").toBool(true);
+    s.tax.taxGratuity = tax.value(u"taxGratuity").toBool(false);
     s.tax.cashRoundingCents = tax.value(u"cashRounding").toInt(0);
+    s.storeZip = ss(tax.value(u"zip").toString());
+    s.taxWhere = ss(tax.value(u"where").toString());
+    s.taxAreaAsOf = ss(tax.value(u"areaAsOf").toString());
     for (const QJsonValue &v : o.value(u"printers").toArray())
         s.printers.push_back(printerFromJson(v.toObject()));
     s.receiptHeader = ss(o.value(u"receiptHeader").toString());
@@ -1236,6 +1249,10 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.laborState = ss(labor.value(u"state").toString());
     s.mealBreakAfterHours = std::clamp(labor.value(u"mealBreakAfterHours").toInt(0), 0, 12);
     s.giftCardCashBelowCents = std::clamp<qint64>(labor.value(u"giftCardCashBelowCents").toInteger(0), 0, 100000);
+    s.tipAllocationBp = std::clamp<qint64>(labor.value(u"tipAllocationBp").toInteger(800), 200, 800);
+    s.restBreakEveryHours = std::clamp(labor.value(u"restBreakEveryHours").toInt(0), 0, 8);
+    s.scheduleNoticeDays = std::clamp(labor.value(u"scheduleNoticeDays").toInt(0), 0, 31);
+    s.restBetweenShiftsHours = std::clamp(labor.value(u"restBetweenShiftsHours").toInt(0), 0, 16);
     s.modifierGroups = modifierGroupsFromJson(o.value(u"modifierGroups").toArray());
     s.terminalsHaveDrawer = o.value(u"terminalsHaveDrawer").toBool(true);
     s.serverId = ss(o.value(u"serverId").toString());
@@ -1525,9 +1542,13 @@ namespace {
 QJsonArray ledgerJson(const std::vector<LedgerEntry> &entries)
 {
     QJsonArray out;
-    for (const LedgerEntry &e : entries)
-        out.append(QJsonObject{{u"at"_s, qint64(e.at)}, {u"amount"_s, qint64(e.amount.cents())},
-                               {u"what"_s, qs(e.what)}, {u"checkId"_s, qint64(e.checkId)}, {u"kind"_s, qs(e.kind)}});
+    for (const LedgerEntry &e : entries) {
+        QJsonObject o{{u"at"_s, qint64(e.at)}, {u"amount"_s, qint64(e.amount.cents())},
+                      {u"what"_s, qs(e.what)}, {u"checkId"_s, qint64(e.checkId)}, {u"kind"_s, qs(e.kind)}};
+        if (!e.method.empty())
+            o.insert(u"method"_s, qs(e.method));
+        out.append(o);
+    }
     return out;
 }
 
@@ -1537,7 +1558,7 @@ std::vector<LedgerEntry> ledgerFromJson(const QJsonArray &a)
     for (const QJsonValue &v : a) {
         const QJsonObject e = v.toObject();
         out.push_back({i64(e.value(u"at")), money(e.value(u"amount")), ss(e.value(u"what").toString()),
-                       i64(e.value(u"checkId")), ss(e.value(u"kind").toString())});
+                       i64(e.value(u"checkId")), ss(e.value(u"kind").toString()), ss(e.value(u"method").toString())});
     }
     return out;
 }

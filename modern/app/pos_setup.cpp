@@ -3,6 +3,7 @@
 
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
+#include "app/tax_areas.hh"
 
 #include <algorithm>
 
@@ -37,6 +38,7 @@ QVariantMap PosService::setupInfo() const
             {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"logo"_s, qs(s_->settings.displayLogo)},
             {u"receiptLogo"_s, s_->settings.receiptLogo}, {u"foodTax"_s, pct(s_->settings.tax.foodPpm)},
             {u"alcoholTax"_s, pct(s_->settings.tax.alcoholPpm)}, {u"families"_s, families}, {u"items"_s, items},
+            {u"zip"_s, qs(s_->settings.storeZip)}, {u"taxArea"_s, s_->settings.storeZip.empty() ? QString() : taxAreaText(taxHere())},
             {u"staff"_s, staff}, {u"samples"_s, samples}};
 }
 
@@ -66,6 +68,23 @@ bool PosService::setupLogo(const QString &ref, bool onReceipts)
         return false;
     const QVariantMap store = adminRecords(u"store"_s).value(0).toMap();
     return adminSave(u"store"_s, 0, withChanges(store, {{u"displayLogo"_s, ref}, {u"receiptLogo"_s, onReceipts}}));
+}
+
+bool PosService::setupTaxArea(const QString &zip)
+{
+    if (!require(perm::Manager, tr("Setting up the store")))
+        return false;
+    const QString z = zip.trimmed().left(5);
+    const QString state = TaxAreas::instance().stateOf(z);
+    if (z.size() != 5 || state.isEmpty())
+        return fail(tr("That isn't a ZIP code the table knows."));
+    // Where the store is, and its rates there (the next step can still change them).
+    QVariantMap taxes = adminRecords(u"taxes"_s).value(0).toMap();
+    taxes.insert(u"state"_s, state);
+    taxes.insert(u"zip"_s, z);
+    taxes.insert(u"taxWhere"_s, QString());
+    taxes.insert(u"useSuggested"_s, true);
+    return adminSave(u"taxes"_s, 0, taxes);
 }
 
 bool PosService::setupTaxes(double foodPercent, double alcoholPercent)

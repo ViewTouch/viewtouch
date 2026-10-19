@@ -55,7 +55,7 @@ Item {
                     spacing: 6
                     Repeater {
                         model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             objectName: "countVendor-" + modelData.id
                             text: modelData.name
@@ -150,13 +150,13 @@ Item {
                         font.bold: true
                         Layout.fillWidth: true
                     }
-                    Button {
+                    PosButton {
                         text: qsTr("Clear")
                         implicitHeight: 52
                         font.pixelSize: 16
                         onClicked: w.clear()
                     }
-                    Button {
+                    PosButton {
                         objectName: "saveStockCount"
                         text: qsTr("Save Count")
                         highlighted: true

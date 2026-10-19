@@ -197,7 +197,7 @@
     "discounts": "4900 Discounts and comps",
     "staffMeals": "6150 Staff meals",
     "rounding": "4950 Cash rounding",
-    "giftCardsSold": "2400 Gift card liability",
+    "giftCardsSold": "2400 Gift card liability", "refunds": "4910 Refunds", "paidIn": "4960 Paid ins", "paidOut": "6000 Paid outs", "overShort": "6900 Cash over and short",
     "tender:cash": "1000 Cash on hand",
     "tender:credit": "1100 Card clearing",
     "tender:gift": "2400 Gift card liability",

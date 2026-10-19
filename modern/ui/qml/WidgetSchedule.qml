@@ -45,7 +45,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                Button { text: "‹"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) - 1) } }
+                PosButton { text: "‹"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) - 1) } }
                 Label {
                     text: w.info.title ?? ""
                     font.pixelSize: 22
@@ -53,7 +53,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     Layout.preferredWidth: 220
                 }
-                Button { text: "›"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) + 1) } }
+                PosButton { text: "›"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) + 1) } }
                 Item { Layout.fillWidth: true }
                 Label {
                     visible: w.info.required ?? false
@@ -109,6 +109,15 @@ Item {
                                         Label { text: chip.modelData.name; font.bold: true; width: parent.width; elide: Text.ElideRight }
                                         Label { text: chip.modelData.time; font.pixelSize: 12; width: parent.width; elide: Text.ElideRight }
                                         Label {
+                                            visible: chip.modelData.shortRest ?? false
+                                            text: qsTr("Short rest")
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            color: "#ffb74d"
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                        }
+                                        Label {
                                             visible: chip.modelData.note !== ""
                                             text: chip.modelData.note
                                             font.pixelSize: 11
@@ -136,18 +145,18 @@ Item {
                     font.bold: true
                     Layout.fillWidth: true
                 }
-                Button {
+                PosButton {
                     visible: w.chosen !== null && w.chosen.now && !w.chosen.onClock
                     text: qsTr("Clock Them In")
                     implicitHeight: 48
                     onClicked: { w.pos.clockInEmployee(w.chosen.employeeId); w.chosen = null }
                 }
-                Button {
+                PosButton {
                     text: qsTr("Remove Shift")
                     implicitHeight: 48
                     onClicked: { w.pos.removeShift(w.chosen.id); w.chosen = null }
                 }
-                Button { text: qsTr("‹ Done"); implicitHeight: 48; onClicked: w.chosen = null }
+                PosButton { text: qsTr("‹ Done"); implicitHeight: 48; onClicked: w.chosen = null }
             }
 
             // Add a shift to the day picked above.
@@ -199,7 +208,7 @@ Item {
                     text: w.note
                     onTextEdited: w.note = text
                 }
-                Button {
+                PosButton {
                     Layout.columnSpan: w.narrow ? 4 : 1
                     Layout.fillWidth: w.narrow
                     text: qsTr("Add Shift")

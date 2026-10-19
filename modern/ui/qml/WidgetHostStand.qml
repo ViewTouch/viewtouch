@@ -90,7 +90,7 @@ Item {
         return out
     }
 
-    component Key: Button {
+    component Key: PosButton {
         id: key
         property color tint: "#2d3440"
         Layout.fillWidth: true

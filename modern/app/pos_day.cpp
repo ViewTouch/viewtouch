@@ -62,6 +62,39 @@ void PosShared::startDay()
         sink->saveDay(day, {});
 }
 
+QString PosService::dayPeriod(const BusinessDay &day) const
+{
+    // A business day starts when the last one closed (the night before): its
+    // date is the one it ended on, counting up to 5 AM as the night before,
+    // and its hours run from its first check.
+    const std::int64_t end = day.closedAt ? day.closedAt : now();
+    const QString date = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(end - 5 * 3'600'000).date(),
+                                                 QLocale::LongFormat);
+    std::int64_t first = 0;
+    if (day.id == s_->day.id) {
+        for (const Check &c : s_->closedToday)
+            if (c.openedAt && (!first || c.openedAt < first))
+                first = c.openedAt;
+        for (const auto &[id, c] : s_->open)
+            if (c.openedAt && (!first || c.openedAt < first))
+                first = c.openedAt;
+    }
+    if (!first)
+        return day.closedAt ? tr("%1, closed at %2").arg(date, clockText(day.closedAt)) : date;
+    return day.closedAt ? tr("%1, %2 to %3").arg(date, clockText(first), clockText(day.closedAt))
+                        : tr("%1, since %2").arg(date, clockText(first));
+}
+
+Report PosService::pastReport(const BusinessDay &day, const QJsonObject &stored) const
+{
+    Report r = reportFromJson(stored);
+    // Saved before reports named their day (Today, since 10:31 AM).
+    const QString today = tr("Today, since %1");
+    if (qs(r.subtitle).startsWith(today.left(today.indexOf(u"%1"_s))) || r.subtitle.starts_with("Today, since "))
+        r.subtitle = ss(dayPeriod(day));
+    return r;
+}
+
 QString PosService::dayLabel(const BusinessDay &day) const
 {
     const QDateTime opened = QDateTime::fromMSecsSinceEpoch(day.openedAt);
@@ -1009,7 +1042,7 @@ bool PosService::addTip(std::int64_t percentBp)
     const Totals t = c->totals(s_->settings.tax);
     Money tip;
     if (percentBp > 0) {
-        tip = (t.subtotal + t.tax).percent(percentBp);   // on the check before gratuity
+        tip = (t.netSales() + t.tax).percent(percentBp);   // on the check before gratuity (not gift cards bought)
     } else {
         if (entry_.isEmpty())
             return fail(tr("Type the tip on the keypad, then Tip."));
@@ -1029,7 +1062,7 @@ Money PosService::tipFor(const Check &c) const
         return {};
     if (tipChoice_.percentBp > 0) {
         const Totals t = c.totals(s_->settings.tax);
-        return (t.subtotal + t.tax).percent(tipChoice_.percentBp);
+        return (t.netSales() + t.tax).percent(tipChoice_.percentBp);
     }
     return tipChoice_.amount;
 }
@@ -1080,7 +1113,7 @@ QVariantMap PosService::customerPrompt() const
     if (mine) {
         const Totals t = c->totals(s_->settings.tax);
         for (int p : s_->settings.tipPercents)
-            choices.append(QVariantMap{{u"percent"_s, p}, {u"amount"_s, format((t.subtotal + t.tax).percent(p * 100))}});
+            choices.append(QVariantMap{{u"percent"_s, p}, {u"amount"_s, format((t.netSales() + t.tax).percent(p * 100))}});
     }
     // Loyalty: who is on the check, their points, what this check earns.
     QVariantMap loyalty{{u"enabled"_s, s_->settings.loyaltyEnabled}};
@@ -1149,7 +1182,7 @@ QVariantMap PosService::dayInfoNow() const
     }
     Money net;
     for (const Check &c : s_->closedToday)
-        net += c.totals(s_->settings.tax).subtotal;
+        net += c.totals(s_->settings.tax).netSales();
     const bool anyOpen = std::ranges::any_of(s_->drawers, &DrawerSession::open);
     // Who's still on the clock: closing up, or they forgot (over 12 hours).
     QVariantList clockedIn;
@@ -1272,15 +1305,19 @@ bool PosService::endOfDay()
             return fail(tr("Count %1 first.").arg(qs(d.name)));
     }
 
+    s_->day.closedAt = now();   // first: the reports say when the day ended
     QJsonObject reports;
     for (const QString &id : kReportIds)
         reports.insert(id, toJson(buildReport(id)));
-    s_->day.closedAt = now();
     if (s_->sink)
         s_->sink->saveDay(s_->day, reports);
     s_->pastDays.insert(s_->pastDays.begin(), PastDay{s_->day, reports});
-    if (s_->printer)
+    // For the books: what was sold, and the money (cash to the bank, the
+    // card batch, drawers over or short, money in and out besides sales).
+    if (s_->printer) {
         s_->printer->printReport(s_->settings, buildReport(u"sales"_s), receiptPrinter());
+        s_->printer->printReport(s_->settings, buildReport(u"deposit"_s), receiptPrinter());
+    }
 
     s_->closedToday.clear();
     s_->kitchenDone.clear();
@@ -1308,7 +1345,7 @@ bool PosService::endOfDay()
 
 Report PosService::buildReport(const QString &id) const
 {
-    const ReportContext ctx = reportContext(tr("Today, since %1").arg(clockText(s_->day.openedAt)));
+    const ReportContext ctx = reportContext(dayPeriod(s_->day));
     if (id == u"items")
         return itemSales(s_->closedToday, s_->menu, ctx);
     if (id == u"checklists")
@@ -1321,7 +1358,7 @@ Report PosService::buildReport(const QString &id) const
         Money net;
         for (const Check &c : s_->closedToday)
             if (!c.training)
-                net += c.totals(s_->settings.tax).subtotal;
+                net += c.totals(s_->settings.tax).netSales();
         return laborReport(s_->punches, s_->employees, ctx, s_->earlierPunches, net);
     }
     if (id == u"drawer")
@@ -1348,8 +1385,12 @@ Report PosService::buildReport(const QString &id) const
         return tableTurns(s_->closedToday, ctx);
     if (id == u"customers")
         return customersReport(s_->closedToday, ctx);
-    if (id == u"royalty" || id == u"accounting")
+    if (id == u"royalty" || id == u"irs8027")
         return rangeCapableReport(id, s_->closedToday, ctx);
+    if (id == u"accounting") {
+        const DayMoney day{&s_->drawers, s_->refundsToday, accountPaymentsToday()};
+        return rangeCapableReport(id, s_->closedToday, ctx, nullptr, &day);
+    }
     if (id == u"kitchen") {
         std::vector<const Check *> checks;
         for (const Check &c : s_->closedToday)
@@ -1368,28 +1409,39 @@ Report PosService::buildReport(const QString &id) const
         for (const auto &[id, c] : s_->open)
             if (!c.training)
                 checks.push_back(&c);
-        return id == u"audit" ? auditReport(checks, ctx) : exceptionsReport(checks, s_->drawers, ctx);
+        return id == u"audit" ? auditReport(checks, ctx) : exceptionsReport(checks, s_->drawers, ctx, s_->refundsToday);
     }
     if (id == u"deposit") {
         std::vector<const Check *> open;
         for (const auto &[cid, c] : s_->open)
             if (!c.training)
                 open.push_back(&c);
-        return depositReport(s_->drawers, s_->closedToday, open, ctx, s_->refundsToday);
+        return depositReport(s_->drawers, s_->closedToday, open, ctx, s_->refundsToday, accountPaymentsToday());
     }
     return salesSummary(s_->closedToday, ctx, &s_->refundsToday);
+}
+
+std::vector<AccountPayment> PosService::accountPaymentsToday() const
+{
+    std::vector<AccountPayment> out;
+    for (const CustomerRecord &c : s_->customers)
+        for (const LedgerEntry &e : c.account)
+            if (e.kind == "payment" && !e.method.empty() && e.at >= s_->day.openedAt)
+                out.push_back({c.name, -e.amount, e.method, e.at});
+    std::ranges::sort(out, {}, &AccountPayment::at);
+    return out;
 }
 
 // --- reports over a range ---------------------------------------------------------
 
 namespace {
-const QStringList kRangeReports = {u"sales"_s, u"items"_s, u"categories"_s, u"hourly"_s, u"servers"_s,
+const QStringList kRangeReports = {u"sales"_s, u"items"_s, u"categories"_s, u"hourly"_s, u"servers"_s, u"irs8027"_s,
                                    u"kitchen"_s, u"audit"_s, u"foodcost"_s, u"engineering"_s, u"turns"_s, u"exceptions"_s, u"customers"_s,
                                    u"royalty"_s, u"accounting"_s};
 } // namespace
 
 Report PosService::rangeCapableReport(const QString &id, const std::vector<Check> &closed, const ReportContext &ctx,
-                                      const std::vector<Refund> *refunds) const
+                                      const std::vector<Refund> *refunds, const DayMoney *day, const std::vector<TimePunch> *punches) const
 {
     std::vector<const Check *> ptrs;
     for (const Check &c : closed)
@@ -1420,11 +1472,13 @@ Report PosService::rangeCapableReport(const QString &id, const std::vector<Check
         return customersReport(closed, ctx);
     if (id == u"royalty")
         return royaltyReport(closed, ctx);
+    if (id == u"irs8027")
+        return irs8027Report(closed, punches ? *punches : s_->punches, s_->employees, ctx, s_->settings.tipAllocationBp);
     if (id == u"accounting") {
         std::map<std::string, std::string> familyOf;
         for (const MenuItem &m : s_->menu)
-            familyOf[m.id] = m.family;
-        return accountingReport(closed, familyOf, ctx);
+            familyOf[m.id] = ss(qs(m.family).toLower());   // the chart's keys are lower case
+        return accountingReport(closed, familyOf, ctx, day);
     }
     return salesSummary(closed, ctx, refunds);
 }
@@ -1448,6 +1502,9 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
         to = QDate(today.year(), today.month(), 1).addDays(-1);
     } else if (period == u"year") {
         from = QDate(today.year(), 1, 1);
+    } else if (period == u"lastYear") {
+        from = QDate(today.year() - 1, 1, 1);
+        to = QDate(today.year() - 1, 12, 31);
     } else {
         from = QDate::fromString(fromText.trimmed(), u"yyyy-MM-dd"_s);
         to = QDate::fromString(toText.trimmed(), u"yyyy-MM-dd"_s);
@@ -1474,11 +1531,23 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
     // Read the checks away from the screen, then build here.
     auto history = s_->history;
     auto refundHistory = s_->refundHistory;
+    // The tip report: the punches too (cash tips told at clock out).
+    auto punchHistory = id == u"irs8027" ? s_->punchHistory : nullptr;
+    std::vector<TimePunch> punchesNow;
+    for (const auto *list : {&s_->punches, &s_->earlierPunches})
+        for (const TimePunch &p : *list)
+            if (id == u"irs8027" && p.clockIn >= a && p.clockIn < b)
+                punchesNow.push_back(p);
     std::vector<Check> today_ = s_->closedToday;
     std::vector<Refund> refundsToday = s_->refundsToday;
     QPointer<PosService> self(this);
-    QThreadPool::globalInstance()->start([=, today_ = std::move(today_), refundsToday = std::move(refundsToday)]() mutable {
+    QThreadPool::globalInstance()->start([=, today_ = std::move(today_), refundsToday = std::move(refundsToday),
+                                          punchesNow = std::move(punchesNow)]() mutable {
         std::vector<Check> now = history ? history(a, b) : std::vector<Check>{};
+        std::vector<TimePunch> punches = punchHistory ? punchHistory(a, b) : std::vector<TimePunch>{};
+        for (TimePunch &p : punchesNow)   // not written yet, or not read back: the ones in memory count
+            if (std::ranges::none_of(punches, [&](const TimePunch &x) { return x.id == p.id; }))
+                punches.push_back(std::move(p));
         std::vector<Check> before = history && compare ? history(a0, b0) : std::vector<Check>{};
         // Refunds by when they were made (today's may not be written yet).
         std::vector<Refund> refundsNow = refundHistory ? refundHistory(a, b) : std::vector<Refund>{};
@@ -1494,13 +1563,14 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
         }
         const bool byDate = bool(refundHistory) || !refundsNow.empty();
         QMetaObject::invokeMethod(self, [self, request, id, label, beforeLabel, compare, now = std::move(now),
+                                         punches = std::move(punches),
                                          before = std::move(before), refundsNow = std::move(refundsNow),
                                          refundsBefore = std::move(refundsBefore), byDate] {
             if (!self || request != self->rangeRequest_)
                 return;   // a newer request replaced it
             const ReportContext ctx = self->reportContext(label);
             Report r = self->rangeCapableReport(kRangeReports.contains(id) ? id : u"sales"_s, now, ctx,
-                                                byDate ? &refundsNow : nullptr);
+                                                byDate ? &refundsNow : nullptr, nullptr, &punches);
             if (!kRangeReports.contains(id))
                 r.note(tr("That report is one day at a time (pick Day). Showing sales.").toStdString());
             if (compare) {
@@ -1534,7 +1604,7 @@ QVariantMap PosService::report(const QString &id, qint64 dayId)
             const QJsonObject stored = p.reports.value(id).toObject();
             if (stored.isEmpty())
                 return {{u"title"_s, tr("No report")}, {u"rows"_s, QVariantList()}};
-            return toVariant(reportFromJson(stored));
+            return toVariant(pastReport(p.day, stored));
         }
     }
     return {{u"title"_s, tr("No such day")}, {u"rows"_s, QVariantList()}};
@@ -1556,7 +1626,7 @@ bool PosService::printReport(const QString &id, qint64 dayId)
     } else {
         for (const PastDay &p : s_->pastDays) {
             if (p.day.id == dayId)
-                r = reportFromJson(p.reports.value(id).toObject());
+                r = pastReport(p.day, p.reports.value(id).toObject());
         }
     }
     s_->printer->printReport(s_->settings, r, receiptPrinter());

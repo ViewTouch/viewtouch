@@ -1,5 +1,6 @@
 # The ViewTouch tablet app (modern/, Qt for Android). Run it from the Actions
-# tab, or push a modern-v* tag. The APKs are attached to the run.
+# tab (the APKs are attached to the run), or push a modern-v* tag: Modern
+# release builds it and publishes them.
 #
 # Signing: with the repository secrets ANDROID_KEYSTORE_BASE64 (a keystore,
 # base64), ANDROID_KEYSTORE_ALIAS and ANDROID_KEYSTORE_PASSWORD, every build
@@ -9,9 +10,7 @@ name: Modern Android
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'modern-v*'
+  workflow_call:   # Modern release
 
 env:
   QT_VERSION: 6.11.2

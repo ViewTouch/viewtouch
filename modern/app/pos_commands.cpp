@@ -119,6 +119,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
              return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString())); }},
         {u"setupLogo"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupLogo(a.value(0).toString(), a.value(1).toBool())); }},
+        {u"setupTaxArea"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setupTaxArea(a.value(0).toString())); }},
         {u"setupTaxes"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupTaxes(a.value(0).toDouble(), a.value(1).toDouble())); }},
         {u"setupAddItem"_s, [](PosService &p, const QVariantList &a) {
@@ -174,6 +175,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"releaseHold"_s, [](PosService &p, const QVariantList &) { return QVariant(p.releaseHold()); }},
         {u"scanCode"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.scanCode(a.value(0).toString())); }},
         {u"applyCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.applyCoupon(a.value(0).toString())); }},
+        {u"setTaxExempt"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setTaxExempt(a.value(0).toString())); }},
         {u"removeCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeCoupon(a.value(0).toString())); }},
         {u"customerJoin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.customerJoin(a.value(0).toString())); }},
         {u"sendReceipt"_s, [](PosService &p, const QVariantList &a) {

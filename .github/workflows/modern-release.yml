@@ -1,0 +1,71 @@
+# A ViewTouch release, start to finish: push a modern-v* tag (or run it from
+# the Actions tab) and it tests on Qt 6.8, builds the tablet apps and the
+# packages, then publishes them to the modern-packages release that store
+# computers and tablets update from (the same files packaging/publish.sh
+# uploads: .deb and .apk with their .sig and .sha256, and a signed
+# latest.json).
+#
+# Publishing waits in the "release" environment: someone it lists approves
+# it on the run's page first. Its secret UPDATE_SIGNING_KEY is the update
+# signing key (the PEM from ~/.config/viewtouch/signing on the release
+# computer); store computers install nothing it hasn't signed. The tablet
+# apps are signed with the ANDROID_KEYSTORE_* repository secrets.
+name: Modern release
+
+on:
+  push:
+    tags:
+      - 'modern-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modern-release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/modern-checks.yml
+
+  android:
+    uses: ./.github/workflows/modern-android.yml
+    secrets: inherit
+
+  packages:
+    uses: ./.github/workflows/modern-packages.yml
+
+  publish:
+    name: Publish to modern-packages
+    needs: [checks, android, packages]
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write   # upload to the release
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          if [ -z "$UPDATE_SIGNING_KEY" ]; then
+            echo "::error::No UPDATE_SIGNING_KEY secret in the release environment: nothing published."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/update-signing-key.pem"
+          umask 077
+          printf '%s\n' "$UPDATE_SIGNING_KEY" > "$key"
+          mkdir -p modern/dist
+          cp artifacts/vtmodern-debian-*/*.deb modern/dist/
+          apk64=$(ls artifacts/ViewTouch-android-arm64-v8a/*.apk)
+          apk32=$(ls artifacts/ViewTouch-android-armeabi-v7a/*.apk)
+          VTM_SIGNING_KEY="$key" sh modern/packaging/publish.sh --apk-arm64 "$apk64" --apk-armv7 "$apk32"
+          rm -f "$key"

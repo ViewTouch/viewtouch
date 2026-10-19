@@ -514,6 +514,8 @@ Totals Check::totals(const TaxRates &rates) const
     for (const OrderLine &l : lines) {
         const Money lt = l.total();
         t.items += lt;
+        if (l.isGiftCard())
+            t.giftCardsSold += lt;
         if (!l.isGiftCard() && !l.noDiscount)
             discountable += lt;
         if (!l.isGiftCard() && !l.noDiscount && !l.noStaffDiscount)
@@ -530,11 +532,12 @@ Totals Check::totals(const TaxRates &rates) const
         // Percent off what may be discounted, or a fixed amount (rewards, promotions).
         const Money off = (p.staffMeal ? staffDiscountable : discountable).percent(p.percentBp) + p.amount;
         t.discounts += off;
+        t.discountOf[p.id] = off;
         if (p.staffMeal)
             t.staffMeals += off;
     }
-    if (t.discounts > t.items)
-        t.discounts = t.items;
+    if (t.discounts > t.items - t.giftCardsSold)   // nothing comes off a gift card bought
+        t.discounts = t.items - t.giftCardsSold;
     t.subtotal = t.items - t.discounts;
 
     // Spread the discount over tax classes in proportion to their sales,
@@ -544,9 +547,10 @@ Totals Check::totals(const TaxRates &rates) const
     for (const auto &[cls, amount] : byClass)
         taxableTotal += amount;
     // The part of the discount that falls on taxable sales (comments and
-    // untaxed lines take the rest).
-    const Money taxableDiscount = taxableTotal.cents() > 0 && t.items.cents() > 0
-        ? Money::fromCents(t.discounts.cents() * taxableTotal.cents() / t.items.cents())
+    // untaxed lines take the rest; gift cards sold take none: never discounted).
+    const Money discounted = t.items - t.giftCardsSold;
+    const Money taxableDiscount = taxableTotal.cents() > 0 && discounted.cents() > 0
+        ? Money::fromCents(t.discounts.cents() * taxableTotal.cents() / discounted.cents())
         : Money();
     Money allocated;
     TaxClass largest = TaxClass::None;
@@ -567,17 +571,28 @@ Totals Check::totals(const TaxRates &rates) const
         discountShare[largest] += taxableDiscount - allocated;
 
     for (const auto &[cls, amount] : byClass) {
+        if (!taxExempt.empty())
+            break;   // an exemption certificate: no tax
         if (cls == TaxClass::Food && type == CheckType::Takeout && !rates.taxTakeoutFood)
             continue;
         const Money net = amount - discountShare[cls];
         const Money tax = net.cents() > 0 ? net.ppm(rates.ratePpm(cls)) : Money();
+        if (net.cents() > 0 && rates.ratePpm(cls) > 0)
+            t.taxableByClass[cls] = net;
         if (tax.cents() != 0)
             t.taxByClass[cls] = tax;
         t.tax += tax;
     }
 
     // Gratuity: on the (discounted) subtotal, not taxed, added after tax.
-    t.gratuity = t.subtotal.percent(gratuityBp);
+    t.gratuity = t.netSales().percent(gratuityBp);   // not on gift cards bought
+    // Taxed too where the state says so: at the food rate.
+    if (rates.taxGratuity && taxExempt.empty() && t.gratuity.cents() > 0 && rates.ratePpm(TaxClass::Food) > 0) {
+        const Money tax = t.gratuity.ppm(rates.ratePpm(TaxClass::Food));
+        t.taxableGratuity = t.gratuity;
+        t.taxByClass[TaxClass::Food] += tax;
+        t.tax += tax;
+    }
     t.total = t.subtotal + t.tax + t.gratuity;
     for (const Payment &p : payments) {
         t.tips += p.tip;
@@ -601,24 +616,25 @@ Totals Check::totals(const TaxRates &rates) const
 
 const std::vector<StateRules> &stateRules()
 {
-    // code, name, daily OT, daily double, 7th day, meal break by (hours), gift card cash-out under (cents)
+    // code, name, daily OT, daily double, 7th day, meal break by (hours), gift card cash-out under (cents),
+    // a paid rest break every (hours)
     static const std::vector<StateRules> states = {
         {"AL", "Alabama"}, {"AK", "Alaska", 8}, {"AZ", "Arizona"}, {"AR", "Arkansas"},
-        {"CA", "California", 8, 12, true, 5, 1000}, {"CO", "Colorado", 12, 0, false, 5, 500},
+        {"CA", "California", 8, 12, true, 5, 1000, 4}, {"CO", "Colorado", 12, 0, false, 5, 500, 4},
         {"CT", "Connecticut", 0, 0, false, 7}, {"DE", "Delaware", 0, 0, false, 7}, {"DC", "District of Columbia"},
         {"FL", "Florida"}, {"GA", "Georgia"}, {"HI", "Hawaii"}, {"ID", "Idaho"},
         {"IL", "Illinois", 0, 0, false, 5}, {"IN", "Indiana"}, {"IA", "Iowa"}, {"KS", "Kansas"},
-        {"KY", "Kentucky", 0, 0, false, 5}, {"LA", "Louisiana"}, {"ME", "Maine", 0, 0, false, 6, 500},
+        {"KY", "Kentucky", 0, 0, false, 5, 0, 4}, {"LA", "Louisiana"}, {"ME", "Maine", 0, 0, false, 6, 500},
         {"MD", "Maryland"}, {"MA", "Massachusetts", 0, 0, false, 6, 500}, {"MI", "Michigan"},
-        {"MN", "Minnesota", 0, 0, false, 8}, {"MS", "Mississippi"}, {"MO", "Missouri"},
-        {"MT", "Montana", 0, 0, false, 0, 500}, {"NE", "Nebraska"}, {"NV", "Nevada", 8, 0, false, 8},
+        {"MN", "Minnesota", 0, 0, false, 8, 0, 4}, {"MS", "Mississippi"}, {"MO", "Missouri"},
+        {"MT", "Montana", 0, 0, false, 0, 500}, {"NE", "Nebraska"}, {"NV", "Nevada", 8, 0, false, 8, 0, 4},
         {"NH", "New Hampshire", 0, 0, false, 5}, {"NJ", "New Jersey", 0, 0, false, 0, 500},
         {"NM", "New Mexico"}, {"NY", "New York", 0, 0, false, 6}, {"NC", "North Carolina"},
         {"ND", "North Dakota", 0, 0, false, 5}, {"OH", "Ohio"}, {"OK", "Oklahoma"},
-        {"OR", "Oregon", 0, 0, false, 5, 500}, {"PA", "Pennsylvania"}, {"RI", "Rhode Island", 0, 0, false, 6, 100},
+        {"OR", "Oregon", 0, 0, false, 5, 500, 4}, {"PA", "Pennsylvania"}, {"RI", "Rhode Island", 0, 0, false, 6, 100},
         {"SC", "South Carolina"}, {"SD", "South Dakota"}, {"TN", "Tennessee", 0, 0, false, 6}, {"TX", "Texas"},
         {"UT", "Utah"}, {"VT", "Vermont", 0, 0, false, 0, 100}, {"VA", "Virginia"},
-        {"WA", "Washington", 0, 0, false, 5, 500}, {"WV", "West Virginia", 0, 0, false, 6}, {"WI", "Wisconsin"},
+        {"WA", "Washington", 0, 0, false, 5, 500, 4}, {"WV", "West Virginia", 0, 0, false, 6}, {"WI", "Wisconsin"},
         {"WY", "Wyoming"},
     };
     return states;
@@ -630,6 +646,28 @@ const StateRules *stateRulesFor(const std::string &code)
         if (code == s.code)
             return &s;
     return nullptr;
+}
+
+const MinimumWage &minimumWageFor(const std::string &state)
+{
+    static const MinimumWage federal{"US", 725, 213};
+    static const std::vector<MinimumWage> wages = {
+        {"AL", 725, 213}, {"AK", 1400, 1400}, {"AZ", 1515, 1215}, {"AR", 1100, 263}, {"CA", 1690, 1690},
+        {"CO", 1516, 1214}, {"CT", 1694, 638}, {"DE", 1500, 223}, {"DC", 1840, 1030}, {"FL", 1500, 1198},
+        {"GA", 725, 213}, {"HI", 1600, 1475}, {"ID", 725, 335}, {"IL", 1500, 900}, {"IN", 725, 213},
+        {"IA", 725, 435}, {"KS", 725, 213}, {"KY", 725, 213}, {"LA", 725, 213}, {"ME", 1510, 755},
+        {"MD", 1500, 363}, {"MA", 1500, 675}, {"MI", 1373, 549}, {"MN", 1141, 1141}, {"MS", 725, 213},
+        {"MO", 1500, 750}, {"MT", 1085, 1085}, {"NE", 1500, 213}, {"NV", 1200, 1200}, {"NH", 725, 327},
+        {"NJ", 1592, 605}, {"NM", 1200, 300}, {"NY", 1600, 1065}, {"NC", 725, 213}, {"ND", 725, 486},
+        {"OH", 1100, 550}, {"OK", 725, 213}, {"OR", 1455, 1455}, {"PA", 725, 283}, {"RI", 1600, 389},
+        {"SC", 725, 213}, {"SD", 1185, 593}, {"TN", 725, 213}, {"TX", 725, 213}, {"UT", 725, 213},
+        {"VT", 1442, 721}, {"VA", 1277, 213}, {"WA", 1713, 1713}, {"WV", 875, 262}, {"WI", 725, 233},
+        {"WY", 725, 213},
+    };
+    for (const MinimumWage &w : wages)
+        if (state == w.code)
+            return w;
+    return federal;
 }
 
 void applyStateRules(PosSettings &s, const std::string &code)
@@ -644,6 +682,7 @@ void applyStateRules(PosSettings &s, const std::string &code)
     s.seventhDayRule = r->seventhDay;
     s.mealBreakAfterHours = r->mealBreakAfter;
     s.giftCardCashBelowCents = r->giftCardCashBelowCents;
+    s.restBreakEveryHours = r->restBreakEvery;
 }
 
 } // namespace vt::core

@@ -155,6 +155,13 @@ struct PosSettings {
     };
     std::vector<PriceChange> priceChanges;
     TaxRates tax;
+    // Where the store is, for the rates suggested there (Store Settings ->
+    // Taxes; the state is laborState): its ZIP code, which rate in the ZIP
+    // applies (the table's words; "" the usual one), and the table's date
+    // when its rates were last taken ("" never).
+    std::string storeZip;
+    std::string taxWhere;
+    std::string taxAreaAsOf;
     std::vector<Tender> tenders;
     std::vector<PrinterConfig> printers;
     std::string receiptHeader;   // lines under the store name
@@ -206,9 +213,25 @@ struct PosSettings {
     // A meal break due by this many hours on the clock (California: 5; 0
     // none): a reminder for the person and Store Check.
     int mealBreakAfterHours = 0;
+    // A paid 10-minute rest break every this many hours worked (California
+    // and six other states: 4; 0 none): a reminder at login.
+    int restBreakEveryHours = 0;
+    // Fair workweek (predictive scheduling) laws: NYC, Chicago, Seattle,
+    // Philadelphia, San Francisco, Los Angeles, Evanston, Berkeley, Emeryville
+    // and Oregon, mostly for chains and large employers. The schedule is
+    // posted this many days ahead (14; 0 off): a shift added or taken off
+    // inside it is logged (Changes report) and the manager told that
+    // predictability pay may be owed. And at least this many hours between
+    // one shift's end and the next start (10, NYC 11; 0 off): less is
+    // warned about, and marked on the schedule.
+    int scheduleNoticeDays = 0;
+    int restBetweenShiftsHours = 0;
     // Gift card balances under this are cashed out when asked (California:
     // $10; 0 none).
     std::int64_t giftCardCashBelowCents = 0;
+    // IRS Form 8027: tips are allocated when reported tips fall under this
+    // share of gross receipts (8%; lower only with the IRS's approval, 2% at least).
+    std::int64_t tipAllocationBp = 800;
     int weekStartsOn = 0;
     // Whether people must close (or hand over) their checks before they
     // check out their bank, unless set per employee.
@@ -271,7 +294,8 @@ struct PosSettings {
     std::int64_t adFundBp = 0;
     // Chart of accounts for the Accounting report's journal: key -> "4010 Food sales".
     // Keys: sales, sales:<family>, tax, tax:<class>, gratuity, tips, discounts,
-    // staffMeals, rounding, giftCardsSold, tender:<tender id>.
+    // staffMeals, rounding, giftCardsSold, refunds, paidIn, paidOut,
+    // paidout:<expense category>, overShort, tender:<tender id>.
     std::map<std::string, std::string> accounts;
     std::vector<std::string> expenseCategories{"Food & supplies", "Produce", "Ice", "Cleaning", "Repairs", "Other"};
     // Self-order kiosk: send orders to the kitchen as soon as the guest
@@ -560,10 +584,24 @@ struct StateRules {
     bool seventhDay = false;
     int mealBreakAfter = 0;
     std::int64_t giftCardCashBelowCents = 0;
+    int restBreakEvery = 0;   // a paid 10-minute rest break every this many hours worked
 };
 const std::vector<StateRules> &stateRules();
 const StateRules *stateRulesFor(const std::string &code);
 // The store's state chosen: its rules into the settings.
 void applyStateRules(PosSettings &s, const std::string &code);
+
+// Each state's minimum wage, and the least cash wage for tipped employees
+// (the same where no tip credit is allowed), from the US Department of
+// Labor's tables (July 1, 2026; Florida's September 30, 2026). Where a state
+// has several (New York, Oregon by region; Connecticut by job) the lowest, so
+// a warning is never wrong; cities may have higher ones of their own.
+struct MinimumWage {
+    const char *code;
+    std::int64_t cents = 0;
+    std::int64_t tippedCents = 0;
+};
+inline constexpr const char *kMinimumWagesAsOf = "2026-09-30";
+const MinimumWage &minimumWageFor(const std::string &state);   // federal ($7.25, $2.13) when not chosen
 
 } // namespace vt::core

@@ -54,7 +54,7 @@ Item {
                 placeholderText: "RESET"
                 inputMethodHints: Qt.ImhUppercaseOnly | Qt.ImhNoPredictiveText
             }
-            Button {
+            PosButton {
                 Layout.fillWidth: true
                 implicitHeight: 70
                 font.pixelSize: 20

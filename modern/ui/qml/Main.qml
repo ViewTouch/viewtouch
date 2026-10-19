@@ -124,7 +124,7 @@ ApplicationWindow {
     // Something over the whole screen (see the page's `enabled`).
     readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
-                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible
+                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible || exemptSheet.visible
                                         || TouchGuard.sheetOpen || reasonSheet.visible || handoffSheet.visible
 
     Loader {
@@ -629,6 +629,90 @@ ApplicationWindow {
                 fontScale: 0.3
                 baseColor: "#1f6f3a"
                 onClicked: { couponSheet.open = false; couponCode.text = ""; pageView.forceActiveFocus() }
+            }
+        }
+    }
+
+    // Tax exempt (Check… -> Tax Exempt…): the buyer's exemption certificate,
+    // its number and who, kept with the check; the tax comes off. Managers.
+    Rectangle {
+        id: exemptSheet
+        objectName: "exemptSheet"
+        property bool open: false
+        readonly property string current: root.controller.pos && root.controller.pos.hasCheck
+                                          ? (root.controller.pos.check.taxExempt ?? "") : ""
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        anchors.fill: parent
+        z: 74
+        visible: open && !!root.controller.pos && root.controller.pos.hasCheck
+        color: Qt.rgba(0.04, 0.05, 0.07, 0.92)
+        onVisibleChanged: if (visible) { exemptCert.text = current; exemptCert.forceActiveFocus() }
+        Connections {
+            target: root.controller
+            function onWidgetCommand(name, args) { if (name === "taxExempt") exemptSheet.open = true }
+        }
+        MouseArea { anchors.fill: parent }
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Math.max(exemptSheet.u, parent.height * 0.06)
+            width: Math.min(parent.width - 2 * exemptSheet.u, 34 * exemptSheet.u)
+            spacing: exemptSheet.u * 0.8
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr("Tax exempt")
+                color: "white"
+                font.pixelSize: 1.6 * exemptSheet.u
+                font.bold: true
+            }
+            Text {
+                width: parent.width
+                wrapMode: Text.WordWrap
+                text: qsTr("The buyer's exemption certificate: its number and who it's for (12-3456789, St. Mary's School). It's kept with the check and printed on the receipt; keep a copy of the certificate.")
+                color: "#b8c0cc"
+                font.pixelSize: 1.0 * exemptSheet.u
+            }
+            TextField {
+                id: exemptCert
+                objectName: "exemptCert"
+                width: parent.width
+                height: 3.4 * exemptSheet.u
+                font.pixelSize: 1.3 * exemptSheet.u
+                placeholderText: qsTr("Certificate number and who")
+                onAccepted: if (text.trim() !== "") { root.controller.pos.setTaxExempt(text); exemptSheet.open = false }
+            }
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: exemptSheet.u
+                WidgetKey {
+                    objectName: "exemptApply"
+                    width: 12 * exemptSheet.u
+                    height: 3.4 * exemptSheet.u
+                    text: qsTr("Tax Exempt")
+                    fontScale: 0.3
+                    baseColor: "#2f6fd6"
+                    enabled: exemptCert.text.trim() !== ""
+                    onClicked: { root.controller.pos.setTaxExempt(exemptCert.text); exemptSheet.open = false }
+                }
+                WidgetKey {
+                    objectName: "exemptRemove"
+                    visible: exemptSheet.current !== ""
+                    width: 12 * exemptSheet.u
+                    height: 3.4 * exemptSheet.u
+                    text: qsTr("Tax It Again")
+                    fontScale: 0.3
+                    baseColor: "#5a2a2a"
+                    onClicked: { root.controller.pos.setTaxExempt(""); exemptSheet.open = false }
+                }
+                WidgetKey {
+                    objectName: "exemptCancel"
+                    width: 10 * exemptSheet.u
+                    height: 3.4 * exemptSheet.u
+                    text: qsTr("Cancel")
+                    fontScale: 0.3
+                    onClicked: { exemptSheet.open = false; pageView.forceActiveFocus() }
+                }
             }
         }
     }
@@ -1175,8 +1259,10 @@ ApplicationWindow {
         objectName: "toast"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        // At the top while the keyboard is up (not over the field being typed in).
-        anchors.bottomMargin: root.keyboardUp ? root.height - height - 24 : 24
+        // Above the row of buttons most pages have at the bottom (not over
+        // their labels); at the top while the keyboard is up (not over the
+        // field being typed in).
+        anchors.bottomMargin: root.keyboardUp ? root.height - height - 24 : Math.max(24, root.height * 0.135)
         width: Math.min(toastText.implicitWidth + 40, root.width - 40)
         height: toastText.implicitHeight + 20
         radius: 18

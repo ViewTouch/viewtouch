@@ -709,6 +709,11 @@ bool PosService::loginWithPin(const QString &pin)
                 else if (at - t <= 30 * 60'000)
                     emit notice(tr("Your meal break is due by %1.").arg(i18n::timeText(QDateTime::fromMSecsSinceEpoch(at).time())));
             }
+    // A paid rest break the state requires, due about now.
+    if (const int every = s_->settings.restBreakEveryHours; every > 0)
+        for (const TimePunch &p : s_->punches)
+            if (p.employeeId == e->id && p.open() && !p.onBreak() && now() >= p.restDueAt(every) - 15 * 60'000)
+                emit notice(tr("A paid 10-minute rest break is due (one every %n hour(s) worked).", "", every));
     // Back from someone else's turn: the check they were on, if nobody has it.
     if (const auto it = s_->resumeChecks.find(e->id); it != s_->resumeChecks.end()) {
         const std::int64_t id = it->second;
@@ -1925,6 +1930,7 @@ QVariantMap PosService::checkInfo() const
         {u"seat"_s, seat_}, {u"course"_s, course_}, {u"firedCourse"_s, c->firedCourse},
         {u"heldCount"_s, c->heldCount()}, {u"roundSize"_s, int(lastRound(*c).size())},
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
+        {u"taxExempt"_s, qs(c->taxExempt)},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
         {u"coupons"_s, checkCoupons()}, {u"hold"_s, holdInfo(*c)}, {u"tab"_s, c->type == CheckType::Tab},
         {u"tabHold"_s, s_->settings.tabHold > 0 ? format(Money::fromCents(s_->settings.tabHold)) : QString()},

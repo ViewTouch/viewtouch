@@ -318,3 +318,44 @@ TEST_CASE("Starter pages: new ones added, unedited ones updated, edits kept", "[
     CHECK(again.added.isEmpty());
     CHECK(again.updated.isEmpty());
 }
+
+TEST_CASE("Starter update: a new starter button joins a page the store edited", "[layout][starter]")
+{
+    QFile f(QStringLiteral(VTM_FIXTURE_DIR "/../check-options-2026-10.json"));   // before Tax Exempt
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const Page old = Page::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    REQUIRE_FALSE(old.zone(u"tax-exempt"_s));
+    const auto starter = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(starter);
+    REQUIRE(starter->page(u"check-options"_s)->zone(u"tax-exempt"_s));
+
+    Layout saved;
+    saved.pages = {old};
+    saved.pages[0].zones[1].label = u"Later"_s;   // edited here
+    const QHash<QString, QString> installed{{u"check-options"_s, Layout::fingerprint(old)}};
+    const auto update = saved.updateFromStarter(*starter, {u"check-options"_s}, installed);
+    CHECK(update.buttonsAdded == QStringList{u"check-options#tax-exempt"_s});
+    const Page &p = *saved.page(u"check-options"_s);
+    const Zone *exempt = p.zone(u"tax-exempt"_s);
+    REQUIRE(exempt);
+    CHECK(p.zone(u"later"_s)->label == u"Later"_s);                      // their edit kept
+    // Right after Customer…, in the same column, nothing overlapping, still in the same space.
+    const Zone *customer = p.zone(u"customer"_s);
+    CHECK(exempt->rect.x() == customer->rect.x());
+    CHECK(exempt->rect.top() > customer->rect.bottom());
+    CHECK(p.zone(u"gift-card"_s)->rect.top() > exempt->rect.bottom());
+    CHECK(exempt->rect.height() >= 64);
+    CHECK(p.zone(u"sold-out"_s)->rect.bottom() <= old.zone(u"sold-out"_s)->rect.bottom());
+    for (const Zone &a : p.zones)
+        for (const Zone &b : p.zones)
+            if (&a != &b && a.id != u"allergies"_s && a.id != u"switch"_s)   // those two share a place on purpose
+                CHECK_FALSE((a.rect.intersects(b.rect) && b.id != u"allergies"_s && b.id != u"switch"_s));
+
+    // Once buttons are tracked, one the store took off stays off.
+    Layout later;
+    later.pages = {old};
+    later.pages[0].zones[1].label = u"Later"_s;
+    const auto again = later.updateFromStarter(*starter, {u"check-options"_s, u"check-options#tax-exempt"_s}, installed);
+    CHECK(again.buttonsAdded.isEmpty());
+    CHECK_FALSE(later.page(u"check-options"_s)->zone(u"tax-exempt"_s));
+}

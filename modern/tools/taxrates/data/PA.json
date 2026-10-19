@@ -1,0 +1,13 @@
+{
+ "state": "PA",
+ "name": "Pennsylvania",
+ "stateRate": 6,
+ "everywhere": 6,
+ "source": "PA Department of Revenue: 6% state; Allegheny County 1% and Philadelphia 2% local sales tax",
+ "counties": {},
+ "cities": {},
+ "countyRates": {
+  "Allegheny": 7,
+  "Philadelphia": 8
+ }
+}

@@ -156,6 +156,7 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
         m.by = approver;
         m.at = now();
         m.category = ss(tr("Refunds"));
+        m.purpose = "refund";
         d->movements.push_back(m);
         if (s_->sink)
             s_->sink->saveDrawer(*d);

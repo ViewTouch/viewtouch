@@ -114,10 +114,10 @@ Item {
             }
             WidgetKey {
                 objectName: "eodChecklist"
-                Layout.preferredWidth: w.unit * 7
-                Layout.preferredHeight: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(46) : 0)
+                Layout.preferredWidth: w.unit * 9
+                Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
                 text: qsTr("Checklists…")
-                fontScale: 0.32
+                fontScale: 0.36
                 onClicked: w.zone.controller.jumpTo("checklists")
             }
         }
@@ -131,8 +131,9 @@ Item {
 
         Item { Layout.fillHeight: true }
 
-        // The last backup, and its second copy when one is set up.
-        RowLayout {
+        // The last backup, and its second copy when one is set up; under it,
+        // a note for the next shift and backing up now, full width.
+        ColumnLayout {
             Layout.fillWidth: true
             spacing: w.unit * 0.5
             Text {
@@ -146,22 +147,26 @@ Item {
                 font.family: w.face
                 font.pixelSize: w.unit * 0.75
             }
-            WidgetKey {
-                objectName: "handoffNote"
-                Layout.preferredWidth: w.unit * 8
-                Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(46) : 0)
-                visible: w.zone.keyShown("handoff")
-                text: w.zone.keyText("handoff", qsTr("Note for the Next Shift…"))
-                fontScale: 0.3
-                onClicked: handoffWrite.open()
-            }
-            WidgetKey {
-                Layout.preferredWidth: w.unit * 8
-                Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(46) : 0)
-                visible: w.zone.keyShown("backup")
-                text: w.zone.keyText("backup", qsTr("Back Up Now"))
-                fontScale: 0.3
-                onClicked: w.pos.backupNow()
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: w.unit * 0.5
+                WidgetKey {
+                    objectName: "handoffNote"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
+                    visible: w.zone.keyShown("handoff")
+                    text: w.zone.keyText("handoff", qsTr("Note for the Next Shift…"))
+                    fontScale: 0.36
+                    onClicked: handoffWrite.open()
+                }
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
+                    visible: w.zone.keyShown("backup")
+                    text: w.zone.keyText("backup", qsTr("Back Up Now"))
+                    fontScale: 0.36
+                    onClicked: w.pos.backupNow()
+                }
             }
         }
 
@@ -178,6 +183,8 @@ Item {
             Layout.preferredHeight: Math.max(w.unit * 3.2, w.zone ? w.zone.touch(46) : 0)
             text: w.armed ? qsTr("Tap again to close the day") : qsTr("Close the Day")
             baseColor: (w.day.ready ?? false) ? (w.armed ? "#b83232" : "#1f5f3a") : "#3a3f48"
+            // Not ready: dimmed (a touch still says what's missing).
+            textColor: (w.day.ready ?? false) ? "white" : "#9aa3b5"
             fontScale: 0.3
             onClicked: {
                 if (!(w.day.ready ?? false)) {

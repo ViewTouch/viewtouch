@@ -18,6 +18,7 @@ struct LedgerEntry {
     // sale (card sold / reloaded) | spend | refund (back to the card) | reopen |
     // charge | uncharge (charge removed) | payment
     std::string kind;
+    std::string method;        // payment: "cash" or "card" (the day's reports count it there)
     bool operator==(const LedgerEntry &) const = default;
 };
 
@@ -48,10 +49,11 @@ struct CustomerRecord {
     Money accountBalance;      // what they owe
     std::vector<LedgerEntry> account;   // charges and payments, oldest first
 
-    void post(std::int64_t at, Money amount, std::string what, std::int64_t checkId, std::string kind)
+    void post(std::int64_t at, Money amount, std::string what, std::int64_t checkId, std::string kind,
+              std::string method = {})
     {
         accountBalance += amount;
-        account.push_back({at, amount, std::move(what), checkId, std::move(kind)});
+        account.push_back({at, amount, std::move(what), checkId, std::move(kind), std::move(method)});
     }
 
     // Phone digits only, for matching "555-0101" with "(555) 0101".

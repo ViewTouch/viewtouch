@@ -99,7 +99,7 @@ Report PosService::forecastReport(QDate target, const std::vector<Check> &checks
         if (it == days.end())
             continue;
         DaySample &d = it->second;
-        const Money sales = c.totals(ctx.settings.tax).subtotal;
+        const Money sales = c.totals(ctx.settings.tax).netSales();
         d.guests += std::max(1, c.guests);
         ++d.checks;
         d.sales += sales;

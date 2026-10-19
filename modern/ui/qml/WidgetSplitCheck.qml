@@ -207,7 +207,7 @@ Item {
                 rowSpacing: 8
                 Repeater {
                     model: 8
-                    delegate: Button {
+                    delegate: PosButton {
                         required property int index
                         objectName: "splitWays-" + (index + 2)
                         Layout.fillWidth: true
@@ -226,7 +226,7 @@ Item {
                     }
                 }
             }
-            Button {
+            PosButton {
                 Layout.fillWidth: true
                 implicitHeight: 52
                 font.pixelSize: 16

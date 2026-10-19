@@ -1,13 +1,12 @@
 # Packages of the new Qt ViewTouch (modern/) for Fedora, Debian / Raspberry
-# Pi OS and Ubuntu, on x86_64 and aarch64. Run it from the Actions tab, or
-# push a modern-v* tag. The packages are attached to the run as artifacts.
+# Pi OS and Ubuntu, on x86_64 and aarch64. Run it from the Actions tab (the
+# packages are attached to the run), or push a modern-v* tag: Modern release
+# builds them and publishes the Debian 13 ones.
 name: Modern packages
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'modern-v*'
+  workflow_call:   # Modern release
 
 jobs:
   package:

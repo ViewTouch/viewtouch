@@ -167,6 +167,35 @@ bool PosService::toggleFlag(const QString &flag)
     return true;
 }
 
+// --- tax-exempt sales -----------------------------------------------------------------
+
+bool PosService::setTaxExempt(const QString &certificate)
+{
+    if (!require(perm::Manager, tr("Tax-exempt sales")))
+        return false;
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    const std::string cert = ss(certificate.simplified());
+    if (cert == c->taxExempt)
+        return true;
+    if (cert.empty() && c->taxExempt.empty())
+        return true;
+    // What the exemption takes off (or puts back): for the Audit report.
+    const Money taxBefore = c->totals(s_->settings.tax).tax;
+    c->taxExempt = cert;
+    const Money taxAfter = c->totals(s_->settings.tax).tax;
+    if (cert.empty()) {
+        noteEvent(*c, tr("Tax exemption removed"), "exempt", taxAfter - taxBefore);
+        emit notice(tr("Taxed again"));
+    } else {
+        noteEvent(*c, tr("Tax exempt: %1").arg(qs(cert)), "exempt", taxBefore - taxAfter);
+        emit notice(tr("Tax exempt: %1").arg(qs(cert)));
+    }
+    changed(*c);
+    return true;
+}
+
 // --- allergies ------------------------------------------------------------------------
 
 bool PosService::setAllergies(const QStringList &ids)

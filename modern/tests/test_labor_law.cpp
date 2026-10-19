@@ -161,3 +161,109 @@ TEST_CASE("Gift cards: a small balance cashed out where state law says so", "[la
     CHECK_FALSE(pos.giftCardInfo()[u"cashOut"_s].toBool());
     CHECK_FALSE(pos.cashOutGiftCard());
 }
+
+TEST_CASE("Labor law: Store Check warns about pay under the state's minimum wage", "[labor][minwage]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const auto warning = [&] {
+        for (const QVariant &v : pos.storeCheck()[u"checks"_s].toList())
+            if (v.toMap()[u"id"_s] == u"minimumWage"_s)
+                return v.toMap()[u"detail"_s].toString();
+        return QString();
+    };
+    core::Employee ana;
+    ana.id = "ana";
+    ana.name = "Ana";
+    ana.role = "server";
+    ana.payRate = Money::fromCents(213);   // the federal tipped cash wage
+    core::Employee cook = ana;
+    cook.id = "cook";
+    cook.name = "Cook";
+    cook.role = "cook";
+    cook.payRate = Money::fromCents(1500);
+    pos.shared()->employees.push_back(ana);
+    pos.shared()->employees.push_back(cook);
+
+    core::applyStateRules(pos.shared()->settings, "TX");   // tip credit: $2.13 is allowed
+    CHECK(warning().isEmpty());
+    core::applyStateRules(pos.shared()->settings, "CA");   // no tip credit: $16.90 for everyone
+    const QString w = warning();
+    CHECK(w.contains(u"California"_s));
+    CHECK(w.contains(u"Ana"_s));
+    CHECK(w.contains(u"$16.90"_s));
+    CHECK(w.contains(u"Cook"_s));                            // $15.00 is under $16.90 too
+    CHECK(core::minimumWageFor("").cents == 725);           // no state: federal
+}
+
+TEST_CASE("Labor law: a paid rest break every 4 hours where the state requires one", "[labor][rest]")
+{
+    core::PosSettings s;
+    core::applyStateRules(s, "CA");
+    CHECK(s.restBreakEveryHours == 4);
+    core::applyStateRules(s, "TX");
+    CHECK(s.restBreakEveryHours == 0);
+
+    core::TimePunch p;
+    p.clockIn = 0;
+    CHECK(p.restDueAt(4) == 4 * 3'600'000);
+    p.breaks.push_back({3 * 3'600'000, 3 * 3'600'000 + 10 * 60'000});   // a 10-minute break at 3 h
+    CHECK(p.restDueAt(4) == 7 * 3'600'000 + 10 * 60'000);
+    // Short breaks are paid; a 30-minute meal isn't.
+    p.breaks.push_back({5 * 3'600'000, 5 * 3'600'000 + 30 * 60'000});
+    p.clockOut = 8 * 3'600'000;
+    CHECK(p.workedMs(p.clockOut, false) == 7 * 3'600'000 + 30 * 60'000);
+}
+
+TEST_CASE("Labor law: fair workweek: changes inside the notice logged, short rest between shifts warned", "[labor][fairweek]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QStringList said;
+    QObject::connect(&pos, &app::PosService::notice, [&](const QString &n) { said << n; });
+    const QDate today = QDate::currentDate();
+    const auto day = [&](int d) { return today.addDays(d).toString(u"yyyy-MM-dd"_s); };
+    const auto shift = [&](int d, const QString &from, const QString &to) {
+        return pos.addShift({{u"employeeId"_s, u"sam"_s}, {u"start"_s, day(d) + u" "_s + from}, {u"end"_s, day(d) + u" "_s + to}});
+    };
+
+    // No such law: nothing said, nothing logged.
+    REQUIRE(shift(3, u"16:00"_s, u"23:00"_s));
+    REQUIRE(shift(4, u"07:00"_s, u"12:00"_s));
+    CHECK_FALSE(said.join(u" "_s).contains(u"notice"_s));
+    CHECK_FALSE(said.join(u" "_s).contains(u"hours off"_s));
+    CHECK(pos.changesToday().empty());
+
+    pos.shared()->settings.scheduleNoticeDays = 14;
+    pos.shared()->settings.restBetweenShiftsHours = 10;
+    said.clear();
+    // Closing at 11 PM, opening at 7 AM: 8 hours off.
+    REQUIRE(shift(5, u"16:00"_s, u"23:00"_s));
+    REQUIRE(shift(6, u"07:00"_s, u"12:00"_s));
+    CHECK(said.last().contains(u"Only 8 hours off"_s));
+    CHECK(said.last().contains(u"predictability pay"_s));            // 6 days ahead: inside 14
+    REQUIRE_FALSE(pos.changesToday().empty());
+    CHECK(pos.changesToday().back().area == "Schedule");
+    CHECK(pos.changesToday().back().field == "Inside the 14-day notice");
+    // Marked on the schedule (week by week: find it in any shown).
+    bool marked = false;
+    for (int w = 0; w < 3 && !marked; ++w) {
+        pos.setScheduleWeek(w);
+        for (const QVariant &d : pos.scheduleInfo()[u"days"_s].toList())
+            for (const QVariant &sh : d.toMap()[u"shifts"_s].toList())
+                marked = marked || sh.toMap()[u"shortRest"_s].toBool();
+    }
+    CHECK(marked);
+
+    // Three weeks ahead: outside the notice, logged without pay owed.
+    said.clear();
+    REQUIRE(shift(21, u"10:00"_s, u"16:00"_s));
+    CHECK_FALSE(said.last().contains(u"predictability"_s));
+    CHECK(pos.changesToday().back().field.empty());
+
+    // Taken off inside the notice: said and logged.
+    const qint64 id = pos.shared()->shifts.front().id;
+    REQUIRE(pos.removeShift(id));
+    CHECK(said.last().contains(u"predictability pay"_s));
+    CHECK_FALSE(pos.changesToday().back().before.empty());
+}

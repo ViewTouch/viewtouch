@@ -7,6 +7,7 @@
 #include "layoutcontroller.hh"
 #include "print/raster.hh"
 #include "editorcontroller.hh"
+#include <QAccessible>
 #include <QBuffer>
 #include <QColor>
 #include <QImage>
@@ -788,6 +789,32 @@ TEST_CASE("UI: a guest orders on the self-order kiosk", "[flow][ui][kiosk]")
     QTest::qWait(50);
     CHECK_FALSE(s.pos.selfOrderInfo()[u"on"_s].toBool());
     CHECK_FALSE(kiosk->isVisible());
+}
+
+TEST_CASE("UI: Check -> Tax Exempt takes the tax off with the buyer's certificate", "[flow][ui][tax]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"water"_s);
+    s.pos.addItem(u"cobb"_s);
+    s.pos.finishChoosing();
+    REQUIRE(s.c.jumpTo(u"check-options"_s));
+    s.c.activate(u"tax-exempt"_s);
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *sheet = Screen::findBy(root, "objectName", u"exemptSheet"_s);
+    REQUIRE(sheet);
+    QQuickItem *cert = Screen::findBy(sheet, "objectName", u"exemptCert"_s);
+    REQUIRE(cert);
+    cert->setProperty("text", u"12-3456789 St. Mary's School"_s);
+    QTest::qWait(30);
+    s.shot("tax-exempt");
+    s.tapItem(Screen::findBy(sheet, "objectName", u"exemptApply"_s));
+    QTest::qWait(80);
+    CHECK_FALSE(sheet->isVisible());
+    CHECK(s.pos.checkInfo()[u"taxExempt"_s] == u"12-3456789 St. Mary's School"_s);
+    CHECK(s.pos.totals()[u"tax"_s] == u"$0.00"_s);
 }
 
 TEST_CASE("UI: switch user keeps each person's check for when they're back", "[flow][ui][switch]")
@@ -5347,6 +5374,33 @@ TEST_CASE("Qualifiers: a finger on No, Extra... or Cancel presses nothing behind
     CHECK(chosen() == beforeCancel);
 }
 
+TEST_CASE("Setup guide: the store's ZIP code finds its tax rates", "[ui][setup][tax]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.c.openSetup();
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    for (int i = 0; i < 4; ++i) {   // welcome, store, logo, look: to taxes
+        s.tapItem(by(u"setupNext"_s));
+        QTest::qWait(80);
+    }
+    QQuickItem *zip = by(u"setupZip"_s);
+    REQUIRE(zip);
+    zip->setProperty("text", u"90012"_s);
+    QMetaObject::invokeMethod(zip, "textEdited");
+    QTest::qWait(50);
+    s.tapItem(by(u"setupFindRate"_s));
+    QTest::qWait(150);
+    // Los Angeles: the rates in the fields, the state and ZIP code saved.
+    CHECK(by(u"setupFood"_s)->property("text").toString() == u"10.25"_s);
+    CHECK(by(u"setupAlcohol"_s)->property("text").toString() == u"10.25"_s);
+    CHECK(s.pos.shared()->settings.storeZip == "90012");
+    CHECK(s.pos.shared()->settings.laborState == "CA");
+    s.shot("setup-tax-zip");
+}
+
 TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
 {
     Screen s(false, 412, 915, u"phone"_s);
@@ -5365,7 +5419,7 @@ TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
         CHECK(screen.contains(r));
     };
     const QList<QStringList> fields = {{}, {u"setupStoreName"_s, u"setupReceipt"_s}, {u"setupLogoAdd"_s},
-                                       {}, {u"setupFood"_s, u"setupAlcohol"_s},
+                                       {}, {u"setupZip"_s, u"setupFindRate"_s, u"setupFood"_s, u"setupAlcohol"_s},
                                        {u"setupItemName"_s, u"setupItemPrice"_s, u"setupItemFamily"_s, u"setupItemAdd"_s},
                                        {u"setupStaffName"_s, u"setupStaffRole"_s, u"setupStaffPin"_s, u"setupStaffAdd"_s}, {}};
     for (int step = 0; step < fields.size(); ++step) {
@@ -8482,4 +8536,83 @@ TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut 
     s.tapItem(second);
     QTest::qWait(100);
     CHECK(s.pos.kitchenTickets().size() == 2);
+}
+
+TEST_CASE("UI: a guest orders on the kiosk with a keypad, and a screen reader names the buttons", "[flow][ui][kiosk][access]")
+{
+    Screen s;
+    s.pos.enableSelfOrder();
+    QTest::qWait(60);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    QQuickItem *kiosk = find(u"selfOrder"_s);
+    REQUIRE(kiosk);
+    const auto spoken = [](QQuickItem *item) {
+        QAccessibleInterface *a = item ? QAccessible::queryAccessibleInterface(item) : nullptr;
+        return a ? a->text(QAccessible::Name) : QString();
+    };
+    const auto key = [&](Qt::Key k) {
+        QTest::keyClick(s.window, k);
+        QTest::qWait(30);
+    };
+    const auto focused = [&] { return s.window->activeFocusItem(); };
+
+    key(Qt::Key_Return);                                   // "Touch to Order", from the keypad
+    REQUIRE(find(u"kioskForHere"_s)->isVisible());
+    for (int i = 0; i < 6 && focused() != find(u"kioskForHere"_s); ++i)
+        key(Qt::Key_Right);
+    REQUIRE(focused() == find(u"kioskForHere"_s));
+    CHECK(spoken(focused()) == find(u"kioskForHere"_s)->property("text").toString());
+    key(Qt::Key_Return);
+    REQUIRE(s.pos.selfOrderInfo()[u"ordering"_s].toBool());
+    QTest::qWait(60);
+
+    // To a dish: its name and price are said; Enter adds it.
+    QString said;
+    for (int i = 0; i < 40 && !said.startsWith(u"Classic Burger"_s); ++i) {
+        key(Qt::Key_Tab);
+        said = spoken(focused());
+    }
+    CHECK(said.startsWith(u"Classic Burger, $"_s));
+    key(Qt::Key_Return);
+    QTest::qWait(60);
+    CHECK(find(u"kioskChoicesDone"_s)->isVisible());     // how it's cooked: asked as on touch
+
+    // Larger text and high contrast, and back for the next guest.
+    s.pos.kioskCancel();
+    QTest::qWait(60);
+    s.tapItem(find(u"kioskAttract"_s));
+    QTest::qWait(60);
+    s.tapItem(find(u"kioskForHere"_s));
+    QTest::qWait(60);
+    const qreal unit = kiosk->property("u").toReal();
+    s.tapItem(find(u"kioskAccess"_s));
+    QTest::qWait(30);
+    CHECK(kiosk->property("access").toBool());
+    CHECK(kiosk->property("u").toReal() > unit * 1.2);
+    s.shot("kiosk-access");
+    s.pos.kioskCancel();
+    QTest::qWait(30);
+    CHECK_FALSE(kiosk->property("access").toBool());
+}
+
+TEST_CASE("Terminal audit: every page on a 1600x900 terminal", "[.][termaudit]")
+{
+    Screen s(false, 1600, 900);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    s.c.finishChoosing();
+    s.pos.addItem(u"water"_s);
+    QStringList ids;
+    for (const layout::Page &p : s.c.layout().pages)
+        if (p.formFactor.isEmpty() && p.kind != u"template" && p.kind != u"library")
+            ids << p.id;
+    ids.sort();
+    for (const QString &id : ids) {
+        if (!s.c.jumpTo(id))
+            continue;
+        QTest::qWait(80);
+        s.shot((u"term-"_s + id).toUtf8().constData());
+    }
+    QTest::qWait(30);
 }

@@ -48,7 +48,7 @@ Item {
              : qsTr("Back (%1 min): take the payment").arg(o.outMinutes)
     }
 
-    component Key: Button {
+    component Key: PosButton {
         property color tint: "#2d3440"
         Layout.fillWidth: true
         Layout.preferredHeight: w.unit * 2.6
@@ -175,7 +175,7 @@ Item {
                 spacing: w.unit * 0.3
                 Repeater {
                     model: w.drivers
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         objectName: "driver-" + modelData.name
                         width: (parent.width - w.unit * 0.3) / 2

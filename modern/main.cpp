@@ -806,15 +806,23 @@ int runStore(const Args &cli, const Options &o)
             }
             const auto update = layout->updateFromStarter(*starter, state.seen, state.installed);
             QString error;
-            if ((!update.added.isEmpty() || !update.updated.isEmpty()) && !store.save(*layout, &error))
+            if ((!update.added.isEmpty() || !update.updated.isEmpty() || !update.buttonsAdded.isEmpty())
+                && !store.save(*layout, &error))
                 qWarning().noquote() << "Could not save the updated pages:" << error;
             if (!update.added.isEmpty())
                 qInfo().noquote() << "New starter pages added:" << update.added.join(u", ");
             if (!update.updated.isEmpty())
                 qInfo().noquote() << "Starter pages updated (they were never edited):" << update.updated.join(u", ");
+            if (!update.buttonsAdded.isEmpty())
+                qInfo().noquote() << "New starter buttons added to edited pages:" << update.buttonsAdded.join(u", ");
+            if (!update.buttonsNoRoom.isEmpty())
+                qInfo().noquote() << "New starter buttons with no room (add them in the editor):" << update.buttonsNoRoom.join(u", ");
             for (const vt::layout::Page &p : starter->pages) {
                 if (!state.seen.contains(p.id))
                     state.seen << p.id;
+                for (const vt::layout::Zone &z : p.zones)   // its buttons too: one taken off later stays off
+                    if (const QString key = p.id + u'#' + z.id; !state.seen.contains(key))
+                        state.seen << key;
             }
             state.installed = update.installed;
             store.setStarterState(state);
@@ -830,6 +838,8 @@ int runStore(const Args &cli, const Options &o)
             vt::storage::LayoutStore::StarterState state;
             for (const vt::layout::Page &p : layout->pages) {
                 state.seen << p.id;
+                for (const vt::layout::Zone &z : p.zones)
+                    state.seen << p.id + u'#' + z.id;
                 state.installed.insert(p.id, vt::layout::Layout::fingerprint(p));
             }
             store.setStarterState(state);

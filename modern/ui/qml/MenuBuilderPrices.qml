@@ -68,7 +68,7 @@ Dialog {
         }
         return out
     }
-    component Pick: Button {
+    component Pick: PosButton {
         implicitHeight: 52
         font.pixelSize: 16
         checkable: true
@@ -129,7 +129,7 @@ Dialog {
             spacing: 6
             Repeater {
                 model: 7
-                delegate: Button {
+                delegate: PosButton {
                     required property int index
                     objectName: "builderPricesDay-" + index
                     implicitHeight: 48
@@ -166,7 +166,7 @@ Dialog {
                     elide: Text.ElideRight
                     font.pixelSize: 15
                 }
-                Button {
+                PosButton {
                     objectName: "builderPriceChangeCancel-" + modelData.id
                     implicitHeight: 44
                     text: qsTr("Cancel It")

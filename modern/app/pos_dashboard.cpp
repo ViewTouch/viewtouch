@@ -41,7 +41,7 @@ QVariantMap PosService::dashboardNow() const
     for (const Check &c : s_->closedToday) {
         if (c.training)
             continue;
-        net += c.totals(st.tax).subtotal;
+        net += c.totals(st.tax).netSales();
         ++checks;
         guests += c.guests;
     }
@@ -55,7 +55,7 @@ QVariantMap PosService::dashboardNow() const
                                           weekAgo.toMSecsSinceEpoch())) {
             if (c.training)
                 continue;
-            lastWeekNet_ += c.totals(st.tax).subtotal;
+            lastWeekNet_ += c.totals(st.tax).netSales();
             ++lastWeekChecks_;
         }
         lastWeekAt_ = t;

@@ -45,7 +45,10 @@
         "h": 560
       },
       "shape": "rect",
-      "behavior": "none"
+      "behavior": "none",
+      "props": {
+        "hint": "guests"
+      }
     },
     {
       "id": "cancel",

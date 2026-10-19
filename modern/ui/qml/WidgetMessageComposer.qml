@@ -51,7 +51,7 @@ Item {
                         model: [{ id: "all", name: qsTr("Everyone") }, { id: "kitchen", name: qsTr("Kitchen screens") },
                                 { id: "floor", name: qsTr("Floor") }]
                                 .concat((w.pos ? w.pos.staff : []).filter(p => p.clockedIn).map(p => ({ id: p.name, name: p.name })))
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             text: modelData.name
                             checkable: true
@@ -68,7 +68,7 @@ Item {
                     spacing: 6
                     Repeater {
                         model: w.presets
-                        delegate: Button {
+                        delegate: PosButton {
                             required property string modelData
                             text: modelData
                             implicitHeight: 48
@@ -92,7 +92,7 @@ Item {
                     Repeater {
                         model: [{ days: 0, name: qsTr("Once") }, { days: 1, name: qsTr("Until tonight") },
                                 { days: 2, name: qsTr("Until tomorrow night") }, { days: 7, name: qsTr("For a week") }]
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             objectName: "keep-" + modelData.days
                             text: modelData.name
@@ -104,7 +104,7 @@ Item {
                         }
                     }
                 }
-                Button {
+                PosButton {
                     id: send
                     Layout.fillWidth: true
                     implicitHeight: 60
@@ -148,7 +148,7 @@ Item {
                         RowLayout {
                             width: parent.width
                             Label { text: modelData.text; font.pixelSize: 17; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                            Button {
+                            PosButton {
                                 visible: modelData.posted === true
                                 objectName: "takeDown-" + modelData.id
                                 text: qsTr("Take Down")

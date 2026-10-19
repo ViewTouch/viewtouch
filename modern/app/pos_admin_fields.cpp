@@ -281,11 +281,25 @@ QVariantList PosService::adminFields(const QString &panel)
     }
     if (panel == u"taxes") {
         return {
+            // Where the store is: the rate there, from each state's published rates.
+            with(field(u"state"_s, tr("The store's state"), u"enum"_s,
+                       tr("Also sets its overtime, meal break and gift card rules (Staff hours).")),
+                 u"options"_s, stateOptions()),
+            field(u"zip"_s, tr("ZIP code"), u"string"_s, tr("Where the store is. Save, and the rate there shows below.")),
+            with(field(u"taxWhere"_s, tr("Where in the ZIP code"), u"enum"_s,
+                       tr("Some ZIP codes have more than one rate: inside a city's limits or outside it. Choose the store's.")),
+                 u"options"_s, taxWhereOptions()),
+            field(u"suggested"_s, tr("The rate here"), u"info"_s),
+            field(u"useSuggested"_s, tr("Set the rates below to these"), u"bool"_s,
+                  tr("Food, alcohol and merchandise, then Save. Rates change: Store Check says when the table has a new one.")),
             field(u"food"_s, tr("Food tax %"), u"percent"_s),
             field(u"alcohol"_s, tr("Alcohol tax %"), u"percent"_s),
             field(u"merchandise"_s, tr("Merchandise tax %"), u"percent"_s),
             field(u"room"_s, tr("Room tax %"), u"percent"_s),
             field(u"taxTakeoutFood"_s, tr("Tax takeout food"), u"bool"_s),
+            field(u"taxGratuity"_s, tr("Tax the automatic gratuity"), u"bool"_s,
+                  tr("A charge the guest can't decline is taxable in California and Florida (on when the state is "
+                     "chosen) and in most states under conditions; tips the guest chooses never are. Ask your accountant.")),
             with(field(u"cashRounding"_s, tr("Cash rounding"), u"enum"_s,
                        tr("Where pennies are gone: checks paid in cash are rounded to the nearest 5 or 10 cents. Cards are exact.")),
                  u"options"_s, options({{"0", "None (to the cent)"}, {"5", "Nearest 5 cents"}, {"10", "Nearest 10 cents"}})),
@@ -328,10 +342,9 @@ QVariantList PosService::adminFields(const QString &panel)
                        tr("Sets its overtime, double time, meal break and gift card rules below (federal overtime "
                           "past 40 hours a week applies everywhere). They're the usual rules for restaurant staff: "
                           "check special cases with your accountant.")),
-                 u"options"_s, [] {
-                     QVariantList o{QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("(not chosen: federal rules only)")}}};
-                     for (const core::StateRules &s : core::stateRules())
-                         o.append(QVariantMap{{u"value"_s, QString::fromLatin1(s.code)}, {u"text"_s, QString::fromLatin1(s.name)}});
+                 u"options"_s, [this] {
+                     QVariantList o = stateOptions();
+                     o[0] = QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("(not chosen: federal rules only)")}};
                      return o;
                  }()),
             with(with(field(u"doubleTimeDailyHours"_s, tr("Double time after hours in a day"), u"int"_s,
@@ -341,8 +354,24 @@ QVariantList PosService::adminFields(const QString &panel)
             with(with(field(u"mealBreakAfterHours"_s, tr("A meal break is due by (hours on the clock)"), u"int"_s,
                             tr("0 = none. The person is reminded half an hour before, and Store Check shows who's late (5 in California).")),
                       u"min"_s, 0), u"max"_s, 12),
+            with(with(field(u"restBreakEveryHours"_s, tr("A paid 10-minute rest break every (hours worked)"), u"int"_s,
+                            tr("0 = none (4 in California, Colorado, Kentucky, Minnesota, Nevada, Oregon and Washington). "
+                               "The person is reminded at login. Breaks under 20 minutes are always paid.")),
+                      u"min"_s, 0), u"max"_s, 8),
+            with(with(field(u"scheduleNoticeDays"_s, tr("Post the schedule this many days ahead (fair workweek)"), u"int"_s,
+                            tr("0 = no such law here. 14 in New York City, Chicago, Seattle, Philadelphia, San Francisco, "
+                               "Los Angeles and Oregon (for the larger employers each names). Shifts changed inside it are "
+                               "logged in Reports -> Changes: predictability pay may be owed.")),
+                      u"min"_s, 0), u"max"_s, 31),
+            with(with(field(u"restBetweenShiftsHours"_s, tr("Hours off between shifts, at least"), u"int"_s,
+                            tr("0 = none. 10 under most fair workweek laws, 11 in New York City: a closing shift and the next "
+                               "morning's closer than that are warned about and marked.")),
+                      u"min"_s, 0), u"max"_s, 16),
             with(field(u"giftCardCashBelow"_s, tr("Cash out gift card balances under ($)"), u"money"_s,
                        tr("When the guest asks (California: under $10). 0 = none.")), u"min"_s, 0),
+            with(with(field(u"tipAllocation"_s, tr("Tip allocation rate, IRS Form 8027 (%)"), u"percent"_s,
+                            tr("8, unless the IRS has approved a lower rate for the store (2 at least). Reports -> IRS 8027.")),
+                      u"min"_s, 2), u"max"_s, 8),
             with(with(field(u"overtimeDailyHours"_s, tr("Overtime after hours in a day"), u"int"_s,
                             tr("0 = no daily rule (e.g. 8 in California)")), u"min"_s, 0), u"max"_s, 24),
             with(with(field(u"overtimeWeeklyHours"_s, tr("Overtime after hours in a week"), u"int"_s,

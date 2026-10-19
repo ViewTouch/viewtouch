@@ -544,6 +544,7 @@ public:
     Q_INVOKABLE void setupStore(const QString &name, const QString &lines) { invoke(QStringLiteral("setupStore"), {name, lines}); }
     Q_INVOKABLE void setupLogo(const QString &ref, bool onReceipts) { invoke(QStringLiteral("setupLogo"), {ref, onReceipts}); }
     Q_INVOKABLE void setupTaxes(double food, double alcohol) { invoke(QStringLiteral("setupTaxes"), {food, alcohol}); }
+    Q_INVOKABLE void setupTaxArea(const QString &zip) { invoke(QStringLiteral("setupTaxArea"), {zip}); }
     Q_INVOKABLE void setupAddItem(const QString &name, double price, const QString &family)
     {
         invoke(QStringLiteral("setupAddItem"), {name, price, family});
@@ -609,6 +610,7 @@ public:
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }
     Q_INVOKABLE void releaseHold() { invoke(QStringLiteral("releaseHold"), {}); }
     Q_INVOKABLE void applyCoupon(const QString &code) { invoke(QStringLiteral("applyCoupon"), {code}); }
+    Q_INVOKABLE void setTaxExempt(const QString &certificate) { invoke(QStringLiteral("setTaxExempt"), {certificate}); }
     Q_INVOKABLE void removeCoupon(const QString &id) { invoke(QStringLiteral("removeCoupon"), {id}); }
     Q_INVOKABLE void customerJoin(const QString &phone) { invoke(QStringLiteral("customerJoin"), {phone}); }
     Q_INVOKABLE void sendReceipt(const QString &how, const QString &to = {})

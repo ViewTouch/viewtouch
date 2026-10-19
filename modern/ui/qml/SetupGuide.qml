@@ -24,6 +24,7 @@ Rectangle {
     property bool receiptLogo: false
     property string foodTax: ""
     property string alcoholTax: ""
+    property string zip: ""
     property string chosenLook: ""
     property var addedItems: []
     Component.onCompleted: {
@@ -33,6 +34,18 @@ Rectangle {
         receiptLogo = info.receiptLogo ?? false
         foodTax = String(info.foodTax ?? "")
         alcoholTax = String(info.alcoholTax ?? "")
+        zip = info.zip ?? ""
+    }
+    // The rates found for the ZIP code: into the fields (still changeable).
+    Connections {
+        target: g.pos
+        ignoreUnknownSignals: true
+        function onAdminChanged() {
+            if ((g.info.zip ?? "") !== "" && g.info.zip === g.zip.slice(0, 5)) {
+                g.foodTax = String(g.info.foodTax ?? "")
+                g.alcoholTax = String(g.info.alcoholTax ?? "")
+            }
+        }
     }
 
     function next() {
@@ -107,7 +120,7 @@ Rectangle {
                 contentWidth: width - stepBar.room
                 contentHeight: stepStack.implicitHeight
                 boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: TouchScrollBar { id: stepBar }
+                ScrollBar.vertical: TouchScrollBar { id: stepBar; needed: stepArea.contentHeight > stepArea.height + 24 }
             StackLayout {
                 id: stepStack
                 width: stepArea.width - stepBar.room
@@ -192,7 +205,7 @@ Rectangle {
                             }
                         }
                         ColumnLayout {
-                            Button {
+                            PosButton {
                                 objectName: "setupLogoAdd"
                                 text: qsTr("Add Picture…")
                                 font.pixelSize: 18
@@ -284,7 +297,35 @@ Rectangle {
                 // Taxes
                 ColumnLayout {
                     spacing: 8
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("The store's ZIP code"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    RowLayout {
+                        spacing: 10
+                        TextField {
+                            objectName: "setupZip"
+                            Layout.preferredWidth: 160
+                            font.pixelSize: 22
+                            inputMethodHints: Qt.ImhDigitsOnly
+                            maximumLength: 10
+                            text: g.zip
+                            onTextEdited: g.zip = text
+                        }
+                        PosButton {
+                            objectName: "setupFindRate"
+                            text: qsTr("Find the Rate")
+                            font.pixelSize: 18
+                            enabled: g.zip.length >= 5
+                            onClicked: g.pos.setupTaxArea(g.zip)
+                        }
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        visible: text !== ""
+                        wrapMode: Text.WordWrap
+                        color: "#b8c0cc"
+                        font.pixelSize: 15
+                        text: g.info.zip === g.zip.slice(0, 5) ? (g.info.taxArea ?? "") : ""
+                    }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupFood"
                         Layout.preferredWidth: 220
@@ -310,7 +351,7 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         color: "#b8c0cc"
                         font.pixelSize: 16
-                        text: qsTr("Like 8.25. Other tax rates and cash rounding: Manager -> Taxes.")
+                        text: qsTr("The ZIP code fills these in from the state's published rates; change them if your accountant says so. Other tax rates and cash rounding: Manager -> Taxes.")
                     }
                     Item { Layout.fillHeight: true }
                 }
@@ -356,7 +397,7 @@ Rectangle {
                             font.pixelSize: 18
                             model: g.info.families ?? []
                         }
-                        Button {
+                        PosButton {
                             objectName: "setupItemAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -426,7 +467,7 @@ Rectangle {
                             inputMethodHints: Qt.ImhDigitsOnly
                             validator: RegularExpressionValidator { regularExpression: /[0-9]{0,8}/ }
                         }
-                        Button {
+                        PosButton {
                             objectName: "setupStaffAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -463,7 +504,7 @@ Rectangle {
                             }
                         }
                     }
-                    Button {
+                    PosButton {
                         objectName: "setupRetire"
                         visible: (g.info.samples ?? 0) > 0
                         text: qsTr("Turn Off the Sample Staff")
@@ -510,7 +551,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 spacing: 12
-                Button {
+                PosButton {
                     objectName: "setupLater"
                     text: qsTr("Finish Later")
                     font.pixelSize: 18
@@ -518,7 +559,7 @@ Rectangle {
                     onClicked: g.controller.closeSetup()
                 }
                 Item { Layout.fillWidth: true }
-                Button {
+                PosButton {
                     objectName: "setupBack"
                     visible: g.step > 0
                     text: qsTr("‹ Back")
@@ -527,7 +568,7 @@ Rectangle {
                     implicitWidth: g.narrow ? 96 : 160
                     onClicked: g.step = Math.max(0, g.step - 1)
                 }
-                Button {
+                PosButton {
                     objectName: "setupNext"
                     text: g.current === "done" ? qsTr("Finish") : qsTr("Next ›")
                     highlighted: true

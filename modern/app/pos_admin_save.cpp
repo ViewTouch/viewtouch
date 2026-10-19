@@ -213,17 +213,49 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         settingsChanged();
         ok = true;
     } else if (panel == u"taxes") {
+        // Where the store is: its state (and that state's labor rules), its
+        // ZIP code and which rate in it.
+        bool stateNow = false;   // a state just chosen: its gratuity rule over the form's
+        if (record.contains(u"state"_s) && !setStoreState(ss(record.value(u"state"_s).toString()), &stateNow))
+            return false;
+        bool zipChanged = false;
+        if (record.contains(u"zip"_s)) {
+            const QString zip = record.value(u"zip"_s).toString().trimmed();
+            static const QRegularExpression zipCode(u"^\\d{5}(-\\d{4})?$"_s);
+            if (!zip.isEmpty() && !zipCode.match(zip).hasMatch())
+                return fail(tr("A ZIP code is 5 digits."));
+            if (ss(zip.left(5)) != s_->settings.storeZip) {
+                s_->settings.taxWhere.clear();   // another ZIP code: its own choices
+                zipChanged = true;
+            }
+            s_->settings.storeZip = ss(zip.left(5));
+        }
+        if (record.contains(u"taxWhere"_s) && !zipChanged)
+            s_->settings.taxWhere = ss(record.value(u"taxWhere"_s).toString());
         const double rates[] = {number(record, u"food"), number(record, u"alcohol"),
                                 number(record, u"merchandise"), number(record, u"room")};
         for (double r : rates) {
             if (r < 0 || r > 100)
                 return fail(tr("Tax rates must be between 0 and 100%."));
         }
-        s_->settings.tax.foodPpm = ppmFromPercent(rates[0]);
-        s_->settings.tax.alcoholPpm = ppmFromPercent(rates[1]);
-        s_->settings.tax.merchandisePpm = ppmFromPercent(rates[2]);
+        if (record.value(u"useSuggested"_s).toBool()) {
+            // The rates where the store is (the manager asked).
+            const TaxSuggestion here = taxHere();
+            if (!here.found)
+                return fail(here.problem);
+            s_->settings.tax.foodPpm = ppmFromPercent(here.food);
+            s_->settings.tax.alcoholPpm = ppmFromPercent(here.alcohol);
+            s_->settings.tax.merchandisePpm = ppmFromPercent(here.sales);
+            s_->settings.taxAreaAsOf = ss(here.asOf);
+        } else {
+            s_->settings.tax.foodPpm = ppmFromPercent(rates[0]);
+            s_->settings.tax.alcoholPpm = ppmFromPercent(rates[1]);
+            s_->settings.tax.merchandisePpm = ppmFromPercent(rates[2]);
+        }
         s_->settings.tax.roomPpm = ppmFromPercent(rates[3]);
         s_->settings.tax.taxTakeoutFood = record.value(u"taxTakeoutFood"_s).toBool();
+        if (record.contains(u"taxGratuity"_s) && !stateNow)
+            s_->settings.tax.taxGratuity = record.value(u"taxGratuity"_s).toBool();
         if (record.contains(u"cashRounding"_s)) {
             const int step = record.value(u"cashRounding"_s).toInt();
             if (step != 0 && step != 5 && step != 10)
@@ -270,21 +302,14 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.terminalsHaveDrawer = record.value(u"terminalsHaveDrawer"_s).toBool();
         if (record.contains(u"paidBreaks"_s))
             s_->settings.paidBreaks = record.value(u"paidBreaks"_s).toBool();
+        if (record.contains(u"tipAllocation"_s))
+            s_->settings.tipAllocationBp = std::clamp<std::int64_t>(std::llround(record.value(u"tipAllocation"_s).toDouble() * 100), 200, 800);
         if (record.contains(u"checksPerServerHour"_s))
             s_->settings.checksPerServerHour = std::clamp(record.value(u"checksPerServerHour"_s).toInt(), 1, 50);
         // A state just picked: its rules (the fields below can still say otherwise).
         bool stateNow = false;
-        if (record.contains(u"laborState"_s)) {
-            const std::string state = ss(record.value(u"laborState"_s).toString());
-            if (state != s_->settings.laborState) {
-                if (state.empty())
-                    s_->settings.laborState.clear();
-                else if (core::stateRulesFor(state))
-                    core::applyStateRules(s_->settings, state), stateNow = true;
-                else
-                    return fail(tr("Choose the store's state from the list."));
-            }
-        }
+        if (record.contains(u"laborState"_s) && !setStoreState(ss(record.value(u"laborState"_s).toString()), &stateNow))
+            return false;
         if (!stateNow) {
             if (record.contains(u"overtimeDailyHours"_s))
                 s_->settings.overtimeDailyHours = std::clamp(record.value(u"overtimeDailyHours"_s).toInt(), 0, 24);
@@ -292,6 +317,12 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                 s_->settings.doubleTimeDailyHours = std::clamp(record.value(u"doubleTimeDailyHours"_s).toInt(), 0, 24);
             if (record.contains(u"seventhDayRule"_s))
                 s_->settings.seventhDayRule = record.value(u"seventhDayRule"_s).toBool();
+            if (record.contains(u"scheduleNoticeDays"_s))
+                s_->settings.scheduleNoticeDays = std::clamp(record.value(u"scheduleNoticeDays"_s).toInt(), 0, 31);
+            if (record.contains(u"restBetweenShiftsHours"_s))
+                s_->settings.restBetweenShiftsHours = std::clamp(record.value(u"restBetweenShiftsHours"_s).toInt(), 0, 16);
+            if (record.contains(u"restBreakEveryHours"_s))
+                s_->settings.restBreakEveryHours = std::clamp(record.value(u"restBreakEveryHours"_s).toInt(), 0, 8);
             if (record.contains(u"mealBreakAfterHours"_s))
                 s_->settings.mealBreakAfterHours = std::clamp(record.value(u"mealBreakAfterHours"_s).toInt(), 0, 12);
             if (record.contains(u"giftCardCashBelow"_s))

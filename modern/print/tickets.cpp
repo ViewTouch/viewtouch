@@ -128,11 +128,13 @@ Document receipt(const Check &check, const TicketContext &ctx)
     d.rule();
     d.columns(ctx.tr("Subtotal"), ctx.money(t.items));
     for (const Payment &p : check.payments) {
-        if (p.kind == TenderKind::Discount)
-            d.columns(p.tenderName, ctx.money(-t.items.percent(p.percentBp)));
+        if (p.kind == TenderKind::Discount)   // what it really took off (fixed amounts, staff meals, gift cards aside)
+            d.columns(p.tenderName, ctx.money(-(t.discountOf.contains(p.id) ? t.discountOf.at(p.id) : Money())));
     }
     for (const auto &[cls, amount] : t.taxByClass)
         d.columns(taxName(cls, ctx), ctx.money(amount));
+    if (!check.taxExempt.empty())
+        d.text(ctx.tr("Tax exempt: %1", {check.taxExempt}));
     if (t.gratuity.cents() != 0) {
         d.columns(ctx.tr("Gratuity %1%", {std::to_string(check.gratuityBp / 100)}), ctx.money(t.gratuity));
         // What it is and who gets it (service charge laws).
@@ -222,6 +224,8 @@ Document orderSlip(const Check &check, bool sent, const TicketContext &ctx)
     d.columns(ctx.tr("Subtotal"), ctx.money(t.items));
     for (const auto &[cls, amount] : t.taxByClass)
         d.columns(taxName(cls, ctx), ctx.money(amount));
+    if (!check.taxExempt.empty())
+        d.text(ctx.tr("Tax exempt: %1", {check.taxExempt}));
     d.columns(upper(ctx.tr("Total")), ctx.money(t.total), true, true);
     d.blank();
     if (t.balance.cents() > 0)

@@ -380,6 +380,7 @@ bool PosService::cashOutGiftCard()
     m.amount = amount;
     m.reason = ss(tr("Gift card %1 cashed out").arg(lastFour(g->number)));
     m.category = ss(tr("Gift card cash back"));
+    m.purpose = "giftCard";
     m.by = user()->name;
     m.at = now();
     d->movements.push_back(m);
@@ -548,6 +549,7 @@ bool PosService::payOnAccount(const QString &method, qint64 amountCents)
         m.kind = CashMovement::Kind::PaidIn;
         m.amount = amount;
         m.reason = ss(tr("Account payment: %1").arg(qs(r->name)));
+        m.purpose = "houseAccount";
         m.by = user()->name;
         m.at = now();
         d->movements.push_back(m);
@@ -558,7 +560,7 @@ bool PosService::payOnAccount(const QString &method, qint64 amountCents)
         emit s_->drawerChanged();
     }
     r->post(now(), -amount, ss(cash ? tr("Payment (cash), %1").arg(qs(user()->name))
-                                   : tr("Payment (card), %1").arg(qs(user()->name))), 0, "payment");
+                                   : tr("Payment (card), %1").arg(qs(user()->name))), 0, "payment", cash ? "cash" : "card");
     saveCustomerRecord(*r);
     entry_.clear();
     emit entryChanged();

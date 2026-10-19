@@ -10,6 +10,7 @@
 #include "core/settings.hh"
 #include "core/waitlist.hh"
 #include "app/pos_session.hh"
+#include "app/tax_areas.hh"
 
 #include <QJsonObject>
 #include <QSet>
@@ -594,6 +595,9 @@ public:
 
     // Rush ("rush") or VIP ("vip") on the current check, on or off.
     bool toggleFlag(const QString &flag);
+    // A buyer's exemption certificate (number and who): the check is tax-free
+    // ("" taxes it again). Managers.
+    bool setTaxExempt(const QString &certificate);
 
     // --- seats and courses --------------------------------------------------------
     // The seat / course new items go to; also changes the selected line.
@@ -803,6 +807,8 @@ public:
     bool setupStore(const QString &name, const QString &receiptLines);
     bool setupLogo(const QString &ref, bool onReceipts);
     bool setupTaxes(double foodPercent, double alcoholPercent);
+    // The store's ZIP code: its state and the rates there (the next step can change them).
+    bool setupTaxArea(const QString &zip);
     bool setupAddItem(const QString &name, double price, const QString &family);
     bool setupAddEmployee(const QString &name, const QString &role, const QString &pin);
     bool setupRetireSamples();
@@ -1125,6 +1131,8 @@ private:
     const core::Shift *shiftNow(const std::string &employeeId) const;
     // Why `e` can't clock in now ("" = they can).
     QString scheduleCheck(const core::Employee &e) const;
+    double shortRest(const core::Shift &s) const;
+    QString scheduleChangeNote(const core::Shift &s, bool added);
     int scheduleWeek_ = 0;
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;
@@ -1135,8 +1143,18 @@ private:
     int searchRequest_ = 0;
     // A report that can cover several days, over `closed`.
     // `refunds`: made in the range (by date); none: those on these checks.
+    // Today's house account payments (from the customers' accounts).
+    // Where the store is (Store Settings -> Taxes; pos_tax_area.cpp).
+    QVariantList stateOptions() const;
+    TaxSuggestion taxHere() const;
+    QVariantList taxWhereOptions() const;
+    QString taxAreaText(const TaxSuggestion &s) const;
+    bool setStoreState(const std::string &state, bool *applied = nullptr);
+    std::vector<core::AccountPayment> accountPaymentsToday() const;
     core::Report rangeCapableReport(const QString &id, const std::vector<core::Check> &closed,
-                                    const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr) const;
+                                    const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr,
+                                    const core::DayMoney *day = nullptr,
+                                    const std::vector<core::TimePunch> *punches = nullptr) const;
     qint64 addParty(const QVariantMap &r, bool reservation);
     core::Party *party(qint64 id);
     void saveParty(const core::Party &p);
@@ -1287,6 +1305,11 @@ private:
     QVariantList sizesOf(const core::MenuItem &m) const;
     core::ReportContext reportContext(const QString &period) const;
     QString dayLabel(const core::BusinessDay &day) const;
+    // A day's reports' period: its date and hours ("Wednesday, October 14,
+    // 2026, 10:31 AM to 2:05 AM"; "since" while it's open).
+    QString dayPeriod(const core::BusinessDay &day) const;
+    // A closed day's saved report (one saved saying "Today" gets its date).
+    core::Report pastReport(const core::BusinessDay &day, const QJsonObject &stored) const;
     bool saveMenuRecord(int index, const QVariantMap &record);
     bool saveEmployeeRecord(int index, const QVariantMap &record);
     bool saveTenderRecord(int index, const QVariantMap &record);

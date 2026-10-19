@@ -208,14 +208,14 @@ Item {
                           + qsTr("works once, until %1").arg(w.pos ? (w.pos.pairing.until ?? "") : "")
                     opacity: 0.8
                 }
-                Button {
+                PosButton {
                     Layout.minimumHeight: w.narrow ? 36 : 0
                     text: w.pos && w.pos.pairing.active ? qsTr("Stop") : qsTr("Pair a Device")
                     highlighted: !(w.pos && w.pos.pairing.active)
                     onClicked: w.pos.pairing.active ? w.pos.stopPairing() : w.pos.startPairing(false)
                 }
                 // A standby gets a copy of everything: its own kind of code.
-                Button {
+                PosButton {
                     visible: !(w.pos && w.pos.pairing.active)
                     Layout.minimumHeight: w.narrow ? 36 : 0
                     text: qsTr("Pair a Standby Computer")
@@ -240,7 +240,7 @@ Item {
                 text: w.query
                 onTextEdited: w.query = text
             }
-            Button {
+            PosButton {
                 objectName: "settingsSearchClear"
                 visible: w.query !== ""
                 Layout.fillHeight: true
@@ -273,6 +273,16 @@ Item {
                     model: w.sectioned ? w.sections : w.records
                     currentIndex: w.sectioned ? -1 : w.index
                     ScrollBar.vertical: TouchScrollBar { id: listBar }
+                    // An empty list: say so, rather than a blank box.
+                    Label {
+                        anchors.centerIn: parent
+                        width: parent.width - 24
+                        visible: list.count === 0
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                        text: w.single ? "" : qsTr("None yet. + Add makes one.")
+                        opacity: 0.6
+                    }
                     delegate: ItemDelegate {
                         id: row
                         required property var modelData
@@ -311,7 +321,7 @@ Item {
                         }
                     }
                 }
-                Button {
+                PosButton {
                     Layout.minimumHeight: w.narrow ? 36 : 0
                     visible: !w.sectioned
                     Layout.fillWidth: true
@@ -335,13 +345,13 @@ Item {
                 Layout.fillHeight: true
                 spacing: 8
 
-                Button {
+                PosButton {
                     objectName: "adminBackToList"
                     visible: w.narrow && !w.single && w.index !== -2
                     text: qsTr("‹ List")
                     onClicked: { w.index = -2; w.dirty = false }
                 }
-                Button {
+                PosButton {
                     objectName: "adminBackToSections"
                     visible: w.sectioned && w.narrow && w.query === ""
                     text: qsTr("‹ Settings")
@@ -435,35 +445,36 @@ Item {
                     visible: w.index !== -2 && !(w.sectioned && w.query === "" && w.sectionShown === "about" && !w.dirty)
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Button {
+                    PosButton {
                         objectName: "adminSave"
                         text: w.changes > 0 ? qsTr("Save %n change(s)", "", w.changes) : qsTr("Save")
                         highlighted: true
                         enabled: w.dirty || w.index === -1
                         onClicked: w.save()
                     }
-                    Button {
+                    PosButton {
                         text: qsTr("Undo changes")
                         enabled: w.dirty
                         onClicked: w.choose(w.index)
                     }
                     // Printers: a test page (saved settings), and its drawer.
-                    Button {
+                    PosButton {
                         objectName: "testPrint"
                         visible: w.panel === "printers" && w.index >= 0
                         enabled: !w.dirty
                         text: w.dirty ? qsTr("Save, then Test Print") : qsTr("Test Print")
                         onClicked: w.pos.testPrinter(w.draft.id, false)
                     }
-                    Button {
+                    PosButton {
                         visible: w.panel === "printers" && w.index >= 0 && w.draft.drawerKick === true
                         enabled: !w.dirty
                         text: qsTr("Test Print + Open Drawer")
                         onClicked: w.pos.testPrinter(w.draft.id, true)
                     }
                     Item { Layout.fillWidth: true }
-                    Button {
+                    PosButton {
                         visible: !w.single && w.index >= 0
+                        palette.button: w.armDelete ? "#a42828" : "#343c49"   // red once it's armed
                         text: w.armDelete ? qsTr("Tap again to confirm")
                                           : (w.panel === "employees" ? qsTr("Deactivate") : qsTr("Remove"))
                         onClicked: {

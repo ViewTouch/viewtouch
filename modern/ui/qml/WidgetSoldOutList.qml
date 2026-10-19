@@ -54,7 +54,7 @@ Item {
                 Text {
                     width: parent.width
                     text: (cell.modelData.available ? qsTr("Available") : qsTr("SOLD OUT (86)"))
-                          + (cell.modelData.family ? "  ·  " + cell.modelData.family : "")
+                          + (cell.modelData.family ? "  ·  " + (cell.modelData.familyName || cell.modelData.family) : "")
                     color: cell.modelData.available ? "#8a94a6" : "#ffd0d0"
                     font.family: w.face
                     font.pixelSize: 18 * grid.big

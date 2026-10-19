@@ -220,6 +220,45 @@ QString PosService::scheduleCheck(const Employee &e) const
     return tr("%1 isn't on the schedule now. A manager can clock you in from Manager → Schedule.").arg(qs(e.name));
 }
 
+// Fair workweek: hours off before or after `s` under the store's minimum,
+// against this person's other shifts (the shortest gap; -1 none short).
+double PosService::shortRest(const Shift &s) const
+{
+    const int least = s_->settings.restBetweenShiftsHours;
+    if (least <= 0)
+        return -1;
+    double shortest = -1;
+    for (const Shift &o : s_->shifts) {
+        if (o.id == s.id || o.employeeId != s.employeeId)
+            continue;
+        const std::int64_t gap = o.end <= s.start ? s.start - o.end : s.end <= o.start ? o.start - s.end : -1;
+        if (gap >= 0 && gap < std::int64_t(least) * 60 * kMinute) {
+            const double h = double(gap) / (60.0 * kMinute);
+            if (shortest < 0 || h < shortest)
+                shortest = h;
+        }
+    }
+    return shortest;
+}
+
+// A shift added or taken off inside the posted schedule's notice: logged,
+// and what may be owed said.
+QString PosService::scheduleChangeNote(const Shift &s, bool added)
+{
+    const int days = s_->settings.scheduleNoticeDays;
+    if (days <= 0)
+        return {};
+    const Employee *e = s_->employee(s.employeeId);
+    const QString when = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(s.start), u"ddd MMM d"_s) + u" "_s
+                         + hourText(s.start) + u" - "_s + hourText(s.end);
+    const bool inside = s.start < now() + std::int64_t(days) * 24 * 60 * kMinute;
+    logChange(tr("Schedule"), e ? qs(e->name) : qs(s.employeeId),
+              inside ? tr("Inside the %n-day notice", "", days) : QString(), added ? QString() : when, added ? when : QString());
+    if (!inside || s.end <= now())
+        return {};
+    return tr("Inside the %n-day notice: predictability pay may be owed, unless they asked for the change.", "", days);
+}
+
 bool PosService::addShift(const QVariantMap &r)
 {
     if (!require(perm::Manager, tr("The schedule")))
@@ -247,8 +286,14 @@ bool PosService::addShift(const QVariantMap &r)
     std::ranges::sort(s_->shifts, {}, &Shift::start);
     if (s_->sink)
         s_->sink->saveShift(s);
-    emit notice(tr("%1: %2 %3 - %4").arg(qs(e->name), i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(s.start), u"ddd"_s),
-                                         hourText(s.start), hourText(s.end)));
+    QStringList said{tr("%1: %2 %3 - %4").arg(qs(e->name), i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(s.start), u"ddd"_s),
+                                             hourText(s.start), hourText(s.end))};
+    if (const double h = shortRest(s); h >= 0)
+        said << tr("Only %1 hours off between shifts (at least %2): the hours short are usually paid at time and a half, unless they agreed in writing.")
+                    .arg(QString::number(h, 'f', h == std::floor(h) ? 0 : 1)).arg(s_->settings.restBetweenShiftsHours);
+    if (const QString n = scheduleChangeNote(s, true); !n.isEmpty())
+        said << n;
+    emit notice(said.join(u" "_s));
     emit s_->staffChanged();
     return true;
 }
@@ -260,10 +305,12 @@ bool PosService::removeShift(qint64 id)
     const auto it = std::ranges::find_if(s_->shifts, [&](const Shift &s) { return s.id == id; });
     if (it == s_->shifts.end())
         return fail(tr("That shift is gone."));
+    const Shift gone = *it;
     s_->shifts.erase(it);
     if (s_->sink)
         s_->sink->deleteShift(id);
-    emit notice(tr("Shift removed"));
+    const QString n = scheduleChangeNote(gone, false);
+    emit notice(n.isEmpty() ? tr("Shift removed") : tr("Shift removed.") + u" "_s + n);
     emit s_->staffChanged();
     return true;
 }
@@ -313,6 +360,7 @@ QVariantMap PosService::scheduleInfo() const
                 {u"name"_s, e ? qs(e->name) : qs(s.employeeId)}, {u"role"_s, e ? qs(e->role) : QString()},
                 {u"time"_s, hourText(s.start) + u" - "_s + hourText(s.end)}, {u"note"_s, qs(s.note)},
                 {u"hours"_s, s.hours()}, {u"now"_s, s.start <= now() && now() < s.end}, {u"onClock"_s, onClock},
+                {u"shortRest"_s, shortRest(s) >= 0},
             });
             hours[s.employeeId] += s.hours();
         }
@@ -336,6 +384,7 @@ QVariantMap PosService::scheduleInfo() const
                                                   : tr("Week of %1").arg(i18n::locale().toString(first, u"MMM d"_s))},
         {u"days"_s, days}, {u"totals"_s, totals}, {u"staff"_s, staff},
         {u"required"_s, s_->settings.scheduleRequired},
+        {u"noticeDays"_s, s_->settings.scheduleNoticeDays},
     };
 }
 

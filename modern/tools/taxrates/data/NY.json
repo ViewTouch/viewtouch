@@ -1,0 +1,23 @@
+{
+  "state": "NY",
+  "name": "New York",
+  "stateRate": 4,
+  "source": "NY DTF Publication 718, effective March 1, 2025 (https://www.tax.ny.gov/pdf/publications/sales/pub718.pdf)",
+  "counties": {
+    "Albany": 8, "Allegany": 8.5, "Bronx": 8.875, "Broome": 8, "Cattaraugus": 8, "Cayuga": 8, "Chautauqua": 8,
+    "Chemung": 8, "Chenango": 8, "Clinton": 8, "Columbia": 8, "Cortland": 8, "Delaware": 8, "Dutchess": 8.125,
+    "Erie": 8.75, "Essex": 8, "Franklin": 8, "Fulton": 8, "Genesee": 8, "Greene": 8, "Hamilton": 8,
+    "Herkimer": 8.25, "Jefferson": 8, "Kings": 8.875, "Lewis": 8, "Livingston": 8, "Madison": 8, "Monroe": 8,
+    "Montgomery": 8, "Nassau": 8.625, "New York": 8.875, "Niagara": 8, "Oneida": 8.75, "Onondaga": 8,
+    "Ontario": 7.5, "Orange": 8.125, "Orleans": 8, "Oswego": 8, "Otsego": 8, "Putnam": 8.375, "Queens": 8.875,
+    "Rensselaer": 8, "Richmond": 8.875, "Rockland": 8.375, "St. Lawrence": 8, "Saratoga": 7, "Schenectady": 8,
+    "Schoharie": 8, "Schuyler": 8, "Seneca": 8, "Steuben": 8, "Suffolk": 8.75, "Sullivan": 8, "Tioga": 8,
+    "Tompkins": 8, "Ulster": 8, "Warren": 7, "Washington": 7, "Wayne": 8, "Westchester": 8.375, "Wyoming": 8,
+    "Yates": 8
+  },
+  "cities": {
+    "Olean": 8, "Salamanca": 8, "Auburn": 8, "Norwich": 8, "Gloversville": 8, "Johnstown": 8, "Oneida": 8,
+    "Rome": 8.75, "Utica": 8.75, "Oswego": 8, "Ogdensburg": 8, "Saratoga Springs": 7, "Ithaca": 8,
+    "Glens Falls": 7, "Mount Vernon": 8.375, "New Rochelle": 8.375, "White Plains": 8.375, "Yonkers": 8.875
+  }
+}

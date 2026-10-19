@@ -47,7 +47,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    Button {
+                    PosButton {
                         objectName: "wasteItems"
                         text: qsTr("Menu item")
                         checkable: true
@@ -57,7 +57,7 @@ Item {
                         font.pixelSize: 15
                         onClicked: w.byIngredient = false
                     }
-                    Button {
+                    PosButton {
                         objectName: "wasteIngredients"
                         text: qsTr("Ingredient")
                         checkable: true
@@ -87,7 +87,7 @@ Item {
                     cellHeight: 58
                     model: w.choices
                     ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         objectName: "waste-" + modelData.id
                         width: grid.cellWidth - 6
@@ -105,7 +105,7 @@ Item {
                     spacing: 6
                     Repeater {
                         model: w.info.reasons ?? []
-                        delegate: Button {
+                        delegate: PosButton {
                             required property string modelData
                             required property int index
                             objectName: "wasteReason-" + index
@@ -123,7 +123,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 6
                     Label { text: qsTr("How much"); font.pixelSize: 15 }
-                    Button {
+                    PosButton {
                         objectName: "wasteLess"
                         text: "−"
                         implicitWidth: 52
@@ -141,7 +141,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
                     }
-                    Button {
+                    PosButton {
                         objectName: "wasteMore"
                         text: "+"
                         implicitWidth: 52
@@ -150,7 +150,7 @@ Item {
                         onClicked: qty.text = String((Number(qty.text) || 0) + 1)
                     }
                     Label { text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: 15 }
-                    Button {
+                    PosButton {
                         objectName: "logWaste"
                         Layout.fillWidth: true
                         Layout.leftMargin: 12

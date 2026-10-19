@@ -70,7 +70,7 @@ Item {
                     placeholderText: qsTr("#123, 17.62, a name, phone, table, server, item…")
                     onAccepted: if (text.trim().length > 1) w.fresh(text.trim())
                 }
-                Button {
+                PosButton {
                     objectName: "searchGo"
                     text: qsTr("Search")
                     highlighted: true
@@ -80,7 +80,7 @@ Item {
                     enabled: query.text.trim().length > 1
                     onClicked: w.fresh(query.text.trim())
                 }
-                Button {
+                PosButton {
                     objectName: "searchAll"
                     text: qsTr("Show All")
                     implicitHeight: 48
@@ -96,7 +96,7 @@ Item {
                 Repeater {
                     model: [[1, qsTr("Today")], [7, qsTr("Week")], [31, qsTr("Month")], [365, qsTr("Year")],
                             [730, qsTr("2 Years")], [1826, qsTr("5 Years")], [18263, qsTr("50 Years")], [0, qsTr("All")]]
-                    delegate: Button {
+                    delegate: PosButton {
                         required property var modelData
                         objectName: "range-" + modelData[0]
                         text: modelData[1]
@@ -124,13 +124,13 @@ Item {
                     opacity: 0.7
                     elide: Text.ElideRight
                 }
-                Button {
+                PosButton {
                     objectName: "pageNewer"
                     visible: w.offsets.length > 1
                     text: qsTr("‹ Newer")
                     onClicked: w.newer()
                 }
-                Button {
+                PosButton {
                     objectName: "pageOlder"
                     visible: !!w.info.more && !w.info.loading
                     text: qsTr("Older ›")
@@ -203,7 +203,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 12
                         spacing: 4
-                        Button {
+                        PosButton {
                             visible: w.narrow
                             text: qsTr("‹ Results")
                             onClicked: w.pos.selectFoundCheck(0)
@@ -283,7 +283,7 @@ Item {
                                             : (detailRow.modelData.amount ?? "")
                                         color: detailRow.type === "payment" ? "#7ee2a8" : detailRow.type === "refund" ? "#ffb3b6" : "white"
                                     }
-                                    Button {
+                                    PosButton {
                                         objectName: "refund-" + (detailRow.modelData.id ?? "")
                                         visible: detailRow.type === "payment" && !!detailRow.modelData.refundable
                                         text: qsTr("Refund…")
@@ -332,7 +332,7 @@ Item {
                             Label { text: qsTr("Total"); font.bold: true; font.pixelSize: 18; Layout.fillWidth: true }
                             Label { text: w.check ? w.check.total : ""; font.bold: true; font.pixelSize: 18 }
                         }
-                        Button {
+                        PosButton {
                             objectName: "reprint"
                             Layout.fillWidth: true
                             implicitHeight: 50
@@ -399,7 +399,7 @@ Item {
                 spacing: 6
                 Repeater {
                     model: [qsTr("Wrong item"), qsTr("Food quality"), qsTr("Charged twice"), qsTr("Order canceled"), qsTr("Guest complaint")]
-                    delegate: Button {
+                    delegate: PosButton {
                         required property string modelData
                         text: modelData
                         font.pixelSize: 13
@@ -416,13 +416,13 @@ Item {
             }
             RowLayout {
                 Layout.fillWidth: true
-                Button {
+                PosButton {
                     text: qsTr("Cancel")
                     Layout.fillWidth: true
                     implicitHeight: 52
                     onClicked: w.refunding = null
                 }
-                Button {
+                PosButton {
                     objectName: "refundGo"
                     Layout.fillWidth: true
                     implicitHeight: 52

@@ -97,7 +97,7 @@ Popup {
             controller.jumpTo("menu-builder")
     }
 
-    component Big: Button {
+    component Big: PosButton {
         implicitHeight: 56
         font.pixelSize: 17
     }
@@ -201,7 +201,7 @@ Popup {
                                     text: card.sizes[index] ? card.sizes[index].price : ""
                                     onTextEdited: card.setSize(index, "price", text)
                                 }
-                                Button {
+                                PosButton {
                                     implicitWidth: 48
                                     implicitHeight: 48
                                     text: "✕"
@@ -278,7 +278,7 @@ Popup {
                     spacing: 6
                     Repeater {
                         model: card.sharedGroups
-                        delegate: Button {
+                        delegate: PosButton {
                             required property var modelData
                             readonly property bool on: card.groups.includes(modelData.id)
                             objectName: "quickGroup-" + modelData.id
