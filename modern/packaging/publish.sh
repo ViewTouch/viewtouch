@@ -45,6 +45,15 @@ for arch in arm64 amd64; do
     [ -n "$deb" ] || continue
     v=$(dpkg-deb --field "$deb" Version 2>/dev/null || basename "$deb" | sed 's/^vtmodern_\([^_]*\)_.*/\1/')
     v=${v%%-*}
+    # Store computers update when this build (0.9.<build>) is past theirs:
+    # build 0 is a package made without the git history, never newer.
+    case "$(echo "$v" | cut -s -d. -f3)" in
+        ''|0|*[!0-9]*) false ;;
+        *) true ;;
+    esac || {
+        echo "$(basename "$deb") is version $v, without a build number (built without the git history?): not publishing." >&2
+        exit 1
+    }
     if [ -n "$version" ] && [ "$v" != "$version" ]; then
         echo "The packages are different versions ($version, $v): build them together." >&2
         exit 1
