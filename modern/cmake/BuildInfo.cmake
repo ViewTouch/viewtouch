@@ -51,9 +51,25 @@ set(history "")
 execute_process(COMMAND ${git} log --format=%h -n ${KEEP} -- . WORKING_DIRECTORY "${SRC}"
                 OUTPUT_VARIABLE hashes OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 string(REPLACE "\n" ";" hashes "${hashes}")
+# Newest first by build number, not by date: after a merge, a side branch's
+# commits are dated among the others but numbered by their own history. One
+# entry a build number.
+set(numbered "")
 foreach(h IN LISTS hashes)
     execute_process(COMMAND ${git} rev-list --count ${h} WORKING_DIRECTORY "${SRC}"
                     OUTPUT_VARIABLE n OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    list(APPEND numbered "${n}:${h}")
+endforeach()
+list(SORT numbered COMPARE NATURAL ORDER DESCENDING)
+set(previous "")
+foreach(entry IN LISTS numbered)
+    string(REPLACE ":" ";" parts "${entry}")
+    list(GET parts 0 n)
+    list(GET parts 1 h)
+    if(n STREQUAL previous)
+        continue()
+    endif()
+    set(previous "${n}")
     execute_process(COMMAND ${git} log -1 --format=%cI%x1f%s ${h} WORKING_DIRECTORY "${SRC}"
                     OUTPUT_VARIABLE about OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
     execute_process(COMMAND ${git} show ${h}:./CMakeLists.txt WORKING_DIRECTORY "${SRC}"
