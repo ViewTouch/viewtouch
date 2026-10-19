@@ -750,6 +750,7 @@ Item {
                         id: importKey
                         objectName: "builderImport"
                         font.pixelSize: 13
+                        font.bold: false   // four in a row: plain, as they fit
                         leftPadding: 2
                         rightPadding: 2
                         Layout.fillWidth: true
@@ -763,6 +764,7 @@ Item {
                         id: exportKey
                         objectName: "builderExport"
                         font.pixelSize: 13
+                        font.bold: false   // four in a row: plain, as they fit
                         leftPadding: 2
                         rightPadding: 2
                         Layout.fillWidth: true
@@ -776,6 +778,7 @@ Item {
                         id: startersKey
                         objectName: "builderTemplates"
                         font.pixelSize: 13
+                        font.bold: false   // four in a row: plain, as they fit
                         leftPadding: 2
                         rightPadding: 2
                         Layout.fillWidth: true
@@ -787,6 +790,7 @@ Item {
                         id: printKey
                         objectName: "builderPrintMenu"
                         font.pixelSize: 13
+                        font.bold: false   // four in a row: plain, as they fit
                         leftPadding: 2
                         rightPadding: 2
                         Layout.fillWidth: true

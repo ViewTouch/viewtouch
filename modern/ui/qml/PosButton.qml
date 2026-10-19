@@ -7,8 +7,6 @@ import QtQuick.Controls.Fusion
 Button {
     id: b
     font.bold: true
-    leftPadding: 12
-    rightPadding: 12
     readonly property color fill: !b.enabled ? Qt.darker(b.palette.button, 1.35)
                                   : b.down ? Qt.lighter(b.highlighted || b.checked ? "#2f6fd6" : b.palette.button, 1.35)
                                   : b.highlighted || b.checked ? "#2f6fd6" : b.palette.button
