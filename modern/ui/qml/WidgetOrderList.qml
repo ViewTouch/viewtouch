@@ -38,7 +38,50 @@ Item {
         return next
     }
 
+    // A small panel (a phone's: under 420 pixels on the screen): one line on
+    // top and the total, so several items show while ordering; Whole Check
+    // opens all of it over the menu (to the rows of buttons at the bottom).
+    readonly property bool small: zone ? w.height * zone.screenScale < 420 : false
+    property bool whole: false
+    readonly property bool folded: small && !whole
+    property real wholeHeight: height
+    function openWhole() {
+        // Down to the buttons along the bottom of the page (Send, Pay...).
+        const page = zone.parent
+        let bottom = page.height
+        for (const c of page.children)
+            if (c !== zone && c.visible && c.width > 0 && c.y >= page.height * 0.75 && c.y > zone.y + zone.height)
+                bottom = Math.min(bottom, c.y)
+        wholeHeight = Math.max(height, bottom - 12 - zone.y)
+        whole = true
+    }
+    // Folded again when the check goes (closed, put away, another opened).
+    Connections {
+        target: w.pos
+        function onCheckClosed() { w.whole = false }
+    }
+    onVisibleChanged: if (!visible) whole = false
+
+    Rectangle {
+        id: wholeArea
+        objectName: "wholeCheck"
+        visible: w.whole && w.pos !== null && w.pos.hasCheck
+        parent: w.zone ? w.zone.parent : w
+        x: w.zone ? w.zone.x : 0
+        y: w.zone ? w.zone.y : 0
+        z: 1000
+        width: w.width
+        height: w.wholeHeight
+        radius: 8
+        color: w.zone && w.zone.st.fill ? w.zone.st.fill : "#232933"
+        border.color: "#4c8dff"
+        border.width: 2
+        MouseArea { anchors.fill: parent }   // the menu under it isn't touched
+    }
+
     ColumnLayout {
+        id: body
+        parent: w.whole && wholeArea.visible ? wholeArea : w
         anchors.fill: parent
         anchors.margins: w.unit * 0.6
         spacing: w.unit * 0.3
@@ -68,7 +111,18 @@ Item {
                 fontScale: 0.5
                 onClicked: w.pos.anotherRound()
             }
+            WidgetKey {
+                objectName: "wholeCheckKey"
+                visible: w.small && w.zone.keyShown("whole")
+                Layout.preferredWidth: w.unit * 6.4
+                Layout.preferredHeight: w.unit * 1.5
+                text: w.whole ? qsTr("Close ▴") : qsTr("Whole Check ▾")
+                baseColor: w.whole ? "#2f6fd6" : "#343c49"
+                fontScale: 0.5
+                onClicked: w.whole ? (w.whole = false) : w.openWhole()
+            }
             Text {
+                visible: !w.folded
                 text: qsTr("#%1").arg(w.check.id ?? "")
                 color: "#8a94a6"
                 font.family: w.face
@@ -76,7 +130,7 @@ Item {
             }
         }
         Text {
-            visible: w.pos && w.pos.hasCheck
+            visible: w.pos && w.pos.hasCheck && !w.folded
             text: (w.check.server ?? "") + "  ·  "
                   + ((w.check.guests ?? 1) === 1 ? qsTr("1 guest") : qsTr("%1 guests").arg(w.check.guests))
                   + "  ·  " + (w.check.due ? qsTr("ready %1").arg(w.check.due) : (w.check.opened ?? ""))
@@ -92,7 +146,7 @@ Item {
         Item {
             id: tableChecks
             readonly property var checks: w.pos ? w.pos.tableChecks : []
-            visible: w.pos && w.pos.hasCheck && checks.length > 0 && w.zone.keyShown("tableChecks")
+            visible: w.pos && w.pos.hasCheck && checks.length > 0 && w.zone.keyShown("tableChecks") && !w.folded
             Layout.fillWidth: true
             Layout.preferredHeight: key
             Layout.fillHeight: false
@@ -186,7 +240,7 @@ Item {
             id: who
             readonly property var customer: w.check.customer ?? ({})
             readonly property bool delivery: w.check.type === "delivery"
-            visible: w.controls && w.pos && w.pos.hasCheck && (delivery || w.check.type === "takeout")
+            visible: w.controls && w.pos && w.pos.hasCheck && (delivery || w.check.type === "takeout") && !w.folded
             Layout.fillWidth: true
             Layout.preferredHeight: w.unit * 1.9 * Math.min(sheet.big, 1.5)
             spacing: w.unit * 0.25
@@ -233,7 +287,7 @@ Item {
         // A regular: how often they come, and their note (allergies...).
         Text {
             objectName: "regularInfo"
-            visible: w.pos && w.pos.hasCheck && !!w.check.regular
+            visible: w.pos && w.pos.hasCheck && !!w.check.regular && !w.folded
             text: "★ " + (w.check.regular ?? "")
             color: "#ffd479"
             font.family: w.face
@@ -259,7 +313,7 @@ Item {
         // Often added with what's on the check (a hint: touching one adds it).
         RowLayout {
             objectName: "goesWith"
-            visible: w.controls && w.pos && w.pos.hasCheck && (w.check.goesWith ?? []).length > 0
+            visible: w.controls && w.pos && w.pos.hasCheck && (w.check.goesWith ?? []).length > 0 && !w.folded
                      && (w.pos.lines ?? []).some(l => !l.comment && !l.fee)
             Layout.fillWidth: true
             Layout.preferredHeight: w.unit * 1.6
@@ -286,7 +340,7 @@ Item {
         }
         Text {
             readonly property var customer: w.check.customer ?? ({})
-            visible: w.pos && w.pos.hasCheck && !who.visible && !!(customer.name || customer.phone)
+            visible: w.pos && w.pos.hasCheck && !who.visible && !!(customer.name || customer.phone) && !w.folded
             text: (customer.name ?? "") + (customer.phone ? "  ·  " + customer.phone : "")
             color: "#7ec8ff"
             font.family: w.face
@@ -298,7 +352,7 @@ Item {
         // the panel's width so it never pushes the panel wider.
         Item {
             id: bar
-            visible: w.controls && w.pos && w.pos.hasCheck
+            visible: w.controls && w.pos && w.pos.hasCheck && !w.folded
             Layout.fillWidth: true
             Layout.preferredHeight: w.unit * 1.6
             Layout.fillHeight: false
@@ -663,14 +717,15 @@ Item {
                 font.bold: strong
             }
 
-            Cell { text: qsTr("Subtotal"); Layout.fillWidth: true }
-            Cell { text: w.totals.subtotal ?? "" }
-            Cell { text: qsTr("Discount"); visible: w.totals.hasDiscount ?? false; Layout.fillWidth: true }
-            Cell { text: w.totals.discounts ?? ""; visible: w.totals.hasDiscount ?? false }
-            Cell { text: qsTr("Tax"); Layout.fillWidth: true }
-            Cell { text: w.totals.tax ?? "" }
-            Cell { text: qsTr("Gratuity %1%").arg(w.totals.gratuityPercent ?? 0); visible: w.totals.hasGratuity ?? false; Layout.fillWidth: true }
-            Cell { text: w.totals.gratuity ?? ""; visible: w.totals.hasGratuity ?? false }
+            // Folded: the total only (Whole Check shows the rest).
+            Cell { text: qsTr("Subtotal"); visible: !w.folded; Layout.fillWidth: true }
+            Cell { text: w.totals.subtotal ?? ""; visible: !w.folded }
+            Cell { text: qsTr("Discount"); visible: (w.totals.hasDiscount ?? false) && !w.folded; Layout.fillWidth: true }
+            Cell { text: w.totals.discounts ?? ""; visible: (w.totals.hasDiscount ?? false) && !w.folded }
+            Cell { text: qsTr("Tax"); visible: !w.folded; Layout.fillWidth: true }
+            Cell { text: w.totals.tax ?? ""; visible: !w.folded }
+            Cell { text: qsTr("Gratuity %1%").arg(w.totals.gratuityPercent ?? 0); visible: (w.totals.hasGratuity ?? false) && !w.folded; Layout.fillWidth: true }
+            Cell { text: w.totals.gratuity ?? ""; visible: (w.totals.hasGratuity ?? false) && !w.folded }
             Cell { text: qsTr("Total"); strong: true; Layout.fillWidth: true }
             Cell { text: w.totals.total ?? ""; strong: true }
             Cell { text: qsTr("Paid"); visible: w.paid; Layout.fillWidth: true }
@@ -685,6 +740,8 @@ Item {
         id: sheet
         property string mode: ""   // "" | "table" | "move"
         objectName: "orderSheet"
+        parent: body.parent
+        z: 1
         anchors.fill: parent
         visible: mode !== "" && w.pos && w.pos.hasCheck
         color: Qt.rgba(0.06, 0.07, 0.09, 0.94)
