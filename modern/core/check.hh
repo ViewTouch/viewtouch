@@ -277,6 +277,19 @@ struct Check {
     bool rush = false;                // the kitchen does it first
     bool vip = false;                 // the kitchen takes extra care
     std::vector<std::string> allergies;   // the guest's (allergen ids): the kitchen sees them
+    // One guest's at the table (seat -> allergen ids): their items are marked.
+    std::map<int, std::vector<std::string>> seatAllergies;
+    // What a seat's items must not have: the whole table's and that seat's.
+    std::vector<std::string> allergiesFor(int seat) const
+    {
+        std::vector<std::string> out = allergies;
+        if (const auto it = seatAllergies.find(seat); seat > 0 && it != seatAllergies.end())
+            for (const std::string &a : it->second)
+                if (std::find(out.begin(), out.end(), a) == out.end())
+                    out.push_back(a);
+        return out;
+    }
+    bool anyAllergies() const { return !allergies.empty() || !seatAllergies.empty(); }
     std::vector<std::string> coupons;     // promotions whose code was entered on it (their ids)
     CardHold hold;                        // a tab's card, held
     bool kiosk = false;               // a guest ordered it on the self-order kiosk

@@ -53,6 +53,23 @@ struct PosServer::Connection {
     int build = 0;            // what it runs (hello); 0: older than build numbers
     QString version, platform;
     bool answersPings = false;   // a terminal that says "pong" (older ones don't)
+    // Its run of the app (hello): coming back with it after the Wi-Fi
+    // dropped, it gets this session again.
+    QString resumeToken;
+    // The latest calls done, by id, and what they answered: one sent again
+    // (its answer was lost with the connection) is answered, not done twice.
+    QHash<qint64, QJsonValue> answered;
+    QList<qint64> answeredOrder;
+};
+
+// A handheld gone out of reach with someone logged in: its session, with
+// the check open as it was, until it comes back (or a few minutes pass).
+struct PosServer::Away {
+    std::unique_ptr<app::PosService> session;
+    QString terminalId, resumeToken;
+    QHash<qint64, QJsonValue> answered;
+    QList<qint64> answeredOrder;
+    qint64 since = 0;
 };
 
 namespace {
@@ -313,6 +330,7 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
             c->socket->abort();
             drop(c);
         }
+        letGoAway(now - keepAwayMs_);
     });
     pingTimer_.start();
     flushTimer_.setSingleShot(true);
@@ -493,34 +511,48 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         c->build = m.value(u"build").toInt();
         c->version = m.value(u"version").toString();
         c->platform = m.value(u"platform").toString();
-        c->session = std::make_unique<app::PosService>(shared_, name);
-        app::PosService *s = c->session.get();
-        if (paired->screen == "selfOrder")   // Manager -> Terminals: a kiosk for guests
-            s->enableSelfOrder();
-        // Any change to this session's state is sent out on the next flush
-        // (the pieces that signal names).
-        for (auto signal : {&app::PosSession::sessionChanged, &app::PosSession::entryChanged,
-                            &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
-                            &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
-                            &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
-                            &app::PosSession::adminChanged, &app::PosSession::imagesChanged}) {
-            const quint32 bit = bitOfSignal(QMetaMethod::fromSignal(signal));
-            connect(s, signal, this, [this, c, bit] {
-                c->dirty |= bit;
-                scheduleFlushAll();
-            });
+        c->resumeToken = m.value(u"resume").toString();
+        // Back after the Wi-Fi dropped (the same run of the app): its session
+        // as it was, logged in with the check open. From the connection this
+        // server hasn't noticed is gone yet, or from those kept away.
+        bool resumed = false;
+        if (!c->resumeToken.isEmpty()) {
+            for (auto &old : connections_) {
+                if (old.get() == c || !old->session || old->terminalId != c->terminalId
+                    || old->resumeToken != c->resumeToken)
+                    continue;
+                detach(old.get());
+                c->session = std::move(old->session);
+                c->answered = std::move(old->answered);
+                c->answeredOrder = std::move(old->answeredOrder);
+                old->socket->abort();   // may drop it at once: done with it here
+                resumed = true;
+                break;
+            }
         }
-        // Who is logged in changes much of what there is to show (the menu
-        // is only sent to someone logged in): all of it, now. It waited for
-        // the next 30 s round, and a handheld's menu stayed empty until then.
-        connect(s, &app::PosSession::loggedInChanged, this, [this, c] {
-            c->dirty = ~0u;
-            scheduleFlushAll();
-        });
-        connect(s, &app::PosSession::notice, this, [c](const QString &text) { c->notices << text; });
-        connect(s, &app::PosSession::checkClosed, this, [c](qint64 id) {
-            c->events << QJsonObject{{u"t"_s, u"event"_s}, {u"e"_s, u"checkClosed"_s}, {u"v"_s, id}};
-        });
+        for (auto it = away_.begin(); it != away_.end();) {
+            Away &a = **it;
+            if (a.terminalId != c->terminalId) {
+                ++it;
+                continue;
+            }
+            if (!resumed && !c->resumeToken.isEmpty() && a.resumeToken == c->resumeToken) {
+                c->session = std::move(a.session);
+                c->answered = std::move(a.answered);
+                c->answeredOrder = std::move(a.answeredOrder);
+                resumed = true;
+            }
+            const bool letGo = a.session != nullptr;   // the app started over there: its old session ends
+            it = away_.erase(it);
+            if (letGo)
+                emit shared_->checksChanged();
+        }
+        if (!c->session)
+            c->session = std::make_unique<app::PosService>(shared_, name);
+        app::PosService *s = c->session.get();
+        if (paired->screen == "selfOrder" && !resumed)   // Manager -> Terminals: a kiosk for guests
+            s->enableSelfOrder();
+        attach(c);
         c->subscribes = m.value(u"subscribes").toBool();
         c->sent = s->snapshot();
         for (auto it = c->sent.begin(); it != c->sent.end();)
@@ -531,12 +563,12 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         QJsonObject welcome{{u"t"_s, u"welcome"_s}, {u"protocol"_s, ProtocolVersion},
                             {u"version"_s, me.version}, {u"build"_s, me.number},
                             {u"layout"_s, layouts_->layout().toJson()},
-                            {u"state"_s, QJsonObject::fromVariantMap(c->sent)}};
+                            {u"state"_s, QJsonObject::fromVariantMap(c->sent)}, {u"resumed"_s, resumed}};
         if (const UpdateFile u = updateFor(c->platform, c->build); !u.path.isEmpty())
             welcome.insert(u"update"_s, QJsonObject{{u"name"_s, QFileInfo(u.path).fileName()}, {u"build"_s, u.build},
                                                     {u"size"_s, QFileInfo(u.path).size()}});
         c->channel->send(welcome);
-        qCInfo(lcServer) << "terminal connected:" << name;
+        qCInfo(lcServer) << (resumed ? "terminal back:" : "terminal connected:") << name;
         emit terminalsChanged();
         return;
     }
@@ -566,9 +598,20 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
 
     if (type == u"call") {
         const qint64 id = m.value(u"id").toInteger();
+        // Sent again after a dropped connection: done already, its answer again.
+        if (const auto done = c->answered.constFind(id); id > 0 && done != c->answered.cend()) {
+            c->channel->send({{u"t"_s, u"reply"_s}, {u"id"_s, id}, {u"r"_s, *done}});
+            return;
+        }
         QVariant result;
         c->session->invoke(m.value(u"m").toString(), m.value(u"a").toArray().toVariantList(),
                            [&result](const QVariant &r) { result = r; });
+        if (id > 0 && !c->resumeToken.isEmpty()) {
+            c->answered.insert(id, QJsonValue::fromVariant(result));
+            c->answeredOrder.append(id);
+            if (c->answeredOrder.size() > 256)
+                c->answered.remove(c->answeredOrder.takeFirst());
+        }
         // State (and events) before the reply (nothing changes meanwhile: shared parts made once).
         shared_->beginMemo();
         inRound_ = true;
@@ -600,6 +643,62 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
                           {u"r"_s, QJsonObject{{u"ok"_s, ok}, {u"error"_s, error}}}});
         return;
     }
+}
+
+void PosServer::attach(Connection *c)
+{
+    app::PosService *s = c->session.get();
+    // Any change to this session's state is sent out on the next flush
+    // (the pieces that signal names).
+    for (auto signal : {&app::PosSession::sessionChanged, &app::PosSession::entryChanged,
+                        &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
+                        &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
+                        &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
+                        &app::PosSession::adminChanged, &app::PosSession::imagesChanged}) {
+        const quint32 bit = bitOfSignal(QMetaMethod::fromSignal(signal));
+        connect(s, signal, this, [this, c, bit] {
+            c->dirty |= bit;
+            scheduleFlushAll();
+        });
+    }
+    // Who is logged in changes much of what there is to show (the menu
+    // is only sent to someone logged in): all of it, now. It waited for
+    // the next 30 s round, and a handheld's menu stayed empty until then.
+    connect(s, &app::PosSession::loggedInChanged, this, [this, c] {
+        c->dirty = ~0u;
+        scheduleFlushAll();
+    });
+    connect(s, &app::PosSession::notice, this, [c](const QString &text) { c->notices << text; });
+    connect(s, &app::PosSession::checkClosed, this, [c](qint64 id) {
+        c->events << QJsonObject{{u"t"_s, u"event"_s}, {u"e"_s, u"checkClosed"_s}, {u"v"_s, id}};
+    });
+}
+
+void PosServer::detach(Connection *c)
+{
+    if (c->session)
+        QObject::disconnect(c->session.get(), nullptr, this, nullptr);
+}
+
+void PosServer::keepAway(Connection *c)
+{
+    auto a = std::make_unique<Away>();
+    detach(c);
+    a->session = std::move(c->session);
+    a->terminalId = c->terminalId;
+    a->resumeToken = c->resumeToken;
+    a->answered = std::move(c->answered);
+    a->answeredOrder = std::move(c->answeredOrder);
+    a->since = QDateTime::currentMSecsSinceEpoch();
+    qCInfo(lcServer) << "keeping the session of" << a->session->terminalName() << "for when it's back";
+    away_.push_back(std::move(a));
+}
+
+void PosServer::letGoAway(qint64 olderThan)
+{
+    const auto n = std::erase_if(away_, [olderThan](const auto &a) { return a->since <= olderThan; });
+    if (n > 0)   // their checks are free again
+        emit shared_->checksChanged();
 }
 
 void PosServer::pair(Connection *c, const QJsonObject &m)
@@ -840,6 +939,9 @@ void PosServer::drop(Connection *c)
         QMetaObject::invokeMethod(this, &PosServer::standbyChanged, Qt::QueuedConnection);
     }
     c->socket->deleteLater();
+    // A handheld out of reach with someone logged in: kept for it to come back to.
+    if (c->session && !c->resumeToken.isEmpty() && c->session->loggedIn() && keepAwayMs_ > 0)
+        keepAway(c);
     // Destroying the session releases the check it had open; tell the rest.
     const bool hadSession = c->session != nullptr;
     connections_.erase(it);

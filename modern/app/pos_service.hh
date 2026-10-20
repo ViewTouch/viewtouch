@@ -223,6 +223,8 @@ public:
     // once in the background): checks with each item, and with each pair.
     std::map<std::string, int> pastChecksWith;
     std::map<std::string, std::map<std::string, int>> pastTogether;
+    // ...and how many of each item each server ordered (employee id -> item).
+    std::map<std::string, std::map<std::string, int>> pastByServer;
     bool pastTogetherAsked = false;
     // ...and today's, counted as checks close (not again for every screen).
     std::map<std::string, int> todayChecksWith;
@@ -784,8 +786,11 @@ public:
     QVariantList deliveries() const override;
     QVariantList drivers() const override;
     QStringList popularItems() const override;
+    QStringList myUsuals() const override;
     // Often ordered with what's on this check (a hint on the order screen): {id, name}.
     QVariantList goesWith(const core::Check &c) const;
+    // The past four weeks' checks, counted once in the background (goesWith, myUsuals).
+    void askPastOnce() const;
     // Arranging the self-filling menu by touch (managers): one place earlier
     // or later within its family, and its button color.
     bool moveMenuItem(const QString &id, int by);
@@ -854,7 +859,8 @@ public:
     // What would trip up service: [{text, item, group, category, serious}].
     QVariantList menuProblems() const override;
     QVariantMap menuExport();
-    bool setAllergies(const QStringList &ids);
+    // The whole table's (seat 0) or one guest's.
+    bool setAllergies(const QStringList &ids, int seat = 0);
     bool cardForwarded(const QVariantMap &r);
     QVariantList cardAlerts() const override;
     bool seeCardAlert(const QString &ref);

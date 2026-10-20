@@ -357,6 +357,8 @@ ApplicationWindow {
     Rectangle {
         id: offline
         readonly property bool standby: !!root.controller.pos && (root.controller.pos as PosService).standbyReady
+        readonly property int held: root.controller.pos ? root.controller.pos.heldCount : 0
+        objectName: "offlineBar"
         visible: !!root.controller.pos && !root.controller.pos.online
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -374,8 +376,9 @@ ApplicationWindow {
                 color: "white"
                 font.pixelSize: 18
                 font.bold: true
-                text: offline.standby ? qsTr("The main server isn't answering.\nThe standby computer takes over in a few seconds.")
-                                      : qsTr("Reconnecting to the server…")
+                text: (offline.standby ? qsTr("The main server isn't answering.\nThe standby computer takes over in a few seconds.")
+                                       : qsTr("No connection. Reconnecting…"))
+                      + (offline.held > 0 ? "\n" + qsTr("%n tap(s) waiting: they go in when it's back.", "", offline.held) : "")
             }
             WidgetKey {
                 objectName: "takeOverNow"
@@ -462,8 +465,17 @@ ApplicationWindow {
         id: allergySheet
         objectName: "allergySheet"
         property bool open: false
-        readonly property var chosen: root.controller.pos && root.controller.pos.hasCheck
-                                      ? (root.controller.pos.check.allergies ?? []) : []
+        // Whose: the whole table (0) or one guest's seat; at first the seat
+        // being ordered for.
+        property int seat: 0
+        readonly property var check: root.controller.pos && root.controller.pos.hasCheck ? root.controller.pos.check : ({})
+        readonly property var chosen: seat > 0 ? ((check.seatAllergies ?? {})[String(seat)] ?? []) : (check.allergies ?? [])
+        readonly property int seats: {
+            let n = Math.max(check.guests ?? 0, check.seat ?? 0)
+            for (const k in (check.seatAllergies ?? {})) n = Math.max(n, Number(k))
+            for (const l of (root.controller.pos ? root.controller.pos.lines : [])) n = Math.max(n, l.seat ?? 0)
+            return n
+        }
         readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
         anchors.fill: parent
         z: 74
@@ -471,7 +483,12 @@ ApplicationWindow {
         color: Qt.rgba(0.04, 0.05, 0.07, 0.92)
         Connections {
             target: root.controller
-            function onWidgetCommand(name, args) { if (name === "allergies") allergySheet.open = true }
+            function onWidgetCommand(name, args) {
+                if (name !== "allergies")
+                    return
+                allergySheet.seat = args && args.seat !== undefined ? args.seat : (allergySheet.check.seat ?? 0)
+                allergySheet.open = true
+            }
         }
         MouseArea { anchors.fill: parent }
         Column {
@@ -482,10 +499,32 @@ ApplicationWindow {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                text: qsTr("What is the guest allergic to?")
+                text: allergySheet.seat > 0 ? qsTr("What is seat %1 allergic to?").arg(allergySheet.seat)
+                                            : qsTr("What is the guest allergic to?")
                 color: "white"
                 font.pixelSize: 1.6 * allergySheet.u
                 font.bold: true
+            }
+            // Whose: the whole table, or a seat (a red mark: has some).
+            Flow {
+                visible: allergySheet.seats > 0
+                width: parent.width
+                spacing: allergySheet.u / 3
+                Repeater {
+                    model: allergySheet.seats + 1
+                    delegate: WidgetKey {
+                        required property int index
+                        readonly property bool has: index > 0 ? ((allergySheet.check.seatAllergies ?? {})[String(index)] ?? []).length > 0
+                                                              : (allergySheet.check.allergies ?? []).length > 0
+                        objectName: "allergySeat" + index
+                        width: index === 0 ? 9 * allergySheet.u : 3.6 * allergySheet.u
+                        height: 3 * allergySheet.u
+                        text: (has ? "⚠ " : "") + (index === 0 ? qsTr("Whole table") : index)
+                        fontScale: index === 0 ? 0.3 : 0.4
+                        accent: index === allergySheet.seat
+                        onClicked: allergySheet.seat = index
+                    }
+                }
             }
             Grid {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -506,7 +545,7 @@ ApplicationWindow {
                             const list = allergySheet.chosen.slice()
                             const at = list.indexOf(modelData.id)
                             if (at >= 0) list.splice(at, 1); else list.push(modelData.id)
-                            root.controller.pos.setAllergies(list)
+                            root.controller.pos.setAllergies(list, allergySheet.seat)
                         }
                     }
                 }
@@ -1284,6 +1323,47 @@ ApplicationWindow {
 
         Behavior on opacity { NumberAnimation { duration: 150 } }
         Timer { id: toastTimer; interval: 2600; onTriggered: toastBox.opacity = 0 }
+    }
+
+    // What was just added, for a moment ("+ Caesar · Seat 2"): seen from the
+    // corner of the eye while looking at the guest. Touches go through it.
+    Rectangle {
+        id: addedFlash
+        objectName: "addedFlash"
+        property string text: ""
+        property bool waiting: false
+        Connections {
+            target: root.controller
+            function onAddedFlash(text, waiting) {
+                addedFlash.text = text
+                addedFlash.waiting = waiting
+                addedFlash.opacity = 1
+                addedTimer.restart()
+            }
+        }
+        z: 49
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: Math.round(root.height * 0.36)
+        width: Math.min(addedText.implicitWidth + 48, root.width - 32)
+        height: addedText.implicitHeight + 22
+        radius: height / 2
+        color: waiting ? "#e0805a10" : "#e0186b3a"
+        border.color: waiting ? "#f5b940" : "#3ddc84"
+        border.width: 2
+        opacity: 0
+        visible: opacity > 0
+        Text {
+            id: addedText
+            anchors.centerIn: parent
+            width: Math.min(implicitWidth, root.width - 80)
+            elide: Text.ElideRight
+            color: "white"
+            font.pixelSize: 22
+            font.bold: true
+            text: addedFlash.text + (addedFlash.waiting ? "  " + qsTr("(waiting)") : "")
+        }
+        Behavior on opacity { NumberAnimation { duration: 180 } }
+        Timer { id: addedTimer; interval: 900; onTriggered: addedFlash.opacity = 0 }
     }
 
     // A held button: what it does (touch to close; gone after a while).

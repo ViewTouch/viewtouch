@@ -197,6 +197,8 @@ QVariantList PosService::adminFields(const QString &panel)
                  u"options"_s, options({{"100", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
             field(u"leftHanded"_s, tr("Left-handed"), u"bool"_s,
                   tr("On their order and Pay screens the check is on the right and the menu on the left.")),
+            field(u"buzz"_s, tr("Buzz for each item"), u"bool"_s,
+                  tr("A handheld gives a short buzz each time they add an item, so they know it went on without looking.")),
             with(with(field(u"startPage"_s, tr("Start screen"), u"page"_s,
                        tr("The floor plan they see first when they log in. Empty: their job's (Store settings).")),
                  u"emptyText"_s, tr("(their job's)")), u"pages"_s, u"floor"_s),
@@ -419,6 +421,9 @@ QVariantList PosService::adminFields(const QString &panel)
                    tr("+ Add a station or printer")),
             with(with(field(u"laterLeadMinutes"_s, tr("Orders for later go to the kitchen (minutes before)"), u"int"_s,
                             tr("An order for 6:30 with 20 here reaches the kitchen at 6:10.")), u"min"_s, 0), u"max"_s, 240),
+            field(u"sendToTables"_s, tr("After Send, back to the tables"), u"bool"_s,
+                  tr("Send on a table's check goes back to the floor plan, ready for the next table (bar tabs and "
+                     "takeout stay on the order).")),
             field(u"requireOrderName"_s, tr("Phone orders need a name before Send"), u"bool"_s,
                   tr("Takeout and delivery: a name (and an address for deliveries) before the kitchen gets it. "
                      "Each person and each screen can say otherwise (Employees, Terminals).")),

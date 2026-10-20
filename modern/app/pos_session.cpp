@@ -24,7 +24,7 @@ const QStringList &PosSession::stateKeys()
         u"terminalName"_s, u"loggedIn"_s, u"userName"_s, u"userRole"_s, u"permissions"_s, u"clockedIn"_s,
         u"clockedInSince"_s, u"storeName"_s, u"currencySymbol"_s, u"customColors"_s, u"priceChanges"_s, u"pinLength"_s, u"entry"_s, u"entryAmount"_s,
         u"entryGuests"_s, u"textEntry"_s, u"pendingQualifier"_s, u"pendingTable"_s, u"hasCheck"_s, u"check"_s, u"tableChecks"_s, u"undoText"_s,
-        u"lines"_s, u"totals"_s, u"payments"_s, u"selectedLine"_s, u"selectedPayment"_s, u"openChecks"_s, u"openChecksShared"_s, u"openChecksViewer"_s, u"floor"_s, u"deliveries"_s, u"drivers"_s, u"popularItems"_s, u"stockLeft"_s, u"dashboard"_s, u"checklists"_s,
+        u"lines"_s, u"totals"_s, u"payments"_s, u"selectedLine"_s, u"selectedPayment"_s, u"openChecks"_s, u"openChecksShared"_s, u"openChecksViewer"_s, u"floor"_s, u"deliveries"_s, u"drivers"_s, u"popularItems"_s, u"myUsuals"_s, u"stockLeft"_s, u"dashboard"_s, u"checklists"_s,
         u"checkFilter"_s, u"kitchenTickets"_s, u"drawer"_s, u"day"_s, u"days"_s, u"adminRevision"_s,
         u"tipsOwed"_s, u"mealPeriods"_s, u"pairing"_s, u"screenMode"_s, u"terminalLook"_s, u"terminalKeyboard"_s, u"terminalStartCategory"_s, u"cardReader"_s, u"readerToken"_s, u"counterCharge"_s, u"receiptOffer"_s,
         u"closedChecks"_s, u"staff"_s, u"checkHistory"_s, u"choosing"_s, u"weighing"_s, u"setup"_s, u"soldOut"_s, u"menuItems"_s, u"menuCategories"_s, u"choiceGroups"_s, u"menuTemplates"_s, u"menuProblems"_s, u"menuUndoText"_s, u"cardAlerts"_s, u"onBreakSince"_s,
@@ -82,7 +82,7 @@ QVariantMap PosSession::snapshot() const
         {u"pendingQualifier"_s, pendingQualifier()}, {u"pendingTable"_s, pendingTable()},
         {u"hasCheck"_s, hasCheck()}, {u"check"_s, checkInfo()}, {u"tableChecks"_s, tableChecks()}, {u"undoText"_s, undoText()}, {u"lines"_s, lines()}, {u"totals"_s, totals()},
         {u"payments"_s, payments()}, {u"selectedLine"_s, selectedLine()}, {u"selectedPayment"_s, selectedPayment()},
-        {u"openChecks"_s, openChecks()}, {u"openChecksShared"_s, openChecksShared()}, {u"openChecksViewer"_s, openChecksViewer()}, {u"floor"_s, floor()}, {u"deliveries"_s, deliveries()}, {u"drivers"_s, drivers()}, {u"popularItems"_s, popularItems()}, {u"stockLeft"_s, stockLeft()}, {u"dashboard"_s, dashboard()}, {u"checklists"_s, checklists()}, {u"checkFilter"_s, checkFilter()}, {u"kitchenTickets"_s, kitchenTickets()},
+        {u"openChecks"_s, openChecks()}, {u"openChecksShared"_s, openChecksShared()}, {u"openChecksViewer"_s, openChecksViewer()}, {u"floor"_s, floor()}, {u"deliveries"_s, deliveries()}, {u"drivers"_s, drivers()}, {u"popularItems"_s, popularItems()}, {u"myUsuals"_s, myUsuals()}, {u"stockLeft"_s, stockLeft()}, {u"dashboard"_s, dashboard()}, {u"checklists"_s, checklists()}, {u"checkFilter"_s, checkFilter()}, {u"kitchenTickets"_s, kitchenTickets()},
         {u"drawer"_s, drawerInfo()}, {u"day"_s, dayInfo()}, {u"days"_s, days()},
         {u"adminRevision"_s, adminRevision()}, {u"tipsOwed"_s, tipsOwed()},
         {u"mealPeriods"_s, mealPeriods()}, {u"pairing"_s, pairingInfo()}, {u"screenMode"_s, screenMode()}, {u"terminalLook"_s, terminalLook()}, {u"terminalKeyboard"_s, terminalKeyboard()}, {u"terminalStartCategory"_s, terminalStartCategory()},
@@ -139,7 +139,8 @@ QVariantMap PosSession::tableStatus(const QString &label) const
         return *it;
     QVariantMap status{{u"open"_s, false}};
     int count = 0;
-    qint64 total = 0;
+    qint64 total = 0, lastSent = 0;
+    int unsent = 0;
     bool current = false;
     QString busy;
     for (const QVariant &v : tables_->checks.value(label)) {
@@ -150,6 +151,8 @@ QVariantMap PosSession::tableStatus(const QString &label) const
                       {u"since"_s, c.value(u"openedAt"_s)}, {u"longAfter"_s, c.value(u"longAfter"_s)}};
         }
         total += c.value(u"totalCents"_s).toLongLong();
+        lastSent = std::max(lastSent, c.value(u"lastSentAt"_s).toLongLong());
+        unsent += c.value(u"unsent"_s).toInt();
         current = current || c.value(u"current"_s).toBool();
         if (busy.isEmpty())
             busy = c.value(u"busyOn"_s).toString();
@@ -159,6 +162,8 @@ QVariantMap PosSession::tableStatus(const QString &label) const
         status.insert(u"total"_s, formatCents(total));
         status.insert(u"current"_s, current);
         status.insert(u"busyOn"_s, busy);   // open on another terminal
+        status.insert(u"lastSentAt"_s, lastSent);
+        status.insert(u"unsent"_s, unsent);
     }
     // The host stand: needs bussing, held for a party, or pushed together with another table.
     const QVariantMap f = tables_->floor.value(label).toMap();

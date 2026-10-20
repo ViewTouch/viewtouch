@@ -45,7 +45,7 @@ QVariantList PosService::adminRecords(const QString &panel)
         for (const Employee &e : s_->employees) {
             QVariantMap r{{u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
                           {u"active"_s, e.active}, {u"training"_s, e.training}, {u"pin"_s, QString()}, {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"language"_s, qs(e.language)},
-                          {u"textSize"_s, QString::number(e.textSize)}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)},
+                          {u"textSize"_s, QString::number(e.textSize)}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
                           {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
                                QStringList lines;
                                for (const Job &j : e.otherJobs)
@@ -193,6 +193,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"kitchenLateMinutes"_s, s_->settings.kitchenLateMinutes},
              {u"laterLeadMinutes"_s, s_->settings.laterLeadMinutes},
              {u"requireOrderName"_s, s_->settings.requireOrderName}, {u"takeoutMinutes"_s, s_->settings.takeoutMinutes},
+             {u"sendToTables"_s, s_->settings.sendToTables},
              {u"deliveryMinutes"_s, s_->settings.deliveryMinutes},
              {u"minutesPerOrderWaiting"_s, s_->settings.minutesPerOrderWaiting},
              {u"deliveryFee"_s, double(s_->settings.deliveryFee.cents()) / 100.0},
@@ -310,7 +311,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"role"_s, u"server"_s}, {u"pin"_s, QString()},
                 {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"reasons"_s, QString()}, {u"look"_s, QString()}, {u"tipPool"_s, QString()},
                 {u"payRate"_s, 0.0}, {u"otherJobs"_s, QString()}, {u"language"_s, QString()},
-                {u"textSize"_s, u"100"_s}, {u"leftHanded"_s, false}, {u"startPage"_s, QString()},
+                {u"textSize"_s, u"100"_s}, {u"leftHanded"_s, false}, {u"startPage"_s, QString()}, {u"buzz"_s, true},
                 {u"perm:order"_s, QString()}, {u"perm:check.settle"_s, QString()}, {u"perm:check.others"_s, QString()}, {u"perm:check.discount"_s, QString()},
                 {u"perm:order.void"_s, QString()}, {u"perm:manager"_s, QString()}, {u"perm:layout.edit"_s, QString()}};
     if (panel == u"tenders")

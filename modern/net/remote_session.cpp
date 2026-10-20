@@ -19,6 +19,7 @@
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QUrl>
+#include <QUuid>
 #include <QJsonArray>
 #include <QSslPreSharedKeyAuthenticator>
 #include <QLoggingCategory>
@@ -32,6 +33,18 @@ namespace vt::net {
 namespace {
 
 constexpr int kReconnectMs = 2000;
+
+// What a server taking an order does at the table: safe to keep while the
+// Wi-Fi is out and send when it's back. Sending, paying, opening checks,
+// logging in or out: not (they need the server's answer then and there).
+bool keepable(const QString &method)
+{
+    static const QSet<QString> methods = {
+        u"addItem"_s, u"setQualifier"_s, u"lineMore"_s, u"lineLess"_s, u"repeatLine"_s, u"setLineQuantity"_s,
+        u"setSeat"_s, u"setCourse"_s, u"textKey"_s, u"addComment"_s, u"anotherRound"_s, u"adjustGuests"_s,
+        u"chooseOption"_s, u"chooseOptionAs"_s, u"setChoice"_s};
+    return methods.contains(method);
+}
 
 // Which change signal each state key belongs to.
 enum class Group { Session, Admin, Entry, Qualifier, Check, OpenChecks, Kitchen, Drawer, Day, None };
@@ -53,7 +66,7 @@ Group groupOf(const QString &key)
         {u"pendingTable"_s, Group::Check}, {u"hasCheck"_s, Group::Check}, {u"check"_s, Group::Check}, {u"tableChecks"_s, Group::Check}, {u"undoText"_s, Group::Check},
         {u"lines"_s, Group::Check}, {u"totals"_s, Group::Check}, {u"payments"_s, Group::Check},
         {u"selectedLine"_s, Group::Check}, {u"selectedPayment"_s, Group::Check},
-        {u"openChecks"_s, Group::OpenChecks}, {u"openChecksShared"_s, Group::OpenChecks}, {u"openChecksViewer"_s, Group::OpenChecks}, {u"floor"_s, Group::OpenChecks}, {u"deliveries"_s, Group::OpenChecks}, {u"drivers"_s, Group::OpenChecks}, {u"popularItems"_s, Group::OpenChecks}, {u"stockLeft"_s, Group::Day}, {u"dashboard"_s, Group::Day}, {u"checklists"_s, Group::Day}, {u"checkFilter"_s, Group::OpenChecks},
+        {u"openChecks"_s, Group::OpenChecks}, {u"openChecksShared"_s, Group::OpenChecks}, {u"openChecksViewer"_s, Group::OpenChecks}, {u"floor"_s, Group::OpenChecks}, {u"deliveries"_s, Group::OpenChecks}, {u"drivers"_s, Group::OpenChecks}, {u"popularItems"_s, Group::OpenChecks}, {u"myUsuals"_s, Group::OpenChecks}, {u"stockLeft"_s, Group::Day}, {u"dashboard"_s, Group::Day}, {u"checklists"_s, Group::Day}, {u"checkFilter"_s, Group::OpenChecks},
         {u"kitchenTickets"_s, Group::Kitchen}, {u"drawer"_s, Group::Drawer},
         {u"day"_s, Group::Day}, {u"days"_s, Group::Day}, {u"tipsOwed"_s, Group::Day},
     };
@@ -66,6 +79,7 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
     : PosSession(parent)
     , terminal_(std::move(terminalName))
     , channel_(std::make_unique<LineChannel>(&socket_))
+    , resumeToken_(QUuid::createUuid().toString(QUuid::WithoutBraces))
 {
     socket_.setSslConfiguration(tlsConfiguration());
     connect(&socket_, &QSslSocket::preSharedKeyAuthenticationRequired, this, [this](QSslPreSharedKeyAuthenticator *a) {
@@ -281,7 +295,9 @@ void RemoteSession::onConnected()
                       {u"version"_s, me.version}, {u"build"_s, me.number}, {u"commit"_s, me.commit},
                       {u"platform"_s, me.platform},
                       // Big things (the closed checks) only while they're shown: see want().
-                      {u"subscribes"_s, true}};
+                      {u"subscribes"_s, true},
+                      // Back after the Wi-Fi dropped: the session it had, if the server kept it.
+                      {u"resume"_s, resumeToken_}};
     if (!requestedScreen_.isEmpty())
         hello.insert(u"screen"_s, requestedScreen_);
     send(hello);
@@ -300,11 +316,13 @@ void RemoteSession::onDisconnected()
 {
     const bool was = welcomed_;
     welcomed_ = false;
-    // Nothing pending will be answered now.
+    // Nothing pending will be answered now. Order taps among them go again
+    // when it's back: taken as done (the server keeps going), and shown
+    // waiting in the check meanwhile.
     const auto pending = std::exchange(replies_, {});
-    for (const Reply &r : pending) {
-        if (r)
-            r(QVariant(false));
+    for (auto it = pending.cbegin(); it != pending.cend(); ++it) {
+        if (it.value())
+            it.value()(QVariant(!kept_.isEmpty() && kept_.contains(it.key())));
     }
     if (was) {
         qCWarning(lcRemote) << "lost the server; reconnecting";
@@ -345,6 +363,7 @@ void RemoteSession::handle(const QJsonObject &m)
         for (auto it = wanted_.cbegin(); it != wanted_.cend(); ++it)
             if (it.value() > 0)
                 send({{u"t"_s, u"want"_s}, {u"k"_s, it.key()}, {u"on"_s, true}});
+        resendKept(m.value(u"resumed").toBool());
         refusals_ = 0;
         failures_ = 0;
         emit onlineChanged();
@@ -366,6 +385,8 @@ void RemoteSession::handle(const QJsonObject &m)
         emit notice(updateError_);
         emit updateChanged();
     } else if (type == u"reply") {
+        if (kept_.remove(m.value(u"id").toInteger()) > 0)
+            emit checkChanged();   // no longer waiting
         const Reply r = replies_.take(m.value(u"id").toInteger());
         if (r)
             r(m.value(u"r").toVariant());
@@ -456,16 +477,72 @@ void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
 
 void RemoteSession::invoke(const QString &method, const QVariantList &args, Reply reply)
 {
+    // At the table with the Wi-Fi out: kept for when it's back (only while
+    // someone is logged in: the server keeps that session for this device).
+    const bool keep = keepable(method) && loggedIn();
     if (!welcomed_) {
-        emit notice(tr("Not connected to the server."));
+        if (keep && !rejected_) {
+            kept_.insert(nextId_++, {method, args});
+            emit onlineChanged();   // heldCount
+            emit checkChanged();    // shown waiting
+            if (reply)
+                reply(QVariant(true));
+            return;
+        }
+        emit notice(keepable(method) || method == u"sendOrder" ? tr("Not connected to the server. Try again when it's back.")
+                                                               : tr("Not connected to the server."));
         if (reply)
             reply(QVariant(false));
         return;
     }
     const qint64 id = nextId_++;
+    if (keep)
+        kept_.insert(id, {method, args});
     if (reply)
         replies_.insert(id, std::move(reply));
     send({{u"t"_s, u"call"_s}, {u"id"_s, id}, {u"m"_s, method}, {u"a"_s, QJsonArray::fromVariantList(args)}});
+}
+
+void RemoteSession::resendKept(bool resumed)
+{
+    if (kept_.isEmpty())
+        return;
+    if (!resumed) {
+        // The server started over (or the standby took over, or it was out
+        // of reach too long): the check those taps were for isn't open here.
+        const int lost = int(kept_.size());
+        kept_.clear();
+        emit checkChanged();
+        emit notice(tr("The connection was out too long: %n tap(s) made meanwhile didn't go in. Open the check and add them again.",
+                       "", lost));
+        return;
+    }
+    for (auto it = kept_.cbegin(); it != kept_.cend(); ++it)
+        send({{u"t"_s, u"call"_s}, {u"id"_s, it.key()}, {u"m"_s, it->method},
+              {u"a"_s, QJsonArray::fromVariantList(it->args)}});
+    emit notice(tr("Back online: sent %n tap(s) made while it was out.", "", int(kept_.size())));
+}
+
+QVariantList RemoteSession::lines() const
+{
+    QVariantList out = v(u"lines").toList();
+    if (kept_.isEmpty())
+        return out;
+    // Items tapped and not in yet: shown at the end, waiting.
+    QHash<QString, QVariantMap> items;
+    for (auto it = kept_.cbegin(); it != kept_.cend(); ++it) {
+        if (it->method != u"addItem" || it->args.isEmpty())
+            continue;
+        if (items.isEmpty())
+            for (const QVariant &x : menuItems())
+                items.insert(x.toMap().value(u"id"_s).toString(), x.toMap());
+        const QString id = it->args.first().toString();
+        const QVariantMap item = items.value(id);
+        out.append(QVariantMap{{u"id"_s, -it.key()}, {u"name"_s, item.value(u"name"_s, id)}, {u"quantity"_s, 1},
+                               {u"price"_s, QString()}, {u"waiting"_s, true}, {u"modifiers"_s, QVariantList()},
+                               {u"seat"_s, checkInfo().value(u"seat"_s)}});
+    }
+    return out;
 }
 
 void RemoteSession::saveLayout(const layout::Layout &layout)

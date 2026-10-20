@@ -444,6 +444,16 @@ std::vector<std::string> itemsOn(const Check &c)
     return out;
 }
 
+// How many of each item a check's server ordered on it.
+void countByServer(const Check &c, std::map<std::string, std::map<std::string, int>> &byServer)
+{
+    if (c.training || c.serverId.empty() || c.status == CheckStatus::Discarded || c.status == CheckStatus::Merged)
+        return;
+    for (const OrderLine &l : c.lines)
+        if (!l.isComment() && !l.voided && !l.isGiftCard() && !l.isFee())
+            byServer[c.serverId][l.itemId] += l.counted();
+}
+
 void countTogether(const Check &c, std::map<std::string, int> &with, std::map<std::string, std::map<std::string, int>> &together)
 {
     if (c.training || c.status == CheckStatus::Discarded || c.status == CheckStatus::Merged)
@@ -458,28 +468,70 @@ void countTogether(const Check &c, std::map<std::string, int> &with, std::map<st
 }
 } // namespace
 
-QVariantList PosService::goesWith(const Check &c) const
+void PosService::askPastOnce() const
 {
     // The past four weeks, once, off the screen's thread.
-    if (!s_->pastTogetherAsked && s_->history) {
-        s_->pastTogetherAsked = true;
-        auto history = s_->history;
-        const std::int64_t to = now(), from = to - 28LL * 24 * 3600 * 1000;
-        QPointer<PosShared> shared(s_);
-        QThreadPool::globalInstance()->start([=] {
-            std::map<std::string, int> with;
-            std::map<std::string, std::map<std::string, int>> together;
-            for (const Check &x : history(from, to))
-                countTogether(x, with, together);
-            QMetaObject::invokeMethod(shared, [shared, with = std::move(with), together = std::move(together)]() mutable {
-                if (!shared)
-                    return;
-                shared->pastChecksWith = std::move(with);
-                shared->pastTogether = std::move(together);
-                emit shared->checksChanged();
-            }, Qt::QueuedConnection);
-        });
-    }
+    if (s_->pastTogetherAsked || !s_->history)
+        return;
+    s_->pastTogetherAsked = true;
+    auto history = s_->history;
+    const std::int64_t to = now(), from = to - 28LL * 24 * 3600 * 1000;
+    QPointer<PosShared> shared(s_);
+    QThreadPool::globalInstance()->start([=] {
+        std::map<std::string, int> with;
+        std::map<std::string, std::map<std::string, int>> together, byServer;
+        for (const Check &x : history(from, to)) {
+            countTogether(x, with, together);
+            countByServer(x, byServer);
+        }
+        QMetaObject::invokeMethod(shared, [shared, with = std::move(with), together = std::move(together),
+                                           byServer = std::move(byServer)]() mutable {
+            if (!shared)
+                return;
+            shared->pastChecksWith = std::move(with);
+            shared->pastTogether = std::move(together);
+            shared->pastByServer = std::move(byServer);
+            emit shared->checksChanged();
+        }, Qt::QueuedConnection);
+    });
+}
+
+QStringList PosService::myUsuals() const
+{
+    const core::Employee *e = user();
+    if (!e)
+        return {};
+    return s_->memo(u"myUsuals "_s + qs(e->id), [this, e] {
+        askPastOnce();
+        // The past weeks, and today's checks (closed and open) on top.
+        std::map<std::string, std::map<std::string, int>> today;
+        for (const Check &c : s_->closedToday)
+            if (c.serverId == e->id)
+                countByServer(c, today);
+        for (const auto &[id, c] : s_->open)
+            if (c.serverId == e->id)
+                countByServer(c, today);
+        std::map<std::string, int> n;
+        if (const auto p = s_->pastByServer.find(e->id); p != s_->pastByServer.end())
+            n = p->second;
+        for (const auto &[item, k] : today[e->id])
+            n[item] += k;
+        std::vector<std::pair<int, std::string>> ranked;
+        for (const auto &[id, k] : n)
+            if (const MenuItem *m = findItem(qs(id)); m && !m->isModifier && k >= 2)
+                ranked.emplace_back(k, id);
+        std::ranges::stable_sort(ranked, [](const auto &a, const auto &b) { return a.first > b.first; });
+        QStringList out;
+        for (const auto &[k, id] : ranked)
+            if (out.size() < 12)
+                out << qs(id);
+        return QVariant(out);
+    }).toStringList();
+}
+
+QVariantList PosService::goesWith(const Check &c) const
+{
+    askPastOnce();
     // Today's, counted once as checks close (from the start again if one
     // was reopened or the day closed).
     const auto &closed = s_->closedToday;

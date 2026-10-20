@@ -348,6 +348,63 @@ Item {
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
+        // Seats, around the table: touch one and what's added goes to it (a
+        // touched line moves to it). Each shows how many items it has; +
+        // adds one more. Shown folded too: on a phone it's how seats are set.
+        ListView {
+            id: seats
+            objectName: "seatChips"
+            readonly property int current: w.check.seat ?? 0
+            // Items on each seat (0: shared), and the most seats there are.
+            readonly property var counts: {
+                const out = {}
+                for (const l of (w.pos ? w.pos.lines : []))
+                    if (!l.voided && !l.comment && !l.fee)
+                        out[l.seat ?? 0] = (out[l.seat ?? 0] ?? 0) + l.quantity
+                return out
+            }
+            readonly property int highest: {
+                let m = 0
+                for (const k in counts) m = Math.max(m, Number(k))
+                return m
+            }
+            readonly property int guests: w.check.guests ?? 0
+            readonly property int count: Math.max(guests, highest, current)
+            visible: w.controls && w.pos !== null && w.pos.hasCheck && w.zone.keyShown("seat")
+                     && (guests > 0 || current > 0 || highest > 0)
+            Layout.fillWidth: true
+            Layout.preferredHeight: chip
+            readonly property real chip: Math.max(w.unit * 1.5, w.zone.touch(44))
+            // Wide enough for its count, as many as fit; more scroll sideways.
+            readonly property real chipWidth: Math.max(chip, Math.min(chip * 1.5, (width - spacing * (count + 2)) / (count + 2)))
+            orientation: ListView.Horizontal
+            spacing: w.unit * 0.2
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            model: count + 2   // Shared, 1..count, +
+            delegate: WidgetKey {
+                required property int index
+                readonly property bool more: index === seats.count + 1
+                readonly property int seat: more ? seats.count + 1 : index
+                readonly property int items: seats.counts[seat] ?? 0
+                readonly property bool allergic: !more && seat > 0 && ((w.check.seatAllergies ?? {})[String(seat)] ?? []).length > 0
+                objectName: more ? "seatAdd" : "seat" + seat
+                width: index === 0 ? seats.chipWidth * 1.5 : seats.chipWidth
+                height: seats.chip
+                accent: !more && seat === seats.current
+                baseColor: more ? "#2a3140" : allergic ? "#7a2226" : "#343c49"
+                fontScale: index === 0 ? 0.36 : 0.45
+                text: more ? "+" : (allergic ? "⚠" : "") + (index === 0 ? w.zone.keyText("seat", qsTr("Shared")) : seat)
+                      + (items > 0 && !more ? " ·" + items : "")
+                onClicked: w.pos.setSeat(seat)
+                // Held: this guest's allergies.
+                holdable: !more && seat > 0
+                onHeld: w.zone.controller.commandWith("allergies", { seat: seat })
+            }
+            // The touched seat in view (seat 9 of 12).
+            onCurrentChanged: positionViewAtIndex(Math.min(current, count + 1), ListView.Contain)
+        }
+
         // Seat and course for new items (or a touched line); Fire. Sized from
         // the panel's width so it never pushes the panel wider.
         Item {
@@ -363,38 +420,6 @@ Item {
                 height: parent.height
                 spacing: bar.key * 0.15
                 Text {
-                    visible: w.zone.keyShown("seat")
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: w.zone.keyText("seat", qsTr("Seat"))
-                    color: "#8a94a6"
-                    font.family: w.face
-                    font.pixelSize: bar.key * 0.45
-                }
-                WidgetKey {
-                    visible: w.zone.keyShown("seat")
-                    width: bar.key; height: parent.height
-                    text: "−"
-                    onClicked: w.pos.setSeat(Math.max(0, (w.check.seat ?? 0) - 1))
-                }
-                Text {
-                    visible: w.zone.keyShown("seat")
-                    width: bar.key * 0.8
-                    anchors.verticalCenter: parent.verticalCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: (w.check.seat ?? 0) > 0 ? w.check.seat : "–"
-                    color: w.ink
-                    font.family: w.face
-                    font.pixelSize: bar.key * 0.6
-                    font.bold: true
-                }
-                WidgetKey {
-                    visible: w.zone.keyShown("seat")
-                    width: bar.key; height: parent.height
-                    text: "+"
-                    onClicked: w.pos.setSeat((w.check.seat ?? 0) + 1)
-                }
-                Item { visible: w.zone.keyShown("seat"); width: bar.key * 0.3; height: 1 }
-                Text {
                     visible: w.zone.keyShown("course")
                     anchors.verticalCenter: parent.verticalCenter
                     text: w.zone.keyText("course", qsTr("Course"))
@@ -406,6 +431,7 @@ Item {
                     model: [1, 2, 3]
                     delegate: WidgetKey {
                         required property int modelData
+                        objectName: "course" + modelData
                         visible: w.zone.keyShown("course")
                         width: bar.key; height: parent.height
                         text: modelData
@@ -461,8 +487,12 @@ Item {
                 height: col.implicitHeight + w.unit * 0.4
                 radius: 6
                 color: modelData.selected ? "#2f6fd6" : "transparent"
+                // Tapped while the server was out of reach: goes in when it's back.
+                readonly property bool waiting: modelData.waiting === true
+                objectName: waiting ? "waitingLine" : ""
+                opacity: waiting ? 0.55 : 1
 
-                TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedLine = row.modelData.id } }
+                TapHandler { enabled: !row.waiting; onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedLine = row.modelData.id } }
                 // Swipe left: off the check (a void once sent). Swipe right: one more.
                 readonly property real swipeAt: width * 0.28
                 DragHandler {
@@ -470,7 +500,7 @@ Item {
                     objectName: "lineSwipe"
                     target: null
                     yAxis.enabled: false
-                    enabled: w.controls && !row.modelData.voided && !w.paid
+                    enabled: w.controls && !row.modelData.voided && !w.paid && !row.waiting
                     onActiveChanged: {
                         if (active)
                             return
@@ -558,11 +588,23 @@ Item {
                             onClicked: w.zone.controller.chooseLine(row.modelData.id)
                         }
                         Text {
-                            text: row.modelData.voided ? qsTr("VOID") : row.modelData.price
-                            color: row.modelData.voided ? "#ff6369" : w.ink
+                            text: row.modelData.voided ? qsTr("VOID") : row.waiting ? qsTr("waiting…") : row.modelData.price
+                            color: row.modelData.voided ? "#ff6369" : row.waiting ? "#f5b940" : w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
                         }
+                    }
+                    // Has what its guest is allergic to.
+                    Text {
+                        visible: (row.modelData.allergy ?? []).length > 0
+                        Layout.fillWidth: true
+                        Layout.leftMargin: w.unit * 1.6
+                        text: "⚠ " + qsTr("Contains %1").arg((row.modelData.allergy ?? []).join(", "))
+                        color: "#ff6369"
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.8
+                        font.bold: true
+                        elide: Text.ElideRight
                     }
                     Repeater {
                         model: row.modelData.modifiers

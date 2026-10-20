@@ -387,3 +387,53 @@ TEST_CASE("Allergies: marked on the check, warned on adding, loud on the ticket 
     REQUIRE(pos.setAllergies({}));                                    // cleared
     CHECK(pos.checkInfo()[u"allergies"_s].toStringList().isEmpty());
 }
+
+TEST_CASE("Allergies by seat: only that guest's items are marked; the ticket says whose", "[kitchen][allergy][seat]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(12);
+    pos.shared()->setClock([&] { return clock; });
+    const_cast<core::MenuItem *>(pos.findItem(u"caesar"_s))->allergens = {"gluten", "dairy", "egg", "fish"};
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    REQUIRE(pos.selectTable(u"T1"_s) == PosService::TableNeedsGuests);
+    pos.entryKey(u"3"_s);
+    REQUIRE(pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(pos.setAllergies({u"fish"_s}, 2));   // seat 2 only
+    CHECK(pos.checkInfo()[u"allergies"_s].toStringList().isEmpty());
+    CHECK(pos.checkInfo()[u"seatAllergies"_s].toMap()[u"2"_s].toStringList() == QStringList{u"fish"_s});
+
+    QStringList notices;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
+    REQUIRE(pos.setSeat(1));
+    REQUIRE(pos.addItem(u"caesar"_s));            // seat 1 may have fish
+    CHECK(notices.filter(u"the guest is allergic"_s).isEmpty());
+    REQUIRE(pos.setSeat(2));
+    REQUIRE(pos.addItem(u"caesar"_s));            // seat 2 may not
+    CHECK(notices.filter(u"the guest is allergic"_s).size() == 1);
+    const QVariantList lines = pos.lines();
+    REQUIRE(lines.size() == 2);
+    CHECK(lines[0].toMap()[u"allergy"_s].toStringList().isEmpty());
+    CHECK(lines[1].toMap()[u"allergy"_s].toStringList() == QStringList{u"Fish"_s});
+    notices.clear();
+    REQUIRE(pos.sendOrder());
+    CHECK(notices.join(u" "_s).contains(u"Allergy on the ticket: Seat 2: Fish"_s));
+
+    const core::Check &c = pos.shared()->open.rbegin()->second;
+    CHECK(app::checkFromJson(app::toJson(c))->seatAllergies == c.seatAllergies);   // kept
+    print::TicketContext ctx{pos.shared()->settings, [](std::int64_t) { return std::string("1/1"); },
+                             [](std::int64_t) { return std::string("12:00"); }, 0};
+    const std::string ticket = print::renderText(print::kitchenTicket(c, c.lines, "Kitchen", false, ctx), 42);
+    INFO(ticket);
+    CHECK(ticket.find("!! ALLERGY !!") != std::string::npos);
+    CHECK(ticket.find("S2: FISH") != std::string::npos);
+    CHECK(ticket.find("CONTAINS FISH") != std::string::npos);   // seat 2's Caesar, once
+    CHECK(ticket.find("CONTAINS FISH") == ticket.rfind("CONTAINS FISH"));
+    // Seat 1's items alone: nothing about seat 2.
+    const std::string seat1 = print::renderText(print::kitchenTicket(c, {c.lines[0]}, "Kitchen", false, ctx), 42);
+    CHECK(seat1.find("ALLERGY") == std::string::npos);
+    const QVariantMap kds = pos.kitchenTickets().first().toMap();
+    CHECK(kds[u"allergies"_s].toStringList() == QStringList{u"S2: Fish"_s});
+
+    REQUIRE(pos.setAllergies({}, 2));
+    CHECK(pos.checkInfo()[u"seatAllergies"_s].toMap().isEmpty());
+}

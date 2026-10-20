@@ -55,6 +55,8 @@ struct Employee {
     int textSize = 100;
     bool leftHanded = false;
     std::string startPage;
+    // A handheld buzzes for each item they add (a phone or tablet that can).
+    bool buzz = true;
     // Pay for their role, and other jobs they can clock in as (a server who
     // also bartends), each at its own rate.
     Money payRate;

@@ -30,6 +30,17 @@ ColumnLayout {
     property var lines: (name, seats) => []
     property var picked: name => false
     signal tableTouched(string name)
+    // A list of big tiles instead of the plan (a phone: tables you can hit
+    // with a thumb), with a Plan / List key by the tabs. The tiles' order
+    // (sortKey(name), lowest first) and words (tileLines) are the owner's.
+    property bool listToggle: false
+    property var sortKey: name => 0
+    property var tileLines: (name, seats) => v.lines(name, seats)
+    property bool asList: listToggle && controller !== null && controller.widgetState(stateKey + "List") === true
+    function showList(on) {
+        asList = on
+        if (controller) controller.setWidgetState(stateKey + "List", on)
+    }
 
     readonly property var plans: controller ? controller.floorPlans() : []
     property string planId: startPlan !== "" ? startPlan : controller ? (controller.widgetState(stateKey) ?? "") : ""
@@ -47,10 +58,10 @@ ColumnLayout {
 
     RowLayout {
         Layout.fillWidth: true
-        visible: v.tabs && v.plans.length > 1
+        visible: (v.tabs && v.plans.length > 1) || v.listToggle
         spacing: v.unit * 0.3
         Repeater {
-            model: v.plans
+            model: v.tabs ? v.plans : []
             delegate: PosButton {
                 required property var modelData
                 objectName: v.tabPrefix + modelData.id
@@ -66,11 +77,99 @@ ColumnLayout {
                 onClicked: v.choose(modelData.id)
             }
         }
+        Item { Layout.fillWidth: true; visible: v.listToggle && !(v.tabs && v.plans.length > 1) }
+        PosButton {
+            objectName: v.floorName + "ListKey"
+            visible: v.listToggle
+            // Beside the room tabs: the sign only (they need the width).
+            readonly property bool roomy: !(v.tabs && v.plans.length > 1)
+            text: roomy ? (v.asList ? qsTr("▦ Plan") : qsTr("☰ List")) : (v.asList ? "▦" : "☰")
+            Accessible.name: v.asList ? qsTr("▦ Plan") : qsTr("☰ List")
+            Layout.preferredWidth: roomy ? v.unit * 5.5 : v.unit * 2.6
+            Layout.preferredHeight: v.unit * 2.6
+            font.family: v.face
+            font.pixelSize: roomy ? v.unit * 0.8 : v.unit * 1.2
+            font.bold: true
+            palette.button: "#343c49"
+            palette.buttonText: v.ink
+            onClicked: v.showList(!v.asList)
+        }
+    }
+
+    // The tables as tiles, two or three across.
+    GridView {
+        id: tableList
+        objectName: v.floorName + "List"
+        visible: v.asList
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        readonly property int perRow: width > v.unit * 40 ? 3 : 2
+        cellWidth: Math.floor(width / perRow)
+        cellHeight: Math.max(v.unit * 5.5, cellWidth * 0.6)
+        model: v.asList ? v.plan.zones.filter(z => z.kind === "table")
+                              .map(z => ({ name: z.label.trim(), seats: z.props.seats ?? 0 }))
+                              .sort((a, b) => (v.sortKey(a.name) - v.sortKey(b.name))
+                                              || a.name.localeCompare(b.name, undefined, { numeric: true }))
+                        : []
+        delegate: Item {
+            id: tile
+            required property var modelData
+            width: tableList.cellWidth
+            height: tableList.cellHeight
+            Rectangle {
+                id: face
+                objectName: v.prefix + tile.modelData.name
+                anchors.fill: parent
+                anchors.margins: v.unit * 0.25
+                radius: v.unit * 0.5
+                readonly property color tint: v.tint(tile.modelData.name)
+                color: tileTap.pressed ? Qt.lighter(tint, 1.3) : tint
+                border.color: v.picked(tile.modelData.name) ? "white" : Qt.darker(tint, 1.4)
+                border.width: v.picked(tile.modelData.name) ? 4 : 2
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - v.unit
+                    spacing: v.unit * 0.1
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: (v.picked(tile.modelData.name) ? "✓ " : "") + tile.modelData.name
+                        color: v.ink
+                        font.family: v.face
+                        font.pixelSize: v.unit * 1.25
+                        font.bold: true
+                        fontSizeMode: Text.HorizontalFit
+                        minimumPixelSize: 10
+                    }
+                    Repeater {
+                        model: v.tileLines(tile.modelData.name, tile.modelData.seats)
+                        Text {
+                            required property var modelData
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: modelData
+                            color: String(modelData).startsWith("⚠") ? "#ffd27a" : v.ink
+                            font.family: v.face
+                            font.pixelSize: v.unit * 0.72
+                            font.bold: String(modelData).startsWith("⚠")
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+                TapHandler {
+                    id: tileTap
+                    onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; v.tableTouched(tile.modelData.name) }
+                }
+            }
+        }
     }
 
     Flickable {
         id: floorArea
         objectName: v.floorName
+        visible: !v.asList
         Layout.fillWidth: true
         Layout.fillHeight: true
         clip: true

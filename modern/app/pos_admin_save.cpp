@@ -459,6 +459,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.laterLeadMinutes = std::clamp(record.value(u"laterLeadMinutes"_s).toInt(), 0, 240);
         if (record.contains(u"requireOrderName"_s))
             s_->settings.requireOrderName = record.value(u"requireOrderName"_s).toBool();
+        if (record.contains(u"sendToTables"_s))
+            s_->settings.sendToTables = record.value(u"sendToTables"_s).toBool();
         if (record.contains(u"takeoutMinutes"_s))
             s_->settings.takeoutMinutes = std::clamp(record.value(u"takeoutMinutes"_s).toInt(), 0, 240);
         if (record.contains(u"deliveryMinutes"_s))
@@ -843,6 +845,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     e.language = ss(language);
     e.textSize = std::clamp(record.value(u"textSize"_s, e.textSize).toInt(), 80, 160);
     e.leftHanded = record.value(u"leftHanded"_s, e.leftHanded).toBool();
+    e.buzz = record.value(u"buzz"_s, e.buzz).toBool();
     e.startPage = ss(record.value(u"startPage"_s, qs(e.startPage)).toString());
     e.cashMode = ss(cashMode);
     e.requireName = ss(requireName);

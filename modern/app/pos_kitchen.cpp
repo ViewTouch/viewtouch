@@ -16,6 +16,19 @@ using namespace vt::core;
 
 namespace vt::app {
 
+namespace {
+// What the kitchen must know on a ticket: the table's allergies, and each
+// guest's with items on it ("S2: Peanuts").
+QStringList ticketAllergies(const Check &c, const std::vector<const OrderLine *> &lines)
+{
+    QStringList out = PosSession::allergenNames(c.allergies);
+    for (const auto &[seat, list] : c.seatAllergies)
+        if (std::ranges::any_of(lines, [seat](const OrderLine *l) { return l->seat == seat; }))
+            out << PosSession::tr("S%1: %2").arg(seat).arg(PosSession::allergenNames(list).join(u", "_s));
+    return out;
+}
+} // namespace
+
 // --- kitchen display -----------------------------------------------------------------------
 
 QVariantList PosService::kitchenTicketsNow() const
@@ -87,7 +100,7 @@ QVariantList PosService::kitchenTicketsNow() const
             {u"type"_s, qs(toString(t.check->type))}, {u"customer"_s, qs(t.check->customer.name)},
             {u"note"_s, qs(t.check->customer.note)}, {u"lines"_s, lines},
             {u"rush"_s, t.check->rush}, {u"vip"_s, t.check->vip},
-            {u"allergies"_s, allergenNames(t.check->allergies)},
+            {u"allergies"_s, ticketAllergies(*t.check, t.lines)},
             {u"due"_s, t.check->dueAt ? dueText(t.check->dueAt) : QString()},
             {u"warnMinutes"_s, warn}, {u"lateMinutes"_s, late}, {u"targetMinutes"_s, target},
         });
@@ -266,7 +279,7 @@ QVariantList PosService::expoTicketsNow() const
             {u"server"_s, qs(t.check->serverName)}, {u"type"_s, qs(toString(t.check->type))},
             {u"customer"_s, qs(t.check->customer.name)}, {u"lines"_s, lines}, {u"ready"_s, ready},
             {u"waitingOn"_s, waitingOn}, {u"rush"_s, t.check->rush}, {u"vip"_s, t.check->vip},
-            {u"allergies"_s, allergenNames(t.check->allergies)},
+            {u"allergies"_s, ticketAllergies(*t.check, t.lines)},
             {u"warnMinutes"_s, s_->settings.kitchenWarnMinutes}, {u"lateMinutes"_s, s_->settings.kitchenLateMinutes},
         });
     }

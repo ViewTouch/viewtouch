@@ -235,7 +235,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"setMenuPrices"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setMenuPrices(a.value(0).toList())); }},
         {u"duplicateMenuItem"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.duplicateMenuItem(a.value(0).toString())); }},
         {u"applyMenuTemplate"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.applyMenuTemplate(a.value(0).toString())); }},
-        {u"setAllergies"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setAllergies(a.value(0).toStringList())); }},
+        {u"setAllergies"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setAllergies(a.value(0).toStringList(), a.value(1).toInt())); }},
         {u"cardForwarded"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.cardForwarded(a.value(0).toMap())); }},
         {u"seeCardAlert"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.seeCardAlert(a.value(0).toString())); }},
         {u"undoMenuChange"_s, [](PosService &p, const QVariantList &) { return QVariant(p.undoMenuChange()); }},
