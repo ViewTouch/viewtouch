@@ -276,6 +276,8 @@ QVariantMap PosService::rushRadarNow() const
         places.insert(at);
     for (const auto &[at, a] : arrivals)
         places.insert(at);
+    for (const Station &x : st.stations)   // the store's stations, idle or not (what's quick right now)
+        places.insert(x.id);
     const auto nameOf = [&](const std::string &id) {
         for (const Station &x : st.stations)
             if (x.id == id)

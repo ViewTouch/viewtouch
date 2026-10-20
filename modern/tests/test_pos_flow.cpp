@@ -4911,6 +4911,23 @@ TEST_CASE("Rush Radar on the dashboard and the kitchen screen", "[ui][rush]")
     REQUIRE(strip);
     CHECK(strip->isVisible());
     s.shot("m156-rush-kitchen");
+
+    // On the order screen: the grill's items say how long, and what's faster.
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    s.pos.entryKey(u"2"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.c.openCategory(u"burgers"_s));
+    QTest::qWait(300);
+    QQuickItem *mark = Screen::findBy(root, "objectName", u"busyMark-classic-burger"_s);
+    REQUIRE(mark);
+    CHECK(mark->isVisible());
+    QQuickItem *hint = Screen::findBy(root, "objectName", u"menuBusyHint"_s);
+    REQUIRE(hint);
+    CHECK(hint->property("text").toString().contains(u"Grill busy"_s));
+    s.shot("m157-rush-menu");
+    REQUIRE(s.c.openCategory(u"salads"_s));
+    QTest::qWait(150);
+    CHECK_FALSE(Screen::findBy(root, "objectName", u"busyMark-caesar"_s));   // the cold line keeps up
 }
 
 TEST_CASE("Memory: a screen through a long service stays flat", "[.memory]")
