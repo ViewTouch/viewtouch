@@ -24,6 +24,7 @@
 #include "qt_catch.hh"
 
 #include <QQmlApplicationEngine>
+#include <functional>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QDate>
@@ -8638,4 +8639,49 @@ TEST_CASE("Phone audit: every page on a 412x915 phone", "[.][phoneaudit]")
         s.shot((u"phone-"_s + id).toUtf8().constData());
     }
     QTest::qWait(30);
+}
+
+TEST_CASE("Phone order screen: the check folded to its items, Whole Check shows all of it", "[phone][wholecheck][ui]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    for (const char *id : {"water", "coffee", "tea", "soda", "juice", "lemonade"})
+        s.pos.addItem(QString::fromLatin1(id));
+    REQUIRE(s.c.jumpTo(u"items-drinks"_s));
+    QTest::qWait(150);
+    s.shot("whole-check-folded");
+    QQuickItem *key = Screen::findBy(s.window->contentItem(), "objectName", u"wholeCheckKey"_s);
+    REQUIRE(key);
+    CHECK(key->isVisible());
+    QQuickItem *whole = s.window->contentItem()->findChild<QQuickItem *>(u"wholeCheck"_s);
+    // (the sheet is parented to the page: found among all items)
+    const auto find = [&](const QString &name) -> QQuickItem * {
+        const std::function<QQuickItem *(QQuickItem *)> f = [&](QQuickItem *r) -> QQuickItem * {
+            for (QQuickItem *i : r->childItems()) {
+                if (i->objectName() == name) return i;
+                if (QQuickItem *h = f(i)) return h;
+            }
+            return nullptr;
+        };
+        return f(s.window->contentItem());
+    };
+    whole = find(u"wholeCheck"_s);
+    REQUIRE(whole);
+    CHECK_FALSE(whole->isVisible());
+    s.tapItem(key);
+    QTest::qWait(100);
+    CHECK(whole->isVisible());
+    s.shot("whole-check-open");
+    // It reaches down to the buttons along the bottom, not over them.
+    QQuickItem *send = nullptr;
+    for (QQuickItem *i : whole->parentItem()->childItems())
+        if (i->property("zoneId").toString() == u"flow-send"_s)
+            send = i;
+    REQUIRE(send);
+    CHECK(whole->y() + whole->height() <= send->y());
+    CHECK(whole->height() > 900);   // much more than the folded panel (720 of 2280)
+    s.tapItem(key);
+    QTest::qWait(100);
+    CHECK_FALSE(whole->isVisible());
 }
