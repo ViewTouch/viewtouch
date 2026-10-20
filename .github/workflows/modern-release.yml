@@ -92,8 +92,8 @@ jobs:
             echo "**Store computers and tablets update on their own** (from [modern-packages](https://github.com/$GH_REPO/releases/tag/modern-packages), where every update is signed). The files below are for installing by hand:"
             echo
             echo "- Android tablet: \`ViewTouch-b$build-arm64-v8a.apk\` (most tablets), \`ViewTouch-b$build-armeabi-v7a.apk\` (older 32-bit ones)"
-            echo "- Raspberry Pi OS / Debian 13: the \`~debian13\` .deb (arm64 for the Pi, amd64 for a PC)"
-            echo "- Ubuntu 26.04: the \`~ubuntu26.04\` .deb"
+            echo "- Raspberry Pi OS / Debian 13: the \`.debian13\` .deb (arm64 for the Pi, amd64 for a PC)"
+            echo "- Ubuntu 26.04: the \`.ubuntu26.04\` .deb"
             echo "- Fedora 44: the \`.fc44\` .rpm"
             echo
             echo "\`SHA256SUMS\` has each file's checksum."
