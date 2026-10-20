@@ -69,3 +69,35 @@ jobs:
           apk32=$(ls artifacts/ViewTouch-android-armeabi-v7a/*.apk)
           VTM_SIGNING_KEY="$key" sh modern/packaging/publish.sh --apk-arm64 "$apk64" --apk-armv7 "$apk32"
           rm -f "$key"
+
+      # modern-packages is where stores update from, and its page doesn't
+      # change; each build also gets a release of its own, the newest one on
+      # the releases page, with every package (Fedora, Debian, Ubuntu) and
+      # both tablet apps for installing by hand.
+      - name: Release of this build
+        if: startsWith(github.ref, 'refs/tags/modern-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir -p files
+          find artifacts -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.apk' \) -exec cp -t files {} +
+          (cd files && sha256sum * > SHA256SUMS)
+          version=$(cd files && ls vtmodern_*~debian13_arm64*.deb | sed -n 's/^vtmodern_\([0-9.]*\)-.*/\1/p' | head -1)
+          build=${version##*.}
+          {
+            echo "ViewTouch Modern $version (build $build)."
+            echo
+            echo "**Store computers and tablets update on their own** (from [modern-packages](https://github.com/$GH_REPO/releases/tag/modern-packages), where every update is signed). The files below are for installing by hand:"
+            echo
+            echo "- Android tablet: \`ViewTouch-b$build-arm64-v8a.apk\` (most tablets), \`ViewTouch-b$build-armeabi-v7a.apk\` (older 32-bit ones)"
+            echo "- Raspberry Pi OS / Debian 13: the \`~debian13\` .deb (arm64 for the Pi, amd64 for a PC)"
+            echo "- Ubuntu 26.04: the \`~ubuntu26.04\` .deb"
+            echo "- Fedora 44: the \`.fc44\` .rpm"
+            echo
+            echo "\`SHA256SUMS\` has each file's checksum."
+          } > notes.md
+          gh release create "$TAG" --verify-tag --title "ViewTouch Modern ${version%.*} (build $build)" --notes-file notes.md --latest files/*
+          gh release edit modern-packages --latest=false \
+            --notes "Where store computers and tablets get their updates (latest.json, each file signed with .sig). Now: build $build, published $(date -u +%Y-%m-%d). To install by hand, use the newest **ViewTouch Modern** release."
