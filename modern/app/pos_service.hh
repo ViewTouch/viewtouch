@@ -225,6 +225,19 @@ public:
     std::map<std::string, std::map<std::string, int>> pastTogether;
     // ...and how many of each item each server ordered (employee id -> item).
     std::map<std::string, std::map<std::string, int>> pastByServer;
+    // ...and for Rush Radar: items sent by weekday and 10 minutes of the day
+    // (by item: its station is looked up when used), how many days of each
+    // weekday that was, items per guest at tables, and how long tables take
+    // to send their first order.
+    struct RushPast {
+        std::map<std::string, std::vector<int>> itemSlots;   // item -> 7 * 144 counts
+        std::set<std::int64_t> days;                          // the dates seen (Julian day numbers)
+        std::map<std::string, int> tableItems;
+        std::int64_t tableGuests = 0;
+        std::int64_t firstOrderMs = 0, firstOrders = 0;
+        void count(const core::Check &c);
+    };
+    RushPast rushPast;
     bool pastTogetherAsked = false;
     // ...and today's, counted as checks close (not again for every screen).
     std::map<std::string, int> todayChecksWith;
@@ -787,8 +800,14 @@ public:
     QVariantList drivers() const override;
     QStringList popularItems() const override;
     QStringList myUsuals() const override;
+    QVariantMap rushRadar() const override;
     // Often ordered with what's on this check (a hint on the order screen): {id, name}.
     QVariantList goesWith(const core::Check &c) const;
+    // Rush Radar: the items not made yet at each station (sent, not voided,
+    // not on hold), and each newly sent line's line ahead of it.
+    std::map<std::string, int> stationQueues(std::int64_t sentBefore = 0) const;
+    void noteQueuesAtSend(core::Check &check);
+    QVariantMap rushRadarNow() const;
     // The credit card surcharge in force (basis points; capped by the state), and what the guest is told.
     std::int64_t surchargeBp() const;
     QString surchargeNotice() const;

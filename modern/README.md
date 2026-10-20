@@ -414,6 +414,14 @@ A second store computer can be the **standby**: it keeps a live copy of everythi
 
 Run the main server and the standby as headless services on two computers, both on port 7719.
 
+## Rush Radar
+
+Each kitchen station's next half hour (`PosSession::rushRadar`, `app/pos_rush.cpp`, the math in `core/rush.hh`; on the Dashboard and the kitchen screen, `RushRadarView.qml`; sent to a handheld only while shown: `want("rushRadar")`).
+
+- **Pace:** each line remembers what was ahead of it at its station when it was sent (`OrderLine::queueAtSend`, stamped in `changed()`), and each bump fits ticket minutes against that (`StationPace`, a line over the latest ~50 tickets, kept in `PosSettings::stationPace`). Throughput is one item per *minutes per item ahead*. Unknown (under 8 tickets): the station's learned prep times, plus half a minute an item.
+- **Arrivals, minute by minute (30):** unsent lines on open checks (in 2 minutes); held courses (at `fireAt`, else 15); orders for later (`dueAt` − lead); tables seated with nothing sent (guests × items per guest at each station, at the usual minutes to a first order); waitlist and reservations (when quoted or booked, plus that); and after the first-order time, the usual items per minute for this weekday and 10 minutes of the day over the last four weeks (`PosShared::RushPast`, loaded once in the background with *often added*), times today's pace against the usual so far (0.5–2).
+- `projectRush`: the line each minute (plus arrivals, less throughput) and the wait at it; `level` `busy` / `late` from the kitchen warn and late minutes; `headline` is the worst station's.
+
 ## Kitchen display and takeout / delivery
 
 - **Kitchen and bar displays.** Manager → Kitchen Display / Bar Display, or start a terminal with `--page kitchen` or `--page bar-display`. These screens need no login.

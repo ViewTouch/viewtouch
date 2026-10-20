@@ -56,6 +56,7 @@
 <!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
+<li><b>Rush Radar:</b> each kitchen station's next half hour, on the Dashboard and the kitchen screen: <i>Grill backs up to 27 min at 7:42</i>, from what's on the line, the tables just seated, the waitlist and your usual nights (chapter 2).</li>
 <li><b>Taking orders at the table on a handheld:</b> seat chips across the check, a buzz and <b>+ Caesar · Seat 2</b> for every item, <b>allergies by seat</b> (only that guest's items are marked, and the ticket says <b>S2: FISH</b>), <b>♥ Mine</b> (each server's usual items), the tables as a <b>☰ List</b> with what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back (chapter 1).</li>
 <li><b>Credit card surcharge</b> (credit cards only: the Stripe reader tells debit from credit) and <b>cash discount</b> (dual pricing: both prices on the Pay screen and the receipt), in Store Settings → Cards (chapter 6).</li>
 <li><b>Manager lists:</b> <b>Find…</b> on long lists, rows a finger tall, and a big <b>+ Add</b> when nothing is chosen (chapter 11).</li>
@@ -250,6 +251,18 @@
 <h2>The Dashboard: today at a glance</h2>
 <p><b>Manager → Dashboard</b> shows how the day is going: net sales compared with the same day last week at this time, the number of checks and the average check, labor as a percent of sales (amber when it's getting high, red when it's too high), open checks, how long the kitchen is taking, who's on the clock, today's best sellers, and anything running low or sold out.</p>
 <p class="shot"><img src="shots/m114-dashboard.png" width="560" height="315"></p>
+
+<h2>Rush Radar: the kitchen's next half hour</h2>
+<p>The Dashboard's <b>Rush Radar</b> says, for each kitchen station, how long a ticket sent now takes, and how long one sent in 5, 10… 30 minutes will take: <i>⚠ Grill backs up to 27 min at 7:42 PM.</i> Yellow when tickets will run long (Store Settings → Kitchen: <i>ticket turns yellow after</i>), red when they'll be late. The kitchen screen shows the same warning across the top, for its own station (all of them on the expo and on a screen for the whole kitchen).</p>
+<p class="shot"><img src="shots/m155-rush-radar.png" width="560" height="315"></p>
+<p class="caption">Two tables sent burgers and two more just sat down: the grill will be at 27 minutes in 8 minutes.</p>
+<ul>
+<li><b>What's coming:</b> what's ahead of each station now; orders being rung in; courses on hold (when they're fired); tables that just sat down and haven't ordered (what tables here usually order per guest, by how long they usually take to order); parties on the waitlist and reservations; orders for later; and, a few minutes on, the usual new tables for this weekday and time of day (the last four weeks), at today's pace.</li>
+<li><b>Each station's own pace:</b> it learns from every ticket bumped how much longer tickets take for each item ahead of them, so a two-cook grill and a one-cook fryer each go at their own speed. Until it has seen a few tickets, it counts half a minute an item.</li>
+<li>It runs on the store's computer, with no internet. The more nights it has seen, the better it knows yours.</li>
+</ul>
+<p class="shot"><img src="shots/m156-rush-kitchen.png" width="560" height="315"></p>
+<p class="caption">The kitchen screen: the warning across the top.</p>
 
 <h2>Running low: "5 left"</h2>
 <p>When an ingredient gets down to its <b>Low at</b> amount (Manager → Inventory), the dishes that use it show how many can still be made, like <b>3 left</b>, so you can warn guests. The number counts down with each order; at zero the dish sells out by itself, and comes back when a delivery is received.</p>

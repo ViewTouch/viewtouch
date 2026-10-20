@@ -96,6 +96,7 @@ public:
     QVariantList drivers() const override { return v(u"drivers").toList(); }
     QStringList popularItems() const override { return v(u"popularItems").toStringList(); }
     QStringList myUsuals() const override { return v(u"myUsuals").toStringList(); }
+    QVariantMap rushRadar() const override { return v(u"rushRadar").toMap(); }
     QVariantMap stockLeft() const override { return v(u"stockLeft").toMap(); }
     QVariantMap dashboard() const override { return v(u"dashboard").toMap(); }
     QVariantMap checklists() const override { return v(u"checklists").toMap(); }

@@ -185,6 +185,9 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
             if (!l.isComment() && took > 0 && took < 90 * 60 && !c->training) {
                 int &avg = s_->settings.prepSeconds[l.itemId];
                 avg = avg == 0 ? int(took) : int(std::lround(0.8 * avg + 0.2 * double(took)));
+                // And the station's pace: this long with that much ahead of it.
+                if (l.queueAtSend >= 0 && !stationOf(l).empty())
+                    s_->settings.stationPace[stationOf(l)].learn(l.queueAtSend, double(took) / 60.0);
                 learned = true;
             }
         }

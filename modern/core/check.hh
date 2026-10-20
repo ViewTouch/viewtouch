@@ -48,6 +48,9 @@ struct OrderLine {
     bool sent = false;           // sent to the kitchen; can no longer just be deleted
     bool voided = false;         // voided after sending (kept for the record)
     std::int64_t sentAt = 0;
+    // Items not made yet at its station when it was sent (-1: not known):
+    // how the station's pace is learned (Rush Radar).
+    int queueAtSend = -1;
     bool made = false;           // bumped on the kitchen display (legacy ORDER_MADE)
     std::int64_t madeAt = 0;
     int seat = 0;                // 0: not for a seat in particular
