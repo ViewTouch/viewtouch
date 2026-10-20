@@ -30,6 +30,24 @@ Item {
         prefix: "floor-"
         tabPrefix: "floorPlan-"
         floorName: "floorPlanArea"
+        // A phone: Plan / List (big tiles: yours first, the longest since a Send on top).
+        listToggle: w.props.list === true || (w.zone && w.zone.controller && w.zone.controller.formFactor === "phone")
+        sortKey: name => {
+            const s = w.status(name)
+            if (!s.open) return 3e6
+            const waited = s.lastSentAt ? Math.floor((w.now - s.lastSentAt) / 60000)
+                                        : s.since ? Math.floor((w.now - s.since) / 60000) : 0
+            return (s.mine ? 0 : 1e6) + (s.unsent > 0 ? 0 : 5e5) - Math.min(waited, 4e5)
+        }
+        tileLines: (name, seats) => {
+            const s = w.status(name)
+            if (!s.open)
+                return lines(name, seats)
+            const ago = s.lastSentAt ? Math.max(0, Math.floor((w.now - s.lastSentAt) / 60000)) : -1
+            return [((s.checks ?? 1) > 1 ? qsTr("%1 checks").arg(s.checks) : (s.server ?? "")) + "  ·  " + (s.total ?? ""),
+                    s.unsent > 0 ? "⚠ " + qsTr("%n not sent", "", s.unsent)
+                                 : ago >= 0 ? qsTr("Sent %1 ago").arg(w.minutesText(ago)) : qsTr("Nothing sent yet")]
+        }
         tint: name => {
             const s = w.status(name)
             const floor = s.floor ?? ""

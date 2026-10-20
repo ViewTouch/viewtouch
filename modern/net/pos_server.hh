@@ -61,6 +61,10 @@ public:
     void setSnapshotSource(std::function<QByteArray()> snapshot) { snapshot_ = std::move(snapshot); }
     void replicate(const QJsonObject &op);
     int standbyCount() const;
+    // Handhelds out of reach with someone logged in: their sessions, kept
+    // this long for them to come back to (tests: short).
+    void setKeepAway(qint64 ms) { keepAwayMs_ = ms; }
+    int awayCount() const { return int(away_.size()); }
     // Who is connected, for the Network screen: [{name, address, since, standby}].
     QVariantList connections() const;
 
@@ -70,6 +74,7 @@ signals:
 
 private:
     struct Connection;
+    struct Away;
 
     void onNewConnection();
     void onPreSharedKey(QSslSocket *socket, class QSslPreSharedKeyAuthenticator *auth);
@@ -79,6 +84,12 @@ private:
     void onReadyRead(Connection *c);
     void handle(Connection *c, const QJsonObject &message);
     void drop(Connection *c);
+    // Its session's changes go to that connection (and stop going there).
+    void attach(Connection *c);
+    void detach(Connection *c);
+    // A dropped handheld's session, kept for it (or let go: its check is free).
+    void keepAway(Connection *c);
+    void letGoAway(qint64 olderThan);
     // Send changed state to one / every terminal.
     void flush(Connection *c);
     void scheduleFlushAll();
@@ -97,6 +108,8 @@ private:
     QString error_;
     QHash<QString, QByteArray> pairingKeys_;   // code -> TLS key (slow to derive)
     std::vector<std::unique_ptr<Connection>> connections_;
+    std::vector<std::unique_ptr<Away>> away_;
+    qint64 keepAwayMs_ = 3 * 60'000;
     QTimer flushTimer_;
     QTimer tickTimer_;   // refresh time-based fields (minutes open)
     QTimer pingTimer_;   // the standby knows the main is alive; terminals, the store

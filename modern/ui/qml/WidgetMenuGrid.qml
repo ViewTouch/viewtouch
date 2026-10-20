@@ -36,7 +36,12 @@ Item {
             }
         return out.slice(0, Math.max(12, items.filter(i => i.favorite).length))
     }
-    readonly property var families: (favorites.length ? ["★"] : []).concat(categories.map(c => c.id))
+    // ♥ Mine: what the person logged in orders most (their regulars' usual
+    // drinks, the specials they push); once there are a few.
+    readonly property var mine: (pos ? pos.myUsuals : []).map(id => items.find(i => i.id === id)).filter(i => i !== undefined)
+    readonly property var families: (favorites.length ? ["★"] : []).concat(mine.length >= 4 ? ["♥"] : [])
+                                    .concat(categories.map(c => c.id))
+    readonly property bool special: family === "★" || family === "♥"
     // The category being shown: the one touched on the menu screen.
     readonly property string chosen: zone && zone.controller ? zone.controller.menuCategory : ""
     readonly property string family: fixedFamily !== "" ? fixedFamily
@@ -44,13 +49,13 @@ Item {
                                     : ((categories.find(c => c.now) ?? categories[0] ?? {}).id ?? "")
     function categoryOf(id) { return categories.find(c => c.id === id) ?? ({}) }
     // The category shown: its own button size, photos, prices (Menu Builder).
-    readonly property var shownCategory: !search && !popular && family !== "★" ? categoryOf(family) : ({})
+    readonly property var shownCategory: !search && !popular && !special ? categoryOf(family) : ({})
     // Searching: every family, best matches first (the name starts with it, then a word does).
     readonly property var shown: {
         if (popular)
             return (pos ? pos.popularItems : []).map(id => items.find(i => i.id === id)).filter(i => i !== undefined)
         if (!search)
-            return family === "★" ? favorites : items.filter(i => i.family === family)
+            return family === "★" ? favorites : family === "♥" ? mine : items.filter(i => i.family === family)
         if (typed === "")
             return []
         const digits = /^[0-9]+$/.test(typed)
@@ -67,6 +72,8 @@ Item {
     function title(f) {
         if (f === "★")
             return qsTr("★ Favorites")
+        if (f === "♥")
+            return qsTr("♥ Mine")
         const name = categoryOf(f).name ?? ""
         return f === "" ? qsTr("Other") : qsTranslate("Page", name !== "" ? name : f.charAt(0).toUpperCase() + f.slice(1))
     }
@@ -149,7 +156,7 @@ Item {
             setColumns: w.setColumns
             pagePhotos: w.pagePhotos
             // Headings and spaces: one category, as arranged in the Menu Builder.
-            sectioned: !w.search && !w.popular && w.family !== "★"
+            sectioned: !w.search && !w.popular && !w.special
             st: w.zone ? w.zone.st : ({})
             face: w.face
             gap: w.gap
@@ -217,7 +224,7 @@ Item {
             // A new one, in the category shown.
             WidgetKey {
                 objectName: "arrangeAdd"
-                visible: w.family !== "" && w.family !== "★"
+                visible: w.family !== "" && !w.special
                 Layout.preferredWidth: 170; Layout.preferredHeight: parent.keyH
                 text: qsTr("+ New Item")
                 fontScale: 0.32

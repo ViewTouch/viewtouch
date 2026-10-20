@@ -169,7 +169,12 @@ QJsonObject toJson(const Check &c)
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
         {u"receiptEmail"_s, qs(c.receiptEmail)}, {u"receiptEmailSent"_s, c.receiptEmailSent},
         {u"cashTipCents"_s, qint64(c.cashTip.cents())},
-        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"coupons"_s, strings(c.coupons)}, {u"hold"_s, [&c] {
+        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"seatAllergies"_s, [&c] {
+            QJsonObject o;
+            for (const auto &[seat, list] : c.seatAllergies)
+                o.insert(QString::number(seat), strings(list));
+            return o;
+        }()}, {u"coupons"_s, strings(c.coupons)}, {u"hold"_s, [&c] {
             if (c.hold.empty())
                 return QJsonValue();
             return QJsonValue(QJsonObject{{u"reference"_s, qs(c.hold.reference)}, {u"processor"_s, qs(c.hold.processor)},
@@ -290,6 +295,9 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.deliveredAt = o.value(u"deliveredAt").toInteger(0);
     c.vip = o.value(u"vip").toBool();
     c.allergies = strings(o.value(u"allergies").toArray());
+    for (const auto [seat, list] : o.value(u"seatAllergies").toObject().asKeyValueRange())
+        if (const int n = seat.toString().toInt(); n > 0 && !list.toArray().isEmpty())
+            c.seatAllergies[n] = strings(list.toArray());
     c.coupons = strings(o.value(u"coupons").toArray());
     if (const QJsonObject h = o.value(u"hold").toObject(); !h.isEmpty()) {
         c.hold.reference = ss(h.value(u"reference").toString());
@@ -487,7 +495,7 @@ QJsonObject toJson(const Employee &e)
         {u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
         {u"pinSalt"_s, qs(e.pinSalt)}, {u"pinHash"_s, qs(e.pinHash)}, {u"active"_s, e.active}, {u"training"_s, e.training}, {u"sample"_s, e.sample},
         {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"look"_s, qs(e.look)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
-        {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)},
+        {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
         {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
              QJsonArray jobs;
              for (const Job &job : e.otherJobs)
@@ -517,6 +525,7 @@ Employee employeeFromJson(const QJsonObject &o)
     e.language = ss(o.value(u"language").toString());
     e.textSize = std::clamp(o.value(u"textSize").toInt(100), 80, 160);
     e.leftHanded = o.value(u"leftHanded").toBool(false);
+    e.buzz = o.value(u"buzz").toBool(true);
     e.startPage = ss(o.value(u"startPage").toString());
     e.payRate = Money::fromCents(centsFromDecimal(o.value(u"payRate").toDouble()));
     for (const QJsonValue &v : o.value(u"otherJobs").toArray())
@@ -1168,7 +1177,7 @@ QJsonObject toJson(const PosSettings &s)
          }()},
         {u"kitchenWarnMinutes"_s, s.kitchenWarnMinutes}, {u"kitchenLateMinutes"_s, s.kitchenLateMinutes},
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
-        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes},
+        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"sendToTables"_s, s.sendToTables},
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
         {u"deliveryFee"_s, qint64(s.deliveryFee.cents())}, {u"deliveryFeeToDriver"_s, s.deliveryFeeToDriver},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
@@ -1458,6 +1467,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.kitchenLateMinutes = std::clamp(o.value(u"kitchenLateMinutes").toInt(15), s.kitchenWarnMinutes, 240);
     s.laterLeadMinutes = std::clamp(o.value(u"laterLeadMinutes").toInt(20), 0, 240);
     s.requireOrderName = o.value(u"requireOrderName").toBool();
+    s.sendToTables = o.value(u"sendToTables").toBool();
     s.takeoutMinutes = std::clamp(o.value(u"takeoutMinutes").toInt(15), 0, 240);
     s.deliveryMinutes = std::clamp(o.value(u"deliveryMinutes").toInt(35), 0, 240);
     s.minutesPerOrderWaiting = std::clamp(o.value(u"minutesPerOrderWaiting").toInt(2), 0, 60);

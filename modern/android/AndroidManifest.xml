@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- A short buzz for each item added (Haptics.kt). -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Installing an update the store sends (Updater.kt; Android still asks). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- A tablet only for ViewTouch starts it when it turns on (Kiosk.kt). -->

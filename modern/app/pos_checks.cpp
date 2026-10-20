@@ -198,26 +198,34 @@ bool PosService::setTaxExempt(const QString &certificate)
 
 // --- allergies ------------------------------------------------------------------------
 
-bool PosService::setAllergies(const QStringList &ids)
+bool PosService::setAllergies(const QStringList &ids, int seat)
 {
     if (!require(perm::Order, tr("Allergies")))
         return false;
     Check *c = current();
     if (!c)
         return fail(tr("No check is open."));
+    seat = std::clamp(seat, 0, 99);
     std::vector<std::string> list;
     for (const std::string &a : allergenIds())   // in their usual order
         if (ids.contains(qs(a)))
             list.push_back(a);
-    if (list == c->allergies)
+    std::vector<std::string> &was = seat > 0 ? c->seatAllergies[seat] : c->allergies;
+    if (list == was) {
+        if (seat > 0 && list.empty())
+            c->seatAllergies.erase(seat);
         return true;
-    c->allergies = list;
-    noteEvent(*c, list.empty() ? tr("Allergies cleared")
-                               : tr("Allergic to %1").arg(allergenNames(list).join(u", "_s)), "flag");
+    }
+    was = list;
+    if (seat > 0 && list.empty())
+        c->seatAllergies.erase(seat);
+    const QString who = seat > 0 ? tr("Seat %1").arg(seat) + u": "_s : QString();
+    noteEvent(*c, who + (list.empty() ? tr("Allergies cleared")
+                                      : tr("Allergic to %1").arg(allergenNames(list).join(u", "_s))), "flag");
     // What's already on it that has one.
     QStringList risky;
     for (const OrderLine &l : c->lines)
-        if (!l.voided && !allergyHits(*c, l).empty())
+        if (!l.voided && (seat == 0 || l.seat == seat) && !allergyHits(*c, l).empty())
             risky << qs(l.name);
     emit notice(risky.isEmpty() ? (list.empty() ? tr("Allergies cleared") : tr("Allergies: the kitchen sees them"))
                                 : tr("⚠ Already on the check, with one of them: %1").arg(risky.join(u", "_s)));
@@ -229,8 +237,9 @@ bool PosService::setAllergies(const QStringList &ids)
 std::vector<std::string> PosService::allergyHits(const Check &c, const OrderLine &l)
 {
     std::vector<std::string> out;
+    const std::vector<std::string> mustNot = c.allergiesFor(l.seat);
     for (const std::string &a : l.allergens)
-        if (std::ranges::find(c.allergies, a) != c.allergies.end())
+        if (std::ranges::find(mustNot, a) != mustNot.end())
             out.push_back(a);
     return out;
 }

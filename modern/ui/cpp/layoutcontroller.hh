@@ -186,6 +186,10 @@ public:
     // Order a menu item as an Add Item button would (menuGrid panels).
     // clearTyped: the typed text cleared too (the Find page, ready for the next).
     Q_INVOKABLE void orderItem(const QString &itemId, bool clearTyped = false);
+    // A short buzz on a handheld (two: refused), if the person logged in
+    // wants them (Employees -> Buzz for each item). Counted for the tests.
+    Q_INVOKABLE void buzz(bool refused = false);
+    int buzzes() const { return buzzes_; }
     // Ready-made looks: [{id, name, colors: [background, buttons, panels, text, accent]}],
     // with two made from the store logo's colors when there is one.
     Q_INVOKABLE QVariantList looks() const;
@@ -255,6 +259,7 @@ public:
     Q_INVOKABLE void scanned(const QString &code);
     // A command by name, as a button would run it ("holdCard").
     Q_INVOKABLE void command(const QString &name) { runCommand(name, {}, [](bool) {}); }
+    Q_INVOKABLE void commandWith(const QString &name, const QVariantMap &args) { runCommand(name, args, [](bool) {}); }
 
     // Widget entry points.
     Q_INVOKABLE void selectTable(const QString &label);
@@ -296,6 +301,8 @@ signals:
     void posChanged();
     void busyChanged();
     void itemAdded(const QString &item);
+    // What was just added, for a moment over the page ("+ Caesar · Seat 2").
+    void addedFlash(const QString &text, bool waiting);
     void commandRequested(const QString &name, const QVariantMap &args);
 
 private:
@@ -383,4 +390,5 @@ private:
     void loadUnsentCards();
     vt::app::PosSession *pos_ = nullptr;
     int pending_ = 0;
+    int buzzes_ = 0;
 };

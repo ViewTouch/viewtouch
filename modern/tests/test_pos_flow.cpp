@@ -429,13 +429,14 @@ TEST_CASE("UI: seats and courses on the order screen; Fire sends the held course
     REQUIRE(s.c.jumpTo(u"items-salads"_s));
     QTest::qWait(30);
 
-    s.tapKey(u"+"_s);                                   // seat 1
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"seat1"_s));   // seat 1
     CHECK(s.pos.checkInfo()[u"seat"_s] == 1);
     s.tapCanvas(592 + 150, 192 + 90);                   // House Salad, seat 1
     s.tapKey(u"Ranch"_s);
     s.tapKey(u"Done"_s);
-    s.tapKey(u"+"_s);                                   // seat 2
-    s.tapKey(u"2"_s);                                   // course 2
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"seatAdd"_s));   // + : seat 2
+    CHECK(s.pos.checkInfo()[u"seat"_s] == 2);
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"course2"_s));   // course 2
     s.tapCanvas(592 + 444 + 150, 192 + 90);             // Caesar, seat 2, course 2
     s.tapKey(u"Done"_s);
     const QVariantList lines = s.pos.lines();
@@ -8724,4 +8725,121 @@ TEST_CASE("Manager lists: Find narrows a long list, and the row touched is the o
     QTest::qWait(50);
     CHECK(list->property("count").toInt() == 0);
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"Nothing found."_s));
+}
+
+TEST_CASE("Table side: Send opens a missing required choice; back to the tables after Send if the store wants", "[flow][tableside]")
+{
+    Session s;
+    s.pin("1111");
+    s.c.activate(u"start"_s);
+    s.c.selectTable(u"T3"_s);
+    s.pos.entryKey(u"2"_s);
+    s.c.activate(u"start"_s);
+    REQUIRE(s.pos.hasCheck());
+    // Tapped while its choices didn't open (the Wi-Fi was out, say).
+    REQUIRE(s.pos.addItem(u"classic-burger"_s));
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK_FALSE(s.pos.lines()[0].toMap()[u"sent"_s].toBool());
+    CHECK(s.c.pageId() == u"modifiers"_s);          // straight to it
+
+    // Chosen, sent: with the store's setting, back to the floor plan.
+    REQUIRE(s.pos.chooseOption(u"temperature"_s, 1));
+    REQUIRE(s.pos.chooseOption(u"side"_s, 1));
+    s.c.finishChoosing();
+    QCoreApplication::processEvents();
+    REQUIRE(s.pos.lines()[0].toMap()[u"needsChoice"_s].toBool() == false);
+    s.pos.shared()->settings.sendToTables = true;
+    REQUIRE(s.pos.userPrefs()[u"sendToTables"_s].toBool());
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK_FALSE(s.pos.hasCheck());
+    CHECK(s.c.pageId() == u"tables"_s);
+    // The table says when it was sent; nothing waiting.
+    const QVariantMap t3 = s.pos.tableStatus(u"T3"_s);
+    CHECK(t3[u"open"_s].toBool());
+    CHECK(t3[u"lastSentAt"_s].toLongLong() > 0);
+    CHECK(t3[u"unsent"_s].toInt() == 0);
+}
+
+TEST_CASE("Table side: a server's usuals, most ordered first", "[flow][tableside][usuals]")
+{
+    Session s;
+    s.pin("1111");
+    s.c.activate(u"start"_s);
+    CHECK(s.pos.myUsuals().isEmpty());
+    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+    for (int i = 0; i < 3; ++i)
+        REQUIRE(s.pos.addItem(u"water"_s));
+    REQUIRE(s.pos.addItem(u"wine-dinner-ticket"_s));
+    REQUIRE(s.pos.addItem(u"wine-dinner-ticket"_s));
+    REQUIRE(s.pos.addItem(u"water"_s));
+    const QStringList mine = s.pos.myUsuals();
+    REQUIRE(mine.size() == 2);   // ordered at least twice
+    CHECK(mine[0] == u"water"_s);
+    CHECK(s.pos.tableStatus(u"T1"_s)[u"open"_s].toBool() == false);
+    // Someone else's are their own.
+    s.pos.logout();
+    s.pin("2222");
+    s.c.login();
+    CHECK(s.pos.myUsuals().isEmpty());
+}
+
+TEST_CASE("Table side on a phone: seat chips, what was added flashes, the tables as a list", "[ui][phone][tableside]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    s.pos.selectTable(u"T1"_s);
+    s.pos.entryKey(u"3"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.c.openCategory(u"drinks"_s));
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+
+    // Seats across the check: Shared, 1 2 3, +.
+    QQuickItem *chips = Screen::findBy(root, "objectName", u"seatChips"_s);
+    REQUIRE(chips);
+    CHECK(chips->isVisible());
+    QQuickItem *seat2 = Screen::findBy(root, "objectName", u"seat2"_s);
+    REQUIRE(seat2);
+    CHECK(seat2->mapRectToScene(QRectF(0, 0, seat2->width(), seat2->height())).height() >= 40);   // a thumb's
+    s.tapItem(seat2);
+    QTest::qWait(30);
+    CHECK(s.pos.checkInfo()[u"seat"_s].toInt() == 2);
+
+    // Added: a buzz and "+ Water · Seat 2" over the page for a moment.
+    QQuickItem *flash = Screen::findBy(root, "objectName", u"addedFlash"_s);
+    s.c.orderItem(u"water"_s);
+    QTest::qWait(250);
+    flash = Screen::findBy(root, "objectName", u"addedFlash"_s);
+    REQUIRE(flash);
+    CHECK(flash->property("text").toString() == u"+ Water · Seat 2"_s);
+    CHECK(s.c.buzzes() == 1);
+    CHECK(seat2->property("text").toString() == u"2 ·1"_s);
+    s.shot("tableside-phone-order");
+
+    // Seat 2's allergy: held on the chip; its chip turns red.
+    REQUIRE(s.pos.setAllergies({u"fish"_s}, 2));
+    QTest::qWait(30);
+    CHECK(seat2->property("text").toString().startsWith(u"⚠"_s));
+
+    // The tables as big tiles: T1 says what's waiting.
+    s.c.activate(u"flow-tables"_s);
+    QTest::qWait(80);
+    QQuickItem *listKey = Screen::findBy(root, "objectName", u"floorPlanAreaListKey"_s);
+    REQUIRE(listKey);
+    s.tapItem(listKey);
+    QTest::qWait(80);
+    QQuickItem *list = Screen::findBy(root, "objectName", u"floorPlanAreaList"_s);
+    REQUIRE(list);
+    CHECK(list->isVisible());
+    QQuickItem *t1 = Screen::findBy(root, "objectName", u"floor-T1"_s);
+    REQUIRE(t1);
+    CHECK(Screen::findBy(t1, "text", u"⚠ 1 not sent"_s));
+    s.shot("tableside-phone-list");
+    s.tapItem(t1);
+    QTest::qWait(50);
+    CHECK(s.pos.hasCheck());
+    CHECK(s.pos.checkInfo()[u"label"_s].toString() == u"T1"_s);
 }

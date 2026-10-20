@@ -151,7 +151,7 @@ inline QVariantList storeSections(const QVariantList &fields)
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee", "deliveryFeeToDriver"}},
         {"cards", PosService::tr("Cards"),
          {"stripeSecretKey", "cardCurrency", "cardTipOn", "tabHold", "offlineCards", "offlineCardMax", "offlineCardTotal"}},
-        {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "tableLongMinutes"}},
+        {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "tableLongMinutes", "sendToTables"}},
         {"display", PosService::tr("Customer display"), {"displayAccent", "displaySlides"}},
         {"loyalty", PosService::tr("Loyalty"), {"loyaltyEnabled", "pointsPerDollar", "rewards"}},
         {"waitlist", PosService::tr("Waitlist and texts"), {"hostsTakePayments", "waitMinutesPerParty", "tableReadyText", "textWebhook"}},

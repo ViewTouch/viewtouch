@@ -1,4 +1,8 @@
 #include "layoutcontroller.hh"
+#ifdef Q_OS_ANDROID
+#include <QCoreApplication>
+#include <QJniObject>
+#endif
 
 #include <QGuiApplication>
 
@@ -1567,6 +1571,19 @@ void LayoutController::orderItem(const QString &itemId, bool clearTyped)
     runAction(a, [](bool) {});
 }
 
+void LayoutController::buzz(bool refused)
+{
+    if (!pos_ || !pos_->userPrefs().value(u"buzz"_s, true).toBool())
+        return;
+    ++buzzes_;
+#ifdef Q_OS_ANDROID
+    QJniObject::callStaticMethod<void>("org/viewtouch/pos/Haptics", "buzz", "(Landroid/content/Context;Z)V",
+                                       QNativeInterface::QAndroidApplication::context().object(), jboolean(refused));
+#else
+    Q_UNUSED(refused)
+#endif
+}
+
 void LayoutController::runAction(const Action &a, Done done)
 {
     const QString type = a.type();
@@ -1592,9 +1609,20 @@ void LayoutController::runAction(const Action &a, Done done)
         for (const QJsonValue &v : a.data.value(u"modifierSequence").toArray())
             sequence.append(v.toString());
         auto added = [this, item, sequence, done](bool ok) {
-            if (!ok)
+            if (!ok) {
+                buzz(true);
                 return done(false);
+            }
             emit itemAdded(item);
+            buzz();
+            if (pos_) {
+                QString name = item;
+                for (const QVariant &v : pos_->menuItems())
+                    if (v.toMap().value(u"id"_s).toString() == item)
+                        name = v.toMap().value(u"name"_s).toString();
+                const int seat = pos_->checkInfo().value(u"seat"_s).toInt();
+                emit addedFlash(seat > 0 ? tr("+ %1 · Seat %2").arg(name).arg(seat) : tr("+ %1").arg(name), !pos_->online());
+            }
             if (!sequence.isEmpty() && nav_.startSequence(sequence)) {
                 refresh();
                 emit pageChanged();
@@ -1871,6 +1899,33 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
     if (pos_ && name == u"gratuity")
         return call(u"setGratuity"_s, {qint64(args.value(u"percent"_s).toDouble() * 100 + 0.5)},
                     [done](const QVariant &ok) { done(ok.toBool()); });
+    // Send: a required choice missing opens it (not only says so); sent from
+    // a table, back to the floor plan if the store wants (Store Settings).
+    if (pos_ && name == u"sendOrder")
+        return call(u"sendOrder"_s, {}, [this, done](const QVariant &ok) {
+            if (!ok.toBool()) {
+                for (const QVariant &v : pos_->lines())
+                    if (v.toMap().value(u"needsChoice"_s).toBool()) {
+                        const qint64 line = v.toMap().value(u"id"_s).toLongLong();
+                        QMetaObject::invokeMethod(this, [this, line] { chooseLine(line); }, Qt::QueuedConnection);
+                        break;
+                    }
+                return done(false);
+            }
+            const QVariantMap check = pos_->checkInfo();
+            const bool toTables = pos_->userPrefs().value(u"sendToTables"_s).toBool()
+                                  && check.value(u"type"_s).toString() == u"dineIn"
+                                  && !check.value(u"label"_s).toString().isEmpty();
+            done(true);
+            if (toTables)
+                call(u"releaseCheck"_s, {}, [this](const QVariant &released) {
+                    if (!released.toBool())
+                        return;
+                    Action back;
+                    back.data = QJsonObject{{u"type"_s, u"jump"_s}, {u"mode"_s, u"replace"_s}, {u"role"_s, u"tables"_s}};
+                    runAction(back, [](bool) {});
+                });
+        });
     if (pos_ && (name == u"payout" || name == u"paidIn"))
         return call(u"payout"_s, {name}, [done](const QVariant &ok) { done(ok.toBool()); });
 

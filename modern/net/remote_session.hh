@@ -61,6 +61,7 @@ public:
     QVariantMap updateInfo() const override;
     void getUpdate() override;
     bool online() const override { return welcomed_; }
+    int heldCount() const override { return welcomed_ ? 0 : int(kept_.size()); }
     bool loggedIn() const override { return v(u"loggedIn").toBool(); }
     QString userName() const override { return v(u"userName").toString(); }
     QString userRole() const override { return v(u"userRole").toString(); }
@@ -82,7 +83,7 @@ public:
     QVariantMap checkInfo() const override { return v(u"check").toMap(); }
     QVariantList tableChecks() const override { return v(u"tableChecks").toList(); }
     QString undoText() const override { return v(u"undoText").toString(); }
-    QVariantList lines() const override { return v(u"lines").toList(); }
+    QVariantList lines() const override;
     QVariantMap totals() const override { return v(u"totals").toMap(); }
     QVariantList payments() const override { return v(u"payments").toList(); }
     qint64 selectedLine() const override { return v(u"selectedLine").toLongLong(); }
@@ -94,6 +95,7 @@ public:
     QVariantList deliveries() const override { return v(u"deliveries").toList(); }
     QVariantList drivers() const override { return v(u"drivers").toList(); }
     QStringList popularItems() const override { return v(u"popularItems").toStringList(); }
+    QStringList myUsuals() const override { return v(u"myUsuals").toStringList(); }
     QVariantMap stockLeft() const override { return v(u"stockLeft").toMap(); }
     QVariantMap dashboard() const override { return v(u"dashboard").toMap(); }
     QVariantMap checklists() const override { return v(u"checklists").toMap(); }
@@ -239,6 +241,18 @@ private:
     bool welcomed_ = false;
     qint64 nextId_ = 1;
     QHash<qint64, Reply> replies_;
+    // Order taps (an item, a seat, a qualifier...) not answered yet: sent
+    // again when the server is back, in order, by the same id (one it did
+    // already is answered, not done twice). Made while it's out of reach,
+    // they're kept here and answered at once, so the server can keep going.
+    struct Kept {
+        QString method;
+        QVariantList args;
+    };
+    QMap<qint64, Kept> kept_;
+    // This run of the app: the server keeps its session for it a while.
+    QString resumeToken_;
+    void resendKept(bool resumed);
     QVariantMap state_;
     QHash<QString, int> wanted_;   // what's asked for, by how many on the screen
     mutable QVariantList openMerged_;   // the open checks put together (until either part changes)

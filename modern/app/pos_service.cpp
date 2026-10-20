@@ -448,7 +448,8 @@ QVariantMap PosService::userPrefs() const
     if (!deviceStart.empty())
         start = deviceStart;
     return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
-            {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}};
+            {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}, {u"buzz"_s, e->buzz},
+            {u"sendToTables"_s, s_->settings.sendToTables}};
 }
 
 void PosShared::noteProblem(const std::string &kind, const std::string &subject, const std::string &detail)
@@ -1193,6 +1194,7 @@ bool PosService::addItem(const QString &idOrName)
             priced.name += " (" + ss(i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(item->eventAt),
                                                          u"ddd MMM d, h:mm AP"_s)) + ")";
         OrderLine &line = c.addItem(priced, q);
+        line.seat = seat_;   // (again below: a weighed one may be taken off first)
         if (const auto hits = allergyHits(c, line); !hits.empty())
             emit notice(tr("⚠ %1 contains %2: the guest is allergic. The kitchen is told.")
                             .arg(qs(item->name), allergenNames(hits).join(u", "_s)));
@@ -1582,8 +1584,15 @@ bool PosService::sendOrder()
         c->promisedAt = now() + std::int64_t(readyQuote(*c)) * 60'000;
     if (s_->printer)
         s_->printer->printKitchen(s_->settings, *c, fresh, false);
-    const QString sent = n == 1 ? tr("Sent 1 item to the kitchen") : tr("Sent %1 items to the kitchen").arg(n);
-    emit notice(held > 0 ? tr("%1; %2 on hold for a later course").arg(sent).arg(held) : sent);
+    QString sent = n == 1 ? tr("Sent 1 item to the kitchen") : tr("Sent %1 items to the kitchen").arg(n);
+    if (held > 0)
+        sent = tr("%1; %2 on hold for a later course").arg(sent).arg(held);
+    // Allergies said again as it goes: the ticket has them.
+    QStringList allergic = allergenNames(c->allergies);
+    for (const auto &[seat, list] : c->seatAllergies)
+        if (std::ranges::any_of(fresh, [seat](const OrderLine &l) { return l.seat == seat; }))
+            allergic << tr("Seat %1: %2").arg(seat).arg(allergenNames(list).join(u", "_s));
+    emit notice(allergic.isEmpty() ? sent : tr("%1. ⚠ Allergy on the ticket: %2").arg(sent, allergic.join(u"; "_s)));
     changed(*c);
     return true;
 }
@@ -1932,6 +1941,16 @@ QVariantMap PosService::checkInfo() const
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
         {u"taxExempt"_s, qs(c->taxExempt)},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
+        // Seat -> its guest's allergen ids ({"2": ["peanuts"]}).
+        {u"seatAllergies"_s, [c] {
+             QVariantMap m;
+             for (const auto &[seat, list] : c->seatAllergies) {
+                 QStringList a;
+                 for (const std::string &x : list) a << qs(x);
+                 m.insert(QString::number(seat), a);
+             }
+             return m;
+         }()},
         {u"coupons"_s, checkCoupons()}, {u"hold"_s, holdInfo(*c)}, {u"tab"_s, c->type == CheckType::Tab},
         {u"tabHold"_s, s_->settings.tabHold > 0 ? format(Money::fromCents(s_->settings.tabHold)) : QString()},
         {u"opened"_s, timeOfDay(c->openedAt)},
@@ -1976,6 +1995,8 @@ QVariantList PosService::lines() const
                  const MenuItem *m = findItem(qs(l.itemId));
                  return m && !m->modifierGroups.empty(); }()},
             {u"needsChoice"_s, !l.sent && !missingChoice({l}).isEmpty()},
+            // Has what its guest is allergic to (names): marked in red.
+            {u"allergy"_s, allergenNames(allergyHits(*c, l))},
         });
     }
     return out;
@@ -2122,6 +2143,14 @@ QVariantList PosService::openChecksSharedNow() const
             {u"minutes"_s, qint64((t - c.openedAt) / 60000)}, {u"type"_s, qs(toString(c.type))},
             {u"openedAt"_s, qint64(c.openedAt)}, {u"longAfter"_s, s_->settings.tableLongMinutes},
             {u"kiosk"_s, c.kiosk}, {u"lineCount"_s, int(c.lines.size())},
+            // The last Send, and what's waiting to go (the server's next trip).
+            {u"lastSentAt"_s, [&c] {
+                 std::int64_t last = 0;
+                 for (const OrderLine &l : c.lines)
+                     last = std::max(last, l.sent ? l.sentAt : 0);
+                 return qint64(last);
+             }()},
+            {u"unsent"_s, c.unsentCount()},
             {u"customer"_s, qs(c.customer.name)}, {u"due"_s, c.dueAt ? dueText(c.dueAt) : QString()},
         });
     }

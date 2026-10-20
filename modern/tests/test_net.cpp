@@ -435,6 +435,7 @@ namespace {
 struct WifiRelay {
     QTcpServer server;
     bool cut = false;
+    bool cutReplies = false;   // the store hears the handheld, the handheld hears nothing
     std::vector<std::pair<QTcpSocket *, QTcpSocket *>> pairs;
     explicit WifiRelay(quint16 storePort)
     {
@@ -443,15 +444,15 @@ struct WifiRelay {
             while (QTcpSocket *in = server.nextPendingConnection()) {
                 auto *out = new QTcpSocket(&server);
                 out->connectToHost(QHostAddress::LocalHost, storePort);
-                const auto pass = [this](QTcpSocket *from, QTcpSocket *to) {
-                    QObject::connect(from, &QTcpSocket::readyRead, from, [this, from, to] {
+                const auto pass = [this](QTcpSocket *from, QTcpSocket *to, bool back) {
+                    QObject::connect(from, &QTcpSocket::readyRead, from, [this, from, to, back] {
                         const QByteArray bytes = from->readAll();
-                        if (!cut)
+                        if (!cut && !(back && cutReplies))
                             to->write(bytes);
                     });
                 };
-                pass(in, out);
-                pass(out, in);
+                pass(in, out, false);
+                pass(out, in, true);
                 pairs.emplace_back(in, out);
             }
         });
@@ -464,6 +465,7 @@ TEST_CASE("Wi-Fi gone without a word: the handheld says so; the store frees its 
 {
     Store store;
     store.server.setHeartbeat(200, 1500);
+    store.server.setKeepAway(1500);   // kept for it a while (below: the taps it keeps)
     WifiRelay wifi(store.server.port());
     auto remote = std::make_unique<net::RemoteSession>(u"Handheld"_s);
     net::Credentials creds = store.pairedDevice(u"Handheld"_s);
@@ -491,8 +493,136 @@ TEST_CASE("Wi-Fi gone without a word: the handheld says so; the store frees its 
     QSignalSpy notices(h.remote.get(), &app::PosSession::notice);
     h.remote->invoke(u"releaseCheck"_s);                // a tap now: refused at once
     CHECK_FALSE(notices.isEmpty());
-    CHECK(waitFor([&] { return bar.openCheck(id); }, 5000));     // the store let go of it
+    CHECK(waitFor([&] { return store.server.awayCount() == 1; }, 4000));   // kept for it a while...
+    CHECK_FALSE(bar.openCheck(id));
+    CHECK(waitFor([&] { return bar.openCheck(id); }, 6000));     // ...then the store let go of it
     wifi.cut = false;                                   // (it keeps trying: a new connection, not this one)
+}
+
+namespace {
+
+// A handheld at a table, through Wi-Fi that can drop, with a check open.
+struct TableSide {
+    Store store;
+    WifiRelay wifi{store.server.port()};
+    std::unique_ptr<Screen> h;
+    qint64 checkId = 0;
+
+    TableSide()
+    {
+        store.server.setHeartbeat(200, 1500);
+        auto remote = std::make_unique<net::RemoteSession>(u"Handheld"_s);
+        net::Credentials creds = store.pairedDevice(u"Handheld"_s);
+        creds.port = wifi.server.serverPort();
+        remote->setCredentials(creds);
+        remote->setWatchdog(1000, 100);
+        remote->connectTo(u"127.0.0.1"_s, wifi.server.serverPort());
+        REQUIRE(remote->waitForWelcome(5000));
+        h = std::make_unique<Screen>(std::move(remote));
+        h->pin("1111");
+        h->c.selectTable(u"T2"_s);
+        h->settle();
+        h->remote->entryKey(u"2"_s);
+        h->settle();
+        h->tap(u"start"_s);
+        REQUIRE(waitFor([&] { return h->remote->hasCheck(); }));
+        checkId = h->remote->checkInfo()[u"id"_s].toLongLong();
+        waitFor([] { return false; }, 600);   // pings answered: it pongs
+    }
+    std::size_t storeLines() const
+    {
+        const auto it = store.shared.open.find(checkId);
+        return it == store.shared.open.end() ? 0 : it->second.lines.size();
+    }
+    int waiting() const
+    {
+        int n = 0;
+        for (const QVariant &l : h->remote->lines())
+            n += l.toMap().value(u"waiting"_s).toBool();
+        return n;
+    }
+};
+
+} // namespace
+
+TEST_CASE("Wi-Fi out at the table: the taps are kept, shown waiting, and go in once it's back", "[net][remote][heartbeat][held]")
+{
+    TableSide t;
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+
+    // The server keeps tapping: nothing refused, nothing stuck busy; a buzz
+    // and "+ Water (waiting)" for each.
+    QSignalSpy flashes(&t.h->c, &LayoutController::addedFlash);
+    const int buzzed = t.h->c.buzzes();
+    t.h->c.orderItem(u"water"_s);
+    t.h->c.orderItem(u"caesar"_s);
+    CHECK_FALSE(t.h->c.busy());
+    CHECK(t.h->c.buzzes() == buzzed + 2);
+    REQUIRE(flashes.size() == 2);
+    CHECK(flashes[0][0].toString() == u"+ Water"_s);
+    CHECK(flashes[0][1].toBool());   // waiting
+    CHECK(t.h->remote->heldCount() == 2);
+    CHECK(t.waiting() == 2);
+    CHECK(t.h->remote->lines().last().toMap()[u"name"_s].toString() == u"Caesar"_s);
+    // Sending to the kitchen waits for the server: refused, not kept.
+    QSignalSpy notices(t.h->remote.get(), &app::PosSession::notice);
+    t.h->tap(u"flow-send"_s);
+    CHECK(t.h->remote->heldCount() == 2);
+    CHECK_FALSE(notices.isEmpty());
+
+    // The store keeps the check for it meanwhile.
+    REQUIRE(waitFor([&] { return t.store.server.awayCount() == 1; }, 4000));
+    PosService bar(&t.store.shared, u"Bar"_s);
+    REQUIRE(bar.loginWithPin(u"2222"_s));
+    CHECK_FALSE(bar.openCheck(t.checkId));
+
+    t.wifi.cut = false;   // back in range: the same session, logged in, the check open
+    REQUIRE(waitFor([&] { return t.h->remote->online(); }, 8000));
+    CHECK(t.h->remote->loggedIn());
+    REQUIRE(waitFor([&] { return t.storeLines() == 2; }));
+    CHECK(waitFor([&] { return t.waiting() == 0 && t.h->remote->lines().size() == 2; }));
+    CHECK(t.h->remote->heldCount() == 0);
+    CHECK(t.store.server.awayCount() == 0);
+}
+
+TEST_CASE("Wi-Fi out before the answer came: sent again, done once", "[net][remote][heartbeat][held]")
+{
+    TableSide t;
+    t.wifi.cutReplies = true;   // the store gets the tap; its answer is lost
+    t.h->c.orderItem(u"water"_s);
+    REQUIRE(waitFor([&] { return t.storeLines() == 1; }));
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+    CHECK_FALSE(t.h->c.busy());
+    CHECK(t.waiting() == 1);
+    t.wifi.cutReplies = false;
+    REQUIRE(waitFor([&] { return t.h->remote->online(); }, 8000));
+    CHECK(waitFor([&] { return t.waiting() == 0 && t.h->remote->lines().size() == 1; }));
+    waitFor([] { return false; }, 300);
+    CHECK(t.storeLines() == 1);   // not twice
+}
+
+TEST_CASE("Wi-Fi out too long: the taps made meanwhile are said not to have gone in", "[net][remote][heartbeat][held]")
+{
+    TableSide t;
+    t.store.server.setKeepAway(300);
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+    t.h->c.orderItem(u"water"_s);
+    CHECK(t.h->remote->heldCount() == 1);
+    REQUIRE(waitFor([&] { return t.store.server.awayCount() == 1; }, 4000));
+    REQUIRE(waitFor([&] { return t.store.server.awayCount() == 0; }, 4000));   // let go
+    QSignalSpy notices(t.h->remote.get(), &app::PosSession::notice);
+    t.wifi.cut = false;
+    REQUIRE(waitFor([&] { return t.h->remote->online(); }, 8000));
+    CHECK_FALSE(t.h->remote->loggedIn());
+    CHECK(t.waiting() == 0);
+    CHECK(t.h->remote->heldCount() == 0);
+    bool told = false;
+    for (const auto &n : notices)
+        told = told || n.first().toString().contains(u"didn't go in"_s);
+    CHECK(told);
+    CHECK(t.storeLines() == 0);
 }
 
 TEST_CASE("Updates: a screen behind the store is told, and a manager there gets the update", "[net][remote][updates]")

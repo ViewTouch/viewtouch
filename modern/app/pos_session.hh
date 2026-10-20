@@ -26,6 +26,8 @@ class PosSession : public QObject {
     Q_PROPERTY(QString terminalName READ terminalName CONSTANT)
     // False while a remote terminal has lost its server (always true locally).
     Q_PROPERTY(bool online READ online NOTIFY onlineChanged)
+    // Taps made while the server is out of reach, kept to send when it's back.
+    Q_PROPERTY(int heldCount READ heldCount NOTIFY onlineChanged)
     // This screen's build against the store's: {build, storeBuild, behind,
     // ahead, update: {name, build, size} if the store has one for it,
     // downloading: 0..100, ready: path, error}. Empty on the store's computer.
@@ -78,6 +80,8 @@ class PosSession : public QObject {
     Q_PROPERTY(QVariantList drivers READ drivers NOTIFY openChecksChanged)
     // Today's best sellers so far (item ids, most sold first): the Popular page.
     Q_PROPERTY(QStringList popularItems READ popularItems NOTIFY openChecksChanged)
+    // What the person logged in orders most (the past four weeks and today): the Mine tab.
+    Q_PROPERTY(QStringList myUsuals READ myUsuals NOTIFY openChecksChanged)
     // Checks closed today, newest first (managers, to reopen one).
     Q_PROPERTY(QVariantList closedChecks READ closedChecks NOTIFY dayChanged)
     // Active employees [{id, name, role, clockedIn, me}], to transfer checks to.
@@ -241,6 +245,7 @@ public:
 
     virtual QString terminalName() const = 0;
     virtual bool online() const { return true; }
+    virtual int heldCount() const { return 0; }
     virtual QVariantMap updateInfo() const { return {}; }
     // Fetch the store's update for this screen and open it (Android: the
     // installer asks to install it). Managers.
@@ -279,6 +284,7 @@ public:
     // The two parts put together: each check with mine, current, forMe, mayOpen, busyOn.
     static QVariantList mergeOpenChecks(const QVariantList &shared, const QVariantMap &viewer);
     virtual QStringList popularItems() const = 0;
+    virtual QStringList myUsuals() const { return {}; }
     virtual QVariantList tableChecks() const = 0;
     virtual QString undoText() const = 0;
     virtual QVariantList closedChecks() const = 0;
@@ -519,7 +525,7 @@ public:
     // The allergens, [{id, name}] in the screen's language; names of some ids.
     Q_INVOKABLE static QVariantList allergenList();
     static QStringList allergenNames(const std::vector<std::string> &ids);
-    Q_INVOKABLE void setAllergies(const QStringList &ids) { invoke(QStringLiteral("setAllergies"), {ids}); }
+    Q_INVOKABLE void setAllergies(const QStringList &ids, int seat = 0) { invoke(QStringLiteral("setAllergies"), {ids, seat}); }
     Q_INVOKABLE void importMenuFile(const QVariantMap &file) { invoke(QStringLiteral("importMenuFile"), {file}); }
     Q_INVOKABLE void importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices) { invoke(QStringLiteral("importMenuRows"), {rows, categoryId, updatePrices}); }
     Q_INVOKABLE void addMenuItemsFromText(const QString &categoryId, const QString &text) { invoke(QStringLiteral("addMenuItemsFromText"), {categoryId, text}); }

@@ -250,9 +250,17 @@ Document kitchenTicket(const Check &check, const std::vector<OrderLine> &lines, 
         d.center("*** " + upper(ctx.tr("Rush")) + " ***", true, true);
     if (check.vip)
         d.center("* VIP *", true, true);
-    if (!check.allergies.empty()) {
+    // The table's allergies, and each guest's whose items are on this ticket.
+    std::vector<std::pair<int, std::vector<std::string>>> seatsHere;
+    for (const auto &[seat, list] : check.seatAllergies)
+        if (std::ranges::any_of(lines, [seat](const OrderLine &l) { return l.seat == seat; }))
+            seatsHere.emplace_back(seat, list);
+    if (!check.allergies.empty() || !seatsHere.empty()) {
         d.center("!! " + upper(ctx.tr("Allergy")) + " !!", true, true);
-        d.center(upper(join(ctx.allergens(check.allergies), ", ")), true, true);
+        if (!check.allergies.empty())
+            d.center(upper(join(ctx.allergens(check.allergies), ", ")), true, true);
+        for (const auto &[seat, list] : seatsHere)
+            d.center(ctx.tr("S%1", {std::to_string(seat)}) + ": " + upper(join(ctx.allergens(list), ", ")), true, true);
     }
     if (check.dueAt > 0)
         d.center(upper(ctx.tr("Ready at %1", {ctx.time(check.dueAt)})), true, true);
@@ -281,8 +289,9 @@ Document kitchenTicket(const Check &check, const std::vector<OrderLine> &lines, 
             continue;
         d.text(seat + std::to_string(l.quantity) + " " + l.kitchenText(), Document::Align::Left, true, true);
         std::vector<std::string> hits;
+        const std::vector<std::string> mustNot = check.allergiesFor(l.seat);
         for (const std::string &a : l.allergens)
-            if (std::ranges::find(check.allergies, a) != check.allergies.end())
+            if (std::ranges::find(mustNot, a) != mustNot.end())
                 hits.push_back(a);
         if (!hits.empty())
             d.text("   !! " + upper(ctx.tr("Contains %1", {join(ctx.allergens(hits), ", ")})), Document::Align::Left, true);

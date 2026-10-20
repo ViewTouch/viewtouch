@@ -412,6 +412,8 @@ struct PosSettings {
     int kitchenLateMinutes = 15;
     // Orders for later go to the kitchen this long before they're due.
     int laterLeadMinutes = 20;
+    // After Send on a table's check: back to the floor plan (the next table).
+    bool sendToTables = false;
     // Phone orders: a name before Send (and an address for deliveries);
     // employees and terminals can say otherwise.
     bool requireOrderName = false;
