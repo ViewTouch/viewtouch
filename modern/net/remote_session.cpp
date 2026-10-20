@@ -67,7 +67,7 @@ Group groupOf(const QString &key)
         {u"lines"_s, Group::Check}, {u"totals"_s, Group::Check}, {u"payments"_s, Group::Check},
         {u"selectedLine"_s, Group::Check}, {u"selectedPayment"_s, Group::Check},
         {u"openChecks"_s, Group::OpenChecks}, {u"openChecksShared"_s, Group::OpenChecks}, {u"openChecksViewer"_s, Group::OpenChecks}, {u"floor"_s, Group::OpenChecks}, {u"deliveries"_s, Group::OpenChecks}, {u"drivers"_s, Group::OpenChecks}, {u"popularItems"_s, Group::OpenChecks}, {u"myUsuals"_s, Group::OpenChecks}, {u"stockLeft"_s, Group::Day}, {u"dashboard"_s, Group::Day}, {u"checklists"_s, Group::Day}, {u"checkFilter"_s, Group::OpenChecks},
-        {u"kitchenTickets"_s, Group::Kitchen}, {u"drawer"_s, Group::Drawer},
+        {u"kitchenTickets"_s, Group::Kitchen}, {u"rushRadar"_s, Group::Kitchen}, {u"drawer"_s, Group::Drawer},
         {u"day"_s, Group::Day}, {u"days"_s, Group::Day}, {u"tipsOwed"_s, Group::Day},
     };
     return groups.value(key, Group::None);

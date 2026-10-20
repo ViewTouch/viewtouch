@@ -623,6 +623,7 @@ QString PosService::format(Money amount) const
 
 void PosService::changed(Check &check)
 {
+    noteQueuesAtSend(check);
     applyDeliveryFee(check);
     applyPromotions(check);
     if (s_->sink)

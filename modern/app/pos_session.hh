@@ -186,6 +186,9 @@ class PosSession : public QObject {
     Q_PROPERTY(QVariantList checkHistory READ checkHistory NOTIFY checkChanged)
     Q_PROPERTY(QString checkFilter READ checkFilter WRITE setCheckFilter NOTIFY openChecksChanged)
     Q_PROPERTY(QVariantList kitchenTickets READ kitchenTickets NOTIFY kitchenChanged)
+    // Rush Radar: each kitchen station's next half hour ({stations, headline,
+    // ...}). Sent to a handheld only while it's shown: want("rushRadar").
+    Q_PROPERTY(QVariantMap rushRadar READ rushRadar NOTIFY kitchenChanged)
     Q_PROPERTY(QVariantList expoTickets READ expoTickets NOTIFY kitchenChanged)
     Q_PROPERTY(QVariantMap drawer READ drawerInfo NOTIFY drawerChanged)
     Q_PROPERTY(QVariantMap day READ dayInfo NOTIFY dayChanged)
@@ -285,6 +288,7 @@ public:
     static QVariantList mergeOpenChecks(const QVariantList &shared, const QVariantMap &viewer);
     virtual QStringList popularItems() const = 0;
     virtual QStringList myUsuals() const { return {}; }
+    virtual QVariantMap rushRadar() const { return {}; }
     virtual QVariantList tableChecks() const = 0;
     virtual QString undoText() const = 0;
     virtual QVariantList closedChecks() const = 0;

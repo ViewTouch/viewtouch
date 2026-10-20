@@ -4862,6 +4862,57 @@ TEST_CASE("Manual: cash and card prices on the Pay screen", "[.manual]")
     s.shot("m154-cash-and-card-prices");
 }
 
+TEST_CASE("Rush Radar on the dashboard and the kitchen screen", "[ui][rush]")
+{
+    Screen s;
+    s.pos.shared()->settings.kitchenWarnMinutes = 10;
+    s.pos.shared()->settings.kitchenLateMinutes = 15;
+    for (int i = 0; i < 40; ++i)
+        s.pos.shared()->settings.stationPace["grill"].learn(i % 9, 4 + 1.5 * (i % 9));
+    s.pos.shared()->rushPast.tableItems["classic-burger"] = 100;
+    s.pos.shared()->rushPast.tableGuests = 100;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const auto order = [&](const char *table, int guests, int burgers, bool send) {
+        REQUIRE(s.pos.selectTable(QString::fromLatin1(table)) == app::PosService::TableNeedsGuests);
+        s.pos.entryKey(QString::number(guests));
+        REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        for (int i = 0; i < burgers; ++i) {
+            s.pos.addItem(u"classic-burger"_s);
+            for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+                if (!g.toMap()[u"done"_s].toBool())
+                    s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+            s.pos.finishChoosing();
+        }
+        if (send)
+            s.pos.sendOrder();
+        s.pos.releaseCheck();
+    };
+    order("T1", 4, 4, true);
+    order("T2", 4, 3, true);
+    order("T3", 6, 0, false);    // just sat down
+    order("T5", 8, 0, false);
+
+    REQUIRE(s.c.jumpTo(u"dashboard"_s));
+    QTest::qWait(300);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *card = Screen::findBy(root, "objectName", u"dashRush"_s);
+    REQUIRE(card);
+    CHECK(card->isVisible());
+    QQuickItem *grill = Screen::findBy(root, "objectName", u"rush-grill"_s);
+    REQUIRE(grill);
+    QQuickItem *headline = Screen::findBy(card, "objectName", u"rushHeadline"_s);
+    REQUIRE(headline);
+    CHECK(headline->property("text").toString().contains(u"Grill"_s));
+    s.shot("m155-rush-radar");
+
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    QTest::qWait(300);
+    QQuickItem *strip = Screen::findBy(root, "objectName", u"kdsRush"_s);
+    REQUIRE(strip);
+    CHECK(strip->isVisible());
+    s.shot("m156-rush-kitchen");
+}
+
 TEST_CASE("Memory: a screen through a long service stays flat", "[.memory]")
 {
     Screen s;

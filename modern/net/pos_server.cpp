@@ -89,7 +89,7 @@ constexpr quint32 kAlways = 1u << 31;
 // too old to ask gets everything).
 bool onRequest(const QString &key)
 {
-    return key == u"closedChecks";
+    return key == u"closedChecks" || key == u"rushRadar";
 }
 
 // Screens that ask for things (this version) get the open checks in two

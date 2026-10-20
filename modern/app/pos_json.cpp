@@ -109,6 +109,8 @@ QJsonObject toJson(const Check &c)
             lo.insert(u"made"_s, true);
             lo.insert(u"madeAt"_s, qint64(l.madeAt));
         }
+        if (l.queueAtSend >= 0)
+            lo.insert(u"queueAtSend"_s, l.queueAtSend);
         if (l.seat != 0)
             lo.insert(u"seat"_s, l.seat);
         if (l.course != 1)
@@ -228,6 +230,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         l.sentAt = i64(lo.value(u"sentAt"));
         l.made = lo.value(u"made").toBool();
         l.madeAt = i64(lo.value(u"madeAt"));
+        l.queueAtSend = lo.value(u"queueAtSend").toInt(-1);
         l.seat = lo.value(u"seat").toInt(0);
         l.course = std::max(1, lo.value(u"course").toInt(1));
         l.kitchenName = ss(lo.value(u"kitchenName").toString());
@@ -1098,6 +1101,12 @@ QJsonObject toJson(const PosSettings &s)
                  o.insert(qs(id), sec);
              return o;
          }()},
+        {u"stationPace"_s, [&] {
+             QJsonObject o;
+             for (const auto &[id, p] : s.stationPace)
+                 o.insert(qs(id), QJsonArray{p.n, p.sumQ, p.sumT, p.sumQQ, p.sumQT});
+             return o;
+         }()},
         {u"checklistTicks"_s, [&] {
              QJsonArray a;
              for (const PosSettings::ChecklistTick &t : s.checklistTicks)
@@ -1383,6 +1392,12 @@ PosSettings settingsFromJson(const QJsonObject &o)
     const QJsonObject prep = o.value(u"prepSeconds").toObject();
     for (auto it = prep.begin(); it != prep.end(); ++it)
         s.prepSeconds[ss(it.key())] = it.value().toInt();
+    const QJsonObject pace = o.value(u"stationPace").toObject();
+    for (auto it = pace.begin(); it != pace.end(); ++it) {
+        const QJsonArray a = it.value().toArray();
+        if (a.size() == 5)
+            s.stationPace[ss(it.key())] = {a[0].toDouble(), a[1].toDouble(), a[2].toDouble(), a[3].toDouble(), a[4].toDouble()};
+    }
     for (const QJsonValue &v : o.value(u"checklistTicks").toArray()) {
         const QJsonObject x = v.toObject();
         s.checklistTicks.push_back({ss(x.value(u"list").toString()), ss(x.value(u"task").toString()),

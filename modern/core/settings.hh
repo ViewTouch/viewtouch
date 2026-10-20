@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/rush.hh"
 #include "core/check.hh"
 #include "core/inventory.hh"
 #include "core/tax.hh"
@@ -408,6 +409,9 @@ struct PosSettings {
     // What each item usually takes, sent to made (seconds, item id -> a
     // running average): kitchen tickets are late past their slowest item's.
     std::map<std::string, int> prepSeconds;
+    // Each station's pace (ticket time against the line ahead), learned as
+    // tickets are bumped: Rush Radar's half hour ahead.
+    std::map<std::string, StationPace> stationPace;
     int kitchenWarnMinutes = 8;
     int kitchenLateMinutes = 15;
     // Orders for later go to the kitchen this long before they're due.

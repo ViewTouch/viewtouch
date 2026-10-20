@@ -174,6 +174,23 @@ Item {
             }
         }
 
+        // Rush Radar: the kitchen's next half hour.
+        Card {
+            objectName: "dashRush"
+            title: qsTr("Rush Radar: the next %1 minutes").arg(rush.radar.horizon ?? 30)
+            Layout.fillHeight: false
+            Layout.preferredHeight: rush.implicitHeight + w.unit * 2.6
+            RushRadarView {
+                id: rush
+                active: w.visible
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                pos: w.pos
+                unit: w.unit
+                face: w.face
+            }
+        }
+
         // The lists
         GridLayout {
             Layout.fillWidth: true

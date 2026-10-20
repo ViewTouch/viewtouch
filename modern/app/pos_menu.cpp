@@ -480,17 +480,20 @@ void PosService::askPastOnce() const
     QThreadPool::globalInstance()->start([=] {
         std::map<std::string, int> with;
         std::map<std::string, std::map<std::string, int>> together, byServer;
+        PosShared::RushPast rush;
         for (const Check &x : history(from, to)) {
             countTogether(x, with, together);
             countByServer(x, byServer);
+            rush.count(x);
         }
         QMetaObject::invokeMethod(shared, [shared, with = std::move(with), together = std::move(together),
-                                           byServer = std::move(byServer)]() mutable {
+                                           byServer = std::move(byServer), rush = std::move(rush)]() mutable {
             if (!shared)
                 return;
             shared->pastChecksWith = std::move(with);
             shared->pastTogether = std::move(together);
             shared->pastByServer = std::move(byServer);
+            shared->rushPast = std::move(rush);
             emit shared->checksChanged();
         }, Qt::QueuedConnection);
     });

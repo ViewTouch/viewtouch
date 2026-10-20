@@ -427,6 +427,28 @@ Item {
             }
         }
 
+        // Rush Radar: a strip when this station (or, on the expo, any) is about to back up.
+        Rectangle {
+            objectName: "kdsRush"
+            visible: rushStrip.headline !== ""
+            Layout.fillWidth: true
+            Layout.preferredHeight: rushStrip.implicitHeight + 16
+            Layout.fillHeight: false
+            radius: 8
+            color: "#3a2e10"
+            border.color: "#f5b940"
+            RushRadarView {
+                id: rushStrip
+                anchors.fill: parent
+                anchors.margins: 8
+                compact: true
+                active: w.visible
+                pos: w.pos
+                station: w.expo ? "" : w.station
+                unit: Math.max(16, Math.min(28, w.width / 50))
+            }
+        }
+
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
