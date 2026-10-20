@@ -43,6 +43,11 @@ void PosShared::RushPast::count(const Check &c)
 {
     if (c.training || c.status == CheckStatus::Discarded || c.status == CheckStatus::Merged)
         return;
+    if (c.openedAt > 0) {
+        const QDateTime opened = QDateTime::fromMSecsSinceEpoch(c.openedAt);
+        ++checkHours[(opened.date().dayOfWeek() % 7) * 24 + opened.time().hour()];
+        days.insert(opened.date().toJulianDay());
+    }
     std::int64_t first = 0;
     for (const OrderLine &l : c.lines) {
         if (!l.sent || l.voided || l.isComment() || !l.forKitchen() || l.sentAt <= 0)
@@ -153,6 +158,103 @@ int PosService::kitchenMinutesFor(const Check &c, bool *paceKnown) const
     if (paceKnown)
         *paceKnown = known;
     return int(std::ceil(worst));
+}
+
+QVariantMap PosService::staffingNow() const
+{
+    const std::int64_t t = now();
+    const PosSettings &st = s_->settings;
+    askPastOnce();
+    const PosShared::RushPast &past = s_->rushPast;
+    const QDateTime nowDt = QDateTime::fromMSecsSinceEpoch(t);
+    const int today = nowDt.date().dayOfWeek() % 7;
+    int days = 0;
+    for (const std::int64_t d : past.days)
+        days += QDate::fromJulianDay(d).dayOfWeek() % 7 == today;
+    if (days == 0)
+        return {{u"known"_s, false}};
+    const auto usual = [&](int hour) {   // checks this weekday usually opens in that hour
+        return hour < 24 ? double(past.checkHours[today * 24 + hour]) / days : 0.0;
+    };
+    const int hour = nowDt.time().hour();
+    const double frac = nowDt.time().minute() / 60.0;
+    // Today's pace: checks opened so far against the usual by now.
+    double usualSoFar = usual(hour) * frac, todaySoFar = 0;
+    for (int h = 0; h < hour; ++h)
+        usualSoFar += usual(h);
+    const std::int64_t dayStart = QDateTime(nowDt.date(), QTime(0, 0)).toMSecsSinceEpoch();
+    for (const Check &c : s_->closedToday)
+        todaySoFar += !c.training && c.openedAt >= dayStart;
+    for (const auto &[id, c] : s_->open)
+        todaySoFar += !c.training && c.openedAt >= dayStart;
+    const double pace = usualSoFar >= 5 ? std::clamp(todaySoFar / usualSoFar, 0.4, 2.5) : 1.0;
+    // The next hour, and the one after (not cut before a rush).
+    const double next = (usual(hour) * (1 - frac) + usual(hour + 1) * frac) * pace;
+    const double after = (usual(hour + 1) * (1 - frac) + usual(hour + 2) * frac) * pace;
+    const int perServer = std::max(1, st.checksPerServerHour);
+    const auto need = [&](double checks) { return checks < 0.3 ? 0 : std::max(1, int(std::ceil(checks / perServer))); };
+    const int needed = need(next), neededAfter = need(after);
+
+    // Servers on the clock now (back from a break counts), and their tables.
+    struct On { const Employee *e; std::int64_t since; int tables; };
+    std::vector<On> on;
+    for (const TimePunch &p : s_->punches) {
+        if (!p.open())
+            continue;
+        const Employee *e = s_->employee(p.employeeId);
+        if (!e || (p.job.empty() ? e->role : p.job) != "server")
+            continue;
+        int tables = 0;
+        for (const auto &[id, c] : s_->open)
+            tables += c.serverId == e->id && !c.training;
+        on.push_back({e, p.clockIn, tables});
+    }
+    const int servers = int(on.size());
+    const auto hoursText = [](std::int64_t ms) {
+        return i18n::locale().toString(double(ms) / 3'600'000.0, 'f', 1);
+    };
+    QVariantMap out{{u"known"_s, true}, {u"expected"_s, int(std::lround(next))}, {u"needed"_s, needed},
+                    {u"servers"_s, servers}, {u"pacePercent"_s, int(std::lround(pace * 100))}};
+    if (servers > std::max(needed, neededAfter) && servers > 1) {
+        // Cut one: whoever has no open tables, the longest on first.
+        std::ranges::stable_sort(on, [](const On &a, const On &b) {
+            return std::pair(a.tables, a.since) < std::pair(b.tables, b.since);
+        });
+        const On &who = on.front();
+        out.insert(u"action"_s, u"cut"_s);
+        out.insert(u"who"_s, qs(who.e->name));
+        out.insert(u"text"_s, tr("Cut a server: about %n check(s) the next hour, ", "", int(std::lround(next)))
+                                  + tr("%n server(s) on, ", "", servers) + tr("%1 needed.").arg(std::max(needed, neededAfter)) + u' '
+                                  + (who.tables == 0 ? tr("%1 has no open tables and has worked %2 h.").arg(qs(who.e->name), hoursText(t - who.since))
+                                                     : tr("%1 has the fewest tables (%2).").arg(qs(who.e->name)).arg(who.tables)));
+    } else if (servers < needed) {
+        // Call one in: whoever's shift starts next (today, the next 3 hours).
+        const Shift *soonest = nullptr;
+        for (const Shift &sh : s_->shifts) {
+            if (sh.start <= t || sh.start > t + 3 * 3'600'000LL)
+                continue;
+            const Employee *e = s_->employee(sh.employeeId);
+            if (!e || e->role != "server" || std::ranges::any_of(on, [&](const On &o) { return o.e == e; }))
+                continue;
+            if (!soonest || sh.start < soonest->start)
+                soonest = &sh;
+        }
+        out.insert(u"action"_s, u"call"_s);
+        QString text = tr("Call a server in: about %n check(s) the next hour", "", int(std::lround(next)))
+                       + (std::abs(pace - 1.0) >= 0.15 ? tr(" (today is running at %1% of usual)").arg(int(std::lround(pace * 100))) : QString())
+                       + u", "_s + tr("%n server(s) on, ", "", servers) + tr("%1 needed.").arg(needed);
+        if (soonest) {
+            const Employee *e = s_->employee(soonest->employeeId);
+            out.insert(u"who"_s, qs(e->name));
+            text += u' ' + tr("%1 starts at %2: ask them in early.").arg(qs(e->name), clock(soonest->start));
+        }
+        out.insert(u"text"_s, text);
+    } else {
+        out.insert(u"action"_s, u"ok"_s);
+        out.insert(u"text"_s, tr("Staffing fits: about %n check(s) the next hour, ", "", int(std::lround(next)))
+                                  + tr("%n server(s) on.", "", servers));
+    }
+    return out;
 }
 
 QVariantMap PosService::rushRadar() const

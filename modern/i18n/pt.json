@@ -5,6 +5,7 @@
  " (inherited)": " (herdado)",
  " (the store's server: other screens connect to it)": " (o servidor da loja: as outras telas se conectam a ele)",
  " (this computer runs the store on its own)": " (este computador roda a loja sozinho)",
+ " (today is running at %1% of usual)": " (hoje está em %1% do normal)",
  " + %1 credit card surcharge": " + %1 de sobretaxa do cartão de crédito",
  " + %1 surcharge": " + %1 de sobretaxa",
  " + %1 tip": " + %1 de gorjeta",
@@ -108,10 +109,12 @@
  "%1 has no choices.": "%1 não tem escolhas.",
  "%1 has no house account.": "%1 não tem conta da casa.",
  "%1 has no items yet.": "%1 ainda não tem itens.",
+ "%1 has no open tables and has worked %2 h.": "%1 não tem mesas abertas e já trabalhou %2 h.",
  "%1 has no order on file yet.": "%1 ainda não tem pedido registrado.",
  "%1 has no price.": "%1 não tem preço.",
  "%1 has no recipe to take off the shelf (Menu Builder).": "%1 não tem receita para tirar do estoque (Construtor de cardápio).",
  "%1 has not been counted": "%1 não foi contado",
+ "%1 has the fewest tables (%2).": "%1 tem menos mesas (%2).",
  "%1 hasn't been sent to the kitchen yet.": "%1 ainda não foi enviado à cozinha.",
  "%1 held for %2": "%1 reservada para %2",
  "%1 hours this week": "%1 horas esta semana",
@@ -170,6 +173,7 @@
  "%1 min": "%1 min",
  "%1 min at %2": "%1 min às %2",
  "%1 min now · %2 ahead": "%1 min agora · %2 à frente",
+ "%1 needed.": "precisa de %1.",
  "%1 needs a %2. Touch it, then choose.": "%1 precisa de %2. Toque nele e escolha.",
  "%1 needs a manager's approval.": "%1 precisa da aprovação de um gerente.",
  "%1 needs bussing": "%1 precisa limpar",
@@ -204,6 +208,7 @@
  "%1 shared %2 ways": "%1 dividido em %2",
  "%1 since %2": "%1 desde %2",
  "%1 started with %2": "%1 aberto com %2",
+ "%1 starts at %2: ask them in early.": "%1 entra às %2: peça para vir mais cedo.",
  "%1 starts on %2.": "%1 começa em %2.",
  "%1 still due": "%1 ainda devidos",
  "%1 still on, with PINs anyone could know. Turn them off (Manager → Employees, or the setup guide).": "%1 ainda ativos, com PINs que qualquer um pode saber. Desative-os (Gerente → Funcionários, ou o guia de configuração).",
@@ -374,6 +379,14 @@
  "%n server(s) needed": {
   "one": "%n garçom necessário",
   "other": "%n garçons necessários"
+ },
+ "%n server(s) on, ": {
+  "one": "%n garçom no turno, ",
+  "other": "%n garçons no turno, "
+ },
+ "%n server(s) on.": {
+  "one": "%n garçom no turno.",
+  "other": "%n garçons no turno."
  },
  "%n setting(s) found": {
   "one": "%n ajuste encontrado",
@@ -923,6 +936,10 @@
  "Café": "Café",
  "California: an extra hour's pay is owed for each day a meal break is late or missed (unless the employee chose to skip it, in writing).": "Califórnia: uma hora extra de pagamento é devida para cada dia em que a pausa para refeição atrasa ou falta (a menos que o funcionário tenha escolhido pular, por escrito).",
  "California: the seventh day worked in a row in the pay week.": "Califórnia: o sétimo dia trabalhado seguido na semana de pagamento.",
+ "Call a server in: about %n check(s) the next hour": {
+  "one": "Chame um garçom: cerca de %n conta na próxima hora",
+  "other": "Chame um garçom: cerca de %n contas na próxima hora"
+ },
  "Can be a substitute": "Pode ser substituto",
  "Can't import that": "Não dá para importar isso",
  "Can't open %1.": "Não foi possível abrir %1.",
@@ -1338,6 +1355,10 @@
  "Customers…": "Clientes…",
  "Customer…": "Cliente…",
  "Cut": "Recortar",
+ "Cut a server: about %n check(s) the next hour, ": {
+  "one": "Um garçom pode sair: cerca de %n conta na próxima hora, ",
+  "other": "Um garçom pode sair: cerca de %n contas na próxima hora, "
+ },
  "Cut paper after each ticket": "Cortar o papel depois de cada ticket",
  "Dairy": "Laticínios",
  "Dark or light": "Escuro ou claro",
@@ -3181,6 +3202,10 @@
  "Staff tick them off on the Checklists page.": "A equipe marca na página Listas.",
  "Staff who take payments": "Equipe que recebe pagamentos",
  "Staff who void items": "Equipe que estorna itens",
+ "Staffing fits: about %n check(s) the next hour, ": {
+  "one": "A equipe dá conta: cerca de %n conta na próxima hora, ",
+  "other": "A equipe dá conta: cerca de %n contas na próxima hora, "
+ },
  "Standard": "Padrão",
  "Standard pages": "Páginas padrão",
  "Standard screens": "Telas padrão",

@@ -4871,6 +4871,21 @@ TEST_CASE("Rush Radar on the dashboard and the kitchen screen", "[ui][rush]")
         s.pos.shared()->settings.stationPace["grill"].learn(i % 9, 4 + 1.5 * (i % 9));
     s.pos.shared()->rushPast.tableItems["classic-burger"] = 100;
     s.pos.shared()->rushPast.tableGuests = 100;
+    // Four past weeks of this weekday: 16 checks an hour around now; Sam alone on the floor.
+    {
+        const QDateTime now = QDateTime::currentDateTime();
+        for (int k = 1; k <= 4; ++k)
+            s.pos.shared()->rushPast.days.insert(now.date().addDays(-7 * k).toJulianDay());
+        const int day = now.date().dayOfWeek() % 7;
+        for (int h = 0; h < 24; ++h)
+            s.pos.shared()->rushPast.checkHours[day * 24 + h] = 4 * 16;
+        core::TimePunch p;
+        p.id = 900;
+        p.employeeId = "sam";
+        p.job = "server";
+        p.clockIn = now.toMSecsSinceEpoch() - 3 * 3'600'000LL;
+        s.pos.shared()->punches.push_back(p);
+    }
     REQUIRE(s.pos.loginWithPin(u"1234"_s));
     const auto order = [&](const char *table, int guests, int burgers, bool send) {
         REQUIRE(s.pos.selectTable(QString::fromLatin1(table)) == app::PosService::TableNeedsGuests);
@@ -4903,6 +4918,9 @@ TEST_CASE("Rush Radar on the dashboard and the kitchen screen", "[ui][rush]")
     QQuickItem *headline = Screen::findBy(card, "objectName", u"rushHeadline"_s);
     REQUIRE(headline);
     CHECK(headline->property("text").toString().contains(u"Grill"_s));
+    QQuickItem *staffing = Screen::findBy(root, "objectName", u"dashStaffing"_s);
+    REQUIRE(staffing);
+    CHECK(staffing->property("text").toString().contains(u"Call a server in"_s));
     s.shot("m155-rush-radar");
 
     REQUIRE(s.c.jumpTo(u"kitchen"_s));

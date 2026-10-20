@@ -107,13 +107,29 @@
   "one": "%n server needed",
   "other": "%n servers needed"
  },
+ "%n server(s) on, ": {
+  "one": "%n server on, ",
+  "other": "%n servers on, "
+ },
+ "%n server(s) on.": {
+  "one": "%n server on.",
+  "other": "%n servers on."
+ },
  "%n setting(s) found": {
   "one": "%n setting found",
   "other": "%n settings found"
  },
+ "%n tap(s) waiting: they go in when it's back.": {
+  "one": "%n tap waiting: it goes in when it's back.",
+  "other": "%n taps waiting: they go in when it's back."
+ },
  "(+%n other price(s))": {
   "one": "(+%n other price)",
   "other": "(+%n other prices)"
+ },
+ "A paid 10-minute rest break is due (one every %n hour(s) worked).": {
+  "one": "A paid 10-minute rest break is due (one every %n hour worked).",
+  "other": "A paid 10-minute rest break is due (one every %n hours worked)."
  },
  "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
   "one": "About %n check a server an hour (Store Settings -> Staff hours).",
@@ -143,6 +159,14 @@
   "one": "Avoiding %n",
   "other": "Avoiding %n"
  },
+ "Back online: sent %n tap(s) made while it was out.": {
+  "one": "Back online: sent %n tap made while it was out.",
+  "other": "Back online: sent %n taps made while it was out."
+ },
+ "Call a server in: about %n check(s) the next hour": {
+  "one": "Call a server in: about %n check the next hour",
+  "other": "Call a server in: about %n checks the next hour"
+ },
  "Change %n item(s)": {
   "one": "Change %n item",
   "other": "Change %n items"
@@ -167,9 +191,21 @@
   "one": "Counted %n item: as expected",
   "other": "Counted %n items: as expected"
  },
+ "Cut a server: about %n check(s) the next hour, ": {
+  "one": "Cut a server: about %n check the next hour, ",
+  "other": "Cut a server: about %n checks the next hour, "
+ },
  "Exported all pages to %1, with %n picture(s) and font(s)": {
   "one": "Exported all pages to %1, with %n picture or font",
   "other": "Exported all pages to %1, with %n pictures and fonts"
+ },
+ "Forgotten (removed from %n check(s))": {
+  "one": "Forgotten (removed from %n check)",
+  "other": "Forgotten (removed from %n checks)"
+ },
+ "Forgotten: their details are off %n check(s), and their record is gone.": {
+  "one": "Forgotten: their details are off %n check, and their record is gone.",
+  "other": "Forgotten: their details are off %n checks, and their record is gone."
  },
  "From the same day in %n past week(s); recent weeks count more.": {
   "one": "From the same day last week.",
@@ -239,9 +275,21 @@
   "one": "Save %n change",
   "other": "Save %n changes"
  },
+ "Staffing fits: about %n check(s) the next hour, ": {
+  "one": "Staffing fits: about %n check the next hour, ",
+  "other": "Staffing fits: about %n checks the next hour, "
+ },
+ "The connection was out too long: %n tap(s) made meanwhile didn't go in. Open the check and add them again.": {
+  "one": "The connection was out too long: %n tap made meanwhile didn't go in. Open the check and add it again.",
+  "other": "The connection was out too long: %n taps made meanwhile didn't go in. Open the check and add them again."
+ },
  "Too many wrong PINs: try again in %n second(s).": {
   "one": "Too many wrong PINs: try again in %n second.",
   "other": "Too many wrong PINs: try again in %n seconds."
+ },
+ "We're making it now: ready in about %n minute(s). Please pay at the counter.": {
+  "one": "We're making it now: ready in about %n minute. Please pay at the counter.",
+  "other": "We're making it now: ready in about %n minutes. Please pay at the counter."
  },
  "new prices for %n": {
   "one": "a new price for %n item",

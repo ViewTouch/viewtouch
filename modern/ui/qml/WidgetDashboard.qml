@@ -179,7 +179,7 @@ Item {
             objectName: "dashRush"
             title: qsTr("Rush Radar: the next %1 minutes").arg(rush.radar.horizon ?? 30)
             Layout.fillHeight: false
-            Layout.preferredHeight: rush.implicitHeight + w.unit * 2.6
+            Layout.preferredHeight: rush.implicitHeight + w.unit * 4
             RushRadarView {
                 id: rush
                 active: w.visible
@@ -188,6 +188,19 @@ Item {
                 pos: w.pos
                 unit: w.unit
                 face: w.face
+            }
+            // Labor in the moment: the next hour against who's on.
+            Text {
+                objectName: "dashStaffing"
+                readonly property var staffing: w.labor.staffing ?? ({})
+                visible: staffing.known === true
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: (staffing.action === "cut" ? "✂ " : staffing.action === "call" ? "☎ " : "✓ ") + (staffing.text ?? "")
+                color: staffing.action === "call" ? w.bad : staffing.action === "cut" ? w.warn : w.good
+                font.family: w.face
+                font.pixelSize: w.unit * 0.9
+                font.bold: staffing.action !== "ok"
             }
         }
 
