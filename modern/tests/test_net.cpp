@@ -1,3 +1,4 @@
+#include <functional>
 #include <limits>
 #include <catch2/catch_test_macros.hpp>
 
@@ -12,6 +13,11 @@
 #include "qt_catch.hh"
 
 #include <QElapsedTimer>
+#include <QImage>
+#include <QQmlApplicationEngine>
+#include <QQuickItem>
+#include <QQuickWindow>
+#include <QtTest/QTest>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QTimeZone>
@@ -711,4 +717,173 @@ TEST_CASE("Kitchen and expo screens skip finished closed checks, and see recalle
     emit shared.adminChanged();
     CHECK(shared.kitchenDone.empty());
     CHECK(pos.kitchenTicketsNow().isEmpty());
+}
+
+TEST_CASE("Taxes set on a handheld: saved, and every screen totals with them", "[net][remote][taxes]")
+{
+    Store store;
+    Screen office(store.terminal(u"Office"_s));
+    office.pin("1234");
+    Screen front(store.terminal(u"Front"_s));
+    front.pin("1111");
+
+    // An open check on Front with a burger.
+    front.c.selectTable(u"T2"_s);
+    front.settle();
+    front.remote->entryKey(u"2"_s);
+    front.settle();
+    front.tap(u"start"_s);
+    REQUIRE(front.c.jumpTo(u"items-burgers"_s));
+    front.tap(u"item-1"_s);
+    front.remote->chooseOption(u"temperature"_s, 1);
+    front.settle();
+    front.c.finishChoosing();
+    front.settle();
+    REQUIRE(front.remote->lines().size() == 1);
+    const QString taxBefore = front.remote->totals()[u"tax"_s].toString();
+
+    REQUIRE(waitFor([&] { return !office.remote->adminRecords(u"taxes"_s).isEmpty(); }));
+    QVariantMap taxes = office.remote->adminRecords(u"taxes"_s).value(0).toMap();
+    INFO(QJsonDocument::fromVariant(taxes).toJson().toStdString());
+    taxes[u"food"_s] = 10.0;
+    office.remote->adminSave(u"taxes"_s, 0, taxes);
+
+    // The server keeps it (and saves it).
+    REQUIRE(waitFor([&] { return store.shared.settings.tax.foodPpm == 100'000; }));
+    // The screen that set it shows it.
+    CHECK(waitFor([&] { return office.remote->adminRecords(u"taxes"_s).value(0).toMap()[u"food"_s].toDouble() == 10.0; }));
+    // Another screen's open check is totaled with it.
+    INFO("tax before: " << taxBefore.toStdString());
+    CHECK(waitFor([&] { return front.remote->totals()[u"tax"_s].toString() != taxBefore; }));
+}
+
+TEST_CASE("Store Settings -> Taxes on a handheld: the form fills in, saves, and shows what was saved", "[net][remote][taxes][ui]")
+{
+    Store store;
+    store.shared.settings.tax.alcoholPpm = 90'000;   // 9%: must survive a save of the food rate
+    Screen office(store.terminal(u"Office"_s));
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&office.c)}, {u"width"_s, 1600}, {u"height"_s, 900}});
+    engine.loadFromModule("ViewTouch", "Main");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    office.pin("1234");
+    REQUIRE(office.c.showPage(u"admin-taxes"_s));
+
+    const auto panel = [&]() -> QQuickItem * {
+        const std::function<QQuickItem *(QQuickItem *)> find = [&](QQuickItem *root) -> QQuickItem * {
+            for (QQuickItem *i : root->childItems()) {
+                if (QByteArray(i->metaObject()->className()).startsWith("WidgetAdminPanel"))
+                    return i;
+                if (QQuickItem *hit = find(i))
+                    return hit;
+            }
+            return nullptr;
+        };
+        return find(window->contentItem());
+    };
+    const auto draft = [&] { return panel() ? panel()->property("draft").toMap() : QVariantMap(); };
+    REQUIRE(waitFor([&] { return panel() != nullptr; }));
+    // The form shows the store's rates once they come from the server.
+    REQUIRE(waitFor([&] { return draft().value(u"alcohol"_s).toDouble() == 9.0; }));
+
+    // The manager types a food rate and saves.
+    QVariantMap d = draft();
+    d[u"food"_s] = 7.5;
+    panel()->setProperty("draft", d);
+    panel()->setProperty("dirty", true);
+    QMetaObject::invokeMethod(panel(), "save");
+    REQUIRE(waitFor([&] { return store.shared.settings.tax.foodPpm == 75'000; }));
+    CHECK(store.shared.settings.tax.alcoholPpm == 90'000);
+    // The form shows what was saved, not the rates from before.
+    CHECK(waitFor([&] { return draft().value(u"food"_s).toDouble() == 7.5 && !panel()->property("dirty").toBool(); }));
+}
+
+TEST_CASE("Taxes saved with only one rate keep the others", "[net][remote][taxes]")
+{
+    Store store;
+    store.shared.settings.tax.alcoholPpm = 90'000;
+    store.shared.settings.tax.merchandisePpm = 60'000;
+    Screen office(store.terminal(u"Office"_s));
+    office.pin("1234");
+    office.remote->adminSave(u"taxes"_s, 0, {{u"food"_s, 8.0}});
+    REQUIRE(waitFor([&] { return store.shared.settings.tax.foodPpm == 80'000; }));
+    CHECK(store.shared.settings.tax.alcoholPpm == 90'000);
+    CHECK(store.shared.settings.tax.merchandisePpm == 60'000);
+}
+
+TEST_CASE("Handheld photos: no menu rebuild as each arrives, and kept for the next start", "[net][remote][images]")
+{
+    Store store;
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    // Three menu photos on the server.
+    QStringList photos;
+    for (int i = 0; i < 3; ++i) {
+        QImage img(20, 20, QImage::Format_RGB32);
+        img.fill(QColor::fromHsv(i * 100, 200, 200));
+        photos << dir.filePath(u"photo%1.png"_s.arg(i));
+        REQUIRE(img.save(photos.back()));
+    }
+    const QString cache = dir.filePath(u"cache"_s);
+    // The store's: on its menu (only those are handed out).
+    for (int i = 0; i < 3; ++i)
+        store.shared.menu[std::size_t(i)].image = photos[i].toStdString();
+
+    {
+        auto t = store.terminal(u"Handheld"_s);
+        t->setImageCache(cache);
+        QSignalSpy admin(t.get(), &app::PosSession::adminChanged);
+        QSignalSpy images(t.get(), &app::PosSession::imagesChanged);
+        for (const QString &p : photos)
+            CHECK(t->imageUrl(p).isEmpty());   // not here yet: fetched
+        REQUIRE(waitFor([&] { return std::ranges::all_of(photos, [&](const QString &p) { return !t->imageUrl(p).isEmpty(); }); }));
+        QTest::qWait(100);
+        CHECK(admin.count() == 0);             // the menu isn't rebuilt for pictures
+        CHECK(images.count() >= 1);
+        CHECK(images.count() < 3);             // together, not one by one
+    }
+
+    // The next start: shown at once from this device's copies.
+    auto again = store.terminal(u"Handheld2"_s);
+    again->setImageCache(cache);
+    QSignalSpy images(again.get(), &app::PosSession::imagesChanged);
+    for (const QString &p : photos)
+        CHECK_FALSE(again->imageUrl(p).isEmpty());
+    QTest::qWait(300);                         // asked again (by path: it may have changed)…
+    CHECK(images.count() == 0);                // …the same: nothing redrawn
+}
+
+TEST_CASE("A handheld has the menu as soon as someone logs in", "[net][remote][menu]")
+{
+    Store store;
+    Screen front(store.terminal(u"Front"_s));
+    CHECK(front.remote->menuItems().isEmpty());   // nobody logged in: not sent
+    QElapsedTimer t;
+    t.start();
+    front.pin("1111");
+    // At once, not at the server's next round of everything (30 s).
+    REQUIRE(waitFor([&] { return !front.remote->menuItems().isEmpty(); }, 2000));
+    CHECK(t.elapsed() < 2000);
+    CHECK(front.remote->menuItems().size() == qsizetype(store.shared.menu.size()));
+
+    // Taking an order doesn't make the handheld redo the menu.
+    QSignalSpy admin(front.remote.get(), &app::PosSession::adminChanged);
+    front.c.selectTable(u"T2"_s);
+    front.settle();
+    front.remote->entryKey(u"2"_s);
+    front.settle();
+    front.tap(u"start"_s);
+    REQUIRE(front.c.jumpTo(u"items-burgers"_s));
+    for (int i = 0; i < 3; ++i) {
+        front.tap(u"item-1"_s);
+        front.remote->chooseOption(u"temperature"_s, 1);
+        front.settle();
+        front.c.finishChoosing();
+        front.settle();
+    }
+    front.tap(u"flow-send"_s);
+    QTest::qWait(200);
+    CHECK(admin.count() == 0);
 }

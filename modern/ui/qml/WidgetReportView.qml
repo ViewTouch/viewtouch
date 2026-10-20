@@ -34,6 +34,19 @@ Item {
         text: w.reportIds.reduce((a, r) => r.label.length > a.length ? r.label : a, "")
     }
     readonly property real keyH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(46) : 0)
+    // One text size for a row of keys: the largest at which every name fits
+    // its key (each shrinking on its own made "Day" twice "Categories").
+    FontMetrics { id: keyFont; font.family: w.face; font.pixelSize: 100; font.bold: true }
+    function fitPx(labels, columns, scale) {
+        const gap = w.unit * 0.3
+        const keyW = (w.width - w.unit * 1.2 - (columns - 1) * gap) / columns - 14
+        let px = w.keyH * scale
+        for (const t of labels)
+            px = Math.min(px, keyW * 100 / Math.max(1, keyFont.advanceWidth(t)))
+        return Math.max(10, px)
+    }
+    readonly property real periodKeyPx: fitPx(periods.map(p => p.label), narrow ? 4 : periods.length + 1, 0.34)
+    readonly property real reportKeyPx: fitPx(reportIds.map(r => r.label), reportColumns, 0.36)
 
     readonly property var reportIds: [
         { id: "sales", label: qsTr("Sales") }, { id: "items", label: qsTr("Items") },
@@ -126,7 +139,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: modelData.label
-                    fontScale: 0.36
+                    pixelSize: w.reportKeyPx
                     baseColor: w.reportId === modelData.id ? "#2f6fd6" : "#343c49"
                     onClicked: w.reportId = modelData.id
                 }
@@ -178,7 +191,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: modelData.label
-                    fontScale: 0.34
+                    pixelSize: w.periodKeyPx
                     baseColor: w.period === modelData.id ? "#2f6fd6" : "#343c49"
                     onClicked: w.period = modelData.id
                 }

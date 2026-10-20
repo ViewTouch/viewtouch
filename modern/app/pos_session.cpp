@@ -118,6 +118,7 @@ PosSession::PosSession(QObject *parent)
         tables_.reset();
         ++checksRevision_;
     });
+    connect(this, &PosSession::adminChanged, this, &PosSession::imagesChanged);
 }
 
 QVariantMap PosSession::tableStatus(const QString &label) const

@@ -92,31 +92,48 @@ Item {
         anchors.fill: parent
         spacing: w.gap
 
-        // Families across the top (only when showing them all).
+        // Families across the top (only when showing them all). A phone:
+        // three to a row; all with one text size, the largest at which each
+        // name fits (each shrinking on its own left "Breakfast Plates" tiny
+        // beside "Burgers").
         Flow {
+            id: tabs
             Layout.fillWidth: true
             visible: !w.search && !w.popular && w.fixedFamily === "" && w.families.length > 1
             spacing: w.gap * 0.6
+            // As many as fit at 120 pixels on the screen (a phone: three).
+            readonly property real screenWidth: w.width * (w.zone ? w.zone.screenScale : 1)
+            readonly property int perRow: Math.max(2, Math.min(6, Math.floor(screenWidth / 120)))
+            readonly property real keyW: perRow < 6 ? (w.width - spacing * (perRow - 1)) / perRow
+                                                    : Math.max(160, (w.width - spacing * 5) / 6)
+            readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(52) : 56)
+            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            readonly property real textPx: {
+                let px = keyH * 0.38
+                for (const f of w.families.map(x => w.title(x)).concat([qsTr("Arrange…")]))
+                    px = Math.min(px, (keyW - 16) * 100 / Math.max(1, tabFont.advanceWidth(f)))
+                return Math.max(10, px)
+            }
             Repeater {
                 model: w.families
                 delegate: WidgetKey {
                     required property string modelData
                     objectName: "menuFamily-" + modelData
-                    width: Math.max(160, (w.width - w.gap * 0.6 * 5) / 6)
-                    height: Math.max(56, w.zone ? w.zone.touch(52) : 56)
+                    width: tabs.keyW
+                    height: tabs.keyH
                     text: w.title(modelData)
                     accent: modelData === w.family
-                    fontScale: 0.38
+                    pixelSize: tabs.textPx
                     onClicked: w.zone.controller.menuCategory = modelData
                 }
             }
             WidgetKey {
                 objectName: "menuArrange"
                 visible: w.mayArrange && !w.arranging
-                width: Math.max(160, (w.width - w.gap * 0.6 * 5) / 6)
-                height: Math.max(56, w.zone ? w.zone.touch(52) : 56)
+                width: tabs.keyW
+                height: tabs.keyH
                 text: qsTr("Arrange…")
-                fontScale: 0.38
+                pixelSize: tabs.textPx
                 onClicked: w.setArranging(true)
             }
         }

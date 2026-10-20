@@ -18,6 +18,9 @@ Rectangle {
     property color textColor: keySt.keyTextColor ?? "white"
     property string fontFamily: "DejaVu Sans"
     property real fontScale: 0.42
+    // A size for its text shared with the keys beside it (> 0): one size for
+    // the row, not each shrunk on its own (a short name looked bigger).
+    property real pixelSize: 0
     property bool accent: false
     // Held down (half a second): held() instead of clicked(), for keys that say so.
     property bool holdable: false
@@ -40,7 +43,9 @@ Rectangle {
         text: key.text
         color: key.textColor
         font.family: key.keySt.keyFont ?? key.fontFamily
-        font.pixelSize: Math.max(10, Math.min(key.height, key.width * 1.2) * key.fontScale)
+        // The zone's "Button text size %" (Built-in button look) on top.
+        font.pixelSize: (key.pixelSize > 0 ? key.pixelSize : Math.max(10, Math.min(key.height, key.width * 1.2) * key.fontScale))
+                        * (key.keySt.keyTextSize ?? 100) / 100
         font.bold: true
         fontSizeMode: Text.HorizontalFit
         minimumPixelSize: 10

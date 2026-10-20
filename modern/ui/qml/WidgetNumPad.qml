@@ -42,7 +42,12 @@ Item {
                                               : (w.pos.entry === "" ? "0" : w.pos.entry)
                 color: w.pos && w.pos.entry === "" ? "#8a94a6" : "white"
                 font.family: w.zone.st.font ?? "DejaVu Sans"
+                // Shrunk to fit the width: on a phone the hint ("or type the
+                // number", "Balance due") was cut off at the left.
+                anchors.leftMargin: 12
                 font.pixelSize: parent.height * 0.5
+                fontSizeMode: Text.HorizontalFit
+                minimumPixelSize: 10
                 font.bold: true
             }
         }

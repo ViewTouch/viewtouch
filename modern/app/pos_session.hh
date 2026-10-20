@@ -193,11 +193,13 @@ class PosSession : public QObject {
     Q_PROPERTY(QVariantList days READ days NOTIFY dayChanged)
     Q_PROPERTY(int adminRevision READ adminRevision NOTIFY adminChanged)
     // The store's pictures: [{name, ref ("store:logo.png"), hash, bytes, url}].
-    Q_PROPERTY(QVariantList storeImages READ storeImages NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList storeImages READ storeImages NOTIFY imagesChanged)
     // The store's logo as a picture ref ("store:logo.png"), or "".
     Q_PROPERTY(QString storeLogo READ storeLogo NOTIFY adminChanged)
-    // Changes when pictures do (bind to it with imageUrl()).
-    Q_PROPERTY(int imageRevision READ imageRevision NOTIFY adminChanged)
+    // Changes when pictures do (bind to it with imageUrl()): with every admin
+    // change, and when a handheld's copy of a picture arrives (only this: a
+    // menu of photos isn't rebuilt for each one).
+    Q_PROPERTY(int imageRevision READ imageRevision NOTIFY imagesChanged)
     // The logged-in employee's card tips + gratuity not yet paid out.
     Q_PROPERTY(QString tipsOwed READ tipsOwed NOTIFY dayChanged)
     // This terminal's Screen layout setting: "phone", "standard" or "" (automatic).
@@ -678,6 +680,7 @@ signals:
     void drawerChanged();
     void dayChanged();
     void adminChanged();
+    void imagesChanged();
     void queriesChanged();
     void onlineChanged();
     void notice(const QString &message);

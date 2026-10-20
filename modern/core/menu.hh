@@ -68,6 +68,8 @@ struct MenuItem {
     int prepMinutes = 0;
     // Its button color in the self-filling menu ("#a86a12"); empty: the panel's.
     std::string buttonColor;
+    // Its name's size there, in percent of the usual (0: its category's).
+    int textSize = 0;
     // On the order screen: under a heading in its category ("Tacos"), and
     // what comes before it: nothing, a space ("space"), a new row ("row").
     std::string section;
@@ -153,6 +155,8 @@ struct MenuCategory {
     std::string buttonSize;
     bool photos = false;
     bool hidePrice = false;
+    // Its items' names' size, in percent of the usual (0: the usual).
+    int textSize = 0;
     // Its items without their own color: shades of its color, each a little
     // different.
     bool shades = false;

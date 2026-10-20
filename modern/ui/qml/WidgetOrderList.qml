@@ -12,7 +12,11 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property string face: zone.st.font ?? "DejaVu Sans"
-    readonly property real unit: Math.max(12, Math.min((zone.st.fontSize ?? 28) * zone.textScale, w.width * 0.05 * zone.textScale))
+    // At least 15 pixels on the screen (its smallest text, 0.6 of it, 9): a
+    // phone draws the page smaller than it was made, and the seat, course and
+    // Again keys were 6 or 7 pixels there.
+    readonly property real unit: Math.max(12, zone.touch(15) * zone.textScale,
+                                          Math.min((zone.st.fontSize ?? 28) * zone.textScale, w.width * 0.05 * zone.textScale))
     readonly property var check: pos ? pos.check : ({})
     // A swiped line: from here, since selecting it rebuilds the lines (and the row).
     function swipeOff(lineId) {

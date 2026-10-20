@@ -295,6 +295,8 @@ void LayoutController::setPos(PosSession *pos)
         connect(pos_, &PosSession::loggedInChanged, this, &LayoutController::onLoggedInChanged);
         connect(pos_, &PosSession::checkClosed, this, [this] { navigate(Navigator::Mode::Home); });
         connect(pos_, &PosSession::qualifierChanged, this, &LayoutController::refresh);
+        // A store font's file arrived (a handheld fetches the store's files).
+        connect(pos_, &PosSession::imagesChanged, this, &LayoutController::installStoreFonts);
         connect(pos_, &PosSession::adminChanged, this, [this] {
             cardReader_.setKind(pos_->terminalCardReader());   // Manager -> Terminals: this screen's reader
             if (pos_->terminalLook() != lookedId_)

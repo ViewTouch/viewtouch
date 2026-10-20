@@ -632,7 +632,8 @@ QVariantList PosService::menuCategoriesNow() const
                                {u"now"_s, c.periods.empty() || std::ranges::find(c.periods, period) != c.periods.end()},
                                {u"printer"_s, qs(c.printer)}, {u"station"_s, qs(c.station)},
                                {u"taxClass"_s, qs(c.taxClass)}, {u"buttonSize"_s, qs(c.buttonSize)},
-                               {u"photos"_s, c.photos}, {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades}});
+                               {u"photos"_s, c.photos}, {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades},
+                               {u"textSize"_s, c.textSize}});
     }
     return out;
 }
@@ -659,7 +660,7 @@ QVariantList PosService::menuItemsNow() const
                                {u"color"_s, qs(m.kitchenColor)}, {u"byWeight"_s, m.byWeight},
                                {u"unit"_s, qs(m.weightUnit)}, {u"number"_s, qs(m.number)},
                                {u"barcodes"_s, [&m] { QStringList b; for (const std::string &x : m.barcodes) b << qs(x); return b.join(u", "_s); }()},
-                               {u"buttonColor"_s, qs(m.buttonColor)},
+                               {u"buttonColor"_s, qs(m.buttonColor)}, {u"textSize"_s, m.textSize},
                                // The Menu Builder's card.
                                {u"priceValue"_s, double(m.price.cents()) / 100.0}, {u"groups"_s, groupsOf(m)},
                                {u"onIt"_s, onItOf(m)}, {u"sizes"_s, sizesOf(m)}, {u"taxClass"_s, qs(toString(m.taxClass))},

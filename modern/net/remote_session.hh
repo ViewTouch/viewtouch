@@ -257,6 +257,7 @@ private:
     QString imageCache_;
     mutable QHash<QString, QString> images_;   // server path -> local file ("" while fetching)
     int imageRevision_ = 0;                     // pictures that have arrived
+    QTimer imagesArrived_;                      // a few together: one redraw
     int queryRevision_ = 0;
 };
 
