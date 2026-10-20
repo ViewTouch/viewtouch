@@ -91,7 +91,7 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     r.subtitle = ctx.period;
     r.columns = {"", "Amount"};
 
-    Money items, giftCards, discounts, net, tax, total, change, rounding, gratuity, tips, staffMeals, taxedGratuity;
+    Money items, giftCards, discounts, net, tax, total, change, rounding, gratuity, tips, surcharges, staffMeals, taxedGratuity;
     std::int64_t staffMealChecks = 0;
     std::map<TaxClass, Money> taxByClass, taxableByClass;
     std::map<std::string, Money> byTender;           // tender name -> amount
@@ -121,6 +121,7 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
         gratuity += t.gratuity;
         taxedGratuity += t.taxableGratuity;
         tips += t.tips;
+        surcharges += t.surcharges;
         guests += c.guests;
         for (const auto &[cls, amount] : t.taxByClass)
             taxByClass[cls] += amount;
@@ -209,6 +210,8 @@ Report salesSummary(const std::vector<Check> &closed, const ReportContext &ctx, 
     }
     if (tips.cents() != 0)
         r.line({"Card tips (owed to staff)", ctx.money(tips)});
+    if (surcharges.cents() != 0)
+        r.line({"Credit card surcharges (the store's, not sales)", ctx.money(surcharges)});
     if (collected != total + rounding)
         r.note("Collected and the total differ by " + ctx.money(collected - total - rounding)
                + ": a check may have been closed with a balance.");
@@ -1043,12 +1046,13 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
         r.note("Some drawers aren't counted yet: their cash is what should be there.");
 
     // What was sold, and how it was paid.
-    Money due, cashNet, cards, cardTips, giftCards, house, other;
+    Money due, cashNet, cards, cardTips, surcharges, giftCards, house, other;
     for (const Check &c : closed) {
         const Totals t = c.totals(rates);
         due += t.total + t.rounding;
         cashNet += t.cashNet();
         cardTips += t.tips;
+        surcharges += t.surcharges;
         for (const Payment &p : c.payments) {
             switch (p.kind) {
             case TenderKind::Card: cards += p.amount; break;
@@ -1062,12 +1066,14 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
     r.section("Cards to settle");
     r.line({"Card payments", ctx.money(cards)});
     r.line({"Card tips", ctx.money(cardTips)});
+    if (surcharges.cents() != 0)
+        r.line({"Credit card surcharges", ctx.money(surcharges)});
     // Card refunds today (on any day's checks) come off the batch; cash
     // refunds already came out of the drawers.
     Money cardRefunds;
     for (const Refund &x : refunds)
         if (x.method != "cash")
-            cardRefunds += x.amount;
+            cardRefunds += x.amount + x.surcharge;
     if (cardRefunds.cents() != 0)
         r.line({"Card refunds", ctx.money(-cardRefunds)});
     Money accountCards, accountCash;
@@ -1075,7 +1081,7 @@ Report depositReport(const std::vector<DrawerSession> &drawers, const std::vecto
         (a.method == "card" ? accountCards : accountCash) += a.amount;
     if (accountCards.cents() != 0)
         r.line({"House account payments by card", ctx.money(accountCards)});
-    r.total({"Card batch", ctx.money(cards + cardTips - cardRefunds + accountCards)});
+    r.total({"Card batch", ctx.money(cards + cardTips + surcharges - cardRefunds + accountCards)});
 
     r.section("Book balance");
     r.line({"Sold (with tax)", ctx.money(due)});

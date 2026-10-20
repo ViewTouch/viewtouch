@@ -1634,6 +1634,10 @@ bool PosService::tender(const QString &tenderId, std::optional<std::int64_t> amo
         return giftCardNumber_.isEmpty() ? fail(tr("Open Gift Card and enter or swipe the card first."))
                                          : payWithGiftCard({}, amountCents.value_or(0));
 
+    // Dual pricing: a check paid all in cash pays the cash price.
+    if (t->kind == TenderKind::Cash)
+        offerCashDiscount(*c, amountCents ? Money::fromCents(*amountCents)
+                                          : entry_.isEmpty() ? Money() : Money::fromCents(entry_.toLongLong()));
     const Totals before = c->totals(s_->settings.tax);
     Money amount;
     if (t->kind != TenderKind::Discount) {
@@ -1742,6 +1746,10 @@ bool PosService::removePayment()
     }
     const Money discountsBefore = c->totals(s_->settings.tax).discounts;
     c->removePayment(removed.id);
+    // The cash taken back: the cash price goes with it (the card price again).
+    if (removed.kind == TenderKind::Cash
+        && std::ranges::none_of(c->payments, [](const Payment &p) { return p.kind == TenderKind::Cash; }))
+        std::erase_if(c->payments, [](const Payment &p) { return p.reference == kCashDiscountRef; });
     if (removed.reference.starts_with("promo:"))   // a coupon: off the check (a promotion by itself comes back)
         std::erase(c->coupons, removed.reference.substr(6));
     returnPayment(*c, removed);
@@ -2042,12 +2050,51 @@ bool PosService::newTableCheck()
     return true;
 }
 
+// The check with the cash discount on it (what paying all in cash costs).
+std::optional<Check> PosService::atCashPrice(const Check &c) const
+{
+    if (s_->settings.cashDiscountBp <= 0
+        || std::ranges::any_of(c.payments, [](const Payment &p) {
+               return p.kind != TenderKind::Discount || p.reference == kCashDiscountRef; }))
+        return std::nullopt;   // off, or something's paid already (or it's on)
+    Check priced = c;
+    Tender t;
+    t.id = "cashDiscount";
+    t.kind = TenderKind::Discount;
+    t.percentBp = s_->settings.cashDiscountBp;
+    t.name = ss(tr("Cash discount %1%").arg(QLocale().toString(double(t.percentBp) / 100.0, 'g', 3)));
+    priced.addPayment(t, Money()).reference = kCashDiscountRef;
+    return priced;
+}
+
+void PosService::offerCashDiscount(Check &c, Money tendered)
+{
+    const std::optional<Check> priced = atCashPrice(c);
+    if (!priced)
+        return;
+    const Money due = priced->totals(s_->settings.tax).balance;
+    // All of it in cash (nothing typed: the cash price exactly); part of it: the card price.
+    if (tendered.cents() > 0 && tendered < due) {
+        emit notice(tr("Paid all in cash, it's %1 (the cash price).").arg(format(due)));
+        return;
+    }
+    c.payments = priced->payments;
+    noteEvent(c, tr("Cash price: %1").arg(qs(c.payments.back().tenderName)), "discount",
+              c.totals(s_->settings.tax).discounts);
+}
+
 QVariantMap PosService::totals() const
 {
     const Check *c = currentCheck();
     if (!c)
         return {};
     const Totals t = c->totals(s_->settings.tax);
+    // Dual pricing: what it costs in cash (all of it), beside the card price.
+    QVariantMap prices;
+    if (const std::optional<Check> priced = atCashPrice(*c); priced && t.balance.cents() > 0)
+        prices = {{u"cashPrice"_s, format(priced->totals(s_->settings.tax).balance)}, {u"cardPrice"_s, format(t.balance)}};
+    if (const std::int64_t bp = surchargeBp(); bp > 0 && t.balance.cents() > 0)
+        prices.insert(u"surchargeNotice"_s, surchargeNotice());
     QVariantList taxLines;
     for (const auto &[cls, amount] : t.taxByClass) {
         QString name;
@@ -2060,7 +2107,7 @@ QVariantMap PosService::totals() const
         }
         taxLines.append(QVariantMap{{u"name"_s, name}, {u"amount"_s, format(amount)}});
     }
-    return {
+    QVariantMap out{
         {u"items"_s, format(t.items)}, {u"discounts"_s, format(-t.discounts)},
         {u"hasDiscount"_s, t.discounts.cents() > 0},
         {u"subtotal"_s, format(t.subtotal)}, {u"tax"_s, format(t.tax)}, {u"taxLines"_s, taxLines},
@@ -2077,7 +2124,10 @@ QVariantMap PosService::totals() const
         {u"storeGratuityPercent"_s, double(s_->settings.gratuityBp > 0 ? s_->settings.gratuityBp : 1800) / 100.0},
         {u"tips"_s, format(t.tips)}, {u"hasTips"_s, t.tips.cents() > 0},
         {u"hasCard"_s, std::ranges::any_of(c->payments, [](const Payment &p) { return p.kind == TenderKind::Card; })},
+        {u"surcharges"_s, format(t.surcharges)}, {u"hasSurcharges"_s, t.surcharges.cents() > 0},
     };
+    out.insert(prices);
+    return out;
 }
 
 QVariantList PosService::payments() const
@@ -2103,6 +2153,8 @@ QVariantList PosService::payments() const
             name += u"  ·  "_s + tr("refunding…");
         out.append(QVariantMap{{u"id"_s, qint64(p.id)}, {u"name"_s, name}, {u"amount"_s, amount},
                                {u"tip"_s, p.tip.cents() ? format(p.tip) : QString()},
+                               {u"surcharge"_s, p.surcharge.cents() ? format(p.surcharge) : QString()},
+                               {u"funding"_s, qs(p.funding)},
                                {u"card"_s, p.kind == TenderKind::Card},
                                {u"selected"_s, qint64(p.id) == selectedPayment_}});
     }

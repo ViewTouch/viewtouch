@@ -463,6 +463,13 @@ QVariantList PosService::adminFields(const QString &panel)
                   tr("A bigger payment needs the internet.")),
             field(u"offlineCardTotal"_s, tr("Offline: up to this much waiting in all"), u"money"_s,
                   tr("Past that, cards wait for the internet.")),
+            field(u"surchargePercent"_s, tr("Credit card surcharge %"), u"percent"_s,
+                  tr("Added on top when a card reader says the card is a credit card; never on debit or prepaid cards "
+                     "(the law). Up to 3% (2% in Colorado); not allowed in Connecticut, Massachusetts or Maine. Post a "
+                     "sign at the door and the register, and tell your card processor first. 0 = none.")),
+            field(u"cashDiscountPercent"_s, tr("Cash discount %"), u"percent"_s,
+                  tr("Dual pricing: the menu's prices are the card prices, and a check paid all in cash takes this much off. "
+                     "The Pay screen and receipts show both prices. 0 = none.")),
             field(u"tabHold"_s, tr("Bar tabs: hold the guest's card for"), u"money"_s,
                   tr("Set aside on the card when a tab opens (nothing is charged); charged for the tab when it closes. 0 = tabs don't hold cards.")),
             with(field(u"cardTipOn"_s, tr("Card tips are asked on"), u"enum"_s,

@@ -9,6 +9,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QLocale>
 #include <QPointer>
 #include <QUrl>
 
@@ -67,7 +68,13 @@ QVariantMap PosService::cardCharge(const QString &tenderId)
         amount = totals.balance;   // a card isn't over-tendered
     // A tip the guest chose on the customer display goes on their card.
     const Money tip = tipChoice_.chosen && tipChoice_.checkId == c->id ? tipFor(*c) : Money();
-    return {{u"ok"_s, true}, {u"tenderId"_s, tenderId}, {u"checkId"_s, qint64(c->id)},
+    QVariantMap surcharge;
+    if (const std::int64_t bp = surchargeBp(); bp > 0) {
+        // What a credit card adds (not a debit or prepaid one: the reader says which).
+        surcharge = {{u"surchargeCents"_s, qint64(amount.percent(bp).cents())}, {u"surchargeBp"_s, qint64(bp)},
+                     {u"surchargeNotice"_s, surchargeNotice()}};
+    }
+    QVariantMap out{{u"ok"_s, true}, {u"tenderId"_s, tenderId}, {u"checkId"_s, qint64(c->id)},
             {u"amountCents"_s, qint64(amount.cents())}, {u"tipCents"_s, qint64(tip.cents())},
             {u"currency"_s, qs(s_->settings.cardCurrency)},
             {u"description"_s, u"%1 #%2"_s.arg(qs(c->label)).arg(c->id)},
@@ -75,6 +82,20 @@ QVariantMap PosService::cardCharge(const QString &tenderId)
             // While the internet is down (a Stripe reader): up to these (0: not at all).
             {u"offlineMax"_s, s_->settings.offlineCards ? qint64(s_->settings.offlineCardMax) : 0},
             {u"offlineTotal"_s, s_->settings.offlineCards ? qint64(s_->settings.offlineCardTotal) : 0}};
+    out.insert(surcharge);
+    return out;
+}
+
+std::int64_t PosService::surchargeBp() const
+{
+    // Never over what the store's state allows (it may have changed since).
+    return std::min(s_->settings.surchargeBp, surchargeCapBp(s_->settings.laborState));
+}
+
+QString PosService::surchargeNotice() const
+{
+    return tr("A %1% surcharge is added to credit cards. Debit cards: none.")
+        .arg(QLocale().toString(double(surchargeBp()) / 100.0, 'g', 3));
 }
 
 bool PosService::recordCardPayment(const QVariantMap &r)
@@ -117,9 +138,12 @@ bool PosService::addCardPayment(const QVariantMap &r)
     if (!t)
         return fail(tr("Set up a card payment type first (Manager -> Payment Types)."));
     const Money tip = Money::fromCents(std::max<qint64>(0, r.value(u"tipCents"_s).toLongLong()));
-    // What was charged, less the tip, pays toward the check.
+    // A credit card's surcharge (the reader added it: it said "credit").
+    const QString funding = r.value(u"funding"_s).toString();
+    const Money surcharge = Money::fromCents(std::max<qint64>(0, r.value(u"surchargeCents"_s).toLongLong()));
+    // What was charged, less the tip and the surcharge, pays toward the check.
     const Money charged = Money::fromCents(r.value(u"amountCents"_s).toLongLong());
-    const Money amount = charged - tip;
+    const Money amount = charged - tip - surcharge;
     if (amount.cents() <= 0)
         return fail(tr("The card reader approved nothing."));
     Payment &paid = c.addPayment(*t, amount);
@@ -128,13 +152,17 @@ bool PosService::addCardPayment(const QVariantMap &r)
     paid.processor = ss(r.value(u"processor"_s).toString());
     paid.cardBrand = ss(r.value(u"brand"_s).toString().toLower());
     paid.last4 = ss(r.value(u"last4"_s).toString().right(4));
+    paid.surcharge = surcharge;
+    paid.surchargeBp = surcharge.cents() > 0 ? surchargeBp() : 0;
+    paid.funding = ss(funding);
     if (offline)
         paid.offline = "waiting";
     const QString card = cardText(paid);
     noteEvent(c, (offline ? tr("Card taken offline (sent to Stripe when the internet is back): %1 %2%3")
                           : tr("Card approved: %1 %2%3"))
                      .arg(card.isEmpty() ? qs(t->name) : card, format(amount),
-                          tip.cents() ? tr(" + %1 tip").arg(format(tip)) : QString()),
+                          (tip.cents() ? tr(" + %1 tip").arg(format(tip)) : QString())
+                  + (surcharge.cents() ? tr(" + %1 credit card surcharge").arg(format(surcharge)) : QString())),
               "pay", amount);
     if (c.id == currentId_) {
         entry_.clear();
@@ -291,14 +319,14 @@ PosService::RefundStart PosService::refundCardPayment(const Check &c, const Paym
         return RefundStart::CantNow;
     }
     refunding_.insert(p.id);
-    emit notice(tr("Refunding %1…").arg(format(p.amount + p.tip)));
+    emit notice(tr("Refunding %1…").arg(format(p.amount + p.tip + p.surcharge)));
     // Finished by the store, even if this terminal is gone by then.
     QPointer<PosService> self(this);
     PosShared *shared = s_;
     const std::int64_t checkId = c.id, paymentId = p.id;
     const std::string who = user() ? user()->name : std::string();
-    const QString label = format(p.amount + p.tip);
-    s_->stripeRefund(qs(p.reference), (p.amount + p.tip).cents(),
+    const QString label = format(p.amount + p.tip + p.surcharge);
+    s_->stripeRefund(qs(p.reference), (p.amount + p.tip + p.surcharge).cents(),
                      [self, shared, checkId, paymentId, who, label](const QString &refundId, const QString &error) {
         if (self)
             self->refunding_.erase(paymentId);
@@ -448,9 +476,14 @@ bool PosService::startCounter(const QVariantMap &charge)
         counter_.insert(u"paymentIntent"_s, id);
         // The tip on the reader's screen, when that's where it's asked.
         const QString skipTip = s_->settings.cardTipOn == "reader" && !hold ? u"false"_s : u"true"_s;
-        stripe(u"POST"_s, u"/v1/terminal/readers/%1/process_payment_intent"_s.arg(reader),
-               form({{u"payment_intent"_s, id}, {u"process_config[skip_tipping]"_s, skipTip},
-                     {u"process_config[enable_customer_cancellation]"_s, u"true"_s}}),
+        // A credit card surcharge: the card is read first (credit or debit?),
+        // then charged (confirmCounter); else read and charged in one go.
+        const bool twoSteps = counter_.value(u"surchargeCents"_s).toLongLong() > 0 && !hold;
+        counter_.insert(u"action"_s, twoSteps ? u"collect_payment_method"_s : u"process_payment_intent"_s);
+        const QString config = twoSteps ? u"collect_config"_s : u"process_config"_s;
+        stripe(u"POST"_s, u"/v1/terminal/readers/%1/%2"_s.arg(reader, counter_.value(u"action"_s).toString()),
+               form({{u"payment_intent"_s, id}, {config + u"[skip_tipping]"_s, skipTip},
+                     {config + u"[enable_customer_cancellation]"_s, u"true"_s}}),
                [this, id](const QJsonObject &, const QString &error) {
             if (!error.isEmpty()) {
                 stripe(u"POST"_s, u"/v1/payment_intents/%1/cancel"_s.arg(id), {}, [](const QJsonObject &, const QString &) {});
@@ -485,9 +518,13 @@ void PosService::pollCounter()
         if (!error.isEmpty() || counter_.value(u"paymentIntent"_s) != pi)
             return;   // asked again in a moment
         const QJsonObject action = r.value(u"action").toObject();
-        if (action.value(u"process_payment_intent").toObject().value(u"payment_intent").toString() != pi)
+        const QString type = counter_.value(u"action"_s).toString();
+        if (action.value(u"type").toString() != type
+            || action.value(type).toObject().value(u"payment_intent").toString() != pi)
             return;
         const QString status = action.value(u"status").toString();
+        if (status == u"succeeded" && type == u"collect_payment_method")
+            return confirmCounter(pi, action.value(type).toObject().value(u"payment_method"));
         if (status == u"succeeded")
             return counterPaid(pi);
         if (status != u"failed")
@@ -501,6 +538,55 @@ void PosService::pollCounter()
                         ? tr("The guest canceled on the card reader.")
                         : tr("Card declined: %1").arg(why.isEmpty() ? tr("try another card") : why));
     });
+}
+
+// The card on the reader beside the register is read, not charged: a
+// credit card pays the surcharge (the amount grows, the register says so),
+// debit and prepaid don't; then it's charged.
+void PosService::confirmCounter(const QString &pi, const QJsonValue &paymentMethod)
+{
+    counterPoll_.stop();
+    counter_.insert(u"status"_s, u"confirming"_s);
+    const auto charge = [this, pi](qint64 surcharge, const QString &funding) {
+        if (counter_.value(u"paymentIntent"_s) != pi)
+            return;
+        counter_.insert(u"funding"_s, funding);
+        counter_.insert(u"surchargePaid"_s, surcharge);
+        const QString reader = counter_.value(u"reader"_s).toString();
+        stripe(u"POST"_s, u"/v1/terminal/readers/%1/confirm_payment_intent"_s.arg(reader), form({{u"payment_intent"_s, pi}}),
+               [this, pi](const QJsonObject &, const QString &error) {
+            if (counter_.value(u"paymentIntent"_s) != pi)
+                return;
+            if (!error.isEmpty()) {
+                stripe(u"POST"_s, u"/v1/payment_intents/%1/cancel"_s.arg(pi), {}, [](const QJsonObject &, const QString &) {});
+                return counterDone(tr("The card reader didn't take it: %1").arg(error));
+            }
+            counter_.insert(u"action"_s, u"confirm_payment_intent"_s);
+            counter_.insert(u"status"_s, u"waiting"_s);
+            counterPolls_ = 0;
+            counterPoll_.start(kCounterPollMs);
+        });
+    };
+    const auto decide = [this, pi, charge](const QJsonObject &method) {
+        const QString funding = method.value(u"card_present").toObject().value(u"funding").toString();
+        const qint64 surcharge = counter_.value(u"surchargeCents"_s).toLongLong();
+        if (funding != u"credit" || surcharge <= 0)
+            return charge(0, funding);
+        const qint64 total = counter_.value(u"amountCents"_s).toLongLong() + counter_.value(u"tipCents"_s).toLongLong() + surcharge;
+        emit notice(tr("Credit card: %1 surcharge added.").arg(format(Money::fromCents(surcharge))));
+        stripe(u"POST"_s, u"/v1/payment_intents/%1"_s.arg(pi), form({{u"amount"_s, QString::number(total)}}),
+               [this, charge, surcharge, funding](const QJsonObject &, const QString &error) {
+            if (!error.isEmpty()) {   // charged as it was: the surcharge isn't worth a lost sale
+                emit notice(tr("The surcharge couldn't be added (%1): charged without it.").arg(error));
+                return charge(0, funding);
+            }
+            charge(surcharge, funding);
+        });
+    };
+    if (paymentMethod.isObject())
+        return decide(paymentMethod.toObject());
+    stripe(u"GET"_s, u"/v1/payment_methods/%1"_s.arg(paymentMethod.toString()), {},
+           [decide](const QJsonObject &method, const QString &) { decide(method); });
 }
 
 void PosService::counterPaid(const QString &pi)
@@ -531,7 +617,10 @@ void PosService::counterPaid(const QString &pi)
                          {u"amountCents"_s, intent.value(u"amount").toInteger()},
                          {u"tipCents"_s, counter_.value(u"tipCents"_s).toLongLong() + readerTip},
                          {u"checkId"_s, counter_.value(u"checkId"_s)}, {u"tenderId"_s, counter_.value(u"tenderId"_s)},
-                         {u"processor"_s, u"stripe"_s}};
+                         {u"processor"_s, u"stripe"_s},
+                         {u"funding"_s, card.value(u"funding").toString().isEmpty() ? counter_.value(u"funding"_s).toString()
+                                                                                     : card.value(u"funding").toString()},
+                         {u"surchargeCents"_s, counter_.value(u"surchargePaid"_s).toLongLong()}};
         // On the check even if the register logged out meanwhile: the money was taken.
         const bool ok = addCardPayment(paid);
         counterDone(ok ? QString() : tr("The card was approved (%1) but isn't on the check: add it by hand or refund it in Stripe.").arg(pi));

@@ -41,7 +41,8 @@ QJsonObject toJson(const Refund &r)
     return {{u"id"_s, qint64(r.id)}, {u"at"_s, qint64(r.at)}, {u"paymentId"_s, qint64(r.paymentId)},
             {u"amount"_s, qint64(r.amount.cents())}, {u"reason"_s, qs(r.reason)}, {u"by"_s, qs(r.by)},
             {u"reference"_s, qs(r.reference)}, {u"tenderName"_s, qs(r.tenderName)}, {u"day"_s, qint64(r.day)},
-            {u"checkId"_s, qint64(r.checkId)}, {u"checkLabel"_s, qs(r.checkLabel)}, {u"method"_s, qs(r.method)}};
+            {u"checkId"_s, qint64(r.checkId)}, {u"checkLabel"_s, qs(r.checkLabel)}, {u"method"_s, qs(r.method)},
+            {u"surcharge"_s, qint64(r.surcharge.cents())}};
 }
 
 Refund refundFromJson(const QJsonObject &o)
@@ -59,6 +60,7 @@ Refund refundFromJson(const QJsonObject &o)
     r.checkId = i64(o.value(u"checkId"));
     r.checkLabel = ss(o.value(u"checkLabel").toString());
     r.method = ss(o.value(u"method").toString());
+    r.surcharge = money(o.value(u"surcharge"));
     return r;
 }
 
@@ -141,7 +143,8 @@ QJsonObject toJson(const Check &c)
             {u"kind"_s, qs(toString(p.kind))}, {u"amount"_s, qint64(p.amount.cents())}, {u"percentBp"_s, qint64(p.percentBp)},
             {u"tip"_s, qint64(p.tip.cents())}, {u"reference"_s, qs(p.reference)}, {u"staffMeal"_s, p.staffMeal},
             {u"processor"_s, qs(p.processor)}, {u"cardBrand"_s, qs(p.cardBrand)}, {u"last4"_s, qs(p.last4)},
-            {u"offline"_s, qs(p.offline)},
+            {u"offline"_s, qs(p.offline)}, {u"surcharge"_s, qint64(p.surcharge.cents())},
+            {u"surchargeBp"_s, qint64(p.surchargeBp)}, {u"funding"_s, qs(p.funding)},
         });
     }
     QJsonArray events;
@@ -265,6 +268,9 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         p.cardBrand = ss(po.value(u"cardBrand").toString());
         p.last4 = ss(po.value(u"last4").toString());
         p.offline = ss(po.value(u"offline").toString());
+        p.surcharge = money(po.value(u"surcharge"));
+        p.surchargeBp = i64(po.value(u"surchargeBp"));
+        p.funding = ss(po.value(u"funding").toString());
         c.payments.push_back(p);
     }
     c.nextLineId = std::max<std::int64_t>(i64(o.value(u"nextLineId")), 1);
@@ -1184,6 +1190,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
         {u"offlineCards"_s, s.offlineCards}, {u"offlineCardMax"_s, qint64(s.offlineCardMax)}, {u"tabHold"_s, qint64(s.tabHold)},
         {u"offlineCardTotal"_s, qint64(s.offlineCardTotal)},
+        {u"surchargeBp"_s, qint64(s.surchargeBp)}, {u"cashDiscountBp"_s, qint64(s.cashDiscountBp)},
         {u"stripeLocation"_s, qs(s.stripeLocation)}, {u"cardTipOn"_s, qs(s.cardTipOn)},
         {u"stripeReaders"_s, [&] {
              QJsonArray a;
@@ -1479,6 +1486,8 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.offlineCardMax = o.value(u"offlineCardMax").toInteger(10000);
     s.tabHold = std::max<qint64>(0, o.value(u"tabHold").toInteger(5000));
     s.offlineCardTotal = o.value(u"offlineCardTotal").toInteger(100000);
+    s.surchargeBp = std::clamp<std::int64_t>(o.value(u"surchargeBp").toInteger(0), 0, 300);
+    s.cashDiscountBp = std::clamp<std::int64_t>(o.value(u"cashDiscountBp").toInteger(0), 0, 1000);
     s.cardCurrency = ss(o.value(u"cardCurrency").toString(u"usd"_s));
     if (s.cardCurrency.empty())
         s.cardCurrency = "usd";

@@ -11,6 +11,18 @@ namespace vt::print {
 
 namespace {
 
+// 300 -> "3", 350 -> "3.5", 275 -> "2.75".
+std::string percentText(std::int64_t bp)
+{
+    std::string s = std::to_string(bp / 100);
+    if (const std::int64_t rest = bp % 100; rest != 0) {
+        s += '.' + std::string(rest < 10 ? "0" : "") + std::to_string(rest);
+        while (s.back() == '0')
+            s.pop_back();
+    }
+    return s;
+}
+
 std::vector<std::string> splitLines(const std::string &s)
 {
     std::vector<std::string> out;
@@ -169,15 +181,38 @@ Document receipt(const Check &check, const TicketContext &ctx)
             d.text("  " + p.reference);
         if (p.tip.cents() != 0)
             d.columns("  " + ctx.tr("Tip"), ctx.money(p.tip));
+        // A credit card's surcharge: a line of its own (the card networks' rule), and what the card paid.
+        if (p.surcharge.cents() != 0) {
+            d.columns("  " + (p.surchargeBp > 0 ? ctx.tr("Credit card surcharge %1%", {percentText(p.surchargeBp)})
+                                                : ctx.tr("Credit card surcharge")),
+                      ctx.money(p.surcharge));
+            d.columns("  " + ctx.tr("Charged to the card"), ctx.money(p.amount + p.tip + p.surcharge));
+        }
     }
     if (t.rounding.cents() != 0)
         d.columns(ctx.tr("Cash rounding"), ctx.money(t.rounding));
-    if (t.tips.cents() != 0)
+    if (t.surcharges.cents() != 0)
+        d.columns(ctx.tr("Total paid"), ctx.money(t.total + t.tips + t.surcharges), true);
+    else if (t.tips.cents() != 0)
         d.columns(ctx.tr("Total with tip"), ctx.money(t.total + t.tips), true);
     if (t.change.cents() > 0)
         d.columns(ctx.tr("Change"), ctx.money(t.change), true);
     else if (t.balance.cents() > 0)
         d.columns(ctx.tr("Balance due"), ctx.money(t.balance), true);
+    // Dual pricing, before it's paid: both prices (the cash one all in cash).
+    if (ctx.settings.cashDiscountBp > 0 && t.balance.cents() > 0
+        && std::ranges::none_of(check.payments, [](const Payment &p) { return p.kind != TenderKind::Discount; })) {
+        Check cash = check;
+        Tender off;
+        off.kind = TenderKind::Discount;
+        off.percentBp = ctx.settings.cashDiscountBp;
+        cash.addPayment(off, Money());
+        d.columns(ctx.tr("Card price"), ctx.money(t.balance), true);
+        d.columns(ctx.tr("Cash price"), ctx.money(cash.totals(ctx.settings.tax).balance), true);
+    }
+    // Credit cards' surcharge, said before paying (it's the guest's choice).
+    if (ctx.settings.surchargeBp > 0 && t.balance.cents() > 0 && t.surcharges.cents() == 0)
+        d.text(ctx.tr("Credit cards add %1%; debit cards don't.", {percentText(ctx.settings.surchargeBp)}));
     d.blank();
     const std::vector<std::string> footer = splitLines(ctx.settings.receiptFooter);
     if (footer.empty())

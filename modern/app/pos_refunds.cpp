@@ -104,6 +104,9 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
     r.at = now();
     r.paymentId = paid.id;
     r.amount = amount;
+    // Its share of a credit card's surcharge goes back with it.
+    if (paid.surcharge.cents() > 0 && paid.amount.cents() > 0)
+        r.surcharge = Money::fromCents((paid.surcharge.cents() * amount.cents() + paid.amount.cents() / 2) / paid.amount.cents());
     r.reason = ss(why);
     r.by = approver;
     r.tenderName = paid.tenderName;
@@ -116,7 +119,8 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
     const Check found = *c;   // as it was read: the record is kept from this, whoever is still here
     PosShared *shared = s_;
     const auto what = [this, r](const QString &reference) {
-        return tr("Refunded %1 (%2): %3").arg(format(r.amount), qs(r.tenderName), qs(r.reason))
+        return tr("Refunded %1 (%2): %3").arg(format(r.amount) + (r.surcharge.cents() ? tr(" + %1 surcharge").arg(format(r.surcharge)) : QString()),
+                                              qs(r.tenderName), qs(r.reason))
                + (reference.isEmpty() ? QString() : u" · "_s + reference);
     };
 
@@ -124,10 +128,10 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
         if (!s_->stripeRefund || s_->settings.stripeSecretKey.empty())
             return fail(tr("Refunding a card needs the store's Stripe key (Store Settings), or refund it in the Stripe Dashboard."));
         s_->refundsUnderway.insert(key);
-        emit notice(tr("Refunding %1 through Stripe…").arg(format(amount)));
+        emit notice(tr("Refunding %1 through Stripe…").arg(format(amount + r.surcharge)));
         const QString done = what(u"%1"_s);   // the reference goes in when it's known
         QPointer<PosService> self(this);
-        s_->stripeRefund(qs(paid.reference), amount.cents(),
+        s_->stripeRefund(qs(paid.reference), (amount + r.surcharge).cents(),
                          [shared, self, key, r, found, done](const QString &refundId, const QString &error) mutable {
             shared->refundsUnderway.remove(key);
             if (!error.isEmpty()) {

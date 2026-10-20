@@ -4829,6 +4829,39 @@ TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")
     s.tapItem(listKey);   // back to the plan for whoever is next
 }
 
+TEST_CASE("Manual: cash and card prices on the Pay screen", "[.manual]")
+{
+    Screen s;
+    s.pos.shared()->settings.laborState = "IL";
+    s.pos.shared()->settings.surchargeBp = 300;
+    s.pos.shared()->settings.cashDiscountBp = 400;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    s.pos.entryKey(u"2"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    for (const char *item : {"cobb", "draft-beer", "lemonade"}) {
+        s.pos.addItem(QString::fromLatin1(item));
+        if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+            for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+                if (!g.toMap()[u"done"_s].toBool())
+                    s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+            s.pos.finishChoosing();
+        }
+    }
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    QTest::qWait(200);
+    if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+        toast->setProperty("opacity", 0);
+    QTest::qWait(450);
+    QQuickItem *prices = Screen::findBy(s.window->contentItem(), "objectName", u"dualPrices"_s);
+    REQUIRE(prices);
+    CHECK(prices->isVisible());
+    QQuickItem *notice = Screen::findBy(s.window->contentItem(), "objectName", u"surchargeNotice"_s);
+    REQUIRE(notice);
+    CHECK(notice->isVisible());
+    s.shot("m154-cash-and-card-prices");
+}
+
 TEST_CASE("Memory: a screen through a long service stays flat", "[.memory]")
 {
     Screen s;

@@ -49,7 +49,7 @@
 
 - **Orders:** tables and seats, courses with hold and fire, modifier choices, notes, rush and VIP, transfer, move, merge, split and reopen checks.
 - **At the table on a handheld:** seat chips across the check, a buzz and a flash for every item, allergies by seat (only that guest's items are marked, and the kitchen ticket says whose), each server's own usual items, the tables as big tiles that show what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back.
-- **Payments:** cash, Stripe card readers (beside the register, or ViewTouch on the reader as a handheld), gift cards, house accounts, discounts, party gratuity, tips asked on the customer display, server banks or a drawer per screen.
+- **Payments:** cash, Stripe card readers (beside the register, or ViewTouch on the reader as a handheld), a credit card surcharge that debit cards never pay (the reader says which kind of card it is) or a cash discount with both prices shown, gift cards, house accounts, discounts, party gratuity, tips asked on the customer display, server banks or a drawer per screen.
 - **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
 - **Kitchen:** kitchen, bar and expo touchscreens with ticket times, kitchen names and colors, and printers.
 - **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime, tip-outs, inventory with recipes and automatic 86, and CSV/PDF export.

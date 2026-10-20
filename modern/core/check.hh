@@ -128,6 +128,12 @@ struct Payment {
     Money amount;                 // Cash/Card: what it pays toward the check; Discount: a fixed amount off
     std::int64_t percentBp = 0;   // Discount, applied to the current items total
     Money tip;                    // Card: tip on top of the amount (owed to the server)
+    // Card: the credit card surcharge on top of the amount (the store's,
+    // not toward the check; PosSettings::surchargeBp), and what kind of card
+    // the reader said it was: "credit", "debit", "prepaid" or "" (unknown).
+    Money surcharge;
+    std::int64_t surchargeBp = 0;   // its rate then (300 = 3%), for the receipt
+    std::string funding;
     std::string reference;        // GiftCard: the card number; HouseAccount: the customer id; staff meal: who ate;
                                   // a card through a reader: the processor's payment id (Stripe's pi_...)
     bool staffMeal = false;
@@ -151,6 +157,7 @@ struct Refund {
     std::int64_t at = 0;
     std::int64_t paymentId = 0;   // which payment it gives back
     Money amount;
+    Money surcharge;              // its share of the credit card surcharge, given back too
     std::string reason;
     std::string by;               // the manager who did it
     std::string reference;        // Stripe's refund id (re_...)
@@ -215,6 +222,7 @@ struct Totals {
     Money total;         // subtotal + tax + gratuity
     Money paid;          // cash + card toward the total (tips not included)
     Money tips;          // card tips, on top of the total
+    Money surcharges;    // credit card surcharges, on top of the total (the store's)
     Money cashPaid;      // cash tendered
     Money staffMeals;    // the part of `discounts` that is staff meals
     Money rounding;      // cash rounding (TaxRates::cashRoundingCents): -2 to +2 cents...

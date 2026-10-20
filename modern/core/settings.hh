@@ -438,6 +438,13 @@ struct PosSettings {
     std::int64_t offlineCardMax = 10000;
     std::int64_t offlineCardTotal = 100000;
     std::string cardCurrency = "usd";
+    // A credit card surcharge (basis points: 300 = 3%; 0 = none): added to
+    // what a credit card pays, on a reader that says it's credit (never a
+    // debit or prepaid card). Capped by the store's state (surchargeCapBp).
+    std::int64_t surchargeBp = 0;
+    // Cash discount (dual pricing): the menu's prices are the card prices,
+    // and a check paid all in cash takes this much off (basis points).
+    std::int64_t cashDiscountBp = 0;
     // Holding a bar tab's card: how much the bank sets aside (0: tabs don't hold cards).
     std::int64_t tabHold = 5000;
     // Stripe countertop readers paired with the store (Manager -> Card
@@ -589,6 +596,10 @@ struct StateRules {
     int restBreakEvery = 0;   // a paid 10-minute rest break every this many hours worked
 };
 const std::vector<StateRules> &stateRules();
+// The most a credit card surcharge may be in a state (basis points): 0 where
+// they're not allowed (Connecticut, Massachusetts, Maine), 200 in Colorado,
+// else 300 (the card networks' cap). Not legal advice: rules change.
+std::int64_t surchargeCapBp(const std::string &state);
 const StateRules *stateRulesFor(const std::string &code);
 // The store's state chosen: its rules into the settings.
 void applyStateRules(PosSettings &s, const std::string &code);

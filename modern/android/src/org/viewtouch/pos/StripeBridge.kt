@@ -18,6 +18,10 @@ import com.stripe.stripeterminal.external.models.CaptureMethod
 import com.stripe.stripeterminal.external.models.CardPresentParameters
 import com.stripe.stripeterminal.external.models.PaymentMethodOptionsParameters
 import com.stripe.stripeterminal.external.models.CollectPaymentIntentConfiguration
+import com.stripe.stripeterminal.external.models.ConfirmPaymentIntentConfiguration
+import com.stripe.stripeterminal.external.models.SurchargeConfiguration
+import com.stripe.stripeterminal.external.models.SurchargeConsent
+import com.stripe.stripeterminal.external.models.SurchargeConsentCollection
 import com.stripe.stripeterminal.external.models.ConnectionConfiguration
 import com.stripe.stripeterminal.external.models.ConnectionStatus
 import com.stripe.stripeterminal.external.models.ConnectionTokenException
@@ -54,6 +58,14 @@ object StripeBridge {
     private var collecting: Cancelable? = null
     private var current: PaymentIntent? = null
     private var currentRef = ""   // ViewTouch's id for the payment (metadata viewtouch_payment)
+    // This payment: what was asked (cents, tip included), the surcharge a
+    // credit card adds and what the guest is told; then the card's kind and
+    // the surcharge it paid.
+    private var requested = 0L
+    private var surchargeOffered = 0L
+    private var surchargeNotice = ""
+    private var funding = ""
+    private var surchargePaid = 0L
     private var connecting = false
 
     private val tokens = object : ConnectionTokenProvider {
@@ -189,9 +201,14 @@ object StripeBridge {
     // charges it when the tab closes, raising the hold if need be).
     @JvmStatic
     fun charge(amount: Long, currency: String, description: String, checkRef: String, offlineMax: Long, offlineTotal: Long,
-               hold: Boolean) {
+               hold: Boolean, surcharge: Long, notice: String) {
         main.post {
             val localRef = UUID.randomUUID().toString()
+            requested = amount
+            surchargeOffered = if (hold) 0L else surcharge
+            surchargeNotice = notice
+            funding = ""
+            surchargePaid = 0L
             val builder = PaymentIntentParameters.Builder()
                 .setAmount(amount)
                 .setCurrency(currency)
@@ -233,12 +250,25 @@ object StripeBridge {
         )
     }
 
+    // The card is read, not charged yet: a credit card pays the store's
+    // surcharge (the reader shows it and asks the guest); debit, prepaid or
+    // a card the reader can't tell, none.
     private fun confirm(intent: PaymentIntent) {
         collecting = null
+        funding = intent.paymentMethod?.cardPresentDetails?.funding ?: ""
+        val config = ConfirmPaymentIntentConfiguration.Builder()
+        if (surchargeOffered > 0 && funding == "credit") {
+            surchargePaid = surchargeOffered
+            config.setSurcharge(
+                SurchargeConfiguration.Builder(surchargeOffered)
+                    .setConsent(SurchargeConsent.Builder(SurchargeConsentCollection.ENABLED).setNotice(surchargeNotice).build())
+                    .build()
+            )
+        }
         Terminal.getInstance().confirmPaymentIntent(intent, object : PaymentIntentCallback {
             override fun onSuccess(paymentIntent: PaymentIntent) = approved(paymentIntent)
             override fun onFailure(e: TerminalException) = failed(e)
-        })
+        }, config.build())
     }
 
     private fun approved(intent: PaymentIntent) {
@@ -252,7 +282,10 @@ object StripeBridge {
             JSONObject()
                 .put("status", "approved")
                 .put("id", intent.id ?: "")
-                .put("amount", intent.amount)
+                // What was asked and the surcharge on top (however Stripe counts it in the amount).
+                .put("amount", requested + surchargePaid)
+                .put("funding", funding)
+                .put("surcharge", surchargePaid)
                 .put("brand", (charged?.brand ?: presented?.brand)?.toString() ?: kept?.brand ?: "")
                 .put("last4", charged?.last4 ?: presented?.last4 ?: kept?.last4 ?: "")
                 // Taken offline: Stripe gets it later (onPaymentIntentForwarded).
