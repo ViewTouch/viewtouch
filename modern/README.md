@@ -124,6 +124,17 @@ Also add ANDROID_KEYSTORE_ALIAS (`viewtouch`) and ANDROID_KEYSTORE_PASSWORD. Kee
 
 **Building elsewhere:** the workflow uses Qt 6.11.2 for Android (installed with `aqtinstall`), Android NDK r27c, JDK 17 and KDAB's OpenSSL for Android. Android builds need an x86_64 Linux, Windows or macOS machine: the NDK is not made for ARM64 Linux.
 
+## Taking orders at the table
+
+What a server on a handheld sees (details in the manual, *Taking orders at the table*):
+
+- **Seat chips** across the check (`seatChips` in `WidgetOrderList.qml`): Shared, 1…guests, +, with the items on each; shown on the folded phone check too. Hold one for that guest's allergies.
+- **Allergies by seat** (`Check::seatAllergies`, `setAllergies(ids, seat)`): `allergyHits` uses the table's and the line's seat's (`Check::allergiesFor`); the kitchen ticket and screen add `S2: FISH`; lines carry `allergy` (names) for the red mark; Send's notice repeats them.
+- **A buzz and a flash:** `LayoutController::buzz` (Android `Haptics.kt`: a click, a double click when refused; the employee's `buzz` preference) and `addedFlash` ("+ Caesar · Seat 2") in `Main.qml`.
+- **Send** with a required choice missing opens that line's choices (`chooseLine`). Store Settings → *After Send, back to the tables* (`sendToTables`, dine-in checks with a table) releases the check and jumps to the `tables` role.
+- **♥ Mine:** `myUsuals` (per person: the four weeks of history loaded once in the background with *often added*, `pastByServer`, plus today's checks; 12, ordered at least twice), a tab in `WidgetMenuGrid` and a button in `WidgetMenuCategories` once there are 4.
+- **The tables as a list** on phones (`FloorPlanView.listToggle`, ☰ / ▦ by the room tabs): tiles sorted by `sortKey` (the server's own, unsent first, then longest since the last Send); `tableStatus` has `lastSentAt` and `unsent`.
+
 ## Phones and small screens
 
 Every page is designed on a 1920 × 1080 landscape canvas and scaled to the screen. On a phone that makes buttons too small, so phones get **phone pages** instead:
@@ -379,7 +390,8 @@ One machine keeps the data; the others connect to it:
 - **Shared data.** Checks, tables, the menu, staff, the drawer and reports are the same on every terminal. Check numbers run in one sequence, and End of Day sees every terminal.
 - **Check locks.** A check that is open on one terminal can't be opened on another (the table shows "on Bar"). Closing it, putting it away, logging out or losing the connection releases it.
 - **Page edits reach every terminal.** Pages edited on any terminal are saved on the server and pushed to the others. Saving needs a manager on that terminal.
-- **Lost connection.** A terminal that loses the server shows *Reconnecting…*, keeps trying, and returns to the login page when the server is back.
+- **Lost connection.** A terminal that loses the server shows *Reconnecting…* and keeps trying. A handheld that drops out of Wi-Fi with someone logged in gets its own session back: the server keeps it, with its check open, for 3 minutes (`PosServer::setKeepAway`), and the device's `hello` carries the run's `resume` token to claim it. Otherwise the terminal returns to the login page when the server is back.
+- **Taps kept while out of reach.** Order taps (`addItem`, `setQualifier`, `setSeat`, `lineMore`, `textKey`, choices…: `keepable()` in `net/remote_session.cpp`) made while offline are kept on the device, answered at once so the screen goes on, shown in the check as `waiting` lines, and sent in order when the session is back. Calls keep their id across the reconnect, and the server answers one it already did from its last 256 answers instead of doing it twice. Back to a fresh session (server restarted, standby took over, too long away), the device says the taps didn't go in. Send, payments, opening checks and logging in are never kept.
 - **Responsiveness.** Terminals never wait on the network. Button actions continue when the server answers, and touches are ignored until then.
 - **Printing.** All printing happens at the server's printers. Each terminal has its own drawer and prints receipts on the printer set for it in Manager → Terminals (default: the "receipt" printer).
 - **Security.** Connections are encrypted (TLS 1.2, ECDHE-PSK with ChaCha20-Poly1305). Each paired device proves itself with its own 256-bit key, and the server with the same key, so no certificates are needed and a stranger's device can't connect or listen in. Pairing codes are stretched (PBKDF2, 600,000 rounds), so they can't be guessed from a recorded pairing. Open port 7719 for TCP and UDP in the server's firewall.

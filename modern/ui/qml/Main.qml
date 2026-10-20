@@ -527,16 +527,19 @@ ApplicationWindow {
                 }
             }
             Grid {
+                id: allergenGrid
                 anchors.horizontalCenter: parent.horizontalCenter
+                // Three across, as wide as fits (a phone: narrower keys, not cut off).
                 columns: 3
                 spacing: allergySheet.u / 2
+                readonly property real keyW: Math.min(14 * allergySheet.u, (parent.width - spacing * (columns - 1)) / columns)
                 Repeater {
                     model: root.controller.pos ? root.controller.pos.allergenList() : []
                     delegate: WidgetKey {
                         required property var modelData
                         readonly property bool on: allergySheet.chosen.includes(modelData.id)
                         objectName: "allergy-" + modelData.id
-                        width: 14 * allergySheet.u
+                        width: allergenGrid.keyW
                         height: 4 * allergySheet.u
                         text: (on ? "✓ " : "") + modelData.name
                         fontScale: 0.3

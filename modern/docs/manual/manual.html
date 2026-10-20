@@ -56,6 +56,8 @@
 <!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
+<li><b>Taking orders at the table on a handheld:</b> seat chips across the check, a buzz and <b>+ Caesar · Seat 2</b> for every item, <b>allergies by seat</b> (only that guest's items are marked, and the ticket says <b>S2: FISH</b>), <b>♥ Mine</b> (each server's usual items), the tables as a <b>☰ List</b> with what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back (chapter 1).</li>
+<li><b>Manager lists:</b> <b>Find…</b> on long lists, rows a finger tall, and a big <b>+ Add</b> when nothing is chosen (chapter 11).</li>
 <li><b>A computer only for ViewTouch:</b> one line installs it on a fresh Raspberry Pi; the computer locks itself down and starts on the ViewTouch <b>home screen</b> (start ViewTouch, network, time, updates, restart, reset; on the main register the store's setup screens), and the first time you set it up by touch (chapter 1).</li>
 <li><b>12-hour times</b> everywhere ("9:30 PM"), typed as "4:30 PM" or "16:30"; the clock is set from the internet.</li>
 <li><b>Handhelds</b>: their screen sleeps, and after it was off a while the next touch asks for a PIN (their check comes back); each device can have its own <b>start screen</b>; phones don't edit pages (chapters 1, 2 and 14).</li>
@@ -157,6 +159,12 @@
 </ul>
 
 <h3>Taking orders at the table</h3>
+<table cellpadding="4"><tr>
+<td><img src="shots/m150-phone-seats.png" width="140" height="280"><br><small>Seats, an allergy, what was added</small></td>
+<td><img src="shots/m151-phone-seat-allergy.png" width="140" height="280"><br><small>Seat 2's allergies</small></td>
+<td><img src="shots/m152-phone-mine.png" width="140" height="280"><br><small>♥ Mine</small></td>
+<td><img src="shots/m153-phone-table-list.png" width="140" height="280"><br><small>☰ List: yours first</small></td>
+</tr></table>
 <ul>
 <li><b>Out of Wi-Fi range</b> (the patio, a corner): keep tapping. Items go on the check grey, marked <b>waiting…</b>, and the bar at the top says <b>No connection. Reconnecting…</b> and how many taps are waiting. When the handheld is back in range, they go in by themselves, in order, each once. The store keeps the handheld's check open for it for 3 minutes; after longer, it says the taps didn't go in. <b>Send</b> and <b>Pay</b> need the connection: touch them again once it's back.</li>
 <li><b>A buzz and a flash for each item:</b> a short buzz, and <b>+ Caesar · Seat 2</b> over the page for a moment, so the server knows it went on while looking at the guest. Two buzzes: it didn't (sold out, say). Anyone can turn the buzz off: <b>Manager → Employees</b> → them → <b>Buzz for each item</b>.</li>
@@ -326,7 +334,7 @@
 <p class="shot"><img src="shots/m102-table-checks.png" width="560" height="315"></p>
 <p>The <b>⋯</b> button next to <b>+</b> has more:</p>
 <ul>
-<li><b>One Check per Seat</b>: if you used <b>Seat − / +</b> while ordering, one touch gives each seat its own check.</li>
+<li><b>One Check per Seat</b>: if you used the seats while ordering, one touch gives each seat its own check.</li>
 <li><b>Print Every Check</b>: a receipt for each.</li>
 <li><b>Put Them Back Together</b>: one check for the whole table again.</li>
 </ul>
@@ -477,7 +485,7 @@
 <p class="shot"><img src="shots/m08-order-seats-courses.png" width="560" height="315"></p>
 <p class="caption">Seat and course controls at the top of the check. The Caesar is for seat 2, course 2, and held.</p>
 <ul>
-<li><b>Seat − / +</b> sets the seat for the next items. Touch an item first to move it to another seat. The kitchen sees "S2".</li>
+<li><b>The seats</b> (<b>Shared 1 2 3 +</b>, as many as there are guests) set the seat for the next items; each shows how many items it has (<b>2 ·1</b>), and <b>+</b> adds a seat. Touch an item first to move it to another seat. The kitchen sees "S2". Hold a seat for that guest's allergies.</li>
 <li><b>Course 1 2 3</b> sets the course. <b>Send</b> sends course 1; later courses wait, marked <b>HOLD</b>, until you touch <b>Fire Course 2</b>.</li>
 </ul>
 
@@ -730,7 +738,7 @@
 <p class="shot"><img src="shots/m30-manager.png" width="560" height="315"></p>
 <p class="caption">The Manager screen (PIN 1234).</p>
 <p><b>Network…</b> shows the store's computers and printers (chapter 18), and <b>Self-Order Kiosk</b> turns this screen into a kiosk for guests (chapter 16).</p>
-<p>Every Manager screen works the same way: the list on the left, the details on the right. Touch a record, change it, touch <b>Save</b> (or <b>Undo changes</b>). <b>+ Add</b> makes a new one; <b>Remove</b> deletes it.</p>
+<p>Every Manager screen works the same way: the list on the left, the details on the right. Touch a record, change it, touch <b>Save</b> (or <b>Undo changes</b>). <b>+ Add</b> makes a new one; <b>Remove</b> deletes it. A list longer than 8 has <b>Find…</b> at the top: type "burger" and only the burgers are left. With nothing chosen yet, the right side says how many are on the list and has a big <b>+ Add</b>.</p>
 
 <h2>Building the menu (Menu Builder)</h2>
 <p><b>Manager → Menu Builder</b> is the whole menu on one screen. The order screens fill themselves from it: a new item or category shows up on the registers, handhelds and the kiosk as soon as it's saved, with no page editing.</p>
@@ -1101,7 +1109,7 @@
 <td><img src="shots/m62-phone-order.png" width="140" height="280"><br><small>Order</small></td>
 <td><img src="shots/m63-phone-settle.png" width="140" height="280"><br><small>Pay</small></td>
 </tr></table>
-<p><b>Tables on a phone:</b> the floor plan, with the tabs for Main, Dining Area, Bar and Patio across the top and the usual buttons below. The tables are where they stand, colored as on the big screen; touch one to open it. A wide plan is turned a quarter to fill the phone (so its tables come out bigger), with the names still upright. Spread two fingers to zoom in and drag it around. Someone whose start page is a room (Dining Area) opens on that room. Moving a check to another table (Check… → Move) picks the table on the plan too.</p>
+<p><b>Tables on a phone:</b> the floor plan, with the tabs for Main, Dining Area, Bar and Patio across the top and the usual buttons below. The tables are where they stand, colored as on the big screen; touch one to open it. A wide plan is turned a quarter to fill the phone (so its tables come out bigger), with the names still upright. Spread two fingers to zoom in and drag it around. Someone whose start page is a room (Dining Area) opens on that room. Moving a check to another table (Check… → Move) picks the table on the plan too. <b>☰</b> beside the tabs shows the tables as big tiles instead, your own first, each with <b>⚠ 2 not sent</b> or <b>Sent 12m ago</b>; <b>▦</b> goes back to the plan.</p>
 <table cellpadding="4"><tr>
 <td><img src="shots/m132-phone-floor.jpg" width="140" height="295"><br><small>Main, turned to fit</small></td>
 <td><img src="shots/m132-phone-dining.jpg" width="140" height="295"><br><small>Dining Area</small></td>

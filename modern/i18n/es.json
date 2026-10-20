@@ -3062,6 +3062,7 @@
  "Sent %1 items to the kitchen": "Se enviaron %1 artículos a la cocina",
  "Sent 1 item to the kitchen": "Se envió 1 artículo a la cocina",
  "Sent back by a guest": "Devuelto por un cliente",
+ "Sent just now": "Enviado hace un momento",
  "Sent when the host touches Notify. {name} and {store} are filled in.": "Se envía cuando la recepción toca Avisar. Se llenan {name} y {store}.",
  "Server": "Mesero",
  "Server Sales": "Ventas por mesero",

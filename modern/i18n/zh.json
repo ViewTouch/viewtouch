@@ -3006,6 +3006,7 @@
  "Sent %1 items to the kitchen": "已向厨房送出 %1 个菜品",
  "Sent 1 item to the kitchen": "已向厨房送出 1 个菜品",
  "Sent back by a guest": "顾客退回",
+ "Sent just now": "刚刚已发送",
  "Sent when the host touches Notify. {name} and {store} are filled in.": "迎宾点“通知”时发送。会填入 {name} 和 {store}。",
  "Server": "服务员",
  "Server Sales": "服务员销售",

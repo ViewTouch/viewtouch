@@ -4731,6 +4731,104 @@ TEST_CASE("Manual: the phone screens", "[.manual]")
     snap("settle", "m63-phone-settle");
 }
 
+TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")
+{
+    Screen s(false, 540, 1080, u"phone"_s);
+    QTest::qWait(300);
+    const auto clean = [&] {
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        if (QObject *flash = s.window->findChild<QObject *>(u"addedFlash"_s))
+            flash->setProperty("opacity", 0);
+    };
+    const_cast<core::MenuItem *>(s.pos.findItem(u"cobb"_s))->allergens = {"dairy", "egg"};
+    const_cast<core::MenuItem *>(s.pos.findItem(u"caesar"_s))->allergens = {"gluten", "dairy", "egg", "fish"};
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    // Sam's usual orders (for ♥ Mine), and tables waiting on Sam.
+    const auto table = [&](const char *t, int guests, std::initializer_list<const char *> items, bool send) {
+        REQUIRE(s.pos.selectTable(QString::fromLatin1(t)) == app::PosService::TableNeedsGuests);
+        s.pos.entryKey(QString::number(guests));
+        REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        for (const char *i : items) {
+            s.pos.addItem(QString::fromLatin1(i));
+            if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+                for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+                    if (!g.toMap()[u"done"_s].toBool())
+                        s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+                s.pos.finishChoosing();
+            }
+        }
+        if (send)
+            s.pos.sendOrder();
+        s.pos.releaseCheck();
+    };
+    table("T1", 2, {"draft-beer", "draft-beer", "cobb", "lemonade"}, true);
+    table("T2", 4, {"house-wine", "caesar", "caesar", "draft-beer", "soda"}, true);
+    table("T5", 2, {"house-wine", "lemonade", "soda"}, false);
+
+    // The order: seats across the check, a guest's allergy, what was added.
+    REQUIRE(s.pos.selectTable(u"T3"_s) == app::PosService::TableNeedsGuests);
+    s.pos.entryKey(u"4"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.pos.setAllergies({u"egg"_s}, 2));
+    REQUIRE(s.c.openCategory(u"salads"_s));
+    QTest::qWait(150);
+    s.pos.setSeat(1);
+    s.pos.addItem(u"caesar"_s);
+    for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+        if (!g.toMap()[u"done"_s].toBool())
+            s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+    s.pos.finishChoosing();
+    s.pos.setSeat(2);
+    s.pos.addItem(u"cobb"_s);
+    s.pos.finishChoosing();
+    s.pos.setSeat(3);
+    REQUIRE(s.c.openCategory(u"drinks"_s));
+    QTest::qWait(200);
+    clean();
+    s.c.orderItem(u"lemonade"_s);
+    if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+        s.pos.chooseOption(s.pos.choosingInfo()[u"groups"_s].toList().first().toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+        REQUIRE(s.c.openCategory(u"drinks"_s));
+    }
+    QTest::qWait(150);
+    if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+        toast->setProperty("opacity", 0);
+    QTest::qWait(200);
+    s.shot("m150-phone-seats");
+
+    // Seat 2's allergies, held on its chip.
+    clean();
+    s.c.commandWith(u"allergies"_s, {{u"seat"_s, 2}});
+    QTest::qWait(300);
+    s.shot("m151-phone-seat-allergy");
+    s.c.command(u"allergies"_s);   // (closed below)
+    if (QObject *sheet = s.window->findChild<QObject *>(u"allergySheet"_s))
+        sheet->setProperty("open", false);
+
+    // ♥ Mine.
+    s.c.setMenuCategory(u"♥"_s);
+    REQUIRE(s.c.openCategory(u"♥"_s));
+    QTest::qWait(300);
+    clean();
+    QTest::qWait(450);
+    s.shot("m152-phone-mine");
+
+    // The tables as a list: Sam's first, what's waiting on top.
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    QTest::qWait(200);
+    QQuickItem *listKey = Screen::findBy(s.window->contentItem(), "objectName", u"floorPlanAreaListKey"_s);
+    REQUIRE(listKey);
+    s.tapItem(listKey);
+    QTest::qWait(300);
+    clean();
+    QTest::qWait(450);
+    s.shot("m153-phone-table-list");
+    s.tapItem(listKey);   // back to the plan for whoever is next
+}
+
 TEST_CASE("Memory: a screen through a long service stays flat", "[.memory]")
 {
     Screen s;
