@@ -178,6 +178,8 @@ void appendKeyStyleFields(QJsonArray &out)
     out.append(inh(field(p + u"keyTextColor"_s, u"Button text color"_s, u"color"_s, g)));
     out.append(inh(field(p + u"keyLitFill"_s, u"Pressed / chosen color"_s, u"color"_s, g)));
     out.append(inh(field(p + u"keyFont"_s, u"Button font"_s, u"font"_s, g)));
+    out.append(inh(with(intField(p + u"keyTextSize"_s, u"Button text size %"_s, g, 50, 200), u"hint"_s,
+                        u"Of the usual size (100); the text still shrinks to fit a narrow button."_s)));
     out.append(inh(intField(p + u"keyRadius"_s, u"Button corner radius"_s, g, 0, 60)));
 }
 

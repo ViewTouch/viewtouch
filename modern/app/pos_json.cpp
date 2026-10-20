@@ -323,6 +323,7 @@ QJsonObject toJson(const MenuItem &m)
     if (!m.barcodes.empty()) o.insert(u"barcodes"_s, strings(m.barcodes));
     if (m.prepMinutes > 0) o.insert(u"prepMinutes"_s, m.prepMinutes);
     if (!m.buttonColor.empty()) o.insert(u"buttonColor"_s, qs(m.buttonColor));
+    if (m.textSize > 0) o.insert(u"textSize"_s, m.textSize);
     if (!m.section.empty()) o.insert(u"section"_s, qs(m.section));
     if (!m.breakBefore.empty()) o.insert(u"breakBefore"_s, qs(m.breakBefore));
     if (m.isModifier) o.insert(u"modifier"_s, true);
@@ -403,6 +404,7 @@ MenuItem menuItemFromJson(const QJsonObject &o)
     m.barcodes = strings(o.value(u"barcodes").toArray());
     m.prepMinutes = std::clamp(o.value(u"prepMinutes").toVariant().toInt(), 0, 240);
     m.buttonColor = ss(o.value(u"buttonColor").toString());
+    m.textSize = std::clamp(o.value(u"textSize").toInt(), 0, 200);
     m.section = ss(o.value(u"section").toString());
     m.breakBefore = ss(o.value(u"breakBefore").toString());
     m.price = Money::fromCents(centsFromDecimal(o.value(u"price").toDouble()));
@@ -984,7 +986,8 @@ QJsonObject toJson(const PosSettings &s)
                                         {u"periods"_s, periods}, {u"printer"_s, qs(c.printer)},
                                         {u"station"_s, qs(c.station)}, {u"taxClass"_s, qs(c.taxClass)},
                                         {u"buttonSize"_s, qs(c.buttonSize)}, {u"photos"_s, c.photos},
-                                        {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades}});
+                                        {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades},
+                                        {u"textSize"_s, c.textSize}});
              }
              return out;
          }()},
@@ -1500,6 +1503,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         cat.photos = c.value(u"photos").toBool();
         cat.hidePrice = c.value(u"hidePrice").toBool();
         cat.shades = c.value(u"shades").toBool();
+        cat.textSize = std::clamp(c.value(u"textSize").toInt(), 0, 200);
         if (!cat.id.empty())
             s.menuCategories.push_back(std::move(cat));
     }

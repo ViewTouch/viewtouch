@@ -656,6 +656,33 @@ TEST_CASE("Menu Builder: a category's buttons: their size, photos, prices", "[me
     CHECK(category(pos, u"burgers"_s)[u"buttonSize"_s] == u""_s);
 }
 
+TEST_CASE("Menu Builder: text size for a category's items and for one item", "[menubuilder][textsize]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveCategory({{u"id"_s, u"burgers"_s}, {u"name"_s, u"Burgers"_s}, {u"textSize"_s, 125}}));
+    CHECK(category(pos, u"burgers"_s)[u"textSize"_s].toInt() == 125);
+    QVariantMap card = item(pos, u"Classic Burger"_s);
+    REQUIRE_FALSE(card.isEmpty());
+    card[u"textSize"_s] = 80;
+    REQUIRE(pos.saveMenuItemCard(card));
+    CHECK(item(pos, u"Classic Burger"_s)[u"textSize"_s].toInt() == 80);
+    CHECK(item(pos, u"Cheeseburger"_s)[u"textSize"_s].toInt() == 0);   // its category's
+    // Kept: the category with the settings, the item with the menu.
+    const auto back = app::settingsFromJson(app::toJson(pos.shared()->settings));
+    const auto it = std::ranges::find_if(back.menuCategories, [](const core::MenuCategory &x) { return x.id == "burgers"; });
+    REQUIRE(it != back.menuCategories.end());
+    CHECK(it->textSize == 125);
+    const core::MenuItem *m = pos.findItem(u"classic-burger"_s);
+    REQUIRE(m);
+    CHECK(app::menuItemFromJson(app::toJson(*m)).textSize == 80);
+    // Nonsense is the usual; back to the category's.
+    card[u"textSize"_s] = -5;
+    REQUIRE(pos.saveMenuItemCard(card));
+    CHECK(pos.findItem(u"classic-burger"_s)->textSize == 0);
+}
+
 TEST_CASE("Menu Builder: several items changed or removed at once, one Undo", "[menubuilder][several]")
 {
     test::RecordingSink sink;

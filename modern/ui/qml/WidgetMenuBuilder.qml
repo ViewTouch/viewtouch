@@ -128,18 +128,23 @@ Item {
         editingItem = false
         stage = "card"
     }
+    // Text size choices (percent; 0: the item's category's, or the usual).
+    function textSizes(usual) {
+        return [{ pct: 0, name: usual }, { pct: 80, name: qsTr("Small") }, { pct: 100, name: qsTr("Normal") },
+                { pct: 125, name: qsTr("Large") }, { pct: 150, name: qsTr("Extra large") }]
+    }
     function itemDraft(i) {
         return i ? { id: i.id, name: i.name, price: i.priceValue.toFixed(2), family: i.family, image: i.image,
                      groups: i.groups.slice(), onIt: i.onIt.join(", "), available: i.availableSet,
                      kioskHide: i.kioskHide, description: i.description, favorite: i.favorite,
                      allergens: (i.allergens ?? []).slice(), kitchenName: i.kitchenName, number: i.number, barcodes: i.barcodes ?? "",
-                     buttonColor: i.buttonColor, prepMinutes: i.prepMinutes ? String(i.prepMinutes) : "",
+                     buttonColor: i.buttonColor, textSize: i.textSize ?? 0, prepMinutes: i.prepMinutes ? String(i.prepMinutes) : "",
                      takeoutPrice: i.takeoutPrice, periodPrices: Object.assign({}, i.periodPrices),
                      taxClass: i.taxClass, printer: i.printer, station: i.station,
                      section: i.section ?? "", breakBefore: i.breakBefore ?? "" }
                  : { id: "", name: "", price: "", family: categoryId, image: "", groups: [], onIt: "",
                      available: true, kioskHide: false, description: "", favorite: false, allergens: [],
-                     kitchenName: "", number: "", barcodes: "", buttonColor: "", prepMinutes: "", takeoutPrice: "", periodPrices: {},
+                     kitchenName: "", number: "", barcodes: "", buttonColor: "", textSize: 0, prepMinutes: "", takeoutPrice: "", periodPrices: {},
                      section: "", breakBefore: "",
                      // what its category's items start with
                      taxClass: category ? (category.taxClass || "food") : "food",
@@ -148,9 +153,9 @@ Item {
     function categoryDraft(c) {
         return c ? { id: c.id, name: c.name, color: c.color, periods: c.periods.slice(), printer: c.printer,
                      station: c.station, taxClass: c.taxClass, buttonSize: c.buttonSize ?? "", photos: c.photos === true,
-                     hidePrice: c.hidePrice === true, shades: c.shades === true }
+                     hidePrice: c.hidePrice === true, shades: c.shades === true, textSize: c.textSize ?? 0 }
                  : { id: "", name: "", color: StoreColors.starters[categories.length % StoreColors.starters.length], periods: [],
-                     printer: "kitchen", station: "", taxClass: "food", buttonSize: "", photos: false, hidePrice: false, shades: false }
+                     printer: "kitchen", station: "", taxClass: "food", buttonSize: "", photos: false, hidePrice: false, shades: false, textSize: 0 }
     }
     function groupDraft(g) {
         const kind = !g ? "one" : g.max === 1 ? "one" : g.max === 0 ? "any" : "upTo"
@@ -1561,6 +1566,26 @@ Item {
                                     color: w.draft.buttonColor ?? ""
                                     onPicked: c => w.set("buttonColor", c)
                                 }
+                                // Its name's size on the order screen.
+                                Label { text: qsTr("Text size"); Layout.columnSpan: 2 }
+                                Flow {
+                                    Layout.columnSpan: 2
+                                    Layout.fillWidth: true
+                                    spacing: 6
+                                    Repeater {
+                                        model: w.textSizes(qsTr("Category's"))
+                                        delegate: TouchButton {
+                                            required property var modelData
+                                            objectName: "builderTextSize-" + modelData.pct
+                                            font.pixelSize: 14
+                                            checkable: true
+                                            checked: (w.draft.textSize ?? 0) === modelData.pct
+                                            highlighted: checked
+                                            text: modelData.name
+                                            onClicked: w.set("textSize", modelData.pct)
+                                        }
+                                    }
+                                }
                                 Label { text: qsTr("Kitchen ticket"); Layout.preferredWidth: 110 }
                                 ComboBox {
                                     objectName: "builderItemPrinter"
@@ -1870,6 +1895,26 @@ Item {
                                     font.pixelSize: 13
                                     text: (w.draft.buttonSize ?? "") === "" ? qsTr("Fit: as big as they can be with all of them showing.")
                                         : qsTr("Many small ones for drinks, a few large ones for plates; more scroll.")
+                                }
+                                // Its items' names' size (an item can have its own).
+                                Label { text: qsTr("Text size"); Layout.columnSpan: 2 }
+                                Flow {
+                                    Layout.columnSpan: 2
+                                    Layout.fillWidth: true
+                                    spacing: 6
+                                    Repeater {
+                                        model: w.textSizes(qsTr("Normal")).filter(o => o.pct !== 100)
+                                        delegate: TouchButton {
+                                            required property var modelData
+                                            objectName: "builderCategoryTextSize-" + modelData.pct
+                                            font.pixelSize: 14
+                                            checkable: true
+                                            checked: (w.draft.textSize ?? 0) === modelData.pct
+                                            highlighted: checked
+                                            text: modelData.name
+                                            onClicked: w.set("textSize", modelData.pct)
+                                        }
+                                    }
                                 }
                                 Label { text: qsTr("Photos") }
                                 Switch {

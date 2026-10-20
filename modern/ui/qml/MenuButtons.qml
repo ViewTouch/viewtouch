@@ -97,6 +97,13 @@ Flickable {
     readonly property var allergenNames: pos ? pos.allergenList() : []
     function allergenName(id) { return (allergenNames.find(a => a.id === id) ?? { name: id }).name }
     function allergyHits(item) { return (item.allergens ?? []).filter(a => allergies.includes(a)) }
+    // Its name's size (Menu Builder: Text size): its own, else its
+    // category's, in percent of the usual.
+    function textFactor(item) {
+        const own = item.textSize ?? 0
+        const cat = own > 0 ? 0 : (categoryOf(item.family).textSize ?? 0)
+        return (own > 0 ? own : cat > 0 ? cat : 100) / 100
+    }
     // Its own color; else its category's, or a shade of it (each a little different).
     function colorOf(item, index) {
         if (item.buttonColor) return item.buttonColor
@@ -257,7 +264,11 @@ Flickable {
                                         font.family: card.st.keyFont ?? mb.face
                                         // Smaller for a long word, so it never breaks mid-word.
                                         readonly property int longest: cell.isGap ? 4 : Math.max(4, ...cell.modelData.name.split(/\s+/).map(x => x.length))
-                                        font.pixelSize: Math.max(13, Math.min(cell.height * 0.16, cell.width * 0.11, cell.width * 1.6 / longest))
+                                        // Never past what keeps its longest word whole.
+                                        readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData)
+                                        font.pixelSize: Math.max(factor < 1 ? 11 : 13,
+                                                                 Math.min(Math.min(cell.height * 0.16, cell.width * 0.11) * factor,
+                                                                          cell.width * 1.6 / longest))
                                         font.bold: true
                                     }
                                     Text {

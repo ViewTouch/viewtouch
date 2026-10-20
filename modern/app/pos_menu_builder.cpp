@@ -23,6 +23,13 @@ namespace vt::app {
 
 namespace {
 
+// A text size in percent (Small 80, Large 125...); 0 or nonsense: the usual.
+int textSizeFrom(const QVariant &v)
+{
+    const int pct = v.toInt();
+    return pct <= 0 ? 0 : std::clamp(pct, 50, 200);
+}
+
 QString slugOf(const QString &text)
 {
     static const QRegularExpression nonWord(u"[^a-z0-9]+"_s);
@@ -276,6 +283,8 @@ bool PosService::saveCategory(const QVariantMap &record)
         c.photos = record.value(u"photos"_s).toBool();
     if (record.contains(u"hidePrice"_s))
         c.hidePrice = record.value(u"hidePrice"_s).toBool();
+    if (record.contains(u"textSize"_s))
+        c.textSize = textSizeFrom(record.value(u"textSize"_s));
     if (record.contains(u"shades"_s))
         c.shades = record.value(u"shades"_s).toBool();
     if (it != list.end())
@@ -670,6 +679,8 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
     }
     if (card.contains(u"buttonColor"_s))
         item.buttonColor = ss(card.value(u"buttonColor"_s).toString().trimmed());
+    if (card.contains(u"textSize"_s))
+        item.textSize = textSizeFrom(card.value(u"textSize"_s));
     if (card.contains(u"prepMinutes"_s)) {
         const QString t = card.value(u"prepMinutes"_s).toString().trimmed();
         bool ok = t.isEmpty();
@@ -1270,7 +1281,8 @@ int PosService::importMenuFile(const QVariantMap &file)
                 periods << qs(p);
         if (!saveCategory({{u"name"_s, qs(c.name)}, {u"color"_s, qs(c.color)}, {u"periods"_s, periods},
                            {u"printer"_s, qs(c.printer)}, {u"station"_s, qs(c.station)}, {u"taxClass"_s, qs(c.taxClass)},
-                           {u"buttonSize"_s, qs(c.buttonSize)}, {u"photos"_s, c.photos}, {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades}}))
+                           {u"buttonSize"_s, qs(c.buttonSize)}, {u"photos"_s, c.photos}, {u"hidePrice"_s, c.hidePrice}, {u"shades"_s, c.shades},
+                           {u"textSize"_s, c.textSize}}))
             return 0;
         for (const MenuCategory &x : s_->categories())
             if (sameName(x.name, qs(c.name)))
