@@ -76,8 +76,13 @@ struct FakeStripe {
                 return done({}, {});
             }
             QJsonObject detail{{u"payment_intent"_s, pi}};
-            if (actionType == u"collect_payment_method" && action == u"succeeded")
+            // Read, as Stripe does it: the card on an action still "in_progress".
+            if (actionType == u"collect_payment_method" && action == u"succeeded") {
                 detail.insert(u"payment_method"_s, QJsonObject{{u"card_present"_s, QJsonObject{{u"funding"_s, funding}}}});
+                const QJsonObject read{{u"type"_s, actionType}, {u"status"_s, u"in_progress"_s}, {actionType, detail}};
+                if (path == u"/v1/terminal/readers/tmr_1")
+                    return done({{u"action"_s, read}}, {});
+            }
             const QJsonObject act{{u"type"_s, actionType}, {u"status"_s, action}, {u"failure_code"_s, failureCode},
                                   {u"failure_message"_s, failureMessage}, {actionType, detail}};
             if (path == u"/v1/terminal/readers/tmr_1")

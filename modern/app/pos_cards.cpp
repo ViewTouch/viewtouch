@@ -9,6 +9,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QLocale>
 #include <QPointer>
 #include <QUrl>
@@ -526,8 +527,14 @@ void PosService::pollCounter()
             || action.value(type).toObject().value(u"payment_intent").toString() != pi)
             return;
         const QString status = action.value(u"status").toString();
-        if (status == u"succeeded" && type == u"collect_payment_method")
-            return confirmCounter(pi, action.value(type).toObject().value(u"payment_method"));
+        // Read: the card is on the action while it's still "in_progress" (Stripe
+        // waits for the confirm), so it's charged once it's there.
+        const QJsonValue method = action.value(type).toObject().value(u"payment_method");
+        if (type == u"collect_payment_method" && status != u"failed"
+            && ((method.isObject() && !method.toObject().isEmpty()) || (method.isString() && !method.toString().isEmpty())))
+            return confirmCounter(pi, method);
+        if (type == u"collect_payment_method" && status == u"succeeded")
+            return;   // (no card on it yet: asked again in a moment)
         if (status == u"succeeded")
             return counterPaid(pi);
         if (status != u"failed")

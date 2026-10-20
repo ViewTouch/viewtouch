@@ -3,6 +3,7 @@
 #include "app/pos_json.hh"
 #include "cardreader.hh"
 #include "fake_stripe.hh"
+#include "net/stripe_api.hh"
 #include "pos_fixture.hh"
 #include "print/tickets.hh"
 #include "qt_catch.hh"
@@ -272,4 +273,74 @@ TEST_CASE("Practice reader: waits for a test card; debit pays no surcharge, decl
     r = done.takeFirst().first().toMap();
     CHECK(r[u"declined"_s].toBool());
     CHECK_FALSE(r[u"approved"_s].toBool());
+}
+
+// Against Stripe's test mode itself (run by hand, with a key in the
+// environment: VTM_STRIPE_TEST_KEY=sk_test_... vtm_tests "[stripelive]").
+TEST_CASE("Stripe test mode, live: a credit card pays the surcharge, a debit card doesn't", "[.][stripelive]")
+{
+    const QString key = qEnvironmentVariable("VTM_STRIPE_TEST_KEY");
+    if (!key.startsWith(u"sk_test_"_s))
+        SKIP("Set VTM_STRIPE_TEST_KEY to a Stripe test key (sk_test_...).");
+    PosService pos(test::seedPosData(), nullptr);
+    openDrawer(pos);
+    pos.shared()->settings.stripeSecretKey = key.toStdString();
+    pos.shared()->settings.laborState = "IL";
+    pos.shared()->settings.surchargeBp = 300;
+    net::StripeApi api([&] { return key; });
+    pos.shared()->stripeCall = [&](const QString &m, const QString &p, const QString &f, auto done) { api.call(m, p, f, done); };
+    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t c, auto done) { api.refund(pi, c, done); };
+    QStringList notices;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
+    const auto wait = [](const std::function<bool()> &ready, int ms = 45000) {
+        for (int i = 0; i < ms / 50 && !ready(); ++i)
+            QTest::qWait(50);
+        return ready();
+    };
+    QVariantMap pair = pos.adminNewRecord(u"cardReaders"_s);
+    pair[u"label"_s] = u"ViewTouch surcharge test"_s;
+    pair[u"code"_s] = u"simulated-wpe"_s;
+    pair[u"line1"_s] = u"123 Main St"_s;
+    pair[u"city"_s] = u"Springfield"_s;
+    pair[u"state"_s] = u"IL"_s;
+    pair[u"postalCode"_s] = u"62701"_s;
+    pair[u"country"_s] = u"US"_s;
+    REQUIRE(pos.adminSave(u"cardReaders"_s, -1, pair));
+    INFO("notices: " << notices.join(u" | "_s).toStdString());
+    REQUIRE(wait([&] { return !pos.shared()->settings.stripeReaders.empty(); }));
+    const std::string reader = pos.shared()->settings.stripeReaders.back().id;
+    REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()},
+                                               {u"cardReader"_s, u"counter:"_s + QString::fromStdString(reader)}}));
+
+    for (const QString card : {u"credit"_s, u"debit"_s}) {
+        REQUIRE(pos.startCheck(core::CheckType::Quick));
+        REQUIRE(pos.addItem(u"coffee"_s));                                // $2.98
+        const qint64 check = pos.checkInfo()[u"id"_s].toLongLong();
+        REQUIRE(pos.startCounterCharge(u"credit"_s));
+        REQUIRE(wait([&] { return pos.counterCharge()[u"status"_s] == u"waiting"_s; }));
+        REQUIRE(pos.presentTestCard(card));
+        REQUIRE(wait([&] { return pos.counterCharge().isEmpty(); }));
+        INFO(card.toStdString() << " notices: " << notices.join(u" | "_s).toStdString());
+        REQUIRE(pos.shared()->open.at(check).payments.size() == 1);
+        const core::Payment p = pos.shared()->open.at(check).payments[0];
+        INFO("payment " << p.reference << " funding " << p.funding << " surcharge " << p.surcharge.cents());
+        CHECK(p.amount.cents() == 298);
+        CHECK(p.funding == card.toStdString());
+        CHECK(p.surcharge.cents() == (card == u"credit" ? 9 : 0));
+        // What Stripe charged: the bill, plus the surcharge on a credit card.
+        bool asked = false;
+        qint64 charged = -1;
+        api.call(u"GET"_s, u"/v1/payment_intents/"_s + QString::fromStdString(p.reference), {},
+                 [&](const QJsonObject &pi, const QString &) { charged = pi.value(u"amount_received").toInteger(); asked = true; });
+        REQUIRE(wait([&] { return asked; }));
+        CHECK(charged == (card == u"credit" ? 307 : 298));
+        REQUIRE(pos.closeCheck());
+        // A full refund gives the surcharge back too.
+        const qint64 paid = pos.shared()->closedToday.back().payments.front().id;
+        const auto before = pos.shared()->refundsToday.size();
+        REQUIRE(pos.refundPayment(check, paid, 0, u"Test"_s));
+        REQUIRE(wait([&] { return pos.shared()->refundsToday.size() > before; }));
+        CHECK(pos.shared()->refundsToday.back().surcharge.cents() == (card == u"credit" ? 9 : 0));
+        CHECK(pos.shared()->refundsToday.back().reference.starts_with("re_"));
+    }
 }
