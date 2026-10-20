@@ -8616,3 +8616,26 @@ TEST_CASE("Terminal audit: every page on a 1600x900 terminal", "[.][termaudit]")
     }
     QTest::qWait(30);
 }
+
+TEST_CASE("Phone audit: every page on a 412x915 phone", "[.][phoneaudit]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    s.c.finishChoosing();
+    s.pos.addItem(u"water"_s);
+    QStringList ids;
+    for (const layout::Page &p : s.c.layout().pages)
+        if (p.kind != u"template" && p.kind != u"library")
+            ids << p.id;
+    ids.removeDuplicates();
+    ids.sort();
+    for (const QString &id : ids) {
+        if (!s.c.jumpTo(id))
+            continue;
+        QTest::qWait(120);
+        s.shot((u"phone-"_s + id).toUtf8().constData());
+    }
+    QTest::qWait(30);
+}

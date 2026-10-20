@@ -310,86 +310,119 @@ Item {
         GridLayout {
             id: header
             readonly property var keys: ["station", "message", "waste", "labels", "allDay", "recall"]
-            function col(id) { return 1 + w.zone.keyOrder(id, keys) }
-            rows: 1
+            // A phone: the title on its own row, the buttons three to a row
+            // under it (in one row they were cut to "Station…", "Messa…").
+            readonly property bool stacked: w.width * (w.zone ? w.zone.screenScale : 1) < 700
+            readonly property real keyH: w.zone ? w.zone.touch(48) : 56
+            function shown(id) {
+                if (!w.zone.keyShown(id)) return false
+                if (id === "station") return !w.expo && !w.locked && w.stations.length > 0
+                return !(w.expo && (id === "waste" || id === "labels"))
+            }
+            // Stacked: by place among the buttons shown (no gaps for hidden ones).
+            readonly property var order: keys.filter(id => shown(id)).sort((a, b) => w.zone.keyOrder(a, keys) - w.zone.keyOrder(b, keys))
+            function col(id) { return stacked ? Math.max(0, order.indexOf(id)) % 3 : 1 + w.zone.keyOrder(id, keys) }
+            function row(id) { return stacked ? 1 + Math.floor(Math.max(0, order.indexOf(id)) / 3) : 0 }
+            readonly property real keyPx: stacked && w.zone ? w.zone.touch(16) : 0
             columnSpacing: 6
+            rowSpacing: 6
             Layout.fillWidth: true
-            Layout.preferredHeight: 72
+            Layout.preferredHeight: stacked ? (w.zone ? w.zone.touch(34) : 40) + Math.ceil(order.length / 3) * (keyH + 6) : 72
             Layout.fillHeight: false   // nested layouts fill by default
             Text {
+                Layout.row: 0
                 Layout.column: 0
+                Layout.columnSpan: header.stacked ? 3 : 1
                 Layout.fillWidth: true
                 text: (w.expo ? qsTr("Expo") : w.stationName(w.station))
                       + "  ·  " + (w.tickets.length === 1 ? qsTr("1 order") : qsTr("%1 orders").arg(w.tickets.length))
                 color: "white"
                 font.family: w.face
-                font.pixelSize: Math.max(20, Math.min(40, w.width / 32))
+                font.pixelSize: header.stacked ? (w.zone ? w.zone.touch(20) : 22) : Math.max(20, Math.min(40, w.width / 32))
                 font.bold: true
                 elide: Text.ElideRight
             }
             WidgetKey {
                 objectName: "kdsStation"
-                visible: !w.expo && !w.locked && w.stations.length > 0 && w.zone.keyShown("station")
+                visible: header.shown("station")
                 Layout.column: header.col("station")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("station")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("station", qsTr("Station…"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.nextStation()
             }
             WidgetKey {
-                visible: w.zone.keyShown("message")
+                visible: header.shown("message")
                 Layout.column: header.col("message")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("message")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("message", qsTr("Message…"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.zone.controller.jumpTo("message")
             }
             WidgetKey {
                 objectName: "kdsWaste"
-                visible: !w.expo && w.zone.keyShown("waste")
+                visible: header.shown("waste")
                 Layout.column: header.col("waste")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("waste")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("waste", qsTr("Waste…"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.zone.controller.jumpTo("waste-log")
             }
             WidgetKey {
                 objectName: "kdsLabels"
-                visible: !w.expo && w.zone.keyShown("labels")
+                visible: header.shown("labels")
                 Layout.column: header.col("labels")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("labels")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("labels", qsTr("Labels…"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.zone.controller.jumpTo("prep-labels")
             }
             WidgetKey {
                 objectName: "kdsAllDay"
-                visible: w.zone.keyShown("allDay")
+                visible: header.shown("allDay")
                 Layout.column: header.col("allDay")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("allDay")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.showAllDay ? qsTr("Hide All Day") : w.zone.keyText("allDay", qsTr("All Day"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.showAllDay = !w.showAllDay
             }
             WidgetKey {
                 objectName: "kdsRecall"
-                visible: w.zone.keyShown("recall")
+                visible: header.shown("recall")
                 Layout.column: header.col("recall")
-                Layout.preferredWidth: w.keyWidth
+                Layout.row: header.row("recall")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth
+                Layout.fillWidth: header.stacked
                 Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("recall", qsTr("Recall"))
                 fontScale: 0.4
+                pixelSize: header.keyPx
                 onClicked: w.expo ? w.pos.expoRecall() : w.pos.recallTicket()
             }
         }

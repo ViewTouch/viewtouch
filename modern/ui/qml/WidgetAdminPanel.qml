@@ -211,10 +211,14 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 10
                 spacing: 12
+                // Not on a phone: beside the two buttons it wrapped a word a line
+                // and ran over the list (the buttons say what they do).
                 Label {
-                    visible: !(w.pos && w.pos.pairing.active)
+                    visible: !(w.pos && w.pos.pairing.active) && !w.narrow
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
                     text: qsTr("Add a tablet or another screen: Pair a Device, then type the code on it (its Join screen).")
                     opacity: 0.8
                 }

@@ -86,7 +86,8 @@ Item {
                     cellWidth: (width - gridBar.room) / columns
                     cellHeight: 58
                     model: w.choices
-                    ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
+                    // From the rows, not contentHeight (that follows cellWidth: a loop).
+                    ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * grid.cellHeight > grid.height + 1 }
                     delegate: PosButton {
                         required property var modelData
                         objectName: "waste-" + modelData.id

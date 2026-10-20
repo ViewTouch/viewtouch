@@ -45,7 +45,13 @@ Item {
                 color: w.pos && w.pos.textEntry !== "" ? "white" : "#8a94a6"
                 font.family: w.zone.st.font ?? "DejaVu Sans"
                 font.pixelSize: parent.height * 0.45
-                elide: Text.ElideLeft
+                // What's typed: its end shows. The hint: smaller to fit (a
+                // phone cut "Reason: price, change…" to "…ce, change…").
+                readonly property bool typed: !!w.pos && w.pos.textEntry !== ""
+                anchors.rightMargin: 16
+                fontSizeMode: typed ? Text.FixedSize : Text.HorizontalFit
+                minimumPixelSize: 10
+                elide: typed ? Text.ElideLeft : Text.ElideRight
             }
         }
 
