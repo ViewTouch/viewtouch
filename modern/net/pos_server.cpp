@@ -503,13 +503,20 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
                             &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
                             &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
                             &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
-                            &app::PosSession::adminChanged}) {
+                            &app::PosSession::adminChanged, &app::PosSession::imagesChanged}) {
             const quint32 bit = bitOfSignal(QMetaMethod::fromSignal(signal));
             connect(s, signal, this, [this, c, bit] {
                 c->dirty |= bit;
                 scheduleFlushAll();
             });
         }
+        // Who is logged in changes much of what there is to show (the menu
+        // is only sent to someone logged in): all of it, now. It waited for
+        // the next 30 s round, and a handheld's menu stayed empty until then.
+        connect(s, &app::PosSession::loggedInChanged, this, [this, c] {
+            c->dirty = ~0u;
+            scheduleFlushAll();
+        });
         connect(s, &app::PosSession::notice, this, [c](const QString &text) { c->notices << text; });
         connect(s, &app::PosSession::checkClosed, this, [c](qint64 id) {
             c->events << QJsonObject{{u"t"_s, u"event"_s}, {u"e"_s, u"checkClosed"_s}, {u"v"_s, id}};

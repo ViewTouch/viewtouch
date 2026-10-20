@@ -36,7 +36,17 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
     // (Listing the records first: for terminals, that adds this screen when
     // it's missing, so it's only done for a record already there.)
     const QVariantList before = adminRecords(panel);
-    if (!saveAdminRecord(panel, index, record))
+    // Taxes and Store Settings are one record: what wasn't sent stays as it is
+    // (a handheld whose form opened before the settings came saved only the
+    // rate typed, and the others turned 0).
+    QVariantMap full = record;
+    if ((panel == u"taxes" || panel == u"store") && index == 0 && !before.isEmpty()) {
+        full = before[0].toMap();
+        full.remove(u"useSuggested"_s);
+        for (auto it = record.begin(); it != record.end(); ++it)
+            full.insert(it.key(), it.value());
+    }
+    if (!saveAdminRecord(panel, index, full))
         return false;
     // A PIN or a secret typed: the records never carry it back.
     QVariantList was = before;
@@ -47,7 +57,7 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
                 r.insert(QString::fromLatin1(secret), u"-"_s);
         was[index] = r;
     }
-    logRecordChanges(panel, index, was, record);
+    logRecordChanges(panel, index, was, full);
     return true;
 }
 

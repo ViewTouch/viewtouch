@@ -27,9 +27,13 @@ Item {
     property bool dirty: false
     property bool armDelete: false
 
-    function copy(o) { return JSON.parse(JSON.stringify(o)) }
+    function copy(o) { return o === undefined || o === null ? ({}) : JSON.parse(JSON.stringify(o)) }
+    // A handheld asks the server for the records: the form may open before
+    // they come. It is filled when they do (and what was typed meanwhile kept).
+    property bool waiting: false
     function choose(i) {
         index = i
+        waiting = i >= 0 && i >= records.length
         draft = copy(i >= 0 ? records[i] : pos.adminNewRecord(panel))
         dirty = false
         armDelete = false
@@ -99,9 +103,33 @@ Item {
     }
     // Saves may be answered by a server: react when the data changes.
     property string pending: ""   // "save-new" | "save" | "delete" while waiting
+    property int countAtSave: 0
     function save() {
         pending = index === -1 ? "save-new" : "save"
+        countAtSave = records.length
         pos.adminSave(panel, index, draft)
+    }
+    // The records changed (a server's answer comes after adminChanged, with
+    // the saved values): a form with nothing typed in it shows them.
+    onRecordsChanged: {
+        if (pending === "save-new") {
+            if (records.length > countAtSave) {
+                pending = ""
+                choose(records.length - 1)
+            }
+            return
+        }
+        if (index < 0 || index >= records.length)
+            return
+        if (waiting) {
+            const typed = dirty ? draft : ({})
+            const fresh = copy(records[index])
+            for (const k in typed) fresh[k] = typed[k]
+            draft = fresh
+            waiting = false
+        } else if (!dirty && pending === "") {
+            draft = copy(records[index])
+        }
     }
     function remove() {
         pending = "delete"
@@ -112,8 +140,11 @@ Item {
         function onAdminChanged() {
             const what = w.pending
             w.pending = ""
-            if (what === "save-new") w.choose(w.records.length - 1)
-            else if (what === "save") w.choose(w.index)
+            if (what === "save-new") {
+                // Here already (this computer), or when the server's list comes.
+                if (w.records.length > w.countAtSave) w.choose(w.records.length - 1)
+                else w.pending = what
+            } else if (what === "save") w.choose(w.index)
             else if (what === "delete") w.panel === "employees" ? w.choose(w.index) : (w.index = -2)
         }
         // A refused save only shows a notice; stop waiting.
@@ -449,7 +480,8 @@ Item {
                         objectName: "adminSave"
                         text: w.changes > 0 ? qsTr("Save %n change(s)", "", w.changes) : qsTr("Save")
                         highlighted: true
-                        enabled: w.dirty || w.index === -1
+                        // Not before the saved settings are here (a handheld).
+                        enabled: (w.dirty || w.index === -1) && !w.waiting && w.pending === ""
                         onClicked: w.save()
                     }
                     PosButton {

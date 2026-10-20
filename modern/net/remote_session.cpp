@@ -130,6 +130,12 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         }
     });
     watchdog_.start();
+    imagesArrived_.setSingleShot(true);
+    imagesArrived_.setInterval(60);
+    connect(&imagesArrived_, &QTimer::timeout, this, [this] {
+        ++imageRevision_;
+        emit imagesChanged();   // the menu's photos, the kiosk's, the customer display's
+    });
     reconnect_.setSingleShot(true);
     reconnect_.setInterval(kReconnectMs);
     connect(&reconnect_, &QTimer::timeout, this, [this] {
@@ -148,27 +154,37 @@ QString RemoteSession::localImage(const QString &serverPath, const QString &cach
     const auto it = images_.constFind(key);
     if (it != images_.cend())
         return *it;
-    images_.insert(key, QString());   // asked once per run (a changed picture has a new key)
+    const QString dir = imageCache_.isEmpty()
+                            ? QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + u"/images"_s
+                            : imageCache_;
+    const QString file = QDir(dir).filePath(
+        QString::fromLatin1(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex()) + u'.'
+        + QFileInfo(serverPath).suffix());
+    // Kept from before (this device fetched it on an earlier run): shown at
+    // once. A store picture's key has its content's hash, so it is the same
+    // picture; one by its path is asked for again (it may have been replaced).
+    const bool kept = QFileInfo::exists(file);
+    images_.insert(key, kept ? file : QString());   // asked once per run (a changed picture has a new key)
+    if (kept && key != serverPath)
+        return file;
     auto *self = const_cast<RemoteSession *>(this);
-    self->invoke(u"storeImage"_s, {serverPath}, [self, serverPath, key](const QVariant &r) {
+    self->invoke(u"storeImage"_s, {serverPath}, [self, key, file, dir](const QVariant &r) {
         const QByteArray data = QByteArray::fromBase64(r.toString().toLatin1());
         if (data.isEmpty())
             return;
-        const QString dir = self->imageCache_.isEmpty()
-                                ? QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + u"/images"_s
-                                : self->imageCache_;
+        QFile old(file);
+        if (old.open(QIODevice::ReadOnly) && old.readAll() == data)
+            return;   // the same as the copy kept: nothing to redraw
+        old.close();
         QDir().mkpath(dir);
-        const QString name = QString::fromLatin1(QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex())
-                             + u'.' + QFileInfo(serverPath).suffix();
-        QSaveFile f(QDir(dir).filePath(name));
+        QSaveFile f(file);
         if (!f.open(QIODevice::WriteOnly) || f.write(data) != data.size() || !f.commit())
             return;
-        self->images_.insert(key, QDir(dir).filePath(name));
-        ++self->imageRevision_;
-        emit self->adminChanged();   // the kiosk's menu
-        emit self->checkChanged();   // the customer display
+        self->images_.insert(key, file);
+        // Several pictures come together (a menu of photos): one redraw.
+        self->imagesArrived_.start();
     });
-    return {};
+    return kept ? file : QString();
 }
 
 QString RemoteSession::imageUrl(const QString &ref) const
