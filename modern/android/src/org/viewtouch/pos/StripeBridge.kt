@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.stripe.stripeterminal.Terminal
+import com.stripe.stripeterminal.external.Surcharging
 import com.stripe.stripeterminal.external.callable.AppsOnDevicesListener
 import com.stripe.stripeterminal.external.callable.Callback
 import com.stripe.stripeterminal.external.callable.Cancelable
@@ -252,7 +253,9 @@ object StripeBridge {
 
     // The card is read, not charged yet: a credit card pays the store's
     // surcharge (the reader shows it and asks the guest); debit, prepaid or
-    // a card the reader can't tell, none.
+    // a card the reader can't tell, none. (Stripe's surcharging API is marked
+    // experimental: opted into here.)
+    @OptIn(Surcharging::class)
     private fun confirm(intent: PaymentIntent) {
         collecting = null
         funding = intent.paymentMethod?.cardPresentDetails?.funding ?: ""
