@@ -24,6 +24,8 @@ class CardReader : public QObject {
     Q_PROPERTY(QString amount READ amount NOTIFY changed)   // being charged: "$13.53"
     // A Stripe test-mode charge on a reader beside the screen: test cards can be "tapped".
     Q_PROPERTY(bool testCards READ testCards NOTIFY changed)
+    // With a credit card surcharge: what a credit and a debit card pay ("" without).
+    Q_PROPERTY(QString cardKinds READ cardKinds NOTIFY changed)
 
 public:
     explicit CardReader(QObject *parent = nullptr);
@@ -34,15 +36,24 @@ public:
     bool busy() const { return !charging_.isEmpty(); }
     QString status() const { return status_; }
     QString amount() const { return charging_.value(QStringLiteral("amount")).toString(); }
-    bool testCards() const { return kind_ == QStringLiteral("counter") && charging_.value(QStringLiteral("test")).toBool()
-                                    && charging_.value(QStringLiteral("status")).toString() == QStringLiteral("waiting"); }
+    QString cardKinds() const { return charging_.value(QStringLiteral("cardKinds")).toString(); }
+    // Test cards to "tap": Stripe test mode on a reader beside the screen,
+    // or the simulated reader (practice: it waits for one).
+    bool testCards() const
+    {
+        return (kind_ == QStringLiteral("counter") && charging_.value(QStringLiteral("test")).toBool()
+                && charging_.value(QStringLiteral("status")).toString() == QStringLiteral("waiting"))
+               || (kind_ == QStringLiteral("simulated") && !charging_.isEmpty());
+    }
 
     // "", "stripe", "simulated" or "counter:tmr_..." (the terminal's setting;
     // kind() is then "counter").
     void setKind(const QString &kind);
     // A reader beside the screen is run by the store's computer: what it's doing.
     void setCounter(const QVariantMap &state);
-    Q_INVOKABLE void presentTestCard(bool decline) { emit testCardRequested(decline); }
+    // A test card "tapped": "credit", "debit" or "declined" (a debit card
+    // pays no surcharge). The simulated reader takes it itself.
+    Q_INVOKABLE void presentTestCard(const QString &card);
     // Take a card for a charge the server prepared (cardCharge: amountCents,
     // tipCents, currency, description, checkId, tenderId, amount; holdCharge:
     // and hold, the amount set aside on the card, not charged).
@@ -80,9 +91,10 @@ signals:
     void forwarded(const QVariantMap &result);
     // A reader beside the screen: the store's computer does these.
     void cancelRequested();
-    void testCardRequested(bool decline);
+    void testCardRequested(const QString &card);
 
 private:
+    void simulate(const QString &funding, bool decline);
     void finish(QVariantMap result);
     void setStatus(const QString &text, bool ready);
 
@@ -91,7 +103,7 @@ private:
     QString status_;
     QVariantMap charging_;
     QTimer simulated_;
-    int simulatedDelay_ = 1500;
+    int simulatedDelay_ = -1;   // practice: waits for a test card; tests: approves (as credit) after this
     bool simulatedOffline_ = false;
     QString simulatedFunding_ = QStringLiteral("credit");
     qint64 simulatedWaiting_ = 0;   // cents taken offline so far (simulated)

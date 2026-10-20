@@ -94,7 +94,11 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
              return QVariant(p.refundPayment(a.value(0).toLongLong(), a.value(1).toLongLong(), a.value(2).toLongLong(), a.value(3).toString())); }},
         {u"startCounterCharge"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startCounterCharge(a.value(0).toString())); }},
         {u"cancelCounterCharge"_s, [](PosService &p, const QVariantList &) { return QVariant(p.cancelCounterCharge()); }},
-        {u"presentTestCard"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.presentTestCard(a.value(0).toBool())); }},
+        // "credit", "debit", "declined" (an older screen sends true for declined).
+        {u"presentTestCard"_s, [](PosService &p, const QVariantList &a) {
+             const QVariant card = a.value(0);
+             return QVariant(card.typeId() == QMetaType::Bool ? p.presentTestCard(card.toBool()) : p.presentTestCard(card.toString()));
+         }},
         {u"requestReaderToken"_s, [](PosService &p, const QVariantList &) { p.requestReaderToken(); return QVariant(true); }},
         {u"sameAsLastTime"_s, [](PosService &p, const QVariantList &) { return QVariant(p.sameAsLastTime()); }},
         {u"sendOut"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.sendOut(a.value(0).toList(), a.value(1).toString())); }},

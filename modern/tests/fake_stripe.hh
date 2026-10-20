@@ -76,14 +76,23 @@ struct FakeStripe {
                 return done({}, {});
             }
             QJsonObject detail{{u"payment_intent"_s, pi}};
-            if (actionType == u"collect_payment_method" && action == u"succeeded")
+            // Read, as Stripe does it: the card on an action still "in_progress".
+            if (actionType == u"collect_payment_method" && action == u"succeeded") {
                 detail.insert(u"payment_method"_s, QJsonObject{{u"card_present"_s, QJsonObject{{u"funding"_s, funding}}}});
+                const QJsonObject read{{u"type"_s, actionType}, {u"status"_s, u"in_progress"_s}, {actionType, detail}};
+                if (path == u"/v1/terminal/readers/tmr_1")
+                    return done({{u"action"_s, read}}, {});
+            }
             const QJsonObject act{{u"type"_s, actionType}, {u"status"_s, action}, {u"failure_code"_s, failureCode},
                                   {u"failure_message"_s, failureMessage}, {actionType, detail}};
             if (path == u"/v1/terminal/readers/tmr_1")
                 return done({{u"action"_s, act}}, {});
             if (path == u"/v1/test_helpers/terminal/readers/tmr_1/present_payment_method") {
                 const bool decline = q.queryItemValue(u"card_present[number]"_s) == u"4000000000000002";
+                if (q.queryItemValue(u"card_present[number]"_s) == u"4000056655665556")   // Stripe's Visa debit
+                    funding = u"debit"_s;
+                else if (q.queryItemValue(u"card_present[number]"_s) == u"4242424242424242")
+                    funding = u"credit"_s;
                 action = decline ? u"failed"_s : u"succeeded"_s;
                 failureCode = decline ? u"card_declined"_s : QString();
                 failureMessage = decline ? u"Your card was declined."_s : QString();

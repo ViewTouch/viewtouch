@@ -481,7 +481,7 @@ public:
     Q_INVOKABLE void emailReceipt(qint64 checkId, const QString &email) { invoke(QStringLiteral("emailReceipt"), {checkId, email}); }
     Q_INVOKABLE void noReceipt() { invoke(QStringLiteral("noReceipt"), {}); }
     Q_INVOKABLE void cancelCounterCharge() { invoke(QStringLiteral("cancelCounterCharge"), {}); }
-    Q_INVOKABLE void presentTestCard(bool decline) { invoke(QStringLiteral("presentTestCard"), {decline}); }
+    Q_INVOKABLE void presentTestCard(const QString &card) { invoke(QStringLiteral("presentTestCard"), {card}); }
     Q_INVOKABLE void sameAsLastTime() { invoke(QStringLiteral("sameAsLastTime"), {}); }
     Q_INVOKABLE void sendOut(const QVariantList &checkIds, const QString &driverId) { invoke(QStringLiteral("sendOut"), {checkIds, driverId}); }
     Q_INVOKABLE void deliveryBack(qint64 checkId) { invoke(QStringLiteral("deliveryBack"), {checkId}); }

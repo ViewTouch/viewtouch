@@ -5853,6 +5853,39 @@ TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
     }
 }
 
+TEST_CASE("Practice card reader: the server taps a credit or a debit card; only credit pays the surcharge", "[ui][cards][surcharge]")
+{
+    Screen s;
+    s.pos.shared()->settings.laborState = "IL";
+    s.pos.shared()->settings.surchargeBp = 300;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.pos.adminSave(u"terminals"_s, -1, {{u"name"_s, s.pos.terminalName()}, {u"cardReader"_s, u"simulated"_s}}));
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    for (const QString card : {u"testCardDebit"_s, u"testCardApprove"_s}) {
+        REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+        REQUIRE(s.pos.addItem(u"coffee"_s));                   // $2.98
+        REQUIRE(s.c.jumpTo(u"settle"_s));
+        QTest::qWait(50);
+        s.c.activate(u"tender-credit"_s);
+        QTest::qWait(600);
+        REQUIRE(by(u"cardWait"_s));                            // waits for a card
+        REQUIRE(by(card));
+        if (card == u"testCardDebit")
+            s.shot("practice-reader-test-cards");
+        s.tapItem(by(card));
+        QTest::qWait(80);
+        CHECK_FALSE(by(u"cardWait"_s));
+        REQUIRE(s.pos.payments().size() == 1);
+        const core::Payment &p = s.pos.shared()->open.at(s.pos.checkInfo()[u"id"_s].toLongLong()).payments[0];
+        CHECK(p.funding == (card == u"testCardDebit" ? "debit" : "credit"));
+        CHECK(p.surcharge.cents() == (card == u"testCardDebit" ? 0 : 9));
+        REQUIRE(s.pos.closeCheck());
+    }
+}
+
 TEST_CASE("Card reader (simulated): Pay with a card, declined, canceled", "[ui][cards]")
 {
     Screen s;

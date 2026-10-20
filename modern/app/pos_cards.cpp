@@ -9,6 +9,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QLocale>
 #include <QPointer>
 #include <QUrl>
@@ -72,7 +73,10 @@ QVariantMap PosService::cardCharge(const QString &tenderId)
     if (const std::int64_t bp = surchargeBp(); bp > 0) {
         // What a credit card adds (not a debit or prepaid one: the reader says which).
         surcharge = {{u"surchargeCents"_s, qint64(amount.percent(bp).cents())}, {u"surchargeBp"_s, qint64(bp)},
-                     {u"surchargeNotice"_s, surchargeNotice()}};
+                     {u"surchargeNotice"_s, surchargeNotice()},
+                     // What each kind of card pays, on the screen while it waits.
+                     {u"cardKinds"_s, tr("Credit card %1 · debit card %2")
+                                          .arg(format(amount + tip + amount.percent(bp)), format(amount + tip))}};
     }
     QVariantMap out{{u"ok"_s, true}, {u"tenderId"_s, tenderId}, {u"checkId"_s, qint64(c->id)},
             {u"amountCents"_s, qint64(amount.cents())}, {u"tipCents"_s, qint64(tip.cents())},
@@ -523,8 +527,14 @@ void PosService::pollCounter()
             || action.value(type).toObject().value(u"payment_intent").toString() != pi)
             return;
         const QString status = action.value(u"status").toString();
-        if (status == u"succeeded" && type == u"collect_payment_method")
-            return confirmCounter(pi, action.value(type).toObject().value(u"payment_method"));
+        // Read: the card is on the action while it's still "in_progress" (Stripe
+        // waits for the confirm), so it's charged once it's there.
+        const QJsonValue method = action.value(type).toObject().value(u"payment_method");
+        if (type == u"collect_payment_method" && status != u"failed"
+            && ((method.isObject() && !method.toObject().isEmpty()) || (method.isString() && !method.toString().isEmpty())))
+            return confirmCounter(pi, method);
+        if (type == u"collect_payment_method" && status == u"succeeded")
+            return;   // (no card on it yet: asked again in a moment)
         if (status == u"succeeded")
             return counterPaid(pi);
         if (status != u"failed")
@@ -649,14 +659,17 @@ bool PosService::cancelCounterCharge()
     return true;
 }
 
-bool PosService::presentTestCard(bool decline)
+bool PosService::presentTestCard(const QString &card)
 {
     if (counter_.value(u"status"_s).toString() != u"waiting" || !counter_.value(u"test"_s).toBool())
         return fail(tr("Test cards are for Stripe test mode, while the reader waits."));
     const QString reader = counter_.value(u"reader"_s).toString();
+    // Stripe's test cards: a Visa credit card, a Visa debit card, one declined.
+    const QString number = card == u"declined" ? u"4000000000000002"_s
+                         : card == u"debit"    ? u"4000056655665556"_s
+                                               : u"4242424242424242"_s;
     stripe(u"POST"_s, u"/v1/test_helpers/terminal/readers/%1/present_payment_method"_s.arg(reader),
-           form({{u"type"_s, u"card_present"_s},
-                 {u"card_present[number]"_s, decline ? u"4000000000000002"_s : u"4242424242424242"_s}}),
+           form({{u"type"_s, u"card_present"_s}, {u"card_present[number]"_s, number}}),
            [this](const QJsonObject &, const QString &error) {
         if (!error.isEmpty())
             emit notice(tr("Stripe: %1").arg(error));

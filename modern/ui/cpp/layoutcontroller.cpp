@@ -105,9 +105,9 @@ LayoutController::LayoutController(Layout layout, QObject *parent)
             pos_->cardForwarded(r);
     });
     connect(&cardReader_, &CardReader::cancelRequested, this, [this] { if (pos_) pos_->cancelCounterCharge(); });
-    connect(&cardReader_, &CardReader::testCardRequested, this, [this](bool decline) {
+    connect(&cardReader_, &CardReader::testCardRequested, this, [this](const QString &card) {
         if (pos_)
-            pos_->presentTestCard(decline);
+            pos_->presentTestCard(card);
     });
     updateMealPeriod();
     mealTimer_.setInterval(60 * 1000);
