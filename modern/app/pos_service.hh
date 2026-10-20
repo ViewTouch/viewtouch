@@ -235,6 +235,7 @@ public:
         std::map<std::string, int> tableItems;
         std::int64_t tableGuests = 0;
         std::int64_t firstOrderMs = 0, firstOrders = 0;
+        std::vector<int> checkHours = std::vector<int>(7 * 24, 0);   // checks opened, weekday x hour
         void count(const core::Check &c);
     };
     RushPast rushPast;
@@ -809,6 +810,9 @@ public:
     void noteQueuesAtSend(core::Check &check);
     QVariantMap rushRadarNow() const;
     double typicalMinutes(const std::string &station) const;
+    // Rush Radar's labor guidance (Dashboard): the next hour's checks at
+    // today's pace, the servers that takes, against those on the clock now.
+    QVariantMap staffingNow() const;
     // Minutes until this order's kitchen items would be made, from what's ahead
     // at each station it uses, at their pace (0: nothing for the kitchen).
     // paceKnown: every station has shown its pace (enough tickets).

@@ -85,7 +85,7 @@ QVariantMap PosService::dashboardNow() const
         }
     }
     const Money labor = Money::fromCents(std::llround(laborCents));
-    QVariantMap laborInfo{{u"cost"_s, format(labor)}, {u"onClock"_s, onClock}};
+    QVariantMap laborInfo{{u"cost"_s, format(labor)}, {u"onClock"_s, onClock}, {u"staffing"_s, staffingNow()}};
     if (net.cents() > 0)
         laborInfo.insert(u"percent"_s, int(std::lround(100.0 * double(labor.cents()) / double(net.cents()))));
 

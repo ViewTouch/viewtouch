@@ -5,6 +5,7 @@
  " (inherited)": "（继承）",
  " (the store's server: other screens connect to it)": "（门店服务器：其他屏幕连接到它）",
  " (this computer runs the store on its own)": "（此电脑独立运行门店）",
+ " (today is running at %1% of usual)": "（今天是平常的 %1%）",
  " + %1 credit card surcharge": " + %1 信用卡附加费",
  " + %1 surcharge": " + %1 附加费",
  " + %1 tip": " + %1 小费",
@@ -108,10 +109,12 @@
  "%1 has no choices.": "%1 没有选项。",
  "%1 has no house account.": "%1 没有签单账户。",
  "%1 has no items yet.": "%1 还没有菜品。",
+ "%1 has no open tables and has worked %2 h.": "%1 没有未结的桌，已工作 %2 小时。",
  "%1 has no order on file yet.": "%1 还没有订单记录。",
  "%1 has no price.": "%1 没有价格。",
  "%1 has no recipe to take off the shelf (Menu Builder).": "%1 没有可从库存扣减的配方（菜单构建器）。",
  "%1 has not been counted": "%1 尚未清点",
+ "%1 has the fewest tables (%2).": "%1 的桌最少（%2）。",
  "%1 hasn't been sent to the kitchen yet.": "%1 还没有送到厨房。",
  "%1 held for %2": "%1 为 %2 保留",
  "%1 hours this week": "本周 %1 小时",
@@ -170,6 +173,7 @@
  "%1 min": "%1 分钟",
  "%1 min at %2": "%2 时 %1 分钟",
  "%1 min now · %2 ahead": "现在 %1 分钟 · 前面 %2 个",
+ "%1 needed.": "需要 %1 名。",
  "%1 needs a %2. Touch it, then choose.": "%1 需要选择%2。点击它，然后选择。",
  "%1 needs a manager's approval.": "%1 需要经理批准。",
  "%1 needs bussing": "%1 需要收拾",
@@ -204,6 +208,7 @@
  "%1 shared %2 ways": "%1 分成 %2 份",
  "%1 since %2": "%1，自 %2",
  "%1 started with %2": "%1 以 %2 开始",
+ "%1 starts at %2: ask them in early.": "%1 %2 上班：请其提前到。",
  "%1 starts on %2.": "%1 于 %2 开始。",
  "%1 still due": "仍欠 %1",
  "%1 still on, with PINs anyone could know. Turn them off (Manager → Employees, or the setup guide).": "%1 仍处于启用状态，其 PIN 人人可知。请停用（经理 → 员工，或设置向导）。",
@@ -374,6 +379,14 @@
  "%n server(s) needed": {
   "one": "需要 %n 位服务员",
   "other": "需要 %n 位服务员"
+ },
+ "%n server(s) on, ": {
+  "one": "%n 名服务员在岗，",
+  "other": "%n 名服务员在岗，"
+ },
+ "%n server(s) on.": {
+  "one": "%n 名服务员在岗。",
+  "other": "%n 名服务员在岗。"
  },
  "%n setting(s) found": {
   "one": "找到 %n 项设置",
@@ -923,6 +936,10 @@
  "Café": "咖啡馆",
  "California: an extra hour's pay is owed for each day a meal break is late or missed (unless the employee chose to skip it, in writing).": "加州：每天用餐休息迟到或缺失，须额外支付一小时工资（除非员工书面选择放弃）。",
  "California: the seventh day worked in a row in the pay week.": "加州：在一个工资周内连续工作的第七天。",
+ "Call a server in: about %n check(s) the next hour": {
+  "one": "叫一名服务员来：下一小时约 %n 张单",
+  "other": "叫一名服务员来：下一小时约 %n 张单"
+ },
  "Can be a substitute": "可作替换",
  "Can't import that": "无法导入",
  "Can't open %1.": "无法打开 %1。",
@@ -1338,6 +1355,10 @@
  "Customers…": "顾客…",
  "Customer…": "顾客…",
  "Cut": "剪切",
+ "Cut a server: about %n check(s) the next hour, ": {
+  "one": "可以让一名服务员下班：下一小时约 %n 张单，",
+  "other": "可以让一名服务员下班：下一小时约 %n 张单，"
+ },
  "Cut paper after each ticket": "每张小票后切纸",
  "Dairy": "乳制品",
  "Dark or light": "深或浅",
@@ -3181,6 +3202,10 @@
  "Staff tick them off on the Checklists page.": "员工在“清单”页面勾选。",
  "Staff who take payments": "能收款的员工",
  "Staff who void items": "能作废菜品的员工",
+ "Staffing fits: about %n check(s) the next hour, ": {
+  "one": "人手合适：下一小时约 %n 张单，",
+  "other": "人手合适：下一小时约 %n 张单，"
+ },
  "Standard": "标准",
  "Standard pages": "标准页面",
  "Standard screens": "标准屏幕",

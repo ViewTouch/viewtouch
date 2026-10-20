@@ -5,6 +5,7 @@
  " (inherited)": " (hérité)",
  " (the store's server: other screens connect to it)": " (le serveur de l'établissement : les autres écrans s'y connectent)",
  " (this computer runs the store on its own)": " (cet ordinateur fait tourner l'établissement seul)",
+ " (today is running at %1% of usual)": " (aujourd'hui tourne à %1 % de l'habitude)",
  " + %1 credit card surcharge": " + %1 de supplément carte de crédit",
  " + %1 surcharge": " + %1 de supplément",
  " + %1 tip": " + %1 de pourboire",
@@ -108,10 +109,12 @@
  "%1 has no choices.": "%1 n'a pas de choix.",
  "%1 has no house account.": "%1 n'a pas de compte client.",
  "%1 has no items yet.": "%1 n'a pas encore d'articles.",
+ "%1 has no open tables and has worked %2 h.": "%1 n'a pas de table ouverte et a travaillé %2 h.",
  "%1 has no order on file yet.": "%1 n'a pas encore de commande enregistrée.",
  "%1 has no price.": "%1 n'a pas de prix.",
  "%1 has no recipe to take off the shelf (Menu Builder).": "%1 n'a pas de recette à retirer du stock (Créateur de menu).",
  "%1 has not been counted": "%1 n'a pas été compté",
+ "%1 has the fewest tables (%2).": "%1 a le moins de tables (%2).",
  "%1 hasn't been sent to the kitchen yet.": "%1 n'a pas encore été envoyé en cuisine.",
  "%1 held for %2": "%1 réservée pour %2",
  "%1 hours this week": "%1 heures cette semaine",
@@ -170,6 +173,7 @@
  "%1 min": "%1 min",
  "%1 min at %2": "%1 min à %2",
  "%1 min now · %2 ahead": "%1 min maintenant · %2 avant",
+ "%1 needed.": "il en faut %1.",
  "%1 needs a %2. Touch it, then choose.": "%1 a besoin d'un %2. Touchez-le, puis choisissez.",
  "%1 needs a manager's approval.": "%1 demande l'accord d'un gérant.",
  "%1 needs bussing": "%1 est à débarrasser",
@@ -204,6 +208,7 @@
  "%1 shared %2 ways": "%1 partagé en %2",
  "%1 since %2": "%1 depuis %2",
  "%1 started with %2": "%1 ouverte avec %2",
+ "%1 starts at %2: ask them in early.": "%1 commence à %2 : demandez-lui de venir plus tôt.",
  "%1 starts on %2.": "%1 commence le %2.",
  "%1 still due": "%1 encore dus",
  "%1 still on, with PINs anyone could know. Turn them off (Manager → Employees, or the setup guide).": "%1 sont encore actifs, avec des codes que n'importe qui peut connaître. Désactivez-les (Gérant → Employés, ou le guide d'installation).",
@@ -374,6 +379,14 @@
  "%n server(s) needed": {
   "one": "%n serveur nécessaire",
   "other": "%n serveurs nécessaires"
+ },
+ "%n server(s) on, ": {
+  "one": "%n serveur en service, ",
+  "other": "%n serveurs en service, "
+ },
+ "%n server(s) on.": {
+  "one": "%n serveur en service.",
+  "other": "%n serveurs en service."
  },
  "%n setting(s) found": {
   "one": "%n réglage trouvé",
@@ -923,6 +936,10 @@
  "Café": "Café",
  "California: an extra hour's pay is owed for each day a meal break is late or missed (unless the employee chose to skip it, in writing).": "Californie : une heure de salaire en plus est due pour chaque jour où la pause repas est en retard ou manquée (sauf si l'employé a choisi de la sauter, par écrit).",
  "California: the seventh day worked in a row in the pay week.": "Californie : le septième jour travaillé d'affilée dans la semaine de paie.",
+ "Call a server in: about %n check(s) the next hour": {
+  "one": "Appelez un serveur : environ %n addition la prochaine heure",
+  "other": "Appelez un serveur : environ %n additions la prochaine heure"
+ },
  "Can be a substitute": "Peut être un remplacement",
  "Can't import that": "Impossible d'importer cela",
  "Can't open %1.": "Impossible d'ouvrir %1.",
@@ -1338,6 +1355,10 @@
  "Customers…": "Clients…",
  "Customer…": "Client…",
  "Cut": "Couper",
+ "Cut a server: about %n check(s) the next hour, ": {
+  "one": "Un serveur peut partir : environ %n addition la prochaine heure, ",
+  "other": "Un serveur peut partir : environ %n additions la prochaine heure, "
+ },
  "Cut paper after each ticket": "Couper le papier après chaque ticket",
  "Dairy": "Lait",
  "Dark or light": "Foncé ou clair",
@@ -3181,6 +3202,10 @@
  "Staff tick them off on the Checklists page.": "L'équipe les coche sur la page Listes.",
  "Staff who take payments": "L'équipe qui encaisse",
  "Staff who void items": "L'équipe qui annule des articles",
+ "Staffing fits: about %n check(s) the next hour, ": {
+  "one": "L'équipe suffit : environ %n addition la prochaine heure, ",
+  "other": "L'équipe suffit : environ %n additions la prochaine heure, "
+ },
  "Standard": "Standard",
  "Standard pages": "Pages standard",
  "Standard screens": "Écrans standard",

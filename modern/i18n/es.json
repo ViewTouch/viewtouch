@@ -5,6 +5,7 @@
  " (inherited)": " (heredado)",
  " (the store's server: other screens connect to it)": " (el servidor de la tienda: las otras pantallas se conectan a ella)",
  " (this computer runs the store on its own)": " (esta computadora maneja la tienda sola)",
+ " (today is running at %1% of usual)": " (hoy va al %1% de lo normal)",
  " + %1 credit card surcharge": " + %1 de recargo por tarjeta de crédito",
  " + %1 surcharge": " + %1 de recargo",
  " + %1 tip": " + %1 de propina",
@@ -110,10 +111,12 @@
  "%1 has no choices.": "%1 no tiene opciones.",
  "%1 has no house account.": "%1 no tiene cuenta de la casa.",
  "%1 has no items yet.": "%1 todavía no tiene artículos.",
+ "%1 has no open tables and has worked %2 h.": "%1 no tiene mesas abiertas y lleva %2 h.",
  "%1 has no order on file yet.": "%1 aún no tiene una orden guardada.",
  "%1 has no price.": "%1 no tiene precio.",
  "%1 has no recipe to take off the shelf (Menu Builder).": "%1 no tiene receta para descontar del inventario (Constructor de menú).",
  "%1 has not been counted": "%1 no se ha contado",
+ "%1 has the fewest tables (%2).": "%1 tiene menos mesas (%2).",
  "%1 hasn't been sent to the kitchen yet.": "%1 aún no se ha enviado a la cocina.",
  "%1 held for %2": "%1 apartada para %2",
  "%1 hours this week": "%1 horas esta semana",
@@ -172,6 +175,7 @@
  "%1 min": "%1 min",
  "%1 min at %2": "%1 min a las %2",
  "%1 min now · %2 ahead": "%1 min ahora · %2 delante",
+ "%1 needed.": "se necesitan %1.",
  "%1 needs a %2. Touch it, then choose.": "%1 necesita %2. Tóquelo y elija.",
  "%1 needs a manager's approval.": "%1 necesita la aprobación de un gerente.",
  "%1 needs bussing": "%1 falta limpiar",
@@ -206,6 +210,7 @@
  "%1 shared %2 ways": "%1 compartido entre %2",
  "%1 since %2": "%1 desde %2",
  "%1 started with %2": "%1 empezó con %2",
+ "%1 starts at %2: ask them in early.": "%1 entra a las %2: pídale que venga antes.",
  "%1 starts on %2.": "%1 empieza el %2.",
  "%1 still due": "%1 por cobrar",
  "%1 still on, with PINs anyone could know. Turn them off (Manager → Employees, or the setup guide).": "%1 siguen activos, con PIN que cualquiera podría conocer. Desactívelos (Gerente → Empleados, o la guía de configuración).",
@@ -361,6 +366,14 @@
  "%n server(s) needed": {
   "one": "%n mesero necesario",
   "other": "%n meseros necesarios"
+ },
+ "%n server(s) on, ": {
+  "one": "%n mesero en turno, ",
+  "other": "%n meseros en turno, "
+ },
+ "%n server(s) on.": {
+  "one": "%n mesero en turno.",
+  "other": "%n meseros en turno."
  },
  "%n setting(s) found": {
   "one": "%n ajuste encontrado",
@@ -926,6 +939,10 @@
  "Café": "Cafetería",
  "California: an extra hour's pay is owed for each day a meal break is late or missed (unless the employee chose to skip it, in writing).": "California: se debe una hora extra de pago por cada día que el descanso para comer es tarde o no se toma (salvo que el empleado haya elegido saltarlo, por escrito).",
  "California: the seventh day worked in a row in the pay week.": "California: el séptimo día trabajado seguido en la semana de pago.",
+ "Call a server in: about %n check(s) the next hour": {
+  "one": "Llame a un mesero: cerca de %n cuenta la próxima hora",
+  "other": "Llame a un mesero: cerca de %n cuentas la próxima hora"
+ },
  "Can be a substitute": "Puede ser sustituto",
  "Can't import that": "No se puede importar",
  "Can't open %1.": "No se puede abrir %1.",
@@ -1353,6 +1370,10 @@
  "Customers…": "Clientes…",
  "Customer…": "Cliente…",
  "Cut": "Cortar",
+ "Cut a server: about %n check(s) the next hour, ": {
+  "one": "Puede irse un mesero: cerca de %n cuenta la próxima hora, ",
+  "other": "Puede irse un mesero: cerca de %n cuentas la próxima hora, "
+ },
  "Cut paper after each ticket": "Cortar el papel después de cada ticket",
  "Dairy": "Lácteos",
  "Dark or light": "Oscuro o claro",
@@ -3244,6 +3265,10 @@
  "Staff tick them off on the Checklists page.": "El personal las marca en la página de Listas de Tareas.",
  "Staff who take payments": "Personal que cobra",
  "Staff who void items": "Personal que anula artículos",
+ "Staffing fits: about %n check(s) the next hour, ": {
+  "one": "El personal alcanza: cerca de %n cuenta la próxima hora, ",
+  "other": "El personal alcanza: cerca de %n cuentas la próxima hora, "
+ },
  "Standard": "Estándar",
  "Standard pages": "Páginas estándar",
  "Standard screens": "Pantallas normales",
