@@ -50,6 +50,16 @@ Item {
     }
     readonly property int changes: changedIn()
 
+    // A long list (the menu's items, the stock): a Find field over it; the
+    // rows shown, each with its place among the records.
+    property string listQuery: ""
+    readonly property bool findable: !single && records.length > 8
+    readonly property var listed: {
+        const words = plain(listQuery).split(/\s+/).filter(x => x !== "")
+        return records.map((r, i) => ({ r: r, i: i }))
+                      .filter(x => words.every(t => plain((x.r._title ?? "") + " " + (x.r._detail ?? "")).includes(t)))
+    }
+
     // Store Settings: in sections (the fields' groups), with a search across
     // them all. A field with "when" shows while that other setting is on.
     readonly property var sections: {
@@ -163,6 +173,7 @@ Item {
         keepUnsaved()
         openPanel = panel
         query = ""
+        listQuery = ""
         sectionOpen = false
         dirty = false
         const one = panel === "taxes" || panel === "store"
@@ -299,14 +310,24 @@ Item {
                 Layout.fillHeight: true
                 spacing: 6
 
+                TextField {
+                    objectName: "adminListFind"
+                    visible: w.findable && !w.sectioned
+                    Layout.fillWidth: true
+                    implicitHeight: 44
+                    font.pixelSize: 15
+                    placeholderText: qsTr("Find…")
+                    text: w.listQuery
+                    onTextEdited: w.listQuery = text
+                }
                 ListView {
                     id: list
                     objectName: "adminList"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
-                    model: w.sectioned ? w.sections : w.records
-                    currentIndex: w.sectioned ? -1 : w.index
+                    model: w.sectioned ? w.sections : w.listed
+                    currentIndex: w.sectioned ? -1 : w.listed.findIndex(x => x.i === w.index)
                     ScrollBar.vertical: TouchScrollBar { id: listBar }
                     // An empty list: say so, rather than a blank box.
                     Label {
@@ -315,7 +336,8 @@ Item {
                         visible: list.count === 0
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
-                        text: w.single ? "" : qsTr("None yet. + Add makes one.")
+                        text: w.single ? "" : w.listQuery !== "" && w.records.length > 0 ? qsTr("Nothing found.")
+                                                                           : qsTr("None yet. + Add makes one.")
                         opacity: 0.6
                     }
                     delegate: ItemDelegate {
@@ -323,20 +345,23 @@ Item {
                         required property var modelData
                         required property int index
                         objectName: w.sectioned ? "settingsSection-" + row.modelData.key : ""
+                        // The record (a section's name and key, when sectioned).
+                        readonly property var rec: w.sectioned ? row.modelData : row.modelData.r
                         width: ListView.view.width - listBar.room
-                        // A phone: each row a finger's height.
-                        implicitHeight: Math.max(implicitContentHeight + topPadding + bottomPadding, w.narrow ? 36 : 0)
-                        highlighted: w.sectioned ? w.query === "" && row.modelData.key === w.sectionShown : row.index === w.index
+                        // Each row a finger's height.
+                        implicitHeight: Math.max(implicitContentHeight + topPadding + bottomPadding, 44)
+                        highlighted: w.sectioned ? w.query === "" && row.modelData.key === w.sectionShown : row.modelData.i === w.index
                         onClicked: {
-                            if (!w.sectioned) return w.choose(row.index)
+                            if (!w.sectioned) return w.choose(row.modelData.i)
                             w.query = ""
                             w.openSection(row.modelData.key)
                         }
                         contentItem: ColumnLayout {
                             spacing: 0
                             Label {
-                                text: (w.sectioned ? row.modelData.name : row.modelData._title) || qsTr("(unnamed)")
+                                text: (w.sectioned ? row.rec.name : row.rec._title) || qsTr("(unnamed)")
                                 font.bold: true
+                                font.pixelSize: 15
                                 // A section's name wraps (a narrow list, a longer language).
                                 wrapMode: w.sectioned ? Text.WordWrap : Text.NoWrap
                                 elide: w.sectioned ? Text.ElideNone : Text.ElideRight
@@ -345,11 +370,11 @@ Item {
                             Label {
                                 visible: text !== ""
                                 // A section: how many of its settings are changed.
-                                text: !w.sectioned ? row.modelData._detail ?? ""
+                                text: !w.sectioned ? row.rec._detail ?? ""
                                     : w.changedIn(row.modelData.key) > 0 ? qsTr("%n changed", "", w.changedIn(row.modelData.key)) : ""
                                 color: w.sectioned ? EditorStyle.warning : palette.windowText
                                 opacity: w.sectioned ? 1 : 0.7
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -392,14 +417,43 @@ Item {
                     text: qsTr("‹ Settings")
                     onClicked: w.sectionOpen = false
                 }
-                Label {
+                // Nothing chosen: what to do, and Add right here.
+                Item {
                     visible: w.index === -2
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr("Choose something on the left, or Add.")
-                    opacity: 0.7
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width - 40, 420)
+                        spacing: 14
+                        Label {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            visible: w.records.length > 0
+                            text: qsTr("%n on the list", "", w.records.length)
+                            font.pixelSize: 22
+                            font.bold: true
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            text: qsTr("Choose something on the left, or Add.")
+                            font.pixelSize: 15
+                            opacity: 0.7
+                        }
+                        PosButton {
+                            objectName: "adminAddHere"
+                            visible: !w.sectioned && !w.single && !w.narrow
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: 220
+                            implicitHeight: 54
+                            highlighted: true
+                            font.pixelSize: 17
+                            text: qsTr("+ Add")
+                            onClicked: w.choose(-1)
+                        }
+                    }
                 }
 
                 Label {

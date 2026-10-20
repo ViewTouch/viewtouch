@@ -6,6 +6,7 @@
 #include "qt_catch.hh"
 
 #include <QQmlApplicationEngine>
+#include <functional>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QTest>
@@ -108,10 +109,21 @@ TEST_CASE("Admin screen: touching a record opens its form", "[ui][pages]")
     QTest::qWait(50);
     CHECK(countVisible(window->contentItem(), "FieldEditor") == 0);
 
-    // First row of the list: widget at (16,112), drawn at 1.6x inside.
-    auto *surface = window->findChild<QQuickItem *>(u"pageSurface"_s);
-    REQUIRE(surface);
-    QTest::mouseClick(window, Qt::LeftButton, {}, surface->mapToScene(QPointF(16 + 60 * 1.6, 112 + 30 * 1.6)).toPoint());
+    // The list's first row, where it is drawn.
+    // (zones are drawn by a Repeater: looked for down the drawn items)
+    const std::function<QQuickItem *(QQuickItem *)> named = [&](QQuickItem *r) -> QQuickItem * {
+        for (QQuickItem *i : r->childItems()) {
+            if (i->objectName() == u"adminList"_s) return i;
+            if (QQuickItem *h = named(i)) return h;
+        }
+        return nullptr;
+    };
+    QQuickItem *list = named(window->contentItem());
+    REQUIRE(list);
+    QQuickItem *row = nullptr;
+    QMetaObject::invokeMethod(list, "itemAtIndex", Q_RETURN_ARG(QQuickItem *, row), Q_ARG(int, 0));
+    REQUIRE(row);
+    QTest::mouseClick(window, Qt::LeftButton, {}, row->mapToScene(QPointF(row->width() / 2, row->height() / 2)).toPoint());
     QTest::qWait(50);
     CHECK(countVisible(window->contentItem(), "FieldEditor") == 31);   // menu item fields
 

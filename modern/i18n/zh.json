@@ -309,6 +309,10 @@
   "one": "%n 个新问题（见下方）",
   "other": "%n 个新问题（见下方）"
  },
+ "%n on the list": {
+  "one": "列表中有 %n 项",
+  "other": "列表中有 %n 项"
+ },
  "%n option(s)": {
   "one": "%n 个选项",
   "other": "%n 个选项"
@@ -2262,6 +2266,7 @@
  "Nothing (Print Receipt when asked)": "无（需要时点“打印收据”）",
  "Nothing comes from this vendor yet (set it on each item in Inventory).": "此供应商还没有供货的物品（在库存中为每个物品设置）。",
  "Nothing counted yet.": "还没有清点。",
+ "Nothing found.": "没有找到。",
  "Nothing happens when this is touched.": "点击这里没有任何作用。",
  "Nothing has the code %1.": "没有代码为 %1 的项目。",
  "Nothing installed": "没有安装任何内容",

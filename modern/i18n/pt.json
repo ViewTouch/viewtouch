@@ -309,6 +309,10 @@
   "one": "%n novo (abaixo)",
   "other": "%n novos (abaixo)"
  },
+ "%n on the list": {
+  "one": "%n na lista",
+  "other": "%n na lista"
+ },
  "%n option(s)": {
   "one": "%n opção",
   "other": "%n opções"
@@ -2262,6 +2266,7 @@
  "Nothing (Print Receipt when asked)": "Nada (Imprimir recibo quando pedirem)",
  "Nothing comes from this vendor yet (set it on each item in Inventory).": "Nada vem deste fornecedor ainda (defina em cada item no Estoque).",
  "Nothing counted yet.": "Nada contado ainda.",
+ "Nothing found.": "Nada encontrado.",
  "Nothing happens when this is touched.": "Nada acontece quando isto é tocado.",
  "Nothing has the code %1.": "Nada tem o código %1.",
  "Nothing installed": "Nada instalado",

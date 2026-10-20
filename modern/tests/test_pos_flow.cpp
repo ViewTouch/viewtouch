@@ -8685,3 +8685,43 @@ TEST_CASE("Phone order screen: the check folded to its items, Whole Check shows 
     QTest::qWait(100);
     CHECK_FALSE(whole->isVisible());
 }
+
+TEST_CASE("Manager lists: Find narrows a long list, and the row touched is the one chosen", "[ui][adminfind]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-menu"_s));
+    QTest::qWait(80);
+    QQuickItem *find = Screen::findBy(s.window->contentItem(), "objectName", u"adminListFind"_s);
+    REQUIRE(find);
+    CHECK(find->isVisible());   // 36 items: more than 8
+    QQuickItem *list = Screen::findBy(s.window->contentItem(), "objectName", u"adminList"_s);
+    REQUIRE(list);
+    const int all = list->property("count").toInt();
+    CHECK(all == int(s.pos.adminRecords(u"menu"_s).size()));
+    // The panel's text: what Find typed.
+    QQuickItem *panel = find;
+    while (panel && !QByteArray(panel->metaObject()->className()).startsWith("WidgetAdminPanel"))
+        panel = panel->parentItem();
+    REQUIRE(panel);
+    panel->setProperty("listQuery", u"burger"_s);
+    QTest::qWait(50);
+    const int found = list->property("count").toInt();
+    CHECK(found > 0);
+    CHECK(found < all);
+    // The first row shown is a burger: touching it opens that one, not the menu's first item.
+    QMetaObject::invokeMethod(list, "positionViewAtBeginning");
+    QQuickItem *row = nullptr;
+    QMetaObject::invokeMethod(list, "itemAtIndex", Q_RETURN_ARG(QQuickItem *, row), Q_ARG(int, 0));
+    REQUIRE(row);
+    const QString name = row->property("rec").toMap().value(u"_title"_s).toString();
+    CHECK(name.contains(u"Burger"_s, Qt::CaseInsensitive));
+    s.tapItem(row);
+    QTest::qWait(60);
+    CHECK(panel->property("draft").toMap().value(u"name"_s).toString() == name);
+    // Nothing matches: says so.
+    panel->setProperty("listQuery", u"zzzz"_s);
+    QTest::qWait(50);
+    CHECK(list->property("count").toInt() == 0);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Nothing found."_s));
+}
