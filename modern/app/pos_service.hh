@@ -1042,7 +1042,9 @@ public:
     QVariantMap counterCharge() const override { return counter_; }
     bool startCounterCharge(const QString &tenderId);
     bool cancelCounterCharge();
-    bool presentTestCard(bool decline);   // Stripe test mode: a card "tapped" on the reader
+    // Stripe test mode: a card "tapped" on the reader: "credit", "debit" or "declined".
+    bool presentTestCard(const QString &card);
+    bool presentTestCard(bool decline) { return presentTestCard(decline ? QStringLiteral("declined") : QStringLiteral("credit")); }
     void pairCounterReader(const QVariantMap &record);
     QString counterReaderId() const;
     QString counterReaderLabel(const QString &id) const;

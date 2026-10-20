@@ -173,14 +173,14 @@ TEST_CASE("Surcharge: the reader beside the register reads the card first, then 
     REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()}, {u"cardReader"_s, u"counter:tmr_1"_s}}));
 
     for (const QString funding : {u"credit"_s, u"debit"_s}) {
-        stripe.funding = funding;
         stripe.updatedAmount = 0;
         REQUIRE(pos.startCheck(core::CheckType::Quick));
         REQUIRE(pos.addItem(u"coffee"_s));
         const qint64 check = pos.checkInfo()[u"id"_s].toLongLong();
         REQUIRE(pos.startCounterCharge(u"credit"_s));
         CHECK(stripe.calls.filter(u"collect_payment_method"_s).size() >= 1);
-        REQUIRE(pos.presentTestCard(false));
+        REQUIRE(pos.presentTestCard(funding));   // Stripe's test card of that kind
+        CHECK(stripe.calls.last().contains(funding == u"debit" ? u"4000056655665556"_s : u"4242424242424242"_s));
         test::waitFor([&] { return pos.counterCharge().isEmpty(); });
         REQUIRE(pos.shared()->open.at(check).payments.size() == 1);
         const core::Payment &p = pos.shared()->open.at(check).payments[0];
@@ -241,4 +241,35 @@ TEST_CASE("Cash discount: all in cash pays the cash price; part in cash, the car
     CHECK(paid.find("Cash discount 4%") != std::string::npos);
     REQUIRE(pos.closeCheck());
     CHECK(pos.buildReport(u"sales"_s).find("Net sales").back() == "$2.64");
+}
+
+TEST_CASE("Practice reader: waits for a test card; debit pays no surcharge, declined pays nothing", "[cards][surcharge][ui]")
+{
+    CardReader reader;
+    reader.setKind(u"simulated"_s);   // as in the store: no delay set, it waits
+    QSignalSpy done(&reader, &CardReader::finished);
+    const QVariantMap charge{{u"amountCents"_s, 298}, {u"tipCents"_s, 0}, {u"surchargeCents"_s, 9}, {u"checkId"_s, 7}};
+    CHECK_FALSE(reader.testCards());
+    reader.charge(charge);
+    CHECK(reader.testCards());
+    CHECK_FALSE(done.wait(400));          // nothing by itself
+    reader.presentTestCard(u"debit"_s);
+    REQUIRE(done.size() == 1);
+    QVariantMap r = done.takeFirst().first().toMap();
+    CHECK(r[u"approved"_s].toBool());
+    CHECK(r[u"funding"_s] == u"debit"_s);
+    CHECK(r[u"amountCents"_s] == 298);
+    CHECK_FALSE(reader.testCards());
+
+    reader.charge(charge);
+    reader.presentTestCard(u"credit"_s);
+    r = done.takeFirst().first().toMap();
+    CHECK(r[u"funding"_s] == u"credit"_s);
+    CHECK(r[u"amountCents"_s] == 307);
+
+    reader.charge(charge);
+    reader.presentTestCard(u"declined"_s);
+    r = done.takeFirst().first().toMap();
+    CHECK(r[u"declined"_s].toBool());
+    CHECK_FALSE(r[u"approved"_s].toBool());
 }

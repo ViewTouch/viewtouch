@@ -84,6 +84,10 @@ struct FakeStripe {
                 return done({{u"action"_s, act}}, {});
             if (path == u"/v1/test_helpers/terminal/readers/tmr_1/present_payment_method") {
                 const bool decline = q.queryItemValue(u"card_present[number]"_s) == u"4000000000000002";
+                if (q.queryItemValue(u"card_present[number]"_s) == u"4000056655665556")   // Stripe's Visa debit
+                    funding = u"debit"_s;
+                else if (q.queryItemValue(u"card_present[number]"_s) == u"4242424242424242")
+                    funding = u"credit"_s;
                 action = decline ? u"failed"_s : u"succeeded"_s;
                 failureCode = decline ? u"card_declined"_s : QString();
                 failureMessage = decline ? u"Your card was declined."_s : QString();

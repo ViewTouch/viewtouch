@@ -81,17 +81,35 @@ CardReader::CardReader(QObject *parent) : QObject(parent)
 {
     g_reader = this;
     simulated_.setSingleShot(true);
-    connect(&simulated_, &QTimer::timeout, this, [this] {
+    connect(&simulated_, &QTimer::timeout, this, [this] { simulate(simulatedFunding_, false); });
+}
+
+void CardReader::presentTestCard(const QString &card)
+{
+    if (kind_ == u"simulated") {
+        if (charging_.isEmpty())
+            return;
+        simulated_.stop();
+        simulate(card == u"debit" ? u"debit"_s : u"credit"_s, card == u"declined");
+        return;
+    }
+    emit testCardRequested(card);
+}
+
+// The simulated reader, shown a card: approved (as `funding`) or declined.
+void CardReader::simulate(const QString &funding, bool decline)
+{
+    {
         const qint64 total = charging_.value(u"amountCents"_s).toLongLong() + charging_.value(u"tipCents"_s).toLongLong();
         // Like Stripe's test cards: cents ending in 05 are declined.
-        if (total % 100 == 5) {
+        if (decline || total % 100 == 5) {
             finish({{u"declined"_s, true}, {u"message"_s, tr("Card declined (simulated).")}});
             return;
         }
         const QString ref = u"sim_"_s + QString::number(QRandomGenerator::global()->generate64(), 16);
         // A credit card pays the store's surcharge (shown to the guest first, as on a reader).
-        const qint64 surcharge = simulatedFunding_ == u"credit" ? charging_.value(u"surchargeCents"_s).toLongLong() : 0;
-        const QVariantMap card{{u"funding"_s, simulatedFunding_}, {u"surchargeCents"_s, surcharge}};
+        const qint64 surcharge = funding == u"credit" ? charging_.value(u"surchargeCents"_s).toLongLong() : 0;
+        const QVariantMap card{{u"funding"_s, funding}, {u"surchargeCents"_s, surcharge}};
         // "The internet is down": like a Stripe reader, within the store's limits.
         if (simulatedOffline_) {
             const qint64 max = charging_.value(u"offlineMax"_s).toLongLong();
@@ -111,7 +129,7 @@ CardReader::CardReader(QObject *parent) : QObject(parent)
                       {u"amountCents"_s, total + surcharge}};
         r.insert(card);
         finish(r);
-    });
+    }
 }
 
 CardReader::~CardReader()
@@ -174,8 +192,9 @@ void CardReader::charge(const QVariantMap &charge)
     charging_ = charge;
     emit changed();
     if (kind_ == u"simulated") {
-        status_ = tr("Tap, insert or swipe (simulated)…");
-        simulated_.start(simulatedDelay_);
+        status_ = simulatedDelay_ < 0 ? tr("Practice: tap a test card below.") : tr("Tap, insert or swipe (simulated)…");
+        if (simulatedDelay_ >= 0)
+            simulated_.start(simulatedDelay_);
         emit changed();
         return;
     }

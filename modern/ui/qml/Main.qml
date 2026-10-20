@@ -1108,6 +1108,16 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                objectName: "cardKinds"
+                visible: text !== ""
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: cardWait.reader.cardKinds
+                color: "#f5b940"
+                font.pixelSize: cardWait.u * 0.9
+            }
+            Text {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -1115,28 +1125,39 @@ ApplicationWindow {
                 color: "#c8cfda"
                 font.pixelSize: cardWait.u
             }
-            // Stripe test mode, a reader beside the screen: "tap" a test card.
+            // Practice (the simulated reader), or Stripe test mode on a reader
+            // beside the screen: "tap" a test card. A debit card pays no surcharge.
             Row {
                 visible: cardWait.reader.testCards
                 width: parent.width
                 spacing: cardWait.u * 0.5
+                readonly property real keyW: (width - spacing * 2) / 3
                 WidgetKey {
                     objectName: "testCardApprove"
-                    width: (parent.width - parent.spacing) / 2
+                    width: parent.keyW
                     height: cardWait.u * 2.6
-                    fontScale: 0.3
+                    fontScale: 0.28
                     baseColor: "#1f8a4c"
-                    text: qsTr("Tap Test Card")
-                    onClicked: cardWait.reader.presentTestCard(false)
+                    text: qsTr("Tap Credit Card")
+                    onClicked: cardWait.reader.presentTestCard("credit")
+                }
+                WidgetKey {
+                    objectName: "testCardDebit"
+                    width: parent.keyW
+                    height: cardWait.u * 2.6
+                    fontScale: 0.28
+                    baseColor: "#1f6f78"
+                    text: qsTr("Tap Debit Card")
+                    onClicked: cardWait.reader.presentTestCard("debit")
                 }
                 WidgetKey {
                     objectName: "testCardDecline"
-                    width: (parent.width - parent.spacing) / 2
+                    width: parent.keyW
                     height: cardWait.u * 2.6
-                    fontScale: 0.3
+                    fontScale: 0.28
                     baseColor: "#8a2c30"
                     text: qsTr("Tap Declined Card")
-                    onClicked: cardWait.reader.presentTestCard(true)
+                    onClicked: cardWait.reader.presentTestCard("declined")
                 }
             }
             WidgetKey {

@@ -588,7 +588,7 @@
 <li><b>Declined</b>, or the guest pressing cancel on the reader: nothing goes on the check, and it says why.</li>
 <li>The store's computer follows the payment with Stripe, so a register that drops off the network loses nothing: the approved card still goes on the check.</li>
 <li><b>Tips:</b> Store Settings → <i>Card tips are asked on</i>: the customer display (Ask Guest for Tip), or the reader's own screen (turn on tipping in the Stripe Dashboard → Terminal → Configurations). With tips on the reader, a store can do without a customer display; the display still shows the order as it's rung, rewards sign-up and the receipt choice.</li>
-<li><b>Try it without a reader:</b> with a Stripe <i>test</i> key, pair the code <code>simulated-wpe</code>: a simulated reader. The waiting screen then has <b>Tap Test Card</b> and <b>Tap Declined Card</b>.</li>
+<li><b>Try it without a reader:</b> with a Stripe <i>test</i> key, pair the code <code>simulated-wpe</code>: a simulated reader. The waiting screen then has <b>Tap Credit Card</b>, <b>Tap Debit Card</b> and <b>Tap Declined Card</b> (Stripe's own test cards), so you can see a credit card pay the surcharge and a debit card not. A free Stripe account in test mode is enough: no reader, no real money.</li>
 </ul>
 <h3>ViewTouch on the reader</h3>
 <p>ViewTouch can also take cards itself on a <b>Stripe Reader S700</b>: the ViewTouch app runs on the reader (Stripe calls this <i>Apps on Devices</i>), and when you touch <b>Credit Card</b> on the Pay screen, Stripe's own payment screen asks the guest to tap, insert or swipe. The amount (with the tip the guest chose) goes to the reader; when the card is approved, the check shows it, like <i>Credit Card · Visa •••• 4242</i>, and so does the receipt with Stripe's payment number. ViewTouch never sees the card number.</p>
@@ -604,7 +604,7 @@
 <li>Install ViewTouch on the reader (through Stripe: a DevKit for testing, then Stripe's app review and deployment for your readers) and pair it with the store like any tablet.</li>
 <li>Manager → Terminals → that reader → <i>Card reader: Stripe smart reader (this device)</i>.</li>
 </ol></li>
-<li><b>Practice:</b> <i>Card reader: Simulated</i> on any screen approves cards after a moment (amounts ending in 05 cents are declined), to train staff without a reader.</li>
+<li><b>Practice:</b> <i>Card reader: Simulated</i> on any screen, to train staff without a reader: Credit Card shows the amount and waits; touch <b>Tap Credit Card</b>, <b>Tap Debit Card</b> or <b>Tap Declined Card</b> as if the guest had (amounts ending in 05 cents are always declined). With a credit card surcharge on, the screen says what each kind of card pays, and only <i>Tap Credit Card</i> pays it.</li>
 </ul>
 
 <h2>Credit card surcharge and cash discount</h2>
