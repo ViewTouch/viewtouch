@@ -95,9 +95,46 @@ Item {
     }
     readonly property bool mayArrange: pos !== null && pos.loggedIn && pos.can("manager") && !search && !popular
 
+    // Rush Radar: which stations are about to back up, and which aren't
+    // (a server can steer a table to what comes out faster).
+    RushRadarView {
+        id: radar
+        visible: false
+        active: w.visible && w.pos !== null && w.pos.loggedIn
+        pos: w.pos
+    }
+    readonly property var busy: {
+        const out = {}
+        for (const s of (radar.radar.stations ?? []))
+            if (s.level !== "ok")
+                out[s.id] = { wait: s.peakWait, level: s.level, name: s.name }
+        return out
+    }
+    readonly property string busyHint: {
+        const all = radar.radar.stations ?? []
+        const slow = all.filter(s => s.level !== "ok")
+        if (!slow.length)
+            return ""
+        const quick = all.filter(s => s.level === "ok").map(s => qsTr("%1 %2 min").arg(s.name).arg(s.peakWait))
+        return slow.map(s => qsTr("%1 busy: %2 min").arg(s.name).arg(s.peakWait)).join(" · ")
+               + (quick.length ? "  ·  " + qsTr("faster: %1").arg(quick.join(", ")) : "")
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: w.gap
+
+        Text {
+            objectName: "menuBusyHint"
+            visible: w.busyHint !== "" && !w.arranging
+            Layout.fillWidth: true
+            text: "⚠ " + w.busyHint
+            color: "#f5b940"
+            font.family: w.face
+            font.bold: true
+            font.pixelSize: Math.max(15, w.zone ? w.zone.touch(17) : 20)
+            elide: Text.ElideRight
+        }
 
         // Families across the top (only when showing them all). A phone:
         // three to a row; all with one text size, the largest at which each
@@ -153,6 +190,7 @@ Item {
             category: w.shownCategory
             categories: w.categories
             pos: w.pos
+            busy: w.busy
             setColumns: w.setColumns
             pagePhotos: w.pagePhotos
             // Headings and spaces: one category, as arranged in the Menu Builder.

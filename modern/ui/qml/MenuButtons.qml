@@ -24,6 +24,10 @@ Flickable {
     property real gap: 12
     property bool arranging: false
     property string picked: ""
+    // Rush Radar: stations about to back up (id -> {wait, level}): their
+    // items say how long a ticket will take ("⏱ 25m").
+    property var busy: ({})
+    function busyOf(item) { return busy[item.station] ?? busy[item.printer] ?? null }
     property bool managing: false     // held: changed right there (managers)
     property var allergies: []
     signal itemTapped(var item)
@@ -194,6 +198,31 @@ Flickable {
                                     }
                                 }
                                 opacity: cell.modelData.available ? 1 : 0.55
+                                // The station that makes it about to back up: how long it'll take.
+                                readonly property var slow: cell.isGap ? null : mb.busyOf(cell.modelData)
+                                Rectangle {
+                                    objectName: "busyMark-" + (cell.isGap ? "" : cell.modelData.id)
+                                    visible: !!parent.slow && cell.modelData.available
+                                    z: 2
+                                    anchors.bottom: parent.bottom
+                                    anchors.right: parent.right
+                                    anchors.margins: 6
+                                    width: busyLabel.implicitWidth + 12
+                                    height: busyLabel.implicitHeight + 4
+                                    radius: height / 2
+                                    color: "#e0161a20"
+                                    border.color: parent.slow && parent.slow.level === "late" ? "#ff8a8f" : "#f5b940"
+                                    border.width: 2
+                                    Text {
+                                        id: busyLabel
+                                        anchors.centerIn: parent
+                                        text: parent.parent.slow ? qsTr("≈%1 min").arg(parent.parent.slow.wait) : ""
+                                        color: parent.border.color
+                                        font.family: mb.face
+                                        font.pixelSize: Math.max(13, Math.min(cell.height * 0.08, 20))
+                                        font.bold: true
+                                    }
+                                }
                                 // Running low: "5 left".
                                 readonly property int itemsLeft: mb.pos && !cell.isGap ? (mb.pos.stockLeft[cell.modelData.id] ?? -1) : -1
                                 Rectangle {

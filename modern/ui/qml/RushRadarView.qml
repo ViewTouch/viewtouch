@@ -99,6 +99,7 @@ Item {
                             width: (parent.width - parent.spacing * 6) / 7
                             height: parent.height
                             Rectangle {
+                                id: bar
                                 anchors.bottom: parent.bottom
                                 width: parent.width
                                 height: Math.max(2, parent.height * modelData.wait / parent.parent.most)
@@ -116,7 +117,17 @@ Item {
                                 font.family: r.face
                                 font.pixelSize: r.unit * 0.65
                                 font.bold: true
-                                visible: parent.height > r.unit
+                                visible: bar.height >= r.unit * 0.8
+                            }
+                            // Short bars: the number above them.
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottom: bar.top
+                                visible: bar.height < r.unit * 0.8
+                                text: modelData.minute === 0 ? qsTr("now %1").arg(modelData.wait) : modelData.wait
+                                color: r.muted
+                                font.family: r.face
+                                font.pixelSize: r.unit * 0.65
                             }
                         }
                     }
