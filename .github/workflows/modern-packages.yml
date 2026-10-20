@@ -25,6 +25,18 @@ jobs:
           - { distro: ubuntu, image: 'ubuntu:26.04',   arch: x86_64,  runner: ubuntu-24.04 }
           - { distro: ubuntu, image: 'ubuntu:26.04',   arch: aarch64, runner: ubuntu-24.04-arm }
     steps:
+      # git before the checkout: without it the checkout is a download with no
+      # history, and the packages were numbered build 0 (store computers saw
+      # 0.9.0 as older than what they run and never updated).
+      - name: Install git
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf -y install git
+          else
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ca-certificates git
+          fi
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # every commit: the build number is their count
