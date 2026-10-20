@@ -1791,6 +1791,7 @@
  "How much off? (50 = half price, or an amount)": "Quanto de desconto? (50 = metade do preço, ou um valor)",
  "ID": "ID",
  "IRS 8027": "IRS 8027",
+ "If you can, seat the next party in a few minutes: the kitchen catches up first.": "Se puder, acomode o próximo grupo daqui a alguns minutos: a cozinha põe em dia primeiro.",
  "Ignore touches": "Ignora toques",
  "Import": "Importar",
  "Import %n item(s)": {
@@ -3972,6 +3973,10 @@
  "We'll make it once it's paid": "Vamos preparar quando for pago",
  "We're making it now": "Estamos preparando agora",
  "We're making it now. Please pay at the counter.": "Estamos preparando agora. Pague no balcão, por favor.",
+ "We're making it now: ready in about %n minute(s). Please pay at the counter.": {
+  "one": "Já estamos preparando: pronto em cerca de %n minuto. Pague no balcão.",
+  "other": "Já estamos preparando: pronto em cerca de %n minutos. Pague no balcão."
+ },
  "Weak": "Fraco",
  "Weak: sells slowly and earns little. Change it, or take it off the menu.": "Fraco: vende devagar e rende pouco. Mude, ou tire do cardápio.",
  "Wednesday": "Quarta-feira",

@@ -152,8 +152,10 @@ bool PosService::kioskFinish(const QVariantMap &guest)
     const bool slip = s_->settings.kioskSlip && s_->printer && s_->settings.printer(receiptPrinter());
     if (slip)
         s_->printer->printOrderSlip(s_->settings, *c, receiptPrinter(), sendNow);
+    // Made now: about when it's ready (Rush Radar: what's ahead at its stations).
+    const int ready = sendNow ? kitchenMinutesFor(*c) : 0;
     lastKioskOrder_ = {{u"number"_s, qint64(c->id)}, {u"name"_s, name}, {u"sent"_s, sendNow},
-                       {u"total"_s, format(t.total)}, {u"slip"_s, slip}};
+                       {u"total"_s, format(t.total)}, {u"slip"_s, slip}, {u"readyMinutes"_s, ready}};
     choosingLine_ = 0;
     releaseCheck();   // for the counter now
     emit checkChanged();

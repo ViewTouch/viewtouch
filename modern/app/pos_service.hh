@@ -808,6 +808,11 @@ public:
     std::map<std::string, int> stationQueues(std::int64_t sentBefore = 0) const;
     void noteQueuesAtSend(core::Check &check);
     QVariantMap rushRadarNow() const;
+    double typicalMinutes(const std::string &station) const;
+    // Minutes until this order's kitchen items would be made, from what's ahead
+    // at each station it uses, at their pace (0: nothing for the kitchen).
+    // paceKnown: every station has shown its pace (enough tickets).
+    int kitchenMinutesFor(const core::Check &c, bool *paceKnown = nullptr) const;
     // The credit card surcharge in force (basis points; capped by the state), and what the guest is told.
     std::int64_t surchargeBp() const;
     QString surchargeNotice() const;

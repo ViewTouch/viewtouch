@@ -186,11 +186,19 @@ int PosService::readyQuote(const Check &c) const
     for (const auto &[id, k] : s_->open)
         if (!k.training)
             look(k);
+    const int travel = delivery ? std::max(0, st.deliveryMinutes - st.takeoutMinutes) : 0;
+    // Rush Radar: what's ahead at each station this order uses, at their pace.
+    // Once every one has shown its pace, that is the kitchen's time (the
+    // orders ahead are in it); before, a few minutes for each order cooking.
+    bool known = false;
+    const int kitchen = kitchenMinutesFor(c, &known);
+    if (known && kitchen > 0)
+        return (std::max(minutes, kitchen + travel) + 4) / 5 * 5;
     if (made >= 3) {
         const int cook = int(madeMs / made / kMinute);
-        const int travel = delivery ? std::max(0, st.deliveryMinutes - st.takeoutMinutes) : 0;
         minutes = std::max(minutes, cook + travel);
     }
+    minutes = std::max(minutes, kitchen + travel);
     minutes += int(cooking.size()) * st.minutesPerOrderWaiting;
     return (minutes + 4) / 5 * 5;   // to the next 5 minutes
 }

@@ -100,6 +100,61 @@ void PosService::noteQueuesAtSend(Check &check)
     }
 }
 
+double PosService::typicalMinutes(const std::string &station) const
+{
+    // An item's usual ticket time at a station before its pace is known: the
+    // prep times learned for what it makes, else half the store's warning time.
+    double sum = 0;
+    int n = 0;
+    for (const auto &[item, sec] : s_->settings.prepSeconds)
+        if (const MenuItem *m = findItem(qs(item))) {
+            OrderLine probe;
+            probe.itemId = item;
+            probe.station = m->station;
+            probe.printer = m->printer;
+            if (stationOf(probe) == station) {
+                sum += sec / 60.0;
+                ++n;
+            }
+        }
+    return n > 0 ? sum / n : double(s_->settings.kitchenWarnMinutes) / 2.0;
+}
+
+int PosService::kitchenMinutesFor(const Check &c, bool *paceKnown) const
+{
+    // Each station this order uses: what's ahead of it now (its own items
+    // already sent are in that), plus its items not sent yet, at the
+    // station's pace. Ready when the slowest is.
+    std::map<std::string, int> unsent;
+    std::set<std::string> uses;
+    for (const OrderLine &l : c.lines) {
+        if (l.voided || l.isComment() || !l.forKitchen() || (l.sent && l.made))
+            continue;
+        const std::string at = stationOf(l);
+        if (at.empty())
+            continue;
+        uses.insert(at);
+        if (!l.sent)
+            unsent[at] += l.quantity;
+    }
+    if (uses.empty())
+        return 0;
+    const std::map<std::string, int> queues = stationQueues();
+    double worst = 0;
+    bool known = true;
+    for (const std::string &at : uses) {
+        const auto pace = s_->settings.stationPace.find(at);
+        const StationPace p = pace != s_->settings.stationPace.end() ? pace->second : StationPace{};
+        known = known && p.known();
+        const double ahead = (queues.contains(at) ? queues.at(at) : 0) + (unsent.contains(at) ? unsent.at(at) : 0);
+        // Its own items count as ahead of the last of them (none ahead of a lone item).
+        worst = std::max(worst, p.minutesAt(std::max(0.0, ahead - 1), typicalMinutes(at)));
+    }
+    if (paceKnown)
+        *paceKnown = known;
+    return int(std::ceil(worst));
+}
+
 QVariantMap PosService::rushRadar() const
 {
     return s_->memo(u"rushRadar "_s + language(), [this] { return QVariant(rushRadarNow()); }).toMap();
@@ -233,27 +288,12 @@ QVariantMap PosService::rushRadarNow() const
             n[0] = n[0].toUpper();
         return n;
     };
-    // An item's usual ticket time at a station before its pace is known: the
-    // prep times learned for what it makes, else the store's warning time.
-    std::map<std::string, std::pair<double, int>> typical;
-    for (const auto &[item, sec] : st.prepSeconds)
-        if (const MenuItem *m = findItem(qs(item))) {
-            OrderLine probe;
-            probe.itemId = item;
-            probe.station = m->station;
-            probe.printer = m->printer;
-            auto &[sum, n] = typical[stationOf(probe)];
-            sum += sec / 60.0;
-            ++n;
-        }
     QVariantList stations;
     QString worst;
     double worstWait = 0;
     for (const std::string &at : places) {
         const std::vector<double> a = arrivals.contains(at) ? arrivals.at(at) : std::vector<double>(kHorizon, 0.0);
-        const auto ty = typical.find(at);
-        const double usual = ty != typical.end() && ty->second.second > 0 ? ty->second.first / ty->second.second
-                                                                           : double(st.kitchenWarnMinutes) / 2.0;
+        const double usual = typicalMinutes(at);
         const auto pace = st.stationPace.find(at);
         const StationPace p = pace != st.stationPace.end() ? pace->second : StationPace{};
         const double queueNow = queues.contains(at) ? queues.at(at) : 0;

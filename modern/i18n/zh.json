@@ -1791,6 +1791,7 @@
  "How much off? (50 = half price, or an amount)": "减多少？（50 = 半价，或一个金额）",
  "ID": "ID",
  "IRS 8027": "IRS 8027",
+ "If you can, seat the next party in a few minutes: the kitchen catches up first.": "如果可以，过几分钟再安排下一桌：先让厨房赶上。",
  "Ignore touches": "忽略点击",
  "Import": "导入",
  "Import %n item(s)": {
@@ -3972,6 +3973,10 @@
  "We'll make it once it's paid": "付款后我们开始制作",
  "We're making it now": "我们正在制作",
  "We're making it now. Please pay at the counter.": "我们正在制作。请到柜台付款。",
+ "We're making it now: ready in about %n minute(s). Please pay at the counter.": {
+  "one": "正在制作：大约 %n 分钟后好。请到柜台付款。",
+  "other": "正在制作：大约 %n 分钟后好。请到柜台付款。"
+ },
  "Weak": "弱项",
  "Weak: sells slowly and earns little. Change it, or take it off the menu.": "弱项：卖得慢、赚得少。改进它，或从菜单撤下。",
  "Wednesday": "星期三",
