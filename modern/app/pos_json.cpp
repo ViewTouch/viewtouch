@@ -295,9 +295,10 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.deliveredAt = o.value(u"deliveredAt").toInteger(0);
     c.vip = o.value(u"vip").toBool();
     c.allergies = strings(o.value(u"allergies").toArray());
-    for (const auto [seat, list] : o.value(u"seatAllergies").toObject().asKeyValueRange())
-        if (const int n = seat.toString().toInt(); n > 0 && !list.toArray().isEmpty())
-            c.seatAllergies[n] = strings(list.toArray());
+    const QJsonObject seatAllergies = o.value(u"seatAllergies").toObject();
+    for (auto it = seatAllergies.begin(); it != seatAllergies.end(); ++it)
+        if (const int n = it.key().toInt(); n > 0 && !it.value().toArray().isEmpty())
+            c.seatAllergies[n] = strings(it.value().toArray());
     c.coupons = strings(o.value(u"coupons").toArray());
     if (const QJsonObject h = o.value(u"hold").toObject(); !h.isEmpty()) {
         c.hold.reference = ss(h.value(u"reference").toString());
