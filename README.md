@@ -36,7 +36,7 @@
 <td><img src="modern/docs/screenshots/customer-display.jpg" alt="Customer display"><br><sub><b>Customer display.</b> The guest sees the order, picks a tip and earns rewards.</sub></td>
 </tr>
 <tr>
-<td><img src="modern/docs/screenshots/spanish.jpg" alt="Spanish screens"><br><sub><b>English and Spanish.</b> Each person's screens are in their own language.</sub></td>
+<td><img src="modern/docs/screenshots/spanish.jpg" alt="Spanish screens"><br><sub><b>Five languages.</b> English, Spanish, French, Portuguese and Chinese: each person's screens are in their own.</sub></td>
 <td><img src="modern/docs/screenshots/network.jpg" alt="Network"><br><sub><b>Keep running.</b> A standby computer takes over if the main one fails.</sub></td>
 </tr>
 <tr>
@@ -48,18 +48,21 @@
 ### What it does
 
 - **Orders:** tables and seats, courses with hold and fire, modifier choices, notes, rush and VIP, transfer, move, merge, split and reopen checks.
-- **Payments:** cash, cards, gift cards, house accounts, discounts, party gratuity, tips asked on the customer display, server banks or a drawer per screen.
+- **At the table on a handheld:** seat chips across the check, a buzz and a flash for every item, allergies by seat (only that guest's items are marked, and the kitchen ticket says whose), each server's own usual items, the tables as big tiles that show what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back.
+- **Payments:** cash, Stripe card readers (beside the register, or ViewTouch on the reader as a handheld), gift cards, house accounts, discounts, party gratuity, tips asked on the customer display, server banks or a drawer per screen.
 - **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
 - **Kitchen:** kitchen, bar and expo touchscreens with ticket times, kitchen names and colors, and printers.
 - **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime, tip-outs, inventory with recipes and automatic 86, and CSV/PDF export.
 - **Staff:** PIN login and clock in/out, breaks, roles with per-person permissions, manager approval on the spot, practice mode for training, and messages between screens.
 - **Many screens, one store:** paired, encrypted connections. Tablets and phones join by scanning the network. A standby server keeps running if the main computer fails.
 - **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.
-- **English and Spanish:** each person's screens are in their own language.
+- **Five languages:** English, Spanish, French, Portuguese and Chinese; each person's screens are in their own.
 
 <table align="center"><tr>
 <td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
 <td align="center"><img src="modern/docs/screenshots/phone.jpg" alt="Phone pages" width="180"><br><sub>Phones get their own<br>pages, with the floor plan.</sub></td>
+<td align="center"><img src="modern/docs/screenshots/handheld-seats.jpg" alt="Ordering by seat on a phone" width="180"><br><sub>At the table: seats, a guest's<br>allergy, "+ Lemonade · Seat 3".</sub></td>
+<td align="center"><img src="modern/docs/screenshots/handheld-tables.jpg" alt="Tables as a list on a phone" width="180"><br><sub>Your tables first, with<br>what hasn't been sent.</sub></td>
 </tr></table>
 
 ### Download and build
@@ -85,7 +88,7 @@ git clone https://github.com/ViewTouch/viewtouch.git
 cd viewtouch
 cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build modern/build
-ctest --test-dir modern/build -j4      # optional: 250 tests, under a minute
+ctest --test-dir modern/build -j4      # optional: about 590 tests
 ```
 
 **3. Run it**
@@ -116,7 +119,11 @@ sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a 
 
 Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
 
-> Card readers and other hardware come later; the user interface is finished first.
+Ready-made packages for Debian 13 / Raspberry Pi OS, Ubuntu 26.04 and Fedora (x86_64 and aarch64), and the Android app, are on the **[latest release](https://github.com/ViewTouch/viewtouch/releases/latest)**. One command sets up a new machine from zero:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
+```
 
 ---
 

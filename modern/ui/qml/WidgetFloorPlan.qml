@@ -46,7 +46,8 @@ Item {
             const ago = s.lastSentAt ? Math.max(0, Math.floor((w.now - s.lastSentAt) / 60000)) : -1
             return [((s.checks ?? 1) > 1 ? qsTr("%1 checks").arg(s.checks) : (s.server ?? "")) + "  ·  " + (s.total ?? ""),
                     s.unsent > 0 ? "⚠ " + qsTr("%n not sent", "", s.unsent)
-                                 : ago >= 0 ? qsTr("Sent %1 ago").arg(w.minutesText(ago)) : qsTr("Nothing sent yet")]
+                                 : ago === 0 ? qsTr("Sent just now")
+                                 : ago > 0 ? qsTr("Sent %1 ago").arg(w.minutesText(ago)) : qsTr("Nothing sent yet")]
         }
         tint: name => {
             const s = w.status(name)
