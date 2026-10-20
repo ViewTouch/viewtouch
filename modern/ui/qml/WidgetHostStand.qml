@@ -315,6 +315,36 @@ Item {
                       : qsTr("Touch a party or Walk-in, then their table.")
                 color: w.pickedSeats > 0 && w.pickedSeats < w.partySize ? "#f5b940" : "#8a94a6"
             }
+            // Rush Radar: the kitchen about to back up. Seating more now makes
+            // it worse; a few minutes more at the bar or the door helps.
+            Rectangle {
+                objectName: "hostRush"
+                visible: hostRush.headline !== ""
+                Layout.fillWidth: true
+                Layout.preferredHeight: hostRushCol.implicitHeight + w.unit * 0.6
+                radius: 8
+                color: "#3a2e10"
+                border.color: "#f5b940"
+                ColumnLayout {
+                    id: hostRushCol
+                    anchors.fill: parent
+                    anchors.margins: w.unit * 0.3
+                    spacing: 2
+                    RushRadarView {
+                        id: hostRush
+                        Layout.fillWidth: true
+                        compact: true
+                        active: w.visible
+                        pos: w.pos
+                        unit: w.unit * 0.85
+                        face: w.face
+                    }
+                    Small {
+                        text: qsTr("If you can, seat the next party in a few minutes: the kitchen catches up first.")
+                        color: "#f5d48a"
+                    }
+                }
+            }
             GridLayout {
                 Layout.fillWidth: true
                 columns: 2

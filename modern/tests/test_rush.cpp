@@ -125,3 +125,47 @@ TEST_CASE("Rush Radar: the line now, what's being rung in, tables just seated; t
     CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).stationPace.at("grill")
           == pos.shared()->settings.stationPace.at("grill"));
 }
+
+TEST_CASE("Rush Radar: takeout quotes from what's ahead at the stations the order uses", "[rush][quote]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = QDateTime(QDate(2026, 10, 16), QTime(19, 0)).toMSecsSinceEpoch();
+    pos.shared()->setClock([&] { return clock; });
+    pos.shared()->settings.takeoutMinutes = 15;
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    const auto burgers = [&](int n) {
+        for (int i = 0; i < n; ++i) {
+            REQUIRE(pos.addItem(u"classic-burger"_s));
+            for (const QVariant &g : pos.choosingInfo()[u"groups"_s].toList())
+                if (!g.toMap()[u"done"_s].toBool())
+                    pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+            pos.finishChoosing();
+        }
+    };
+    // A takeout of two burgers, the grill empty: the store's usual 15.
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    burgers(2);
+    CHECK(pos.checkInfo()[u"quote"_s].toInt() == 15);
+    const qint64 takeout = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.releaseCheck();
+
+    // Ten burgers on the grill, which has shown its pace (4 minutes, 1.5 an item ahead).
+    for (int i = 0; i < 40; ++i)
+        pos.shared()->settings.stationPace["grill"].learn(i % 9, 4 + 1.5 * (i % 9));
+    REQUIRE(pos.selectTable(u"T1"_s) == PosService::TableNeedsGuests);
+    pos.entryKey(u"10"_s);
+    REQUIRE(pos.startCheck(core::CheckType::DineIn));
+    burgers(10);
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+
+    // The same takeout now: 10 ahead + its own 2 (the last waits for 11): 4 + 16.5 = 20.5 -> 21 -> 25.
+    REQUIRE(pos.openCheck(takeout));
+    bool known = false;
+    CHECK(pos.kitchenMinutesFor(pos.shared()->open.at(takeout), &known) == 21);
+    CHECK(known);
+    CHECK(pos.checkInfo()[u"quote"_s].toInt() == 25);
+    // Nothing for the kitchen: no kitchen time.
+    core::Check drinks;
+    CHECK(pos.kitchenMinutesFor(drinks) == 0);
+}

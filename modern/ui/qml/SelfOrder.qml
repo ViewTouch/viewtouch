@@ -996,7 +996,9 @@ Rectangle {
                 font.family: k.face
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: k.lastOrder.sent ? qsTr("We're making it now. Please pay at the counter.")
+                text: k.lastOrder.sent ? ((k.lastOrder.readyMinutes ?? 0) > 0
+                                          ? qsTr("We're making it now: ready in about %n minute(s). Please pay at the counter.", "", k.lastOrder.readyMinutes)
+                                          : qsTr("We're making it now. Please pay at the counter."))
                                        : qsTr("Please pay at the counter (%1), and we'll start making it.").arg(k.lastOrder.total ?? "")
                 color: k.ink
                 font.pixelSize: k.u * 1.4
