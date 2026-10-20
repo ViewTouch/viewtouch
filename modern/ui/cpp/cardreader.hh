@@ -54,6 +54,9 @@ public:
     // Practice and tests: the simulated reader as if the internet were down
     // (cards taken offline), then each one reaching Stripe or declined.
     void setSimulatedOffline(bool on) { simulatedOffline_ = on; }
+    // Practice and tests: the card the simulated reader is shown ("credit",
+    // "debit", "prepaid"; a credit card pays the store's surcharge).
+    void setSimulatedFunding(const QString &funding) { simulatedFunding_ = funding; }
     void simulateForwarded(const QString &localRef, bool approved)
     {
         emit forwarded({{QStringLiteral("localRef"), localRef}, {QStringLiteral("status"), approved ? QStringLiteral("ok") : QStringLiteral("declined")},
@@ -90,5 +93,6 @@ private:
     QTimer simulated_;
     int simulatedDelay_ = 1500;
     bool simulatedOffline_ = false;
+    QString simulatedFunding_ = QStringLiteral("credit");
     qint64 simulatedWaiting_ = 0;   // cents taken offline so far (simulated)
 };

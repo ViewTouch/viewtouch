@@ -85,6 +85,11 @@ Item {
                 tint: "#7ee2a8"
             }
             Line {
+                visible: w.totals.hasSurcharges ?? false
+                name: qsTr("Credit card surcharges")
+                value: w.totals.surcharges ?? ""
+            }
+            Line {
                 visible: w.totals.hasCashTip ?? false
                 name: qsTr("Cash tip for %1").arg(w.totals.server || qsTr("the server"))
                 value: w.totals.cashTip ?? ""
@@ -117,6 +122,7 @@ Item {
                     anchors.leftMargin: 8
                     anchors.rightMargin: 8
                     name: pay.modelData.name + (pay.modelData.tip ? qsTr("  + tip %1").arg(pay.modelData.tip) : "")
+                          + (pay.modelData.surcharge ? qsTr("  + surcharge %1").arg(pay.modelData.surcharge) : "")
                     value: pay.modelData.amount
                 }
             }
@@ -212,6 +218,44 @@ Item {
             name: qsTr("Amount entered")
             value: w.pos ? w.pos.entryAmount : ""
             tint: "#f5b940"
+        }
+
+        // Dual pricing: the cash price beside the card price; and what a credit card adds.
+        Rectangle {
+            objectName: "dualPrices"
+            visible: w.owing && !!w.totals.cashPrice
+            Layout.fillWidth: true
+            Layout.preferredHeight: w.unit * 2.2
+            radius: 10
+            color: "#1d2a1f"
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: w.unit * 0.4
+                Line {
+                    Layout.fillWidth: true
+                    name: qsTr("Cash price")
+                    value: w.totals.cashPrice ?? ""
+                    strong: true
+                    tint: "#7ee2a8"
+                }
+                Item { Layout.preferredWidth: w.unit }
+                Line {
+                    Layout.fillWidth: true
+                    name: qsTr("Card price")
+                    value: w.totals.cardPrice ?? ""
+                    strong: true
+                }
+            }
+        }
+        Text {
+            objectName: "surchargeNotice"
+            visible: w.owing && !!w.totals.surchargeNotice
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: w.totals.surchargeNotice ?? ""
+            color: "#f5b940"
+            font.family: w.face
+            font.pixelSize: w.unit * 0.75
         }
 
         Rectangle {

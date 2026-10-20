@@ -475,6 +475,26 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             else
                 s_->settings.stripeSecretKey = ss(key);
         }
+        if (record.contains(u"surchargePercent"_s)) {
+            const double pct = number(record, u"surchargePercent");
+            const std::int64_t bp = std::llround(pct * 100.0);
+            const std::int64_t cap = surchargeCapBp(s_->settings.laborState);
+            if (bp < 0)
+                return fail(tr("A surcharge can't be less than 0%."));
+            if (bp > 0 && cap == 0)
+                return fail(tr("Credit card surcharges aren't allowed in %1. A cash discount is.")
+                                .arg(stateRulesFor(s_->settings.laborState) ? QString::fromLatin1(stateRulesFor(s_->settings.laborState)->name)
+                                                                            : qs(s_->settings.laborState)));
+            if (bp > cap)
+                return fail(tr("A credit card surcharge can be at most %1% here.").arg(double(cap) / 100.0));
+            s_->settings.surchargeBp = bp;
+        }
+        if (record.contains(u"cashDiscountPercent"_s)) {
+            const std::int64_t bp = std::llround(number(record, u"cashDiscountPercent") * 100.0);
+            if (bp < 0 || bp > 1000)
+                return fail(tr("A cash discount is between 0 and 10%."));
+            s_->settings.cashDiscountBp = bp;
+        }
         if (record.contains(u"tabHold"_s))
             s_->settings.tabHold = std::max<std::int64_t>(0, std::llround(record.value(u"tabHold"_s).toDouble() * 100.0));
         if (record.contains(u"offlineCardMax"_s))

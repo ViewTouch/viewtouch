@@ -57,6 +57,7 @@
 <h1>What's new in 0.9</h1>
 <ul>
 <li><b>Taking orders at the table on a handheld:</b> seat chips across the check, a buzz and <b>+ Caesar · Seat 2</b> for every item, <b>allergies by seat</b> (only that guest's items are marked, and the ticket says <b>S2: FISH</b>), <b>♥ Mine</b> (each server's usual items), the tables as a <b>☰ List</b> with what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back (chapter 1).</li>
+<li><b>Credit card surcharge</b> (credit cards only: the Stripe reader tells debit from credit) and <b>cash discount</b> (dual pricing: both prices on the Pay screen and the receipt), in Store Settings → Cards (chapter 6).</li>
 <li><b>Manager lists:</b> <b>Find…</b> on long lists, rows a finger tall, and a big <b>+ Add</b> when nothing is chosen (chapter 11).</li>
 <li><b>A computer only for ViewTouch:</b> one line installs it on a fresh Raspberry Pi; the computer locks itself down and starts on the ViewTouch <b>home screen</b> (start ViewTouch, network, time, updates, restart, reset; on the main register the store's setup screens), and the first time you set it up by touch (chapter 1).</li>
 <li><b>12-hour times</b> everywhere ("9:30 PM"), typed as "4:30 PM" or "16:30"; the clock is set from the internet.</li>
@@ -604,6 +605,17 @@
 <li>Manager → Terminals → that reader → <i>Card reader: Stripe smart reader (this device)</i>.</li>
 </ol></li>
 <li><b>Practice:</b> <i>Card reader: Simulated</i> on any screen approves cards after a moment (amounts ending in 05 cents are declined), to train staff without a reader.</li>
+</ul>
+
+<h2>Credit card surcharge and cash discount</h2>
+<p>Two ways to pass on what cards cost the store. Both are in <b>Manager → Store Settings → Cards</b>, and both start off.</p>
+<p class="shot"><img src="shots/m154-cash-and-card-prices.png" width="560" height="315"></p>
+<p class="caption">The Pay screen with a cash discount and a credit card surcharge: both prices, and what a credit card adds.</p>
+<ul>
+<li><b>Credit card surcharge %</b> (up to 3%): a credit card pays it on top of the bill; a <b>debit or prepaid card never does</b> (the law, even when the guest runs it as credit). ViewTouch knows which because the Stripe reader reads the card first and says whether it's credit, debit or prepaid; only then is it charged. On ViewTouch running on the reader, the reader shows the surcharge and asks the guest to agree. On a reader beside the register, the register says <i>Credit card: $0.30 surcharge added</i>. A card the reader can't tell, and a card typed in by hand (no reader), pays no surcharge.</li>
+<li>The surcharge is a line of its own on the receipt (<i>Credit card surcharge 3%</i> and <i>Charged to the card</i>), counted apart from sales in the reports (Sales: <i>Credit card surcharges (the store's, not sales)</i>; Deposit: in the card batch), not taxed, and not on the tip. A refund gives back its share of the surcharge.</li>
+<li><b>Where it's allowed:</b> not in Connecticut, Massachusetts or Maine, and at most 2% in Colorado; ViewTouch goes by the store's state (Store Settings → Staff hours → <i>The store's state</i>) and won't save more. Before turning it on: tell your card processor (Visa and Mastercard ask for 30 days' notice), and post a sign at the door and at the register. Rules change and some cities and states add their own: check yours. This isn't legal advice.</li>
+<li><b>Cash discount %</b> (dual pricing): the menu's prices are the card prices, and a check paid <b>all in cash</b> pays the cash price. The Pay screen, the customer display and the receipt before payment show both: <b>Cash price $2.86 · Card price $2.98</b>. Touch <b>Cash</b> with nothing typed (or more than the cash price, for change) and <i>Cash discount 4%</i> goes on the check; paying only part in cash pays card prices, and the screen says what all in cash would be. Taking the cash back off takes the discount off too. It's a discount in the reports, so sales are counted at the cash price. Allowed in every state; post your prices both ways where guests see them.</li>
 </ul>
 
 <!-- ======================================================================= -->

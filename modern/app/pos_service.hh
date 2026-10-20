@@ -789,6 +789,15 @@ public:
     QStringList myUsuals() const override;
     // Often ordered with what's on this check (a hint on the order screen): {id, name}.
     QVariantList goesWith(const core::Check &c) const;
+    // The credit card surcharge in force (basis points; capped by the state), and what the guest is told.
+    std::int64_t surchargeBp() const;
+    QString surchargeNotice() const;
+    // Dual pricing (PosSettings::cashDiscountBp): the check at its cash price
+    // (none: off, already on, or something's paid); put on it when the cash
+    // tendered pays all of it.
+    std::optional<core::Check> atCashPrice(const core::Check &c) const;
+    void offerCashDiscount(core::Check &c, Money tendered);
+    static constexpr const char *kCashDiscountRef = "cashDiscount";
     // The past four weeks' checks, counted once in the background (goesWith, myUsuals).
     void askPastOnce() const;
     // Arranging the self-filling menu by touch (managers): one place earlier
@@ -1368,6 +1377,7 @@ private:
     int counterPolls_ = 0;
     bool counterAsking_ = false;
     void pollCounter();
+    void confirmCounter(const QString &paymentIntent, const QJsonValue &paymentMethod);
     bool counterHeir_ = false;   // watching a card for a terminal that went away
     void adoptCounterCharge(const QVariantMap &state);
     void counterPaid(const QString &paymentIntent);

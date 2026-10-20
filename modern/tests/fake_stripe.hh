@@ -22,6 +22,11 @@ struct FakeStripe {
     QStringList calls;
     QString location;
     QString action = u"none"_s;   // none | in_progress | succeeded | failed
+    // Which: process_payment_intent (read and charge), or collect_payment_method
+    // then confirm_payment_intent (read, then charge: a surcharge between).
+    QString actionType = u"process_payment_intent"_s;
+    QString funding = u"credit"_s;   // the card presented
+    qint64 updatedAmount = 0;        // the payment intent's amount, changed after it was read
     QString failureCode, failureMessage;
     qint64 amount = 0, readerTip = 0;
     bool canceled = false, busy = false;
@@ -59,13 +64,22 @@ struct FakeStripe {
                 pi = u"pi_%1"_s.arg(++intents);
                 return done({{u"id"_s, pi}}, {});
             }
-            if (path == u"/v1/terminal/readers/tmr_1/process_payment_intent") {
+            if (path == u"/v1/terminal/readers/tmr_1/process_payment_intent"
+                || path == u"/v1/terminal/readers/tmr_1/collect_payment_method") {
                 action = u"in_progress"_s;
+                actionType = path.section(u'/', -1);
                 return done({}, {});
             }
-            const QJsonObject act{{u"status"_s, action}, {u"failure_code"_s, failureCode},
-                                  {u"failure_message"_s, failureMessage},
-                                  {u"process_payment_intent"_s, QJsonObject{{u"payment_intent"_s, pi}}}};
+            if (path == u"/v1/terminal/readers/tmr_1/confirm_payment_intent") {
+                action = u"succeeded"_s;   // charged at once (the card was read before)
+                actionType = u"confirm_payment_intent"_s;
+                return done({}, {});
+            }
+            QJsonObject detail{{u"payment_intent"_s, pi}};
+            if (actionType == u"collect_payment_method" && action == u"succeeded")
+                detail.insert(u"payment_method"_s, QJsonObject{{u"card_present"_s, QJsonObject{{u"funding"_s, funding}}}});
+            const QJsonObject act{{u"type"_s, actionType}, {u"status"_s, action}, {u"failure_code"_s, failureCode},
+                                  {u"failure_message"_s, failureMessage}, {actionType, detail}};
             if (path == u"/v1/terminal/readers/tmr_1")
                 return done({{u"action"_s, act}}, {});
             if (path == u"/v1/test_helpers/terminal/readers/tmr_1/present_payment_method") {
@@ -98,12 +112,16 @@ struct FakeStripe {
                 canceled = true;
                 return done({}, {});
             }
+            if (path == u"/v1/payment_intents/"_s + pi && method == u"POST") {   // its amount changed (a surcharge)
+                amount = updatedAmount = q.queryItemValue(u"amount"_s).toLongLong();
+                return done({{u"id"_s, pi}, {u"amount"_s, amount}}, {});
+            }
             if (path == u"/v1/payment_intents/"_s + pi)
                 return done({{u"status"_s, captureMethod == u"manual" ? u"requires_capture"_s : u"succeeded"_s},
                              {u"amount"_s, amount + readerTip},
                              {u"amount_details"_s, QJsonObject{{u"tip"_s, QJsonObject{{u"amount"_s, readerTip}}}}},
                              {u"latest_charge"_s, QJsonObject{{u"payment_method_details"_s, QJsonObject{
-                                 {u"card_present"_s, QJsonObject{{u"brand"_s, u"mastercard"_s}, {u"last4"_s, u"4444"_s}}}}}}}},
+                                 {u"card_present"_s, QJsonObject{{u"brand"_s, u"mastercard"_s}, {u"last4"_s, u"4444"_s}, {u"funding"_s, funding}}}}}}}},
                             {});
             done({}, u"unexpected call"_s);
         };

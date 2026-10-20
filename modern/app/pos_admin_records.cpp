@@ -203,6 +203,8 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"offlineCardMax"_s, double(s_->settings.offlineCardMax) / 100.0},
              {u"tabHold"_s, double(s_->settings.tabHold) / 100.0},
              {u"offlineCardTotal"_s, double(s_->settings.offlineCardTotal) / 100.0},
+             {u"surchargePercent"_s, double(s_->settings.surchargeBp) / 100.0},
+             {u"cashDiscountPercent"_s, double(s_->settings.cashDiscountBp) / 100.0},
              {u"cardTipOn"_s, qs(s_->settings.cardTipOn)},
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
              {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},

@@ -596,6 +596,7 @@ Totals Check::totals(const TaxRates &rates) const
     t.total = t.subtotal + t.tax + t.gratuity;
     for (const Payment &p : payments) {
         t.tips += p.tip;
+        t.surcharges += p.surcharge;
         if (p.kind != TenderKind::Discount)
             t.paid += p.amount;
         if (p.kind == TenderKind::Cash)
@@ -638,6 +639,15 @@ const std::vector<StateRules> &stateRules()
         {"WY", "Wyoming"},
     };
     return states;
+}
+
+std::int64_t surchargeCapBp(const std::string &state)
+{
+    if (state == "CT" || state == "MA" || state == "ME")
+        return 0;
+    if (state == "CO")
+        return 200;
+    return 300;
 }
 
 const StateRules *stateRulesFor(const std::string &code)

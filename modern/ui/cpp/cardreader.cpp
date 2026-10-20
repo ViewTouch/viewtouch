@@ -89,6 +89,9 @@ CardReader::CardReader(QObject *parent) : QObject(parent)
             return;
         }
         const QString ref = u"sim_"_s + QString::number(QRandomGenerator::global()->generate64(), 16);
+        // A credit card pays the store's surcharge (shown to the guest first, as on a reader).
+        const qint64 surcharge = simulatedFunding_ == u"credit" ? charging_.value(u"surchargeCents"_s).toLongLong() : 0;
+        const QVariantMap card{{u"funding"_s, simulatedFunding_}, {u"surchargeCents"_s, surcharge}};
         // "The internet is down": like a Stripe reader, within the store's limits.
         if (simulatedOffline_) {
             const qint64 max = charging_.value(u"offlineMax"_s).toLongLong();
@@ -97,13 +100,17 @@ CardReader::CardReader(QObject *parent) : QObject(parent)
                 finish({{u"message"_s, tr("The internet is down and this card needs it (simulated).")}});
                 return;
             }
-            simulatedWaiting_ += total;
-            finish({{u"approved"_s, true}, {u"offline"_s, true}, {u"localRef"_s, ref}, {u"brand"_s, u"visa"_s},
-                    {u"last4"_s, u"4242"_s}, {u"amountCents"_s, total}});
+            simulatedWaiting_ += total + surcharge;
+            QVariantMap r{{u"approved"_s, true}, {u"offline"_s, true}, {u"localRef"_s, ref}, {u"brand"_s, u"visa"_s},
+                          {u"last4"_s, u"4242"_s}, {u"amountCents"_s, total + surcharge}};
+            r.insert(card);
+            finish(r);
             return;
         }
-        finish({{u"approved"_s, true}, {u"reference"_s, ref}, {u"brand"_s, u"visa"_s}, {u"last4"_s, u"4242"_s},
-                {u"amountCents"_s, total}});
+        QVariantMap r{{u"approved"_s, true}, {u"reference"_s, ref}, {u"brand"_s, u"visa"_s}, {u"last4"_s, u"4242"_s},
+                      {u"amountCents"_s, total + surcharge}};
+        r.insert(card);
+        finish(r);
     });
 }
 
@@ -177,13 +184,15 @@ void CardReader::charge(const QVariantMap &charge)
         const qint64 total = charge.value(u"amountCents"_s).toLongLong() + charge.value(u"tipCents"_s).toLongLong();
         // With the store's limits for a card taken while the internet is down (0: none).
         // hold: a tab's card, set aside (charged later by the store's computer).
+        // surcharge: added on the reader when it says the card is a credit card (0: none).
         QJniObject::callStaticMethod<void>(
-            kBridge, "charge", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)V", jlong(total),
+            kBridge, "charge", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZJLjava/lang/String;)V", jlong(total),
             QJniObject::fromString(charge.value(u"currency"_s).toString()).object<jstring>(),
             QJniObject::fromString(charge.value(u"description"_s).toString()).object<jstring>(),
             QJniObject::fromString(QString::number(charge.value(u"checkId"_s).toLongLong())).object<jstring>(),
             jlong(charge.value(u"offlineMax"_s).toLongLong()), jlong(charge.value(u"offlineTotal"_s).toLongLong()),
-            jboolean(charge.value(u"hold"_s).toBool()));
+            jboolean(charge.value(u"hold"_s).toBool()), jlong(charge.value(u"surchargeCents"_s).toLongLong()),
+            QJniObject::fromString(charge.value(u"surchargeNotice"_s).toString()).object<jstring>());
         return;
     }
 #endif
@@ -199,6 +208,7 @@ void CardReader::setCounter(const QVariantMap &state)
     const QString status = state.value(u"status"_s).toString();
     status_ = status == u"starting" ? tr("Sending it to the card reader…")
             : status == u"waiting" ? tr("Tap, insert or swipe on %1").arg(state.value(u"readerLabel"_s).toString())
+            : status == u"confirming" ? tr("Charging the card…")
                                    : tr("Card reader beside this screen");
     emit changed();
 }
@@ -254,6 +264,9 @@ void CardReader::bridgeResult(const QString &json)
         out.insert(u"brand"_s, r.value(u"brand").toString());
         out.insert(u"last4"_s, r.value(u"last4").toString());
         out.insert(u"amountCents"_s, r.value(u"amount").toInteger());
+        // What kind of card, and the surcharge it paid (a credit card's).
+        out.insert(u"funding"_s, r.value(u"funding").toString());
+        out.insert(u"surchargeCents"_s, r.value(u"surcharge").toInteger());
         // Taken while the internet was down: Stripe gets it later.
         if (r.value(u"offline").toBool()) {
             out.insert(u"offline"_s, true);

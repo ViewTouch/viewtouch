@@ -316,6 +316,18 @@ Rectangle {
                 Line { label: qsTr("Total"); value: d.totals.total ?? ""; size: 2.3 }
                 Line { label: qsTr("Paid"); value: d.totals.paid ?? ""; visible: d.hasCheck && d.pos.payments.length > 0 }
                 Line { label: qsTr("Change"); value: d.totals.change ?? ""; visible: d.totals.hasChange ?? false; size: 1.7 }
+                // Dual pricing and a credit card surcharge: said before the guest pays.
+                Line { label: qsTr("Cash price"); value: d.totals.cashPrice ?? ""; visible: !!d.totals.cashPrice; ink: "#7ee2a8"; size: 1.4 }
+                Line { label: qsTr("Card price"); value: d.totals.cardPrice ?? ""; visible: !!d.totals.cashPrice; size: 1.4 }
+                Text {
+                    visible: !!d.totals.surchargeNotice
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: d.totals.surchargeNotice ?? ""
+                    color: "#f5b940"
+                    font.pixelSize: d.unit * 0.95
+                }
+                Line { label: qsTr("Credit card surcharge"); value: d.totals.surcharges ?? ""; visible: d.totals.hasSurcharges ?? false }
             }
         }
     }
