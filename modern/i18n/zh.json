@@ -3781,6 +3781,8 @@
  "This computer's PIN": "这台电脑的 PIN",
  "This computer's settings now ask for the new code.": "本电脑的设置现在需要新代码。",
  "This deletes every sale and past day, customers, gift cards, house accounts, the waitlist, the schedule, staff, the menu, inventory, settings, paired devices and your page changes. ViewTouch then restarts with the starter pages, menu, staff and settings.": "这会删除所有销售和以往营业日、顾客、礼品卡、签单账户、候位名单、排班、员工、菜单、库存、设置、已配对设备以及您对页面的修改。之后 ViewTouch 将以初始页面、菜单、员工和设置重新启动。",
+ "This is Toast's list of menu groups: it has no items in it. Import MenuItem_Export.csv, and make the categories here.": "这是 Toast 的菜单组列表：其中没有菜品。请导入 MenuItem_Export.csv，并在这里创建类别。",
+ "This is Toast's list of menus or of modifier options: it has no items in it. Import MenuItem_Export.csv, and make the choice groups here.": "这是 Toast 的菜单或修饰选项列表：其中没有菜品。请导入 MenuItem_Export.csv，并在这里创建选项组。",
  "This is a phone page: phones show it, other screens the page it's a version of.": "这是手机页面：手机显示它，其他屏幕显示它所对应的页面。",
  "This is the table's only check.": "这是这张桌子唯一的账单。",
  "This needs the ViewTouch computer setup (vtmodern-lockdown).": "这需要 ViewTouch 电脑设置 (vtmodern-lockdown)。",

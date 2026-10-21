@@ -626,6 +626,20 @@ TEST_CASE("Menu import: Toast's item list (MenuItem_Export.csv)", "[menubuilder]
     CHECK(r.problems[0].contains(u"2 modifier option"_s));
     CHECK(r.problems[1].contains(u"Burrito Regular"_s));
     CHECK(r.problems[2].contains(u"Old Special is archived"_s));
+
+    // Toast's other lists: no items, said so (not each one as an item at $0).
+    const auto groups = app::readMenuCsv(QString::fromLatin1(
+        "Item ID,GUID,Name,Number,Imported ID,Base Price,Created Date,Archived,Modifier,Parent Name,Parent Id,Parent Class\n"
+        "1800000000343959195,825b6096-0c22,Burritos,1800000000343959196,,0.00,8/4/2026,No,No,Food,1800000000343959004,Menu\n"));
+    CHECK(groups.items.isEmpty());
+    REQUIRE(groups.problems.size() == 1);
+    CHECK(groups.problems[0].contains(u"menu groups"_s));
+    const auto options = app::readMenuCsv(QString::fromLatin1(
+        "Item ID,GUID,Name,Number,Imported ID,Base Price,Created Date,Archived,Modifier\n"
+        "1800000000343958720,02e5367e-946b,Canadian Bacon,1800000000343958724,,2.00,8/4/2026,No,No\n"));
+    CHECK(options.items.isEmpty());
+    REQUIRE(options.problems.size() == 1);
+    CHECK(options.problems[0].contains(u"modifier options"_s));
 }
 
 TEST_CASE("Menu import: sizes, choice groups and alcohol onto the menu", "[menubuilder][import]")
