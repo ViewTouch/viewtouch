@@ -3925,6 +3925,81 @@ TEST_CASE("UI: a person with High Contrast and the largest text", "[flow][ui][lo
     CHECK(inside.contains(again->mapRectToScene(QRectF(0, 0, again->width(), again->height()))));
 }
 
+TEST_CASE("UI: colors for color blindness, a person's and a screen's; the kitchen's text size", "[flow][ui][looks]")
+{
+    Screen s;
+    for (core::Employee &e : s.pos.shared()->employees)
+        if (e.name == "Sam")
+            e.colorSafe = true;
+    QQuickItem *root = s.window->contentItem();
+    // The kitchen's card for the one ticket, once it's drawn.
+    const auto card = [&]() -> QQuickItem * {
+        QTest::qWait(200);
+        QQuickItem *found = nullptr;
+        std::function<void(QQuickItem *)> look = [&](QQuickItem *i) {
+            for (QQuickItem *c : i->childItems()) {
+                if (c->isVisible() && c->objectName().startsWith(u"kdsCard-"_s))
+                    found = c;
+                look(c);
+            }
+        };
+        look(root);
+        return found;
+    };
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));   // Sam
+    CHECK(s.pos.userPrefs().value(u"colorSafe"_s).toBool());
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"cobb"_s);
+    s.pos.finishChoosing();
+    REQUIRE(s.pos.sendOrder());
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    QTest::qWait(80);
+    QQuickItem *t4 = Screen::findBy(root, "name", u"T4"_s);
+    REQUIRE(t4);
+    CHECK(t4->property("tint").value<QColor>() == QColor(u"#0072b2"_s));   // mine: blue, not green
+    s.shot("color-safe-tables");
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    QQuickItem *ticket = card();
+    REQUIRE(ticket);
+    CHECK(ticket->property("headFill").value<QColor>() == QColor(u"#0072b2"_s));
+    CHECK(ticket->property("headInk").value<QColor>() == QColor(Qt::white));
+    s.shot("color-safe-kitchen");
+
+    // Nobody logged in: the usual colors and size.
+    s.pos.logout();
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));   // a kitchen screen nobody logs into
+    ticket = card();
+    REQUIRE(ticket);
+    CHECK(ticket->property("headFill").value<QColor>() != QColor(u"#0072b2"_s));
+    const qreal usualWidth = ticket->width();
+
+    // The kitchen screen's own: for everyone there, its text bigger too.
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QVariantMap t;
+    int index = -1;
+    const QVariantList terminals = s.pos.adminRecords(u"terminals"_s);
+    for (int i = 0; i < terminals.size(); ++i)
+        if (terminals[i].toMap()[u"name"_s] == s.pos.terminalName()) {
+            t = terminals[i].toMap();
+            index = i;
+        }
+    if (index < 0)
+        t = s.pos.adminNewRecord(u"terminals"_s);
+    t[u"colorSafe"_s] = true;
+    t[u"textSize"_s] = u"130"_s;
+    REQUIRE(s.pos.adminSave(u"terminals"_s, index, t));
+    s.pos.logout();
+    CHECK(s.pos.userPrefs().value(u"colorSafe"_s).toBool());
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    ticket = card();
+    REQUIRE(ticket);
+    CHECK(ticket->property("headFill").value<QColor>() == QColor(u"#0072b2"_s));
+    CHECK(ticket->width() == Catch::Approx(usualWidth * 1.3));
+    s.shot("color-safe-kitchen-bigger");
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;

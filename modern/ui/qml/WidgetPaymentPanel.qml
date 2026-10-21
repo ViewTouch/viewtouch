@@ -9,7 +9,7 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property string face: zone.st.font ?? "DejaVu Sans"
-    readonly property real unit: Math.max(12, Math.min(zone.st.fontSize ?? 28, w.width * 0.05))
+    readonly property real unit: Math.max(12, Math.min(zone.st.fontSize ?? 28, w.width * 0.05)) * zone.textScale
     readonly property var totals: pos ? pos.totals : ({})
     readonly property bool owing: (totals.balanceCents ?? 0) > 0
 

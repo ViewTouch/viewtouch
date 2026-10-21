@@ -91,7 +91,19 @@ Item {
     readonly property color ink: readable(st.textColor ?? "white", st.fill)
 
     // A status color from the theme (Theme -> Status colors), else the usual one.
+    // Colors for color blindness (the person's or the screen's): Okabe and Ito's,
+    // told apart by how light they are as well as their hue: blue for mine and
+    // new, yellow for soon, vermilion for late (with LATE on it).
+    readonly property bool colorSafe: !!(pos && !editing && pos.userPrefs.colorSafe)
+    readonly property var safeColors: ({
+        tableMine: "#0072b2", tableOpen: "#e69f00", tableCurrent: "#56b4e9", tableLong: "#f0e442",
+        tableReserved: "#cc79a7", tableDirty: "#6b5d52", tableFree: "#0072b2",
+        kitchenNew: "#0072b2", kitchenWarn: "#f0e442", kitchenLate: "#d55e00", kitchenReady: "#009e73",
+        soldOut: "#d55e00", low: "#f0e442"
+    })
     function statusColor(name, usual) {
+        if (colorSafe && safeColors[name])
+            return safeColors[name]
         const c = controller ? controller.statusColors : null
         return c && c[name] ? c[name] : usual
     }

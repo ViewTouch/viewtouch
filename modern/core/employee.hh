@@ -60,6 +60,8 @@ struct Employee {
     // start on at login (empty: their job's, PosSettings::startPages).
     int textSize = 100;
     bool leftHanded = false;
+    // Status colors (tables, kitchen tickets) that color-blind eyes tell apart.
+    bool colorSafe = false;
     std::string startPage;
     // A handheld buzzes for each item they add (a phone or tablet that can).
     bool buzz = true;

@@ -235,6 +235,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         t.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         t.textSize = record.value(u"textSize"_s).toString().isEmpty() ? 0
                                                                     : std::clamp(record.value(u"textSize"_s).toInt(), 80, 160);
+        t.colorSafe = record.value(u"colorSafe"_s).toBool();
         if (index >= 0 && index < int(list.size()))
             list[index] = t;
         else
@@ -886,6 +887,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     e.language = ss(language);
     e.textSize = std::clamp(record.value(u"textSize"_s, e.textSize).toInt(), 80, 160);
     e.leftHanded = record.value(u"leftHanded"_s, e.leftHanded).toBool();
+    e.colorSafe = record.value(u"colorSafe"_s, e.colorSafe).toBool();
     e.buzz = record.value(u"buzz"_s, e.buzz).toBool();
     e.startPage = ss(record.value(u"startPage"_s, qs(e.startPage)).toString());
     e.cashMode = ss(cashMode);

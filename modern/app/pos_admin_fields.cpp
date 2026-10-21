@@ -232,6 +232,8 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                   tr("Their colors on any screen while they're logged in (High Contrast, say); empty: the screen's.")),
             with(field(u"textSize"_s, tr("Text size"), u"enum"_s, tr("Bigger button and check text, for them only.")),
                  u"options"_s, options({{"100", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
+            field(u"colorSafe"_s, tr("Colors for color blindness"), u"bool"_s,
+                  tr("Table and kitchen ticket colors that color-blind eyes tell apart (blue, yellow, orange), on any screen while they're logged in.")),
             field(u"leftHanded"_s, tr("Left-handed"), u"bool"_s,
                   tr("On their order and Pay screens the check is on the right and the menu on the left.")),
             field(u"buzz"_s, tr("Buzz for each item"), u"bool"_s,
@@ -714,6 +716,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                        tr("Bigger button and check text on this screen (one read from afar, a bright kitchen). "
                           "A person's own text size wins while they're logged in.")),
                  u"options"_s, options({{"", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
+            field(u"colorSafe"_s, tr("Colors for color blindness"), u"bool"_s,
+                  tr("Table and kitchen ticket colors that color-blind eyes tell apart (blue, yellow, orange) on this screen, "
+                     "whoever is logged in. A kitchen screen nobody logs into, say.")),
             with(field(u"labelPrinter"_s, tr("Prep labels print on"), u"enum"_s,
                        tr("The printer by this screen for prep labels. Empty: the store's (Store Settings → Inventory).")),
                  u"options"_s, ([this](const QString &none) {

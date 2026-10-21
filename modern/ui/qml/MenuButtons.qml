@@ -30,6 +30,7 @@ Flickable {
     function busyOf(item) { return busy[item.station] ?? busy[item.printer] ?? null }
     property bool managing: false     // held: changed right there (managers)
     property var allergies: []
+    property real textScale: 1        // the person's text size
     signal itemTapped(var item)
     signal itemHeld(var item)
 
@@ -294,7 +295,7 @@ Flickable {
                                         // Smaller for a long word, so it never breaks mid-word.
                                         readonly property int longest: cell.isGap ? 4 : Math.max(4, ...cell.modelData.name.split(/\s+/).map(x => x.length))
                                         // Never past what keeps its longest word whole.
-                                        readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData)
+                                        readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData) * mb.textScale
                                         font.pixelSize: Math.max(factor < 1 ? 11 : 13,
                                                                  Math.min(Math.min(cell.height * 0.16, cell.width * 0.11) * factor,
                                                                           cell.width * 1.6 / longest))

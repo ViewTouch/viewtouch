@@ -473,17 +473,26 @@ QString PosService::language() const
 
 QVariantMap PosService::userPrefs() const
 {
-    // This screen's text size, unless the person has their own.
+    // This screen's text size, unless the person has their own; its colors
+    // for color blindness, or theirs.
     int screenText = 0;
+    bool screenColorSafe = false;
     std::string deviceStart;
     for (const TerminalConfig &t : s_->settings.terminals)
         if (qs(t.name) == terminal_) {
             screenText = t.textSize;
+            screenColorSafe = t.colorSafe;
             deviceStart = t.startPage;
         }
     const core::Employee *e = user();
-    if (!e)
-        return screenText ? QVariantMap{{u"textSize"_s, screenText}} : QVariantMap();
+    if (!e) {
+        QVariantMap screen;
+        if (screenText)
+            screen.insert(u"textSize"_s, screenText);
+        if (screenColorSafe)
+            screen.insert(u"colorSafe"_s, true);
+        return screen;
+    }
     // Their own start page, else their job's: the one they're clocked in as, or their role.
     std::string start = e->startPage;
     if (start.empty()) {
@@ -501,6 +510,7 @@ QVariantMap PosService::userPrefs() const
         start = deviceStart;
     return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
             {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}, {u"buzz"_s, e->buzz},
+            {u"colorSafe"_s, e->colorSafe || screenColorSafe},
             {u"sendToTables"_s, s_->settings.sendToTables}};
 }
 

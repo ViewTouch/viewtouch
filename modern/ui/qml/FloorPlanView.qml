@@ -15,6 +15,10 @@ ColumnLayout {
     property real unit: 20
     property string face: "DejaVu Sans"
     property color ink: "white"
+    // Text that reads on a table's color (ZoneItem.readable), and the
+    // person's text size.
+    property var readable: (text, fill) => text
+    property real textScale: 1
     property bool tabs: true
     // The plan to start on ("": the one last picked here, else the floor's own),
     // and where that pick is kept (LayoutController::widgetState).
@@ -136,7 +140,7 @@ ColumnLayout {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: (v.picked(tile.modelData.name) ? "✓ " : "") + tile.modelData.name
-                        color: v.ink
+                        color: v.readable(v.ink, face.tint)
                         font.family: v.face
                         font.pixelSize: v.unit * 1.25
                         font.bold: true
@@ -150,7 +154,7 @@ ColumnLayout {
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: modelData
-                            color: String(modelData).startsWith("⚠") ? "#ffd27a" : v.ink
+                            color: v.readable(String(modelData).startsWith("⚠") ? "#ffd27a" : v.ink, face.tint)
                             font.family: v.face
                             font.pixelSize: v.unit * 0.72
                             font.bold: String(modelData).startsWith("⚠")
@@ -262,9 +266,9 @@ ColumnLayout {
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: (piece.isPicked ? "✓ " : "") + piece.name
-                            color: v.ink
+                            color: v.readable(v.ink, piece.color)
                             font.family: v.face
-                            font.pixelSize: Math.min(piece.side * 0.3, 48)
+                            font.pixelSize: Math.min(piece.side * 0.3, 48) * v.textScale
                             font.bold: true
                             fontSizeMode: Text.HorizontalFit   // a stool's "Bar 1": smaller, not cut
                             minimumPixelSize: 8
@@ -277,9 +281,11 @@ ColumnLayout {
                                 width: parent.width
                                 horizontalAlignment: Text.AlignHCenter
                                 text: modelData
-                                color: v.ink
+                                color: v.readable(v.ink, piece.color)
                                 font.family: v.face
-                                font.pixelSize: Math.min(piece.side * (index === 0 ? 0.15 : 0.13), index === 0 ? 24 : 20)
+                                font.pixelSize: Math.min(piece.side * (index === 0 ? 0.15 : 0.13), index === 0 ? 24 : 20) * v.textScale
+                                fontSizeMode: Text.HorizontalFit
+                                minimumPixelSize: 8
                                 elide: Text.ElideRight
                             }
                         }
