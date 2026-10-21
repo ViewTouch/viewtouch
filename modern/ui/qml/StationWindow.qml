@@ -119,8 +119,10 @@ ApplicationWindow {
                 root.say(what[0], true)
             else if (!ok)
                 root.say(what[1] + (message ? ": " + message : "."), false)
-            if (action === "forget" && ok)
+            if (action === "forget" && ok) {
+                setupState.reset()
                 root.panel = "setup"
+            }
             if (action === "erase" && ok)
                 root.station.startPos("setup")
         }
@@ -445,7 +447,9 @@ ApplicationWindow {
                       ? qsTr("Connected with a network cable (%1). A cable is the most reliable.").arg(root.station.network.address)
                       : root.station.network.wifi
                         ? qsTr("Connected to Wi-Fi %1 (%2).").arg(root.station.network.wifi).arg(root.station.network.address)
-                        : qsTr("Not connected. Plug in a network cable, or choose a Wi-Fi network.")
+                        : root.station.network.online
+                          ? qsTr("Connected (%1).").arg(root.station.network.address)
+                          : qsTr("Not connected. Plug in a network cable, or choose a Wi-Fi network.")
             }
             Note {
                 text: qsTr("Keep ViewTouch on the store's own network, never on the Wi-Fi guests use.")
@@ -758,18 +762,36 @@ ApplicationWindow {
 
     // --- the first-time setup ----------------------------------------------------------
 
+    // The first-time setup's answers so far: kept here, not in the setup
+    // screen, so leaving it for Wi-Fi and coming back keeps them (the screen
+    // starts from them and writes each change back).
+    QtObject {
+        id: setupState
+        property int step: 0
+        property string role: ""
+        property string name: ""
+        property bool zoneChosen: false
+        property bool guestDisplay: false
+        function reset() { step = 0; role = ""; name = ""; zoneChosen = false; guestDisplay = false }
+    }
+
     Component {
         id: setupPanel
         ColumnLayout {
             id: wiz
+            objectName: "setupWizard"
             spacing: root.u
-            property int step: 0
-            property string role: ""
+            property int step: setupState.step
+            onStepChanged: setupState.step = step
+            property string role: setupState.role
+            onRoleChanged: setupState.role = role
             property string pin: ""
             property string pinAgain: ""
             property bool confirming: false
-            property bool zoneChosen: false
-            property bool guestDisplay: false
+            property bool zoneChosen: setupState.zoneChosen
+            onZoneChosenChanged: setupState.zoneChosen = zoneChosen
+            property bool guestDisplay: setupState.guestDisplay
+            onGuestDisplayChanged: setupState.guestDisplay = guestDisplay
             readonly property var defaultNames: ({ store: "Main-Register", terminal: "Register-2", kitchen: "Kitchen",
                                                    selforder: "Kiosk", timeclock: "Time-Clock" })
             readonly property var steps: [qsTr("Welcome"), qsTr("This computer"), qsTr("Its name"), qsTr("Network"),
@@ -798,7 +820,7 @@ ApplicationWindow {
                 visible: wiz.step === 0
                 spacing: root.u
                 Heading { text: qsTr("Welcome to ViewTouch") }
-                Note { text: qsTr("A few questions to set up this computer: what it is in the store, its name, the network and the time zone. Then ViewTouch starts.") }
+                Note { text: qsTr("A few questions to set up this computer: what it is in the store, its name, the network, the time zone and the maintainer's code. Then ViewTouch starts.") }
                 BigButton { text: qsTr("Start"); tint: "#22784a"; onClicked: wiz.step = 1 }
             }
 
@@ -848,7 +870,12 @@ ApplicationWindow {
                 spacing: root.u
                 Heading { text: qsTr("What should this computer be called?") }
                 Note { text: qsTr("Letters, numbers and dashes, like Register-2 or Bar. Other screens show it by this name.") }
-                Field { id: nameField; Layout.maximumWidth: root.u * 30 }
+                Field {
+                    id: nameField
+                    Layout.maximumWidth: root.u * 30
+                    text: setupState.name
+                    onTextChanged: setupState.name = text
+                }
                 CheckBox {
                     visible: wiz.role === "store" || wiz.role === "terminal"
                     text: qsTr("A second screen faces the guests (their order and the total)")

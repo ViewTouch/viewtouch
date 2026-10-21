@@ -63,10 +63,11 @@ apt-get update -qq
 # sudo: the home screen's helper. openssh-server: Remote Help (off until it's
 # turned on, below). locales: the language and region, below.
 # libgl1-mesa-dri: drawing in software when the graphics card can't
-# (vtmodern-screen; a virtual machine without 3D acceleration).
+# (vtmodern-screen; a virtual machine without 3D acceleration). kbd: chvt,
+# to the ViewTouch screen at boot (not in a minimal Debian).
 apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
     network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji openssh-server \
-    sudo locales libgl1-mesa-dri
+    sudo locales libgl1-mesa-dri kbd
 
 # --- the account ViewTouch runs as ----------------------------------------------------
 # Normally "viewtouch" (a system account). If someone made "viewtouch" their

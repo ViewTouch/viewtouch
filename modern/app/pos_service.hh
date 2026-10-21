@@ -453,6 +453,8 @@ public:
     const core::PosSettings &settings() const { return s_->settings; }
     const core::Check *currentCheck() const;
     const core::Employee *user() const;
+    // Their name as shown (the maintainer's in this screen's language).
+    QString nameOf(const core::Employee &e) const;
     const core::MenuItem *findItem(const QString &idOrName) const;
     // Barcodes typed in a field ("012345678905, 4006381333931"), and why
     // they can't be item `itemId`'s (empty: they can).

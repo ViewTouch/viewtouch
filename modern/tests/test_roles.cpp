@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "layout/layout.hh"
 #include "layout_fixture.hh"
@@ -7,6 +8,7 @@
 #include "qt_catch.hh"
 #include "stationcontroller.hh"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QSignalSpy>
@@ -14,6 +16,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QProcess>
 #include <QTest>
 
 #include <functional>
@@ -276,4 +279,84 @@ TEST_CASE("Roles: the home screen asks for the maintainer's code, and changes it
     QMetaObject::invokeMethod(save, "clicked");
     QTest::qWait(50);
     CHECK(station.checkPin(u"86420"_s));
+}
+
+// Run by the next test in a process of its own: the maintainer's built-in
+// profile is set up once per process, and other tests have done it by then.
+TEST_CASE("Roles: a staff login first after a start, on its own", "[.firstLoginAlone]")
+{
+    i18n::install({});
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    pos.shared()->setMaintainerPin(u"86420"_s);
+    for (const char d : std::string("1234"))
+        pos.pinKey(QString(QChar(d)));
+    // As a tap does: in the language of whoever is logged in, which the
+    // translator asks the session for (it used to wait for itself here).
+    bool ok = false;
+    pos.invoke(u"login"_s, {}, [&ok](const QVariant &r) { ok = r.toBool(); });
+    CHECK(ok);
+    CHECK(pos.userName() == u"Morgan (Manager)"_s);
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"86420"_s));
+    CHECK(pos.userName() == u"Maintainer"_s);
+}
+
+TEST_CASE("Roles: the first staff login after a start doesn't freeze the screen", "[roles]")
+{
+    QProcess p;
+    p.start(QCoreApplication::applicationFilePath(), {u"[.firstLoginAlone]"_s});
+    REQUIRE(p.waitForStarted());
+    const bool finished = p.waitForFinished(60'000);
+    if (!finished)
+        p.kill();
+    INFO(p.readAllStandardOutput().right(2000).toStdString());
+    REQUIRE(finished);   // it froze for good
+    CHECK(p.exitCode() == 0);
+}
+
+TEST_CASE("Station: the first-time setup keeps its answers while Wi-Fi is open", "[station][ui]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    StationController station(dir.path(), {}, false);   // a new computer: the setup
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, false},
+                                 {u"width"_s, 1280}, {u"height"_s, 800}});
+    engine.loadFromModule("ViewTouch", "StationWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(100);
+    REQUIRE(window->property("panel").toString() == u"setup"_s);
+    auto wizard = [&] { return window->findChild<QQuickItem *>(u"setupWizard"_s); };
+    REQUIRE(wizard());
+    wizard()->setProperty("role", u"store"_s);
+    wizard()->setProperty("step", 3);   // the network step
+    // Its name, as typed.
+    QQuickItem *name = nullptr;
+    std::function<QQuickItem *(QQuickItem *)> field = [&](QQuickItem *it) -> QQuickItem * {
+        if (it->inherits("QQuickTextInput") || it->inherits("QQuickTextField"))
+            return it;
+        for (QQuickItem *c : it->childItems())
+            if (QQuickItem *hit = field(c))
+                return hit;
+        return nullptr;
+    };
+    name = field(wizard());
+    REQUIRE(name);
+    name->setProperty("text", u"Front-Counter"_s);
+    // Wi-Fi…, then ‹ Back.
+    window->setProperty("panel", u"network"_s);
+    QTest::qWait(100);
+    CHECK_FALSE(wizard());
+    window->setProperty("panel", u"setup"_s);
+    QTest::qWait(100);
+    REQUIRE(wizard());
+    CHECK(wizard()->property("step").toInt() == 3);
+    CHECK(wizard()->property("role").toString() == u"store"_s);
+    name = field(wizard());
+    REQUIRE(name);
+    CHECK(name->property("text").toString() == u"Front-Counter"_s);
 }
