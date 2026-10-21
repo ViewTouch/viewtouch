@@ -15,6 +15,10 @@
   "one": "%n check",
   "other": "%n checks"
  },
+ "%n choice group(s)": {
+  "one": "%n choice group",
+  "other": "%n choice groups"
+ },
  "%n choice(s)": {
   "one": "%n choice",
   "other": "%n choices"
@@ -118,6 +122,10 @@
  "%n setting(s) found": {
   "one": "%n setting found",
   "other": "%n settings found"
+ },
+ "%n size(s)": {
+  "one": "%n size",
+  "other": "%n sizes"
  },
  "%n tap(s) waiting: they go in when it's back.": {
   "one": "%n tap waiting: it goes in when it's back.",
