@@ -18,6 +18,10 @@ User=viewtouch
 Group=viewtouch
 StateDirectory=viewtouch
 StateDirectoryMode=0750
+# Kept across restarts until the computer restarts: whether the screen
+# draws in software (vtmodern-screen).
+RuntimeDirectory=vtmodern-station
+RuntimeDirectoryPreserve=yes
 PAMName=login
 TTYPath=/dev/tty1
 TTYReset=yes
@@ -31,14 +35,19 @@ UtmpMode=user
 Environment=XDG_SESSION_TYPE=wayland
 Environment=QT_QPA_PLATFORM=wayland
 Environment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
-ExecStartPre=-+/usr/bin/chvt 1
+# To the ViewTouch screen once per boot, not at every restart: a home screen
+# that can't start kept taking the screen from a technician's text login.
+ExecStartPre=-+/bin/sh -c '[ -e /run/vtmodern-station-shown ] || { touch /run/vtmodern-station-shown; /usr/bin/chvt 1; }'
 # -s keeps Ctrl+Alt+F2: a text login for a technician (it asks for a password).
-ExecStart=/usr/bin/cage -d -s -- /usr/bin/vtmodern --station --kiosk --data-dir ${STATE_DIRECTORY} --config /etc/viewtouch/kiosk.conf
+ExecStart=/usr/libexec/vtmodern/vtmodern-screen /usr/bin/cage -d -s -- /usr/bin/vtmodern --station --kiosk --data-dir ${STATE_DIRECTORY} --config /etc/viewtouch/kiosk.conf
 # Stopping (a restart, an update): ViewTouch closes first, saving, before the
 # screen goes, so it isn't counted as a crash.
 ExecStop=/bin/sh -c 'pkill -TERM -x -u "$$USER" vtmodern; for i in $$(seq 100); do pgrep -x -u "$$USER" vtmodern >/dev/null || exit 0; sleep 0.2; done'
 Restart=always
+# 2 seconds, then longer each time it fails, up to 30.
 RestartSec=2
+RestartSteps=5
+RestartMaxDelaySec=30
 TimeoutStopSec=30
 
 [Install]
