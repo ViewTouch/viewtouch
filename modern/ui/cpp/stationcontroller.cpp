@@ -379,11 +379,12 @@ void StationController::refreshNetwork()
             const QStringList f = nmFields(line);   // device, type, state, connection
             if (f.size() < 4)
                 continue;
-            if (f[1] == u"ethernet" && f[2] == u"connected")
+            // "connected (externally)": set up outside NetworkManager, still connected.
+            if (f[1] == u"ethernet" && f[2].startsWith(u"connected"))
                 wired = true;
             if (f[1] == u"wifi") {
                 wifiAvailable = wifiAvailable || f[2] != u"unavailable";
-                if (f[2] == u"connected")
+                if (f[2].startsWith(u"connected"))
                     wifi = f[3];
             }
         }
@@ -391,9 +392,16 @@ void StationController::refreshNetwork()
         for (const QNetworkInterface &i : QNetworkInterface::allInterfaces()) {
             if (!(i.flags() & QNetworkInterface::IsUp) || (i.flags() & QNetworkInterface::IsLoopBack))
                 continue;
-            for (const QNetworkAddressEntry &e : i.addressEntries())
-                if (e.ip().protocol() == QAbstractSocket::IPv4Protocol && address.isEmpty())
+            for (const QNetworkAddressEntry &e : i.addressEntries()) {
+                if (e.ip().protocol() != QAbstractSocket::IPv4Protocol)
+                    continue;
+                if (address.isEmpty())
                     address = e.ip().toString();
+                // A cable NetworkManager doesn't manage (Debian's own network
+                // settings, a server install): connected all the same.
+                if (i.type() == QNetworkInterface::Ethernet && wifi.isEmpty())
+                    wired = true;
+            }
         }
         network_ = {{u"wired"_s, wired}, {u"wifi"_s, wifi}, {u"address"_s, address},
                     {u"online"_s, wired || !wifi.isEmpty() || !address.isEmpty()}, {u"wifiAvailable"_s, wifiAvailable}};

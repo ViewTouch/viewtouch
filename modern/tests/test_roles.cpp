@@ -314,3 +314,49 @@ TEST_CASE("Roles: the first staff login after a start doesn't freeze the screen"
     REQUIRE(finished);   // it froze for good
     CHECK(p.exitCode() == 0);
 }
+
+TEST_CASE("Station: the first-time setup keeps its answers while Wi-Fi is open", "[station][ui]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    StationController station(dir.path(), {}, false);   // a new computer: the setup
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, false},
+                                 {u"width"_s, 1280}, {u"height"_s, 800}});
+    engine.loadFromModule("ViewTouch", "StationWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(100);
+    REQUIRE(window->property("panel").toString() == u"setup"_s);
+    auto wizard = [&] { return window->findChild<QQuickItem *>(u"setupWizard"_s); };
+    REQUIRE(wizard());
+    wizard()->setProperty("role", u"store"_s);
+    wizard()->setProperty("step", 3);   // the network step
+    // Its name, as typed.
+    QQuickItem *name = nullptr;
+    std::function<QQuickItem *(QQuickItem *)> field = [&](QQuickItem *it) -> QQuickItem * {
+        if (it->inherits("QQuickTextInput") || it->inherits("QQuickTextField"))
+            return it;
+        for (QQuickItem *c : it->childItems())
+            if (QQuickItem *hit = field(c))
+                return hit;
+        return nullptr;
+    };
+    name = field(wizard());
+    REQUIRE(name);
+    name->setProperty("text", u"Front-Counter"_s);
+    // Wi-Fi…, then ‹ Back.
+    window->setProperty("panel", u"network"_s);
+    QTest::qWait(100);
+    CHECK_FALSE(wizard());
+    window->setProperty("panel", u"setup"_s);
+    QTest::qWait(100);
+    REQUIRE(wizard());
+    CHECK(wizard()->property("step").toInt() == 3);
+    CHECK(wizard()->property("role").toString() == u"store"_s);
+    name = field(wizard());
+    REQUIRE(name);
+    CHECK(name->property("text").toString() == u"Front-Counter"_s);
+}
