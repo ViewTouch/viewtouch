@@ -357,7 +357,7 @@ The screens come in English and Spanish (Español).
 - **Each person's own.** Manager → Employees → *Language*. The screen switches when that person logs in and back when they log out. On a store with several terminals each screen speaks its own user's language, messages included. The demo store has Rosa (PIN 5555), a server whose screens are in Spanish.
 - **The store's.** Manager → Store Settings → *Language*: for screens nobody is logged in to, people without their own, and everything guests see: the customer display, receipts and kitchen tickets.
 - **Your own words.** Menu item names stay as you typed them, since the check, the kitchen and receipts use them. To translate buttons you added (or change any phrase), put a file `translations/es.json` in the data folder: `{"Burger of the Day": "Hamburguesa del día"}`. It wins over the built-in phrases.
-- **Developers.** Phrases live in `i18n/es.json` (English → Spanish). `python3 tools/i18n.py missing es` lists what a new screen still needs, and the `i18n_es` test fails until every phrase has its Spanish with the same `%1` placeholders.
+- **Developers.** Phrases live in `i18n/es.json` (English → Spanish). `python3 tools/i18n.py missing es` lists what a new screen still needs, `python3 tools/i18n.py add-all new.json` adds `{"English": [es, fr, pt, zh]}` to all four at once, and the `i18n_es` test fails until every phrase has its Spanish with the same `%1` placeholders.
 
 ## On-screen keyboard
 
