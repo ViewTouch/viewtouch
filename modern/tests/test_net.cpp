@@ -1018,3 +1018,310 @@ TEST_CASE("A handheld has the menu as soon as someone logs in", "[net][remote][m
     QTest::qWait(200);
     CHECK(admin.count() == 0);
 }
+
+// --- working offline --------------------------------------------------------------------
+
+#include "net/offline_store.hh"
+
+namespace {
+
+// A handheld paired to a store through Wi-Fi that can drop, set up to work offline.
+struct OfflineSide {
+    Store store;
+    WifiRelay wifi{store.server.port()};
+    QTemporaryDir dir;
+    std::unique_ptr<Screen> h;
+
+    OfflineSide()
+    {
+        store.server.setHeartbeat(200, 1500);
+    }
+    void connect()
+    {
+        auto remote = std::make_unique<net::RemoteSession>(u"Handheld"_s);
+        net::Credentials creds = store.pairedDevice(u"Handheld"_s);
+        creds.port = wifi.server.serverPort();
+        remote->setCredentials(creds);
+        remote->setOfflineJournal(dir.filePath(u"offline.db"_s));
+        remote->setWatchdog(1000, 100);
+        remote->connectTo(u"127.0.0.1"_s, wifi.server.serverPort());
+        REQUIRE(remote->waitForWelcome(5000));
+        h = std::make_unique<Screen>(std::move(remote));
+        REQUIRE(waitFor([&] { return h->remote->offlineReady(); }));
+        waitFor([] { return false; }, 600);   // pings answered: it pongs
+    }
+    const core::Check *takenIn(bool closed) const
+    {
+        if (closed) {
+            for (const core::Check &c : store.shared.closedToday)
+                if (!c.offlineId.empty())
+                    return &c;
+        } else {
+            for (const auto &[id, c] : store.shared.open)
+                if (!c.offlineId.empty())
+                    return &c;
+        }
+        return nullptr;
+    }
+};
+
+} // namespace
+
+TEST_CASE("Working offline: a handheld keeps selling, and the store takes its checks in", "[net][remote][offline]")
+{
+    OfflineSide t;
+    t.store.shared.settings.cashMode = core::CashMode::ServerBank;   // the servers keep their cash
+    // A table going at the store: the store's, not the handheld's to open offline.
+    PosService bar(&t.store.shared, u"Bar"_s);
+    REQUIRE(bar.loginWithPin(u"2222"_s));
+    REQUIRE(bar.selectTable(u"T5"_s) == PosService::TableNeedsGuests);
+    bar.entryKey(u"2"_s);
+    REQUIRE(bar.startCheck(core::CheckType::DineIn));
+    bar.addItem(u"water"_s);
+    bar.releaseCheck();
+    t.connect();
+    const std::int64_t before = t.store.shared.lastCheckId;
+
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+    CHECK_FALSE(t.h->remote->offlineMode());
+    t.h->remote->workOffline();
+    REQUIRE(t.h->remote->offlineMode());
+    CHECK_FALSE(t.h->remote->loggedIn());
+    t.h->pin("1111");   // Sam: the PIN checked on the handheld
+    CHECK(t.h->remote->userName() == u"Sam"_s);
+
+    // The store's table: can't be opened here.
+    QSignalSpy notices(t.h->remote.get(), &app::PosSession::notice);
+    t.h->c.selectTable(u"T5"_s);
+    t.h->settle();
+    CHECK_FALSE(t.h->remote->hasCheck());
+    // A new one: ordered, sent, paid in cash, closed.
+    t.h->c.selectTable(u"T2"_s);
+    t.h->settle();
+    t.h->remote->entryKey(u"2"_s);
+    t.h->settle();
+    t.h->tap(u"start"_s);
+    REQUIRE(t.h->remote->hasCheck());
+    const qint64 offlineNumber = t.h->remote->checkInfo()[u"id"_s].toLongLong();
+    CHECK(offlineNumber > before);
+    t.h->c.orderItem(u"water"_s);
+    t.h->c.orderItem(u"cobb"_s);
+    t.h->settle();
+    t.h->remote->invoke(u"finishChoosing"_s);
+    t.h->remote->invoke(u"sendOrder"_s);
+    CHECK(t.h->remote->offlinePending() == 1);   // kept on the handheld
+    // Only cash or a discount.
+    bool paid = false;
+    t.h->remote->invoke(u"tender"_s, {u"cash"_s}, [&](const QVariant &r) { paid = r.toBool(); });
+    CHECK(paid);
+    t.h->remote->invoke(u"closeCheck"_s);
+    t.h->settle();
+    INFO([&] {
+        QStringList said;
+        for (const auto &n : notices)
+            said << n.first().toString();
+        return said.join(u" | "_s).toStdString();
+    }());
+    CHECK_FALSE(t.h->remote->hasCheck());
+    // What needs the store's computer: said, not done.
+    notices.clear();
+    t.h->remote->invoke(u"clockIn"_s);
+    t.h->remote->invoke(u"lookupGiftCard"_s, {u"6000 2026 1001"_s});
+    REQUIRE(notices.size() == 2);
+    CHECK(notices[0].first().toString().contains(u"offline"_s));
+    // A takeout left open when the store comes back.
+    t.h->remote->invoke(u"startCheck"_s, {u"takeout"_s});
+    t.h->c.orderItem(u"water"_s);
+    t.h->settle();
+    CHECK(t.h->remote->offlinePending() == 2);
+    CHECK(t.store.shared.closedToday.empty());   // nothing reached the store meanwhile
+
+    // Back: the handheld finishes the check it has open first.
+    t.wifi.cut = false;
+    REQUIRE(waitFor([&] { return t.h->remote->online(); }, 8000));
+    waitFor([] { return false; }, 300);
+    CHECK(t.h->remote->offlineMode());
+    t.h->remote->invoke(u"releaseCheck"_s);
+    REQUIRE(waitFor([&] { return !t.h->remote->offlineMode(); }));
+    REQUIRE(waitFor([&] { return t.h->remote->offlinePending() == 0; }));
+    CHECK_FALSE(t.h->remote->loggedIn());   // the store's own session: log in again
+
+    // In the store's sales: its number if it's the next, Sam's, its cash in his bank.
+    const core::Check *closed = t.takenIn(true);
+    REQUIRE(closed);
+    CHECK(closed->status == core::CheckStatus::Closed);
+    CHECK(closed->serverName == "Sam");
+    CHECK(closed->lines.size() == 2);
+    CHECK(std::ranges::all_of(closed->lines, [](const core::OrderLine &l) { return l.sent && l.made; }));
+    REQUIRE(closed->payments.size() == 1);
+    CHECK(closed->payments[0].kind == core::TenderKind::Cash);
+    CHECK(closed->businessDay == t.store.shared.day.id);
+    const core::DrawerSession *bank = t.store.shared.openBankFor(closed->serverId);
+    REQUIRE(bank);
+    CHECK(closed->drawerSession == bank->id);
+    CHECK(std::ranges::any_of(closed->events, [](const core::CheckEvent &e) { return e.kind == "offline"; }));
+    CHECK(closed->id > before);
+    // The open one: open at the store now, to go on with.
+    const core::Check *open = t.takenIn(false);
+    REQUIRE(open);
+    CHECK(open->type == core::CheckType::Takeout);
+    CHECK(open->id == closed->id + 1);
+    // The store's own table is as it was.
+    CHECK(std::ranges::count_if(t.store.shared.open, [](const auto &kv) { return kv.second.label == "T5"; }) == 1);
+}
+
+TEST_CASE("Working offline: the kit keeps the store's secrets, and a check is taken in once", "[net][offline]")
+{
+    test::RecordingSink sink;
+    PosShared shared(test::seedPosData(), &sink);
+    shared.settings.stripeSecretKey = "sk_test_secret";
+    shared.settings.backupKey = "backup-key";
+    shared.settings.replicaKey = "replica-key";
+    shared.settings.textWebhook = "https://example.invalid/sms";
+    shared.setMaintainerPin(u"86420"_s);
+    core::TerminalConfig bar;
+    bar.name = "Bar";
+    bar.id = "dev-bar";
+    bar.key = "device-key";
+    bar.cardReader = "stripe";
+    shared.settings.terminals.push_back(bar);
+    PosService store(&shared, u"Bar"_s);
+    const QJsonObject kit = store.offlineKit();
+    const QByteArray text = QJsonDocument(kit).toJson();
+    for (const char *secret : {"sk_test_secret", "backup-key", "replica-key", "example.invalid", "device-key"})
+        CHECK_FALSE(text.contains(secret));
+    const auto data = app::offlineData(kit);
+    REQUIRE(data);
+    CHECK(data->settings.maintainerPinHash.empty());
+    CHECK(std::ranges::all_of(data->settings.tenders, [](const core::Tender &t) {
+        return t.kind == core::TenderKind::Cash || t.kind == core::TenderKind::Discount;
+    }));
+    CHECK(std::ranges::none_of(data->settings.terminals, [](const core::TerminalConfig &t) { return !t.cardReader.empty(); }));
+    CHECK_FALSE(data->employees.empty());
+    CHECK(!data->employees.front().pinHash.empty());   // PINs are checked there: memory only
+
+    // A check made offline, kept until taken in, the journal surviving a restart.
+    QTemporaryDir dir;
+    const QString journal = dir.filePath(u"offline.db"_s);
+    qint64 made = 0;
+    {
+        net::OfflineStore offline(u"Bar"_s, journal);
+        offline.setKit(kit);
+        app::PosService *pos = offline.start();
+        REQUIRE(pos);
+        REQUIRE(pos->loginWithPin(u"1111"_s));
+        REQUIRE(pos->startCheck(core::CheckType::Quick));
+        pos->addItem(u"water"_s);
+        made = pos->checkInfo()[u"id"_s].toLongLong();
+        CHECK(offline.pendingCount() == 1);
+    }
+    net::OfflineStore again(u"Bar"_s, journal);
+    REQUIRE(again.pendingCount() == 1);
+    const QJsonObject item = again.pending().first().toObject();
+    CHECK(item[u"check"_s].toObject()[u"id"_s].toInteger() == made);
+    CHECK(!item[u"check"_s].toObject()[u"offlineId"_s].toString().isEmpty());
+
+    // Taken in: its number if it's the next one here, once however often it's sent.
+    const QVariantMap first = store.takeOfflineCheck(item[u"check"_s].toObject());
+    REQUIRE(first.contains(u"id"_s));
+    const QVariantMap second = store.takeOfflineCheck(item[u"check"_s].toObject());
+    CHECK(second[u"id"_s] == first[u"id"_s]);
+    CHECK(second[u"again"_s].toBool());
+    CHECK(std::ranges::count_if(shared.open, [](const auto &kv) { return !kv.second.offlineId.empty(); }) == 1);
+    // Another screen's check with the same number: the next one instead.
+    QJsonObject other = item[u"check"_s].toObject();
+    other[u"offlineId"_s] = u"another-screen"_s;
+    const QVariantMap third = store.takeOfflineCheck(other);
+    CHECK(third[u"id"_s].toLongLong() == first[u"id"_s].toLongLong() + 1);
+    again.taken(item[u"uid"_s].toString());
+    CHECK(again.pendingCount() == 0);
+}
+
+TEST_CASE("Working offline on the screen: Work Offline, the bar says so, and back", "[net][remote][offline][ui]")
+{
+    OfflineSide t;
+    t.connect();
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&t.h->c)}, {u"width"_s, 1600}, {u"height"_s, 900}});
+    engine.loadFromModule("ViewTouch", "Main");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    const auto find = [&](const QString &name) -> QQuickItem * {
+        const std::function<QQuickItem *(QQuickItem *)> look = [&](QQuickItem *root) -> QQuickItem * {
+            for (QQuickItem *i : root->childItems()) {
+                if (i->objectName() == name && i->isVisible())
+                    return i;
+                if (QQuickItem *hit = look(i))
+                    return hit;
+            }
+            return nullptr;
+        };
+        return look(window->contentItem());
+    };
+    const auto shot = [&](const char *name) {
+        if (const QByteArray dir = qgetenv("VTM_SHOTS"); !dir.isEmpty())
+            window->grabWindow().save(QString::fromLocal8Bit(dir) + u'/' + QString::fromLatin1(name) + u".png"_s);
+    };
+    CHECK_FALSE(find(u"offlineBar"_s));
+
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return find(u"workOffline"_s) != nullptr; }, 4000));
+    shot("offline-1-cut");
+    QQuickItem *key = find(u"workOffline"_s);
+    QTest::mouseClick(window, Qt::LeftButton, {}, key->mapToScene(QPointF(key->width() / 2, key->height() / 2)).toPoint());
+    REQUIRE(waitFor([&] { return t.h->remote->offlineMode(); }));
+    CHECK(waitFor([&] { return find(u"workOffline"_s) == nullptr; }));
+    REQUIRE(find(u"offlineBar"_s));
+    t.h->pin("1111");
+    t.h->remote->invoke(u"startCheck"_s, {u"quick"_s});
+    t.h->c.orderItem(u"water"_s);
+    t.h->settle();
+    QTest::qWait(150);
+    shot("offline-2-working");
+    t.h->remote->invoke(u"tender"_s, {u"cash"_s});
+    t.h->remote->invoke(u"closeCheck"_s);
+    t.h->settle();
+    QTest::qWait(100);
+    shot("offline-3-closed");
+
+    t.wifi.cut = false;
+    REQUIRE(waitFor([&] { return !t.h->remote->offlineMode() && t.h->remote->offlinePending() == 0; }, 8000));
+    CHECK(waitFor([&] { return find(u"offlineBar"_s) == nullptr; }));
+    QTest::qWait(150);
+    shot("offline-4-back");
+    CHECK(t.takenIn(true));
+}
+
+TEST_CASE("Working offline: a screen restarted before the store came back still hands its checks in", "[net][remote][offline]")
+{
+    OfflineSide t;
+    t.connect();
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+    t.h->remote->workOffline();
+    REQUIRE(t.h->remote->offlineMode());
+    t.h->pin("1111");
+    t.h->remote->invoke(u"startCheck"_s, {u"quick"_s});
+    t.h->c.orderItem(u"water"_s);
+    t.h->remote->invoke(u"tender"_s, {u"cash"_s});
+    t.h->remote->invoke(u"closeCheck"_s);
+    t.h->settle();
+    REQUIRE(t.h->remote->offlinePending() == 1);
+    // The screen restarts (its kit is gone with it: memory only)...
+    const net::Credentials creds = t.h->remote->credentials();
+    t.h.reset();
+    auto remote = std::make_unique<net::RemoteSession>(u"Handheld"_s);
+    remote->setCredentials(creds);
+    remote->setOfflineJournal(t.dir.filePath(u"offline.db"_s));
+    CHECK(remote->offlinePending() == 1);
+    CHECK_FALSE(remote->offlineReady());
+    // ...and once the store answers, the check goes to it.
+    t.wifi.cut = false;
+    remote->connectTo(u"127.0.0.1"_s, creds.port);
+    REQUIRE(remote->waitForWelcome(5000));
+    REQUIRE(waitFor([&] { return remote->offlinePending() == 0; }));
+    CHECK(t.takenIn(true));
+}

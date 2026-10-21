@@ -364,6 +364,24 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     });
     tickTimer_.start();
 
+    // The screens' offline kits: a few seconds after what's in them changed,
+    // and every five minutes (the checks open, the next check number).
+    const auto sendKits = [this] {
+        for (auto &c : connections_)
+            sendKit(c.get());
+    };
+    kitSoon_.setSingleShot(true);
+    kitSoon_.setInterval(5'000);
+    connect(&kitSoon_, &QTimer::timeout, this, sendKits);
+    kitTick_.setInterval(5 * 60'000);
+    connect(&kitTick_, &QTimer::timeout, this, sendKits);
+    kitTick_.start();
+    for (auto signal : {&app::PosShared::adminChanged, &app::PosShared::drawerChanged, &app::PosShared::dayChanged})
+        connect(shared_, signal, this, [this] {
+            if (!kitSoon_.isActive())
+                kitSoon_.start();
+        });
+
     // Pages saved anywhere reach every other terminal.
     connect(layouts_, &LayoutHub::layoutChanged, this, [this](const layout::Layout &layout, const void *origin) {
         const QJsonObject msg{{u"t"_s, u"layout"_s}, {u"layout"_s, layout.toJson()}};
@@ -568,6 +586,7 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
             welcome.insert(u"update"_s, QJsonObject{{u"name"_s, QFileInfo(u.path).fileName()}, {u"build"_s, u.build},
                                                     {u"size"_s, QFileInfo(u.path).size()}});
         c->channel->send(welcome);
+        sendKit(c);
         qCInfo(lcServer) << (resumed ? "terminal back:" : "terminal connected:") << name;
         emit terminalsChanged();
         return;
@@ -593,6 +612,10 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
     }
     if (type == u"getUpdate") {
         sendUpdate(c);
+        return;
+    }
+    if (type == u"offlineChecks") {
+        takeOfflineChecks(c, m.value(u"checks").toArray());
         return;
     }
 
@@ -649,6 +672,35 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
                           {u"r"_s, QJsonObject{{u"ok"_s, ok}, {u"error"_s, error}}}});
         return;
     }
+}
+
+void PosServer::sendKit(Connection *c)
+{
+    if (!c->session || c->standby)
+        return;
+    // A self-order kiosk or a time clock doesn't sell on its own.
+    const core::TerminalConfig *paired = shared_->settings.pairedTerminal(c->terminalId.toStdString());
+    if (!paired || paired->screen == "selfOrder" || paired->screen == "timeClock")
+        return;
+    c->channel->send({{u"t"_s, u"offlineKit"_s}, {u"kit"_s, c->session->offlineKit()}});
+}
+
+void PosServer::takeOfflineChecks(Connection *c, const QJsonArray &checks)
+{
+    QJsonArray results;
+    int taken = 0;
+    for (const QJsonValue &v : checks) {
+        const QJsonObject item = v.toObject();
+        const QVariantMap r = c->session->takeOfflineCheck(item.value(u"check").toObject());
+        QJsonObject result = QJsonObject::fromVariantMap(r);
+        result.insert(u"uid"_s, item.value(u"uid"));
+        results.append(result);
+        taken += r.contains(u"id"_s) && !r.value(u"again"_s).toBool();
+    }
+    if (taken > 0)
+        qCInfo(lcServer).noquote() << "took in" << taken << "check(s) made offline on" << c->session->terminalName();
+    c->channel->send({{u"t"_s, u"offlineTaken"_s}, {u"results"_s, results}});
+    scheduleFlushAll();
 }
 
 void PosServer::attach(Connection *c)

@@ -1309,6 +1309,16 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="shot"><img src="shots/m52-network-standby.png" width="560" height="315"></p>
 <p class="caption">Network: this computer, the standby, the screens connected (and who is on them), and how each printer did last.</p>
 <div class="warn">If the cable between the two computers breaks while both keep running, both may take orders for a few seconds. Orders taken on the old main computer in that time are only in its <code>-before-standby</code> backup.</div>
+<h2>Working offline: a screen on its own</h2>
+<p>Without a standby (or before it takes over), a screen that can't reach the store's computer can keep selling by itself: a dead network switch, a Wi-Fi dropout that lasts, or the store's computer restarting in the middle of service.</p>
+<ul>
+<li>The bar at the top says <i>No connection. Reconnecting…</i> with a <b>Work Offline</b> button. Touch it, and log in again with your PIN.</li>
+<li>Offline, the screen takes <b>new checks</b>: tables, takeout and quick orders, with their choices, seats and notes. <b>Send</b> prints the kitchen tickets on the kitchen's printers if the screen can still reach them. Checks are paid in <b>cash</b> (and discounts), and closed.</li>
+<li>Tables already going at the store stay the store's: they show as taken, and can't be opened offline. Cards, gift cards, house accounts, customers, the time clock, drawers, reports and managing all wait for the store's computer. The screen says so if you touch one.</li>
+<li>When the store's computer answers again, the screen goes back to it as soon as nobody has a check open on it. The checks made offline go to the store by themselves. Closed ones are in the day's sales, with their cash in the drawer or the server's bank. Open ones are open checks at the store, ready to go on with. Each one is taken in once, even if the screen sends it twice.</li>
+<li>A check keeps its number if it's the next one at the store; otherwise it gets the next one, and its history says the number it had offline.</li>
+<li>What the screen needs to work offline (the menu, the staff, the settings) comes from the store's computer while they're connected, and is kept <b>in memory only</b>: a screen that restarts during the outage can't work offline until the store's computer is back. The checks made offline are saved on the screen as they're made, so a restart doesn't lose them. They go to the store when it's back.</li>
+</ul>
 
 <!-- ======================================================================= -->
 <h1>19. Quick reference</h1>

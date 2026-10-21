@@ -1,6 +1,9 @@
 #include "net/remote_session.hh"
 
+#include "app/i18n.hh"
+#include "app/pos_service.hh"
 #include "net/build_info.hh"
+#include "net/offline_store.hh"
 
 #include <QDateTime>
 #if defined(Q_OS_ANDROID)
@@ -23,6 +26,7 @@
 #include <QJsonArray>
 #include <QSslPreSharedKeyAuthenticator>
 #include <QLoggingCategory>
+#include <QMetaMethod>
 
 using namespace Qt::StringLiterals;
 
@@ -43,6 +47,27 @@ bool keepable(const QString &method)
         u"addItem"_s, u"setQualifier"_s, u"lineMore"_s, u"lineLess"_s, u"repeatLine"_s, u"setLineQuantity"_s,
         u"setSeat"_s, u"setCourse"_s, u"textKey"_s, u"addComment"_s, u"anotherRound"_s, u"adjustGuests"_s,
         u"chooseOption"_s, u"chooseOptionAs"_s, u"setChoice"_s};
+    return methods.contains(method);
+}
+
+// What a screen working offline can do on its own: take new orders, send
+// them, take cash, close. Everything else needs the store's computer (cards,
+// gift cards, customers, the time clock, drawers, reports, managing).
+bool offlineAllowed(const QString &method)
+{
+    static const QSet<QString> methods = {
+        u"pinKey"_s, u"entryKey"_s, u"adjustGuests"_s, u"textKey"_s, u"clearEntry"_s, u"login"_s, u"loginWithPin"_s,
+        u"logout"_s, u"selectTable"_s, u"startCheck"_s, u"openCheck"_s, u"openTab"_s, u"releaseCheck"_s,
+        u"newTableCheck"_s, u"splitBySeat"_s, u"printTableChecks"_s, u"combineTableChecks"_s, u"addItem"_s,
+        u"storeImage"_s, u"setQualifier"_s, u"selectLine"_s, u"selectPayment"_s, u"setCheckFilter"_s,
+        u"voidItem"_s, u"setLineQuantity"_s, u"lineMore"_s, u"lineLess"_s, u"anotherRound"_s, u"customDiscount"_s,
+        u"printReceiptOn"_s, u"noReceipt"_s, u"undoLast"_s, u"repeatLine"_s, u"sendOrder"_s, u"addWeighed"_s,
+        u"cancelWeighing"_s, u"addComment"_s, u"tender"_s, u"removePayment"_s, u"closeCheck"_s, u"printReceipt"_s,
+        u"splitLine"_s, u"shareLine"_s, u"splitEvenly"_s, u"unshareLine"_s, u"setCashTip"_s, u"setGratuity"_s,
+        u"approve"_s, u"cancelApproval"_s, u"giveReason"_s, u"scanCode"_s, u"setSeat"_s, u"setAllergies"_s,
+        u"setChoice"_s, u"chooseOptionAs"_s, u"chooseOption"_s, u"finishChoosing"_s, u"cancelChoosing"_s,
+        u"chooseLine"_s, u"setCourse"_s, u"fireCourse"_s, u"fireCourseIn"_s, u"transferCheck"_s, u"moveCheck"_s,
+        u"mergeCheck"_s};
     return methods.contains(method);
 }
 
@@ -150,6 +175,9 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         ++imageRevision_;
         emit imagesChanged();   // the menu's photos, the kiosk's, the customer display's
     });
+    localFlush_.setSingleShot(true);
+    localFlush_.setInterval(0);
+    connect(&localFlush_, &QTimer::timeout, this, [this] { flushLocal(false); });
     reconnect_.setSingleShot(true);
     reconnect_.setInterval(kReconnectMs);
     connect(&reconnect_, &QTimer::timeout, this, [this] {
@@ -316,6 +344,8 @@ void RemoteSession::onDisconnected()
 {
     const bool was = welcomed_;
     welcomed_ = false;
+    uploading_ = false;
+    goingBack_ = false;
     // Nothing pending will be answered now. Order taps among them go again
     // when it's back: taken as done (the server keeps going), and shown
     // waiting in the check meanwhile.
@@ -327,7 +357,8 @@ void RemoteSession::onDisconnected()
     if (was) {
         qCWarning(lcRemote) << "lost the server; reconnecting";
         emit onlineChanged();
-        emit notice(tr("Lost the connection to the server. Reconnecting…"));
+        if (!offlineMode_)
+            emit notice(tr("Lost the connection to the server. Reconnecting…"));
     }
     encrypted_ = false;
     if (!rejected_)
@@ -353,7 +384,11 @@ void RemoteSession::handle(const QJsonObject &m)
             layout_ = *l;
             emit layoutReceived(layout_);
         }
-        applyState(m.value(u"state").toObject(), true);
+        // Working offline: the store's state waits until this screen goes back to it.
+        if (offlineMode_)
+            serverState_ = m.value(u"state").toObject().toVariantMap();
+        else
+            applyState(m.value(u"state").toObject(), true);
         cache_.clear();
         storeBuild_ = m.value(u"build").toInt();
         storeVersion_ = m.value(u"version").toString();
@@ -367,8 +402,29 @@ void RemoteSession::handle(const QJsonObject &m)
         refusals_ = 0;
         failures_ = 0;
         emit onlineChanged();
+        if (offlineMode_) {
+            goingBack_ = true;
+            maybeGoBack(true);
+        } else {
+            sendOfflineChecks();   // made before this screen restarted
+        }
     } else if (type == u"state") {
-        applyState(m.value(u"set").toObject(), false);
+        if (offlineMode_) {
+            const QJsonObject set = m.value(u"set").toObject();
+            for (auto it = set.begin(); it != set.end(); ++it)
+                serverState_.insert(it.key(), it.value().toVariant());
+        } else {
+            applyState(m.value(u"set").toObject(), false);
+        }
+    } else if (type == u"offlineKit") {
+        if (offline_) {
+            const bool was = offline_->hasKit();
+            offline_->setKit(m.value(u"kit").toObject());
+            if (offline_->hasKit() != was)
+                emit onlineChanged();   // offlineReady
+        }
+    } else if (type == u"offlineTaken") {
+        tookOfflineChecks(m.value(u"results").toArray());
     } else if (type == u"updatePart") {
         // The store's update for this screen, a part at a time.
         if (m.value(u"i").toInt() == 0)
@@ -426,6 +482,10 @@ void RemoteSession::want(const QString &key, bool on)
         return;
     if (n == 0)
         state_.remove(key);   // not kept up to date any more: nothing rather than old
+    if (offlineMode_ && n > 0) {
+        localDirty_.insert(-1);
+        localFlush_.start();
+    }
     if (welcomed_)
         send({{u"t"_s, u"want"_s}, {u"k"_s, key}, {u"on"_s, n > 0}});
 }
@@ -477,6 +537,17 @@ void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
 
 void RemoteSession::invoke(const QString &method, const QVariantList &args, Reply reply)
 {
+    if (offlineMode_) {
+        if (!offlineAllowed(method)) {
+            if (method != u"refreshDay")   // the dashboard's own, on a timer: not said each time
+                emit notice(tr("Not while working offline: that needs the store's computer."));
+            if (reply)
+                reply(QVariant(false));
+            return;
+        }
+        local_->invoke(method, args, std::move(reply));
+        return;
+    }
     // At the table with the Wi-Fi out: kept for when it's back (only while
     // someone is logged in: the server keeps that session for this device).
     const bool keep = keepable(method) && loggedIn();
@@ -565,7 +636,7 @@ void RemoteSession::saveLayout(const layout::Layout &layout)
 QVariant RemoteSession::query(const QString &key, const QString &method, const QVariantList &args)
 {
     Cached &c = cache_[key];
-    if ((c.stale || !c.value.isValid()) && !c.inFlight && welcomed_) {
+    if ((c.stale || !c.value.isValid()) && !c.inFlight && welcomed_ && !offlineMode_) {
         c.inFlight = true;
         invoke(method, args, [this, key](const QVariant &r) {
             Cached &entry = cache_[key];
@@ -674,6 +745,176 @@ void RemoteSession::openUpdate()
 #else
     emit notice(tr("Update saved: %1").arg(updateReady_));
 #endif
+}
+
+// --- working offline -----------------------------------------------------------------
+
+void RemoteSession::setOfflineJournal(const QString &path)
+{
+    offline_ = std::make_unique<OfflineStore>(terminal_, path);
+    connect(offline_.get(), &OfflineStore::pendingChanged, this, &PosSession::onlineChanged);
+    connect(offline_.get(), &OfflineStore::printFailed, this,
+            [this](const QString &printer, const QString &what, const QString &error) {
+        emit notice(tr("%1 did not print on %2: %3").arg(what, printer, error));
+    });
+}
+
+bool RemoteSession::offlineReady() const
+{
+    return offline_ && offline_->hasKit();
+}
+
+int RemoteSession::offlinePending() const
+{
+    return offline_ ? offline_->pendingCount() : 0;
+}
+
+void RemoteSession::workOffline()
+{
+    if (offlineMode_ || welcomed_ || !offline_)
+        return;
+    local_ = offline_->start();
+    if (!local_) {
+        emit notice(tr("This screen can't work offline yet: it gets what it needs from the store's computer."));
+        return;
+    }
+    // Taps kept for a check at the store: that check stays the store's.
+    if (!kept_.isEmpty()) {
+        emit notice(tr("%n tap(s) waiting for the store's computer were let go: add them again once it's back.", "",
+                       int(kept_.size())));
+        kept_.clear();
+    }
+    // Its changes reach the screen as the store's do: the same pieces, by the same signals.
+    for (auto signal : {&app::PosSession::sessionChanged, &app::PosSession::entryChanged,
+                        &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
+                        &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
+                        &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
+                        &app::PosSession::adminChanged, &app::PosSession::imagesChanged}) {
+        const int index = QMetaMethod::fromSignal(signal).methodIndex();
+        connect(local_, signal, this, [this, index] {
+            localDirty_.insert(index);
+            localFlush_.start();
+        });
+    }
+    connect(local_, &app::PosSession::loggedInChanged, this, [this] {
+        localDirty_.insert(-1);   // everything
+        localFlush_.start();
+    });
+    connect(local_, &app::PosSession::notice, this, &app::PosSession::notice);
+    connect(local_, &app::PosSession::checkClosed, this, &app::PosSession::checkClosed);
+    connect(local_, &app::PosSession::checkChanged, this, [this] { maybeGoBack(false); });
+    offlineMode_ = true;
+    goingBack_ = false;
+    serverState_.clear();
+    flushLocal(true);
+    qCInfo(lcRemote) << "working offline";
+    emit onlineChanged();
+    emit notice(tr("Working offline: new checks, paid in cash. They go to the store's computer once it's back."));
+}
+
+// The offline store's state, the pieces its signals said may have changed
+// (all: every one), as the store's computer would send them.
+void RemoteSession::flushLocal(bool all)
+{
+    if (!local_)
+        return;
+    static const auto pieces = [] {
+        std::vector<std::pair<QString, QMetaProperty>> out;
+        const QMetaObject &mo = app::PosSession::staticMetaObject;
+        for (const QString &key : app::PosSession::stateKeys())
+            if (key != u"openChecks")   // in two parts, as a store sends it
+                out.emplace_back(key, mo.property(mo.indexOfProperty(key.toLatin1().constData())));
+        return out;
+    }();
+    const QSet<int> dirty = std::exchange(localDirty_, {});
+    all = all || dirty.contains(-1);
+    // The store's pictures stay as the store said: this screen has them in
+    // its own cache (the offline store has none).
+    static const QStringList pictures{u"storeImages"_s, u"storeLogo"_s};
+    const i18n::Scope language([s = local_] { return s->language(); });
+    local_->shared()->beginMemo();
+    QJsonObject set;
+    for (const auto &[key, p] : pieces) {
+        if (pictures.contains(key)) {
+            if (all && state_.contains(key))
+                set.insert(key, QJsonValue::fromVariant(state_.value(key)));
+            continue;
+        }
+        if (!all && p.hasNotifySignal() && !dirty.contains(p.notifySignalIndex()))
+            continue;
+        if ((key == u"closedChecks" || key == u"rushRadar") && wanted_.value(key) <= 0)
+            continue;   // only while shown
+        const QJsonValue value = QJsonValue::fromVariant(p.read(local_));
+        if (!all && QJsonValue::fromVariant(state_.value(key)) == value)
+            continue;
+        set.insert(key, value);
+    }
+    local_->shared()->endMemo();
+    if (all || !set.isEmpty())
+        applyState(set, all);
+}
+
+// The store's computer is back: this screen goes back to it once nobody is
+// in the middle of a check here.
+void RemoteSession::maybeGoBack(bool tell)
+{
+    if (!offlineMode_ || !goingBack_ || !welcomed_)
+        return;
+    if (local_ && local_->hasCheck()) {
+        if (tell)
+            emit notice(tr("The store's computer is back: finish this check, and this screen goes back to it."));
+        return;
+    }
+    // Not from inside the offline store's own signal: it's let go of.
+    QTimer::singleShot(0, this, [this] {
+        if (offlineMode_ && goingBack_ && welcomed_ && !(local_ && local_->hasCheck()))
+            goBackOnline();
+    });
+}
+
+void RemoteSession::goBackOnline()
+{
+    if (local_)
+        disconnect(local_, nullptr, this, nullptr);
+    localFlush_.stop();
+    localDirty_.clear();
+    local_ = nullptr;
+    offline_->stop();
+    offlineMode_ = false;
+    goingBack_ = false;
+    applyState(QJsonObject::fromVariantMap(std::exchange(serverState_, {})), true);
+    qCInfo(lcRemote) << "back online";
+    emit onlineChanged();
+    sendOfflineChecks();
+}
+
+void RemoteSession::sendOfflineChecks()
+{
+    if (!welcomed_ || offlineMode_ || uploading_ || !offline_ || offline_->pendingCount() == 0)
+        return;
+    uploading_ = true;
+    send({{u"t"_s, u"offlineChecks"_s}, {u"checks"_s, offline_->pending()}});
+}
+
+void RemoteSession::tookOfflineChecks(const QJsonArray &results)
+{
+    uploading_ = false;
+    int taken = 0;
+    QStringList problems;
+    for (const QJsonValue &v : results) {
+        const QJsonObject r = v.toObject();
+        if (r.contains(u"id") || r.value(u"skipped").toBool()) {
+            if (offline_)
+                offline_->taken(r.value(u"uid").toString());
+            taken += r.contains(u"id") && !r.value(u"again").toBool();
+        } else {
+            problems << r.value(u"error").toString();   // kept, sent again next time
+        }
+    }
+    if (taken > 0)
+        emit notice(tr("Back online: the store's computer has the %n check(s) made offline.", "", taken));
+    if (!problems.isEmpty())
+        emit notice(tr("Not taken in yet: %1").arg(problems.join(u"; "_s)));
 }
 
 } // namespace vt::net

@@ -1672,7 +1672,7 @@ void LayoutController::runAction(const Action &a, Done done)
                     if (v.toMap().value(u"id"_s).toString() == item)
                         name = v.toMap().value(u"name"_s).toString();
                 const int seat = pos_->checkInfo().value(u"seat"_s).toInt();
-                emit addedFlash(seat > 0 ? tr("+ %1 · Seat %2").arg(name).arg(seat) : tr("+ %1").arg(name), !pos_->online());
+                emit addedFlash(seat > 0 ? tr("+ %1 · Seat %2").arg(name).arg(seat) : tr("+ %1").arg(name), !pos_->online() && !pos_->offlineMode());
             }
             if (!sequence.isEmpty() && nav_.startSequence(sequence)) {
                 refresh();

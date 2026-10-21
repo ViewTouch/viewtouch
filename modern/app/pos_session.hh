@@ -115,6 +115,12 @@ class PosSession : public QObject {
     // Shift notes for the manager logged in, not read yet.
     Q_PROPERTY(QVariantList handoff READ handoff NOTIFY sessionChanged)
     Q_PROPERTY(bool standbyReady READ standbyReady NOTIFY sessionChanged)
+    // A screen cut off from the store's computer: it could keep selling on
+    // its own (the store sent it what it needs), it is (workOffline), and the
+    // checks it made meanwhile the store hasn't taken in yet.
+    Q_PROPERTY(bool offlineReady READ offlineReady NOTIFY onlineChanged)
+    Q_PROPERTY(bool offlineMode READ offlineMode NOTIFY onlineChanged)
+    Q_PROPERTY(int offlinePending READ offlinePending NOTIFY onlineChanged)
     // This screen's language: the logged-in person's, else the store's.
     Q_PROPERTY(QString language READ language NOTIFY sessionChanged)
     // The logged-in person's own screen: {textSize (percent), leftHanded, startPage}.
@@ -335,6 +341,9 @@ public:
     virtual QVariantList handoff() const = 0;
     // A screen that lost its server: the store's standby is there, ready.
     virtual bool standbyReady() const { return false; }
+    virtual bool offlineReady() const { return false; }
+    virtual bool offlineMode() const { return false; }
+    virtual int offlinePending() const { return 0; }
     virtual QString language() const = 0;
     virtual QVariantMap userPrefs() const = 0;
     virtual QString storeLanguage() const = 0;
@@ -597,6 +606,8 @@ public:
     // Ask the standby server to take over (a manager's PIN). Only screens
     // of a remote store have one.
     Q_INVOKABLE virtual void takeOver(const QString &pin) { Q_UNUSED(pin) }
+    // Keep selling without the store's computer: new checks, paid in cash.
+    Q_INVOKABLE virtual void workOffline() {}
     Q_INVOKABLE void sendMessage(const QString &to, const QString &text)
     {
         invoke(QStringLiteral("sendMessage"), {to, text});

@@ -15,6 +15,10 @@
   "one": "%n check",
   "other": "%n checks"
  },
+ "%n check(s) made offline go to the store's computer once it's back.": {
+  "one": "%n check made offline goes to the store's computer once it's back.",
+  "other": "%n checks made offline go to the store's computer once it's back."
+ },
  "%n choice group(s)": {
   "one": "%n choice group",
   "other": "%n choice groups"
@@ -127,6 +131,10 @@
   "one": "%n size",
   "other": "%n sizes"
  },
+ "%n tap(s) waiting for the store's computer were let go: add them again once it's back.": {
+  "one": "%n tap waiting for the store's computer was let go: add it again once it's back.",
+  "other": "%n taps waiting for the store's computer were let go: add them again once it's back."
+ },
  "%n tap(s) waiting: they go in when it's back.": {
   "one": "%n tap waiting: it goes in when it's back.",
   "other": "%n taps waiting: they go in when it's back."
@@ -170,6 +178,10 @@
  "Back online: sent %n tap(s) made while it was out.": {
   "one": "Back online: sent %n tap made while it was out.",
   "other": "Back online: sent %n taps made while it was out."
+ },
+ "Back online: the store's computer has the %n check(s) made offline.": {
+  "one": "Back online: the store's computer has the check made offline.",
+  "other": "Back online: the store's computer has the %n checks made offline."
  },
  "Call a server in: about %n check(s) the next hour": {
   "one": "Call a server in: about %n check the next hour",

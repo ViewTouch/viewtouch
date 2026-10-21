@@ -646,6 +646,8 @@ int runTerminal(const Args &cli, const Options &o)
 
         vt::net::RemoteSession remote(creds->terminalName);
         remote.setCredentials(*creds);
+        // Checks made while the store's computer is out of reach, until it takes them in.
+        remote.setOfflineJournal(QDir(dataDir).filePath(u"offline.db"_s));
         if (cli.isSet(o.selfOrder))
             remote.setRequestedScreen(u"selfOrder"_s);
         else if (cli.value(o.screen) == u"timeClock")

@@ -93,6 +93,14 @@ private:
     // Send changed state to one / every terminal.
     void flush(Connection *c);
     void scheduleFlushAll();
+    // What a screen needs to keep selling if it loses this server (its
+    // offline kit): on connecting, and again as the menu, staff, settings,
+    // drawers or the day change. The checks it made meanwhile come back
+    // as "offlineChecks".
+    void sendKit(Connection *c);
+    void takeOfflineChecks(Connection *c, const QJsonArray &checks);
+    QTimer kitSoon_;   // after a change
+    QTimer kitTick_;   // and every few minutes
 
     app::PosShared *shared_;
     qint64 updateNsecs_ = 0;

@@ -353,20 +353,24 @@ ApplicationWindow {
 
     // A terminal that lost its server says so until it is back.
     // With the store's standby ready, it takes over by itself shortly; a
-    // manager can make it take over now.
+    // manager can make it take over now. Without one, it can work offline:
+    // new checks, paid in cash, sent to the store once it's back.
     Rectangle {
         id: offline
         readonly property bool standby: !!root.controller.pos && (root.controller.pos as PosService).standbyReady
         readonly property int held: root.controller.pos ? root.controller.pos.heldCount : 0
+        readonly property bool working: !!root.controller.pos && root.controller.pos.offlineMode
+        readonly property bool canWork: !!root.controller.pos && root.controller.pos.offlineReady && !standby
+        readonly property int made: root.controller.pos ? root.controller.pos.offlinePending : 0
         objectName: "offlineBar"
-        visible: !!root.controller.pos && !root.controller.pos.online
+        visible: !!root.controller.pos && (!root.controller.pos.online || working)
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 12
         width: offlineRow.implicitWidth + 40
         height: offlineRow.implicitHeight + 20
         radius: Math.min(height / 2, 30)
-        color: "#e0b83232"
+        color: working ? "#e08a5a00" : "#e0b83232"
         z: 10
         RowLayout {
             id: offlineRow
@@ -376,9 +380,25 @@ ApplicationWindow {
                 color: "white"
                 font.pixelSize: 18
                 font.bold: true
-                text: (offline.standby ? qsTr("The main server isn't answering.\nThe standby computer takes over in a few seconds.")
-                                       : qsTr("No connection. Reconnecting…"))
-                      + (offline.held > 0 ? "\n" + qsTr("%n tap(s) waiting: they go in when it's back.", "", offline.held) : "")
+                text: offline.working && root.controller.pos.online
+                      ? qsTr("The store's computer is back: finish this check, and this screen goes back to it.")
+                      : offline.working
+                      ? qsTr("Working offline: new checks, paid in cash.") + "\n"
+                        + (offline.made > 0 ? qsTr("%n check(s) made offline go to the store's computer once it's back.", "", offline.made)
+                                            : qsTr("They go to the store's computer once it's back."))
+                      : (offline.standby ? qsTr("The main server isn't answering.\nThe standby computer takes over in a few seconds.")
+                                         : qsTr("No connection. Reconnecting…"))
+                        + (offline.held > 0 ? "\n" + qsTr("%n tap(s) waiting: they go in when it's back.", "", offline.held) : "")
+            }
+            WidgetKey {
+                objectName: "workOffline"
+                visible: offline.canWork && !offline.working
+                Layout.preferredWidth: 190
+                Layout.preferredHeight: 56
+                text: qsTr("Work Offline")
+                fontScale: 0.3
+                baseColor: "#343c49"
+                onClicked: root.controller.pos.workOffline()
             }
             WidgetKey {
                 objectName: "takeOverNow"
