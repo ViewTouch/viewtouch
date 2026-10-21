@@ -13,8 +13,8 @@ Item {
     readonly property string face: zone.st.font ?? "DejaVu Sans"
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(14, Math.min(w.width / 20, 44))
-                                        : Math.max(14, Math.min(w.width / 60, w.height / 30))
+    readonly property real unit: (narrow ? Math.max(14, Math.min(w.width / 20, 44))
+                                         : Math.max(14, Math.min(w.width / 60, w.height / 30))) * zone.textScale
 
     readonly property var floor: pos ? pos.floor : ({})
     readonly property var tables: zone && zone.controller ? zone.controller.tables() : []
@@ -154,6 +154,8 @@ Item {
                 unit: w.unit
                 face: w.face
                 ink: w.ink
+                readable: (text, fill) => w.zone.readable(text, fill)
+                textScale: w.zone.textScale
                 stateKey: "hostPlan"
                 prefix: "host-"
                 tabPrefix: "hostPlan-"

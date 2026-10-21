@@ -22,9 +22,11 @@ Item {
     FloorPlanView {
         anchors.fill: parent
         controller: w.zone ? w.zone.controller : null
-        unit: Math.max(14, Math.min(w.width / 22, 44))
+        unit: Math.max(14, Math.min(w.width / 22, 44)) * w.zone.textScale
         face: w.zone.st.font ?? "DejaVu Sans"
         ink: w.zone.st.textColor ?? "white"
+        readable: (text, fill) => w.zone.readable(text, fill)
+        textScale: w.zone.textScale
         tabs: w.props.tabs !== false
         startPlan: w.props.plan ?? ""
         prefix: "floor-"

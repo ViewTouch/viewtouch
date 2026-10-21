@@ -59,6 +59,7 @@
 - **Many screens, one store:** paired, encrypted connections. Tablets and phones join by scanning the network. A standby server keeps running if the main computer fails.
 - **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.
 - **Five languages:** English, Spanish, French, Portuguese and Chinese; each person's screens are in their own.
+- **Easy to read for everyone:** bigger text, high contrast, and colors that color-blind eyes tell apart, set for each person (on any screen they log into) or for a screen, like the kitchen's.
 
 <table align="center"><tr>
 <td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>

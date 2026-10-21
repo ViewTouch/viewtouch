@@ -11,7 +11,7 @@ Item {
     readonly property var choosing: pos ? pos.choosing : ({})
     readonly property string face: zone.st.font ?? "DejaVu Sans"
     readonly property color ink: zone.st.textColor ?? "#e6e9ef"
-    readonly property real unit: Math.max(16, Math.min(34, w.width / 30))
+    readonly property real unit: Math.max(16, Math.min(34, w.width / 30)) * zone.textScale
 
     Text {
         id: title

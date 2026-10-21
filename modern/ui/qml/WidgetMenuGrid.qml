@@ -190,6 +190,7 @@ Item {
             category: w.shownCategory
             categories: w.categories
             pos: w.pos
+            textScale: w.zone ? w.zone.textScale : 1
             busy: w.busy
             setColumns: w.setColumns
             pagePhotos: w.pagePhotos

@@ -77,6 +77,9 @@ struct TerminalConfig {
     // Button and check text this much bigger here (percent; 0 = normal). A
     // person's own text size wins while they're logged in.
     int textSize = 0;
+    // Status colors (tables, kitchen tickets) that color-blind eyes tell
+    // apart, here; a person's own setting adds to it.
+    bool colorSafe = false;
     // After a check is paid here: "print" a receipt, "ask" (print, email or
     // none), or nothing (empty). receiptPrinter "ask": choose the printer
     // each time (a handheld).

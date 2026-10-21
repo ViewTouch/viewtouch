@@ -28,6 +28,9 @@ Item {
         w.pos.setKitchenStation(next === w.pageStation ? "" : next)
     }
     readonly property string face: zone.st.font ?? "DejaVu Sans"
+    // This screen's text size (Terminals: Text size), or the person's: the
+    // tickets grow with it.
+    readonly property real k: zone ? zone.textScale : 1
     property real now: Date.now()
     // Header buttons and title fit a narrow screen (two or three stations side by side).
     readonly property real keyWidth: Math.max(96, Math.min(240, width * 0.12))
@@ -117,7 +120,7 @@ Item {
                   .filter(s => s).join("  ·  ")
             color: top.ticket.rush ? "#d62828" : "#9a7b12"
             font.family: w.face
-            font.pixelSize: 28
+            font.pixelSize: 28 * w.k
             font.bold: true
         }
         Text {
@@ -130,7 +133,7 @@ Item {
                           : qsTr("Waiting on: %1").arg((top.ticket.waitingOn ?? []).join(", "))
             color: isArmed ? "#c92a2a" : "#6b6b6b"
             font.family: w.face
-            font.pixelSize: 20
+            font.pixelSize: 20 * w.k
             font.bold: isArmed
         }
         // The guest's allergies: big, on red, before anything else is read.
@@ -150,7 +153,7 @@ Item {
                 text: qsTr("ALLERGY: %1").arg((top.ticket.allergies ?? []).join(", ").toUpperCase())
                 color: "white"
                 font.family: w.face
-                font.pixelSize: 26
+                font.pixelSize: 26 * w.k
                 font.bold: true
             }
         }
@@ -161,7 +164,7 @@ Item {
             text: qsTr("Note: %1").arg(top.ticket.note ?? "")
             color: "#b83232"
             font.family: w.face
-            font.pixelSize: 22
+            font.pixelSize: 22 * w.k
             font.bold: true
         }
     }
@@ -183,7 +186,7 @@ Item {
             color: line.line.comment ? "#b83232"
                  : w.expo && line.line.made ? "#2b8a3e" : w.inkFor(line.line.color)
             font.family: w.face
-            font.pixelSize: 26
+            font.pixelSize: 26 * w.k
             font.bold: true
             font.italic: line.line.comment === true
         }
@@ -192,29 +195,29 @@ Item {
             delegate: Text {
                 required property string modelData
                 width: line.width
-                leftPadding: 28
+                leftPadding: 28 * w.k
                 wrapMode: Text.WordWrap
                 text: "› " + modelData
                 color: "#444"
                 font.family: w.face
-                font.pixelSize: 22
+                font.pixelSize: 22 * w.k
             }
         }
         Text {
             visible: (line.line.contains ?? []).length > 0
             width: line.width
-            leftPadding: 28
+            leftPadding: 28 * w.k
             wrapMode: Text.WordWrap
             text: qsTr("!! CONTAINS %1").arg((line.line.contains ?? []).join(", ").toUpperCase())
             color: "#c62828"
             font.family: w.face
-            font.pixelSize: 22
+            font.pixelSize: 22 * w.k
             font.bold: true
         }
     }
 
     // Each ticket laid out unseen, to know how tall its parts are.
-    readonly property real cardWidth: 360
+    readonly property real cardWidth: 360 * k
     Item {
         id: measure
         visible: false
@@ -238,7 +241,7 @@ Item {
                         width: measure.width
                     }
                 }
-                Text { id: continued; visible: false; text: qsTr("Continued ▸"); font.family: w.face; font.pixelSize: 24; font.bold: true }
+                Text { id: continued; visible: false; text: qsTr("Continued ▸"); font.family: w.face; font.pixelSize: 24 * w.k; font.bold: true }
                 property alias continued: continued
             }
         }
@@ -252,7 +255,7 @@ Item {
     function layoutColumns() {
         const room = board.height
         if (room <= 0) return
-        const chrome = 72 + 14 + 22 + 8   // the head, the margins, a little to spare
+        const chrome = 72 * w.k + 14 + 22 + 8   // the head, the margins, a little to spare
         const out = []
         let column = null, used = 0
         for (let k = 0; k < w.tickets.length; ++k) {
@@ -489,7 +492,7 @@ Item {
                     readonly property var ticket: modelData.ticket
                     objectName: "kdsCard-" + ticket.checkId + "-" + modelData.part
                     width: w.cardWidth
-                    height: Math.min(board.height, body.implicitHeight + 72 + 14 + 22)
+                    height: Math.min(board.height, body.implicitHeight + 72 * w.k + 14 + 22)
                     radius: 10
                     color: "#f4f1ea"
                     // Rush tickets wear a red frame, VIP gold.
@@ -497,13 +500,17 @@ Item {
                                 : card.ticket.vip ? "#d4af37" : "transparent"
                     border.width: card.ticket.rush || card.ticket.vip ? 8 : 4
                     clip: true
+                    // Its age's color, and text that reads on it (a yellow one: dark).
+                    readonly property color headFill: w.expo && card.ticket.ready ? w.zone.statusColor("kitchenReady", "#1f6fd6")
+                                                                                  : w.ageColor(card.ticket)
+                    readonly property color headInk: w.zone.readable("white", headFill)
 
                     Rectangle {
                         id: head
                         width: parent.width
-                        height: 72
+                        height: 72 * w.k
                         radius: 10
-                        color: w.expo && card.ticket.ready ? w.zone.statusColor("kitchenReady", "#1f6fd6") : w.ageColor(card.ticket)
+                        color: card.headFill
                         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 10; color: parent.color }
                         Column {
                             anchors.left: parent.left
@@ -517,18 +524,18 @@ Item {
                                 // A long order's cards: "T5  2/3".
                                 text: card.ticket.label + (card.modelData.parts > 1
                                                            ? "  " + card.modelData.part + "/" + card.modelData.parts : "")
-                                color: "white"
+                                color: card.headInk
                                 font.family: w.face
-                                font.pixelSize: 28
+                                font.pixelSize: 28 * w.k
                                 font.bold: true
                             }
                             Text {
                                 width: parent.width
                                 elide: Text.ElideRight
                                 text: card.ticket.customer || card.ticket.server
-                                color: "white"
+                                color: card.headInk
                                 font.family: w.face
-                                font.pixelSize: 18
+                                font.pixelSize: 18 * w.k
                             }
                         }
                         // Its time, against what it should take; LATE past that.
@@ -543,9 +550,9 @@ Item {
                                 anchors.right: parent.right
                                 visible: timeText.late
                                 text: qsTr("LATE")
-                                color: "white"
+                                color: card.headInk
                                 font.family: w.face
-                                font.pixelSize: 16
+                                font.pixelSize: 16 * w.k
                                 font.bold: true
                             }
                         Text {
@@ -554,9 +561,9 @@ Item {
                                 : w.elapsed(card.ticket.sentAt)
                                   + ((card.ticket.targetMinutes ?? 0) > 0 && !timeText.late
                                      ? " / " + qsTr("%1m").arg(card.ticket.targetMinutes) : "")
-                            color: "white"
+                            color: card.headInk
                             font.family: w.face
-                            font.pixelSize: timeText.late ? 24 : 26
+                            font.pixelSize: (timeText.late ? 24 : 26) * w.k
                             font.bold: true
                         }
                         }
@@ -590,7 +597,7 @@ Item {
                             text: qsTr("Continued ▸")
                             color: "#1864ab"
                             font.family: w.face
-                            font.pixelSize: 24
+                            font.pixelSize: 24 * w.k
                             font.bold: true
                         }
                     }
@@ -621,7 +628,7 @@ Item {
         // All day: the totals to make, for batching (twelve burgers on the grill...).
         Rectangle {
             visible: w.showAllDay
-            Layout.preferredWidth: 340
+            Layout.preferredWidth: 340 * w.k
             Layout.fillHeight: true
             radius: 10
             color: "#232933"
@@ -633,7 +640,7 @@ Item {
                     text: qsTr("All day")
                     color: "white"
                     font.family: w.face
-                    font.pixelSize: 30
+                    font.pixelSize: 30 * w.k
                     font.bold: true
                 }
                 Repeater {
@@ -645,16 +652,16 @@ Item {
                             text: modelData.count
                             color: "#f5b940"
                             font.family: w.face
-                            font.pixelSize: 30
+                            font.pixelSize: 30 * w.k
                             font.bold: true
-                            Layout.preferredWidth: 60
+                            Layout.preferredWidth: 60 * w.k
                         }
                         Text {
                             Layout.fillWidth: true
                             text: modelData.name
                             color: "white"
                             font.family: w.face
-                            font.pixelSize: 24
+                            font.pixelSize: 24 * w.k
                             elide: Text.ElideRight
                         }
                     }
@@ -694,7 +701,7 @@ Item {
             text: qsTr("%n more ▸", "", w.hiddenOrders)
             color: "white"
             font.family: w.face
-            font.pixelSize: 26
+            font.pixelSize: 26 * w.k
             font.bold: true
         }
         // (Its own: the order under it isn't bumped.)
@@ -711,6 +718,6 @@ Item {
         text: qsTr("All caught up")
         color: "#8a94a6"
         font.family: w.face
-        font.pixelSize: 48
+        font.pixelSize: 48 * w.k
     }
 }
