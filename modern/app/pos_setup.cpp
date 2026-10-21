@@ -125,7 +125,7 @@ bool PosService::setupRetireSamples()
         return false;
     // Someone must still be able to run the store: a manager of their own.
     const bool ownManager = std::ranges::any_of(s_->employees, [](const Employee &e) {
-        return e.active && !e.sample && (e.role == "manager" || e.role == "admin");
+        return e.active && !e.sample && (e.role == "manager" || e.role == "admin" || e.role == "owner");
     });
     if (!ownManager)
         return fail(tr("First add yourself as a manager, with a PIN of your own."));

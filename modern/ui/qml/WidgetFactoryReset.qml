@@ -54,11 +54,21 @@ Item {
                 placeholderText: "RESET"
                 inputMethodHints: Qt.ImhUppercaseOnly | Qt.ImhNoPredictiveText
             }
+            // Erasing the store is the maintainer's (the code set on its computer).
+            Label {
+                objectName: "resetWhose"
+                visible: !(w.zone && w.zone.pos && w.zone.pos.can("maintain"))
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: "#f5b940"
+                font.pixelSize: 18
+                text: qsTr("Only the store's maintainer can erase it: log in with the maintainer's code.")
+            }
             PosButton {
                 Layout.fillWidth: true
                 implicitHeight: 70
                 font.pixelSize: 20
-                enabled: confirm.text.trim() === "RESET"
+                enabled: confirm.text.trim() === "RESET" && !!w.zone && !!w.zone.pos && w.zone.pos.can("maintain")
                 text: qsTr("Back Up and Reset Everything")
                 palette.button: enabled ? "#a42828" : "#3a3f48"
                 palette.buttonText: "white"

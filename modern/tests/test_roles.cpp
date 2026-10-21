@@ -1,0 +1,192 @@
+#include <catch2/catch_test_macros.hpp>
+
+#include "app/pos_json.hh"
+#include "layout/layout.hh"
+#include "layout_fixture.hh"
+#include "pos_fixture.hh"
+#include "qt_catch.hh"
+
+using namespace Qt::StringLiterals;
+using namespace vt;
+using vt::app::PosService;
+
+// Who may do what: managers run the shift, the owner has the money, taxes,
+// labor law, pay and who's a manager, and the maintainer (a code set on the
+// store's computer) what can break the store.
+
+namespace {
+
+bool saveStore(PosService &pos, const QVariantMap &changes)
+{
+    QVariantMap store = pos.adminRecords(u"store"_s).value(0).toMap();
+    for (auto it = changes.begin(); it != changes.end(); ++it)
+        store[it.key()] = it.value();
+    return pos.adminSave(u"store"_s, 0, store);
+}
+
+int employeeIndex(PosService &pos, const QString &id)
+{
+    const QVariantList list = pos.adminRecords(u"employees"_s);
+    for (int i = 0; i < list.size(); ++i)
+        if (list[i].toMap()[u"id"_s] == id)
+            return i;
+    return -1;
+}
+
+} // namespace
+
+TEST_CASE("Roles: the store's first manager is its owner", "[roles]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // Morgan, the seed's manager
+    CHECK(pos.userRole() == u"owner"_s);
+    CHECK(pos.can(u"owner"_s));
+    CHECK_FALSE(pos.can(u"maintain"_s));
+    CHECK(pos.roleName(u"owner"_s) == u"Owner"_s);
+    CHECK(pos.roleName(u"admin"_s) == u"Owner"_s);   // before there were owners
+}
+
+TEST_CASE("Roles: a manager runs the shift; money, labor law, pay and managers are the owner's", "[roles]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // the owner adds a manager
+    QVariantMap pat = pos.adminNewRecord(u"employees"_s);
+    pat[u"name"_s] = u"Pat"_s;
+    pat[u"role"_s] = u"manager"_s;
+    pat[u"pin"_s] = u"246810"_s;
+    REQUIRE(pos.adminSave(u"employees"_s, -1, pat));
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"246810"_s));
+    CHECK(pos.userRole() == u"manager"_s);
+    CHECK_FALSE(pos.can(u"owner"_s));
+
+    // Store Settings: the store's name yes; cards, labor law, tip-outs no.
+    CHECK(saveStore(pos, {{u"storeName"_s, u"Pat's Café"_s}}));
+    CHECK(pos.storeName() == u"Pat's Café"_s);
+    CHECK_FALSE(saveStore(pos, {{u"surchargePercent"_s, 3}}));
+    CHECK_FALSE(saveStore(pos, {{u"stripeSecretKey"_s, u"sk_test_new"_s}}));
+    CHECK_FALSE(saveStore(pos, {{u"laborState"_s, u"CA"_s}}));
+    CHECK_FALSE(saveStore(pos, {{u"tipOuts"_s, u"busser 50 tips"_s}}));
+    CHECK_FALSE(saveStore(pos, {{u"encryptBackups"_s, true}}));   // the maintainer's
+    // ...shown, not editable, saying whose.
+    bool shownLocked = false;
+    for (const QVariant &f : pos.adminFields(u"store"_s))
+        if (f.toMap()[u"path"_s] == u"surchargePercent"_s)
+            shownLocked = f.toMap()[u"readOnly"_s].toBool() && f.toMap()[u"hint"_s].toString().startsWith(u"The owner's"_s);
+    CHECK(shownLocked);
+    // Taxes, card readers.
+    QVariantMap taxes = pos.adminRecords(u"taxes"_s).value(0).toMap();
+    taxes[u"food"_s] = 9.5;
+    CHECK_FALSE(pos.adminSave(u"taxes"_s, 0, taxes));
+
+    // Staff: a server's name yes; pay, a new manager, a manager's job no.
+    const int sam = employeeIndex(pos, u"sam"_s);
+    QVariantMap s = pos.adminRecords(u"employees"_s)[sam].toMap();
+    s[u"name"_s] = u"Samuel"_s;
+    CHECK(pos.adminSave(u"employees"_s, sam, s));
+    s[u"payRate"_s] = s[u"payRate"_s].toDouble() + 2;
+    CHECK_FALSE(pos.adminSave(u"employees"_s, sam, s));
+    s = pos.adminRecords(u"employees"_s)[sam].toMap();
+    s[u"role"_s] = u"manager"_s;
+    CHECK_FALSE(pos.adminSave(u"employees"_s, sam, s));
+    QVariantMap boss = pos.adminNewRecord(u"employees"_s);
+    boss[u"name"_s] = u"Another"_s;
+    boss[u"role"_s] = u"manager"_s;
+    boss[u"pin"_s] = u"135790"_s;
+    CHECK_FALSE(pos.adminSave(u"employees"_s, -1, boss));
+    CHECK_FALSE(pos.adminDelete(u"employees"_s, employeeIndex(pos, u"manager"_s)));   // the owner
+    CHECK_FALSE(pos.forgetCustomer(u"anyone"_s));
+
+    // The owner can, and the store keeps an owner.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK(saveStore(pos, {{u"surchargePercent"_s, 3}}));
+    CHECK(pos.adminSave(u"taxes"_s, 0, taxes));
+    s = pos.adminRecords(u"employees"_s)[sam].toMap();
+    s[u"role"_s] = u"manager"_s;
+    s[u"pin"_s] = u"112233"_s;
+    CHECK(pos.adminSave(u"employees"_s, sam, s));
+    QVariantMap me = pos.adminRecords(u"employees"_s)[employeeIndex(pos, u"manager"_s)].toMap();
+    me[u"role"_s] = u"manager"_s;   // the only owner, stepping down: not without another owner
+    CHECK_FALSE(pos.adminSave(u"employees"_s, employeeIndex(pos, u"manager"_s), me));
+}
+
+TEST_CASE("Roles: the maintainer, by a code set on the store's computer", "[roles][maintainer]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    // No code: nobody is the maintainer; the owner can't erase the store.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QStringList notices;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
+    CHECK_FALSE(pos.factoryReset(u"RESET"_s));
+    CHECK(notices.join(u" "_s).contains(u"Factory reset"_s));
+    CHECK_FALSE(pos.startPairing(true));   // a standby computer
+    CHECK(pos.startPairing(false));        // a new handheld: a manager's
+    pos.stopPairing();
+    pos.logout();
+
+    pos.shared()->setMaintainerPin(u"86420"_s);
+    CHECK(pos.shared()->settings.maintainerPinHash != "86420");   // kept hashed
+    CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).maintainerPinHash
+          == pos.shared()->settings.maintainerPinHash);
+    REQUIRE(pos.loginWithPin(u"86420"_s));
+    CHECK(pos.userName() == u"Maintainer"_s);
+    CHECK(pos.can(u"maintain"_s));
+    CHECK(pos.can(u"owner"_s));
+    CHECK_FALSE(pos.clockIn());   // not staff: no hours
+    // Not on the staff list: nobody can remove or demote them.
+    for (const QVariant &e : pos.adminRecords(u"employees"_s))
+        CHECK(e.toMap()[u"id"_s] != u"maintainer"_s);
+    CHECK(saveStore(pos, {{u"encryptBackups"_s, false}, {u"surchargePercent"_s, 2}}));
+    CHECK(pos.startPairing(true));
+    pos.stopPairing();
+    pos.logout();
+
+    // Nobody's PIN can be the maintainer's.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const int sam = employeeIndex(pos, u"sam"_s);
+    QVariantMap s = pos.adminRecords(u"employees"_s)[sam].toMap();
+    s[u"pin"_s] = u"86420"_s;
+    CHECK_FALSE(pos.adminSave(u"employees"_s, sam, s));
+    pos.logout();
+
+    // Off: the code no longer logs in.
+    pos.shared()->setMaintainerPin({});
+    CHECK_FALSE(pos.loginWithPin(u"86420"_s));
+}
+
+TEST_CASE("Roles: templates are the owner's, the store's own pages the maintainer's", "[roles][layout]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    const layout::Layout before = *l;
+    CHECK(layout::protectedEdit(before, before).isEmpty());
+    // A menu page's button moved: anyone who edits pages.
+    layout::Layout menu = before;
+    for (layout::Page &p : menu.pages)
+        if (p.kind == u"items" && !p.zones.isEmpty()) {
+            p.zones.first().rect.moveLeft(p.zones.first().rect.x() + 8);
+            break;
+        }
+    CHECK(layout::protectedEdit(before, menu).isEmpty());
+    // A template changed: the maintainer's.
+    layout::Layout templ = before;
+    bool changed = false;
+    for (layout::Page &p : templ.pages)
+        if (p.kind == u"template" && !p.zones.isEmpty() && !changed) {
+            p.zones.first().rect.moveLeft(p.zones.first().rect.x() + 8);
+            changed = true;
+        }
+    REQUIRE(changed);
+    CHECK(layout::protectedEdit(before, templ).contains(u"template"_s));
+    // A page with a role (the login, the tables...) removed: the maintainer's.
+    layout::Layout gone = before;
+    const auto it = std::ranges::find_if(gone.pages, [](const layout::Page &p) { return !p.role.isEmpty(); });
+    REQUIRE(it != gone.pages.end());
+    gone.pages.erase(it);
+    bool system = false;
+    CHECK_FALSE(layout::protectedEdit(before, gone, &system).isEmpty());
+    CHECK(system);
+    layout::protectedEdit(before, templ, &system);
+    CHECK_FALSE(system);
+}

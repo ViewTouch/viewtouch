@@ -1315,6 +1315,18 @@ bool LayoutController::saveEdits()
     if (!editing_ || !editor_)
         return false;
     const Layout draft = editor_->layout();
+    // Templates are the owner's; the store's own pages, the maintainer's.
+    if (pos_) {
+        bool system = false;
+        if (const QString what = vt::layout::protectedEdit(layout_, draft, &system); !what.isEmpty()) {
+            const char *needs = system ? vt::core::perm::Maintain : vt::core::perm::Owner;
+            if (!pos_->can(QString::fromLatin1(needs))) {
+                setStatus((system ? tr("Only the maintainer can change %1. Undo that change, or Discard.")
+                                  : tr("Only the owner can change %1. Undo that change, or Discard.")).arg(what));
+                return false;
+            }
+        }
+    }
     if (saver_) {
         QString error;
         if (!saver_(draft, &error)) {

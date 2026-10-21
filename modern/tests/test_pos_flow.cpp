@@ -4175,7 +4175,7 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
     Screen s;
     int asked = 0;
     s.pos.shared()->requestFactoryReset = [&] { ++asked; return true; };
-    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(test::loginMaintainer(s.pos));
     REQUIRE(s.c.jumpTo(u"manager"_s));
     QTest::qWait(30);
     s.c.activate(u"factory-reset"_s);                    // Manager -> Factory Reset…

@@ -145,6 +145,11 @@ struct Options {
     QCommandLineOption exportDir{u"export-dir"_s,
         u"Where reports are saved as CSV / PDF (default: <data dir>/exports)."_s, u"dir"_s};
     QCommandLineOption backup{u"backup"_s, u"Back up the database now (safe while ViewTouch runs) and exit."_s};
+    QCommandLineOption maintainerPin{u"maintainer-pin"_s,
+        u"Set this store's maintainer code (4 to 8 digits; \"off\" removes it) and exit: the store's "
+        "technician logs in with it, for what managers and the owner can't do (erasing the store, updates, "
+        "the network and the standby, templates, backups). It's only set here, on the store's computer."_s,
+        u"pin"_s};
     QCommandLineOption pairingCode{u"pairing-code"_s,
         u"Ask the ViewTouch server running on this machine (same --data-dir) for a code to pair a "
         "terminal with, print it, and exit."_s};
@@ -1318,7 +1323,18 @@ int runStore(const Args &cli, const Options &o)
                 QObject::connect(s, &QLocalSocket::readyRead, s, [s, shared] {
                     if (!s->canReadLine())
                         return;
-                    if (s->readLine().trimmed() == "pair") {
+                    const QByteArray line = s->readLine().trimmed();
+                    // The maintainer's code, set from this computer's command line.
+                    if (line.startsWith("maintainer ")) {
+                        const QString pin = QString::fromLatin1(line.mid(11)).trimmed();
+                        shared->setMaintainerPin(pin == u"off" ? QString() : pin);
+                        qInfo().noquote() << (pin == u"off" ? "Maintainer code removed" : "Maintainer code set")
+                                          << "from this machine's command line";
+                        s->write("{\"ok\":true}\n");
+                        s->disconnectFromServer();
+                        return;
+                    }
+                    if (line == "pair") {
                         const QString code = shared->startPairing(true);   // on this computer: may be the standby
                         const QString until = vt::i18n::timeText(
                             QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time());
@@ -1491,6 +1507,59 @@ int runPairingCode(const Args &cli, const Options &o)
     qInfo().noquote() << u"Pairing code: %1  (one device, until %2)"_s.arg(o2.value(u"code").toString(),
                                                                           o2.value(u"until").toString());
     qInfo().noquote() << "Type it on the new terminal's Join screen.";
+    return 0;
+}
+
+// `vtmodern --maintainer-pin CODE`: the store's maintainer code, set on its
+// computer only (the running store takes it at once; else it's stored).
+int runMaintainerPin(const Args &cli, const Options &o)
+{
+    const QString pin = cli.value(o.maintainerPin).trimmed();
+    static const QRegularExpression digits(u"^[0-9]{4,8}$"_s);
+    if (pin != u"off" && !digits.match(pin).hasMatch()) {
+        qCritical().noquote() << "The maintainer code is 4 to 8 digits (or \"off\").";
+        return 1;
+    }
+    if (pin != u"off" && pin.size() < 6)
+        qWarning().noquote() << "A code of 6 to 8 digits is much harder to guess (managers' PINs are 6 to 8).";
+    QLocalSocket socket;
+    socket.connectToServer(controlSocketOf(cli, o));
+    if (socket.waitForConnected(1500)) {
+        socket.write("maintainer " + pin.toLatin1() + '\n');
+        socket.flush();
+        QByteArray answer;
+        while (!answer.contains('\n') && socket.waitForReadyRead(5000))
+            answer += socket.readAll();
+        if (!answer.contains("\"ok\"")) {
+            qCritical().noquote() << "The running store didn't take it.";
+            return 1;
+        }
+    } else {
+        const QString dbPath = dbPathOf(cli, o);
+        QLockFile lock(dbPath + u".lock"_s);
+        lock.setStaleLockTime(0);
+        if (!lock.tryLock(0)) {
+            qCritical().noquote() << u"ViewTouch is starting or stopping on %1: try again in a moment."_s.arg(dbPath);
+            return 1;
+        }
+        vt::storage::PosStore store(dbPath);
+        QString error;
+        if (!store.open(&error)) {
+            qCritical().noquote() << "Cannot open the database:" << error;
+            return 1;
+        }
+        auto data = store.load();
+        if (!data) {
+            qCritical("Cannot read the store.");
+            return 1;
+        }
+        vt::storage::AsyncWriter writer(dbPath);
+        vt::storage::SqlPosSink sink(writer);
+        vt::app::PosShared shared(std::move(*data), &sink);
+        shared.setMaintainerPin(pin == u"off" ? QString() : pin);
+        writer.flush();
+    }
+    qInfo().noquote() << (pin == u"off" ? "The maintainer code is removed." : "The maintainer code is set: log in with it on any screen.");
     return 0;
 }
 
@@ -1810,7 +1879,7 @@ void prepareEnvironment(int argc, char *argv[])
         const QByteArrayView arg(argv[i]);
         const bool command = arg == "--backup" || arg == "--restore" || arg.startsWith("--restore=")
                              || arg == "--factory-reset" || arg == "--demo-data"
-                             || arg == "--pairing-code" || arg == "-h"
+                             || arg == "--pairing-code" || arg == "--maintainer-pin" || arg.startsWith("--maintainer-pin=") || arg == "-h"
                              || arg == "--help" || arg == "--help-all" || arg == "-v" || arg == "--version";
         // One-shot commands answer on the terminal, even through a pipe
         // (Qt would otherwise send the messages to the journal).
@@ -1880,7 +1949,7 @@ int main(int argc, char *argv[])
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
         o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
-        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.exportDir,
+        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
     cli.process(app);
@@ -1920,6 +1989,8 @@ int main(int argc, char *argv[])
         return runRestore(args, o);
     if (args.isSet(o.pairingCode))
         return runPairingCode(args, o);
+    if (args.isSet(o.maintainerPin))
+        return runMaintainerPin(args, o);
     if (args.isSet(o.connect))
         return runTerminal(args, o);
     // The store's servers hand over to each other: a standby that took over

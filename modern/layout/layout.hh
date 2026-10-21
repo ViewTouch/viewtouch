@@ -115,4 +115,11 @@ public:
     bool operator==(const Layout &) const = default;
 };
 
+// The parts of a layout not every page editor may change: the templates every
+// page builds on (the owner's: the ready-made layouts change them too), and
+// the store's own pages, gone (login, tables, pay... a page with a role: the
+// maintainer's). What `after` changes of them, said for a person ("" if
+// nothing); *system: it's a store's own page.
+QString protectedEdit(const Layout &before, const Layout &after, bool *system = nullptr);
+
 } // namespace vt::layout

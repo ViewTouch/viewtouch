@@ -412,6 +412,10 @@ struct PosSettings {
     // Each station's pace (ticket time against the line ahead), learned as
     // tickets are bumped: Rush Radar's half hour ahead.
     std::map<std::string, StationPace> stationPace;
+    // The maintainer's code (hashed, as staff PINs): set on the store's
+    // computer (vtmodern --maintainer-pin), never on a screen. Empty: none.
+    std::string maintainerPinSalt;
+    std::string maintainerPinHash;
     int kitchenWarnMinutes = 8;
     int kitchenLateMinutes = 15;
     // Orders for later go to the kitchen this long before they're due.

@@ -515,7 +515,7 @@ Item {
                                 isSet: true
                                 changed: w.differs(modelData.path)
                                 section: w.sectioned && w.query !== "" ? modelData.group : ""
-                                readOnly: modelData.readonlyExisting === true && w.index >= 0
+                                readOnly: (modelData.readonlyExisting === true && w.index >= 0) || modelData.readOnly === true
                                 onCommit: v => {
                                     const d = w.copy(w.draft)
                                     d[modelData.path] = v

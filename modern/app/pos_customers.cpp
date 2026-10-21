@@ -86,7 +86,7 @@ QVariantMap PosService::customerSummary(const CustomerRecord &c) const
 
 bool PosService::forgetCustomer(const QString &id)
 {
-    if (!require(perm::Manager, tr("Forgetting a customer")))
+    if (!require(perm::Owner, tr("Forgetting a customer")))
         return false;
     auto it = std::ranges::find_if(s_->customers, [&](const CustomerRecord &c) { return qs(c.id) == id; });
     if (it == s_->customers.end())

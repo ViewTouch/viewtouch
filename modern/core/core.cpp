@@ -97,9 +97,15 @@ Money qualifiedPrice(Money unit, Qualifier q)
 
 std::set<std::string> permissionsForRole(const std::string &role)
 {
-    if (role == "admin" || role == "manager")
-        return {perm::Order, perm::Settle, perm::OthersChecks, perm::Discount, perm::Void, perm::Manager,
-                perm::EditLayout};
+    if (role == "admin" || role == "manager" || role == "owner" || role == "maintainer") {
+        std::set<std::string> out{perm::Order, perm::Settle, perm::OthersChecks, perm::Discount, perm::Void, perm::Manager,
+                                  perm::EditLayout};
+        if (role != "manager")
+            out.insert(perm::Owner);   // "admin": the owner, as it was before there were owners
+        if (role == "maintainer")
+            out.insert(perm::Maintain);
+        return out;
+    }
     // Discounts, comps and staff meals need a manager (or their PIN on the spot).
     // The counter takes everyone's payments; a server works their own checks.
     if (role == "cashier")

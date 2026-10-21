@@ -483,6 +483,13 @@ Cards can be taken on a **Stripe Reader S700** running ViewTouch itself (Stripe 
 - **Cash out tips.** Logout → Cash Out My Tips pays the card tips owed to you from this terminal's drawer.
 - **Manager → Terminals** sets each terminal's receipt printer (and so its drawer kick).
 
+## Managers, the owner and the maintainer
+
+- **Permissions:** `perm::Owner` (`owner`) and `perm::Maintain` (`maintain`), not per-person (not in `AllPermissions`). Roles: `manager` (as before), `owner` and `admin` (= owner) add Owner, `maintainer` adds both. A store with no active owner promotes its first active manager when it loads.
+- **The maintainer** is `maintainerEmployee()` (id `maintainer`, not in `employees`), logged in by `PosSettings::maintainerPinHash` (salted like staff PINs). It's set only on the store's computer: `vtmodern --maintainer-pin CODE|off` (to the running store over its local control socket, else in the database), or `sudo vtmodern-setup maintainer [CODE|off]` (asks when not given; as the data's owner). No staff PIN may match it; it doesn't clock in.
+- **Owner's:** Store Settings fields in `fieldPermission()` (cards, labor law, tip-outs and pool, accounting), the Taxes and Card Readers panels (shown `readOnly` with *The owner's* to others; `adminSave` refuses a changed value), `ownerRule()` on Employees (adding a manager, changing a manager's or owner's role, deactivating one, pay; the last owner stays), `forgetCustomer`, and template pages (`layout::protectedEdit`, checked on the screen and by the server).
+- **Maintainer's:** `factoryReset`, `startPairing(standby)`, removing a terminal, the backup fields, a server's `sendUpdate`, and removing a page with a role.
+
 ## Running the POS
 
 Log in with a demo PIN: **1234** (manager), **1111** (server) or **2222** (cashier). Then:

@@ -158,7 +158,7 @@ TEST_CASE("Standby: refused without the store's server key", "[standby]")
 
     // A standby pairing hands out the key; a terminal's pairing doesn't.
     app::PosService office(main.shared.get(), u"Office"_s);
-    REQUIRE(office.loginWithPin(u"1234"_s));
+    REQUIRE(test::loginMaintainer(office));   // pairing a standby: the maintainer's
     // A screen's code doesn't pair a standby (it would get a copy of everything).
     {
         REQUIRE(office.startPairing(false));
