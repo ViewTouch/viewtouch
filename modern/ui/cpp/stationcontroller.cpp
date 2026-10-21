@@ -187,6 +187,40 @@ bool StationController::setPin(const QString &pin)
     return true;
 }
 
+bool StationController::setMaintainerCode(const QString &pin)
+{
+    if (!setPin(pin))
+        return false;
+    if (role_ == u"store")
+        handToStore(pin);
+    else
+        emit finished(u"maintainer"_s, true, tr("This computer's settings now ask for the new code."));
+    return true;
+}
+
+void StationController::handToStore(const QString &pin, int triesLeft)
+{
+    // vtmodern --maintainer-pin -: the running store takes it (the code on its
+    // input, not on a command line). Starting up, or not up yet: again shortly.
+    auto *p = new QProcess(this);
+    p->setProcessChannelMode(QProcess::ForwardedErrorChannel);
+    connect(p, &QProcess::finished, this, [this, p, pin, triesLeft](int code, QProcess::ExitStatus status) {
+        p->deleteLater();
+        if (status == QProcess::NormalExit && code == 0) {
+            emit finished(u"maintainer"_s, true, tr("The maintainer code is set, for this computer's settings and the store."));
+            return;
+        }
+        if (triesLeft <= 1) {
+            emit finished(u"maintainer"_s, false, tr("The store didn't take the maintainer code: set it again from Maintainer Code."));
+            return;
+        }
+        QTimer::singleShot(2000, this, [this, pin, triesLeft] { handToStore(pin, triesLeft - 1); });
+    });
+    p->start(QCoreApplication::applicationFilePath(), storeArgs() << u"--maintainer-pin"_s << u"-"_s);
+    p->write(pin.toLatin1() + '\n');
+    p->closeWriteChannel();
+}
+
 void StationController::setup(const QString &role, const QString &name, bool guestDisplay, const QString &pin)
 {
     static const QStringList roles{u"store"_s, u"terminal"_s, u"kitchen"_s, u"selforder"_s, u"timeclock"_s};
@@ -204,12 +238,15 @@ void StationController::setup(const QString &role, const QString &name, bool gue
         emit finished(u"setup"_s, false, tr("The PIN is 4 to 8 digits."));
         return;
     }
-    auto done = [this, role, cleanName] {
+    auto done = [this, role, cleanName, pin] {
         role_ = role;
         name_ = cleanName;
         save();
         emit configChanged();
         startPos(role == u"store" ? u"setup"_s : QString());
+        // The main register: the same code is the store's maintainer code.
+        if (role == u"store" && !pin.isEmpty())
+            handToStore(pin);
     };
     if (!canManage()) {   // trying it out on a desktop
         done();

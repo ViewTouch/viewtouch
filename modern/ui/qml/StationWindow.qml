@@ -96,6 +96,7 @@ ApplicationWindow {
                 erase: [qsTr("The store is erased; ViewTouch starts fresh."), qsTr("Not erased")],
                 forget: [qsTr("Choose what this computer is."), qsTr("Couldn't start over")],
                 setup: [qsTr("Set up."), qsTr("Not set up")],
+                maintainer: ["", ""],
                 reboot: ["", qsTr("Couldn't restart")],
                 poweroff: ["", qsTr("Couldn't shut down")]
             }[action] ?? [qsTr("Done."), qsTr("That didn't work")]
@@ -109,6 +110,10 @@ ApplicationWindow {
                 root.onlineReady = ""
                 root.say(qsTr("ViewTouch %1 is installed. Starting it again…").arg((message ?? "").split(" ")[1] ?? ""), true)
                 restartSoon.start()   // the home screen on the new version (its service starts it again)
+            }
+            if (action === "maintainer") {
+                root.say(message, ok)
+                return
             }
             if (ok && what[0] !== "")
                 root.say(what[0], true)
@@ -322,7 +327,7 @@ ApplicationWindow {
             width: page.width
             sourceComponent: ({
                 home: homePanel, network: networkPanel, time: timePanel, updates: updatesPanel,
-                help: helpPanel, reset: resetPanel, about: aboutPanel, setup: setupPanel
+                help: helpPanel, reset: resetPanel, about: aboutPanel, setup: setupPanel, maintainer: maintainerPanel
             })[root.panel]
         }
     }
@@ -414,6 +419,13 @@ ApplicationWindow {
                 Tile { icon: "restart"; label: qsTr("Restart"); tint: "#4a3f24"; onTapped: confirm.ask(qsTr("Restart this computer?"), qsTr("Restart"), () => root.station.restartComputer()) }
                 Tile { icon: "power"; label: qsTr("Shut Down"); tint: "#4a3f24"; onTapped: confirm.ask(qsTr("Shut this computer down? Turn it on again with its power button."), qsTr("Shut Down"), () => root.station.shutDown()) }
                 Tile { icon: "startover"; label: qsTr("Reset…"); tint: "#4a2a2e"; locked: true; onTapped: root.withPin(() => root.panel = "reset") }
+                Tile {
+                    objectName: "tileMaintainer"
+                    icon: "about"
+                    label: qsTr("Maintainer Code")
+                    locked: true
+                    onTapped: root.withPin(() => root.panel = "maintainer")
+                }
                 Tile { icon: "about"; label: qsTr("About"); onTapped: root.panel = "about" }
             }
         }
@@ -621,6 +633,71 @@ ApplicationWindow {
         }
     }
 
+    // --- the maintainer's code ----------------------------------------------------------
+
+    Component {
+        id: maintainerPanel
+        Panel {
+            id: mp
+            title: qsTr("Maintainer Code")
+            property string code: ""
+            property string again: ""
+            property bool confirming: false
+            Note {
+                text: root.station.role === "store"
+                      ? qsTr("A new code for this computer's settings and for the store's maintainer (erasing the store, updating screens, pairing a standby...). 4 to 8 digits; 6 or more is much harder to guess.")
+                      : qsTr("A new code for this computer's settings. 4 to 8 digits; 6 or more is much harder to guess. (The store's own is set on its main register.)")
+            }
+            RowLayout {
+                spacing: root.u * 3
+                PinKeys {
+                    Layout.alignment: Qt.AlignTop
+                    onDigit: (d) => {
+                        if (!mp.confirming && mp.code.length < 8) mp.code += d
+                        else if (mp.confirming && mp.again.length < 8) mp.again += d
+                    }
+                    onClear: { if (mp.confirming) mp.again = ""; else mp.code = "" }
+                }
+                ColumnLayout {
+                    Layout.alignment: Qt.AlignTop
+                    spacing: root.u
+                    Label {
+                        text: mp.confirming ? qsTr("Type the same code again") : qsTr("Type the new code")
+                        color: "white"
+                        font.pixelSize: root.u * 1.3
+                        font.bold: true
+                    }
+                    Label { text: "●".repeat(mp.confirming ? mp.again.length : mp.code.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                    Note {
+                        visible: mp.confirming && mp.again.length >= mp.code.length && mp.again !== mp.code
+                        text: qsTr("The two don't match. Touch Clear and type it again.")
+                        color: "#eb8a7a"
+                    }
+                    BigButton {
+                        visible: !mp.confirming
+                        enabled: mp.code.length >= 4
+                        text: qsTr("Next")
+                        tint: "#2f6fd6"
+                        onClicked: mp.confirming = true
+                    }
+                    BigButton {
+                        objectName: "maintainerSave"
+                        visible: mp.confirming
+                        enabled: mp.code === mp.again
+                        text: qsTr("Save")
+                        tint: "#22784a"
+                        onClicked: {
+                            root.station.setMaintainerCode(mp.code)
+                            mp.code = ""
+                            mp.again = ""
+                            mp.confirming = false
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // --- reset ---------------------------------------------------------------------------
 
     Component {
@@ -696,7 +773,7 @@ ApplicationWindow {
             readonly property var defaultNames: ({ store: "Main-Register", terminal: "Register-2", kitchen: "Kitchen",
                                                    selforder: "Kiosk", timeclock: "Time-Clock" })
             readonly property var steps: [qsTr("Welcome"), qsTr("This computer"), qsTr("Its name"), qsTr("Network"),
-                                          qsTr("Time zone"), qsTr("Settings PIN")]
+                                          qsTr("Time zone"), qsTr("Maintainer code")]
 
             // Where we are (not while typing: room for the keyboard).
             RowLayout {
@@ -854,8 +931,12 @@ ApplicationWindow {
             ColumnLayout {
                 visible: wiz.step === 5
                 spacing: root.u
-                Heading { text: qsTr("A PIN for this computer's settings") }
-                Note { text: qsTr("4 to 8 digits. It's asked before the network, updates and reset. Give it only to managers. (Not the same as anyone's ViewTouch PIN.)") }
+                Heading { text: qsTr("The maintainer's code") }
+                Note {
+                    text: wiz.role === "store"
+                          ? qsTr("4 to 8 digits (6 or more is much harder to guess). It's asked before this computer's network, updates and reset, and it's the store's maintainer code too: the store's technician logs in with it to erase the store, update screens, pair a standby and the like, which managers and the owner can't. Keep it between the owner and the technician; it isn't anyone's staff PIN.")
+                          : qsTr("4 to 8 digits (6 or more is much harder to guess). It's asked before this computer's network, updates and reset. (The store's own maintainer code is set on its main register.)")
+                }
                 // The keys on the left, what's typed and the buttons beside them
                 // (all on screen at once).
                 RowLayout {
@@ -879,7 +960,7 @@ ApplicationWindow {
                         Layout.alignment: Qt.AlignTop
                         spacing: root.u
                         Label {
-                            text: wiz.confirming ? qsTr("Type the same PIN again") : qsTr("Type a PIN")
+                            text: wiz.confirming ? qsTr("Type the same code again") : qsTr("Type the code")
                             color: "white"
                             font.pixelSize: root.u * 1.3
                             font.bold: true
@@ -887,7 +968,7 @@ ApplicationWindow {
                         RowLayout {
                             spacing: root.u * 2
                             ColumnLayout {
-                                Label { text: qsTr("PIN"); color: "#9aa3b2"; font.pixelSize: root.u }
+                                Label { text: qsTr("Code"); color: "#9aa3b2"; font.pixelSize: root.u }
                                 Label { text: "●".repeat(wiz.pin.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
                             }
                             ColumnLayout {

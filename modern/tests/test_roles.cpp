@@ -5,6 +5,18 @@
 #include "layout_fixture.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
+#include "stationcontroller.hh"
+
+#include <QDir>
+#include <QFile>
+#include <QSignalSpy>
+#include <QTemporaryDir>
+#include <QQmlApplicationEngine>
+#include <QQuickItem>
+#include <QQuickWindow>
+#include <QTest>
+
+#include <functional>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -189,4 +201,79 @@ TEST_CASE("Roles: templates are the owner's, the store's own pages the maintaine
     CHECK(system);
     layout::protectedEdit(before, templ, &system);
     CHECK_FALSE(system);
+}
+
+TEST_CASE("Roles: the home screen's maintainer code guards this computer's settings", "[roles][station]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    {
+        QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(R"({"role": "terminal", "name": "Register-2"})");
+    }
+    StationController station(dir.path(), {}, false);
+    CHECK_FALSE(station.hasPin());
+    QSignalSpy done(&station, &StationController::finished);
+    CHECK_FALSE(station.setMaintainerCode(u"12"_s));   // 4 to 8 digits
+    REQUIRE(station.setMaintainerCode(u"86420"_s));
+    CHECK(station.hasPin());
+    CHECK(station.checkPin(u"86420"_s));
+    CHECK_FALSE(station.checkPin(u"11111"_s));
+    REQUIRE(done.size() == 1);
+    CHECK(done[0][0].toString() == u"maintainer"_s);
+    CHECK(done[0][1].toBool());
+    // Kept hashed, not as digits.
+    QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    CHECK_FALSE(f.readAll().contains("86420"));
+}
+
+TEST_CASE("Roles: the home screen asks for the maintainer's code, and changes it", "[roles][station][ui]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    {
+        QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(R"({"role": "kitchen", "name": "Kitchen"})");
+    }
+    StationController station(dir.path(), {}, false);
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, false},
+                                 {u"width"_s, 1280}, {u"height"_s, 800}});
+    engine.loadFromModule("ViewTouch", "StationWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(100);
+    const auto find = [&](const QString &name) { return window->findChild<QQuickItem *>(name); };
+    REQUIRE(find(u"tileMaintainer"_s));
+    // No code yet: the panel opens; type it twice and save.
+    window->setProperty("panel", u"maintainer"_s);
+    QTest::qWait(150);
+    QQuickItem *save = nullptr;
+    std::function<QQuickItem *(QQuickItem *)> walk = [&](QQuickItem *it) -> QQuickItem * {
+        if (it->objectName() == u"maintainerSave")
+            return it;
+        for (QQuickItem *c : it->childItems())
+            if (QQuickItem *hit = walk(c))
+                return hit;
+        return nullptr;
+    };
+    save = walk(window->contentItem());
+    REQUIRE(save);
+    QObject *panel = save;
+    while (panel && panel->property("code").isNull())
+        panel = panel->parent();
+    REQUIRE(panel);
+    panel->setProperty("code", u"86420"_s);
+    panel->setProperty("again", u"86420"_s);
+    panel->setProperty("confirming", true);
+    QTest::qWait(50);
+    REQUIRE(save->isVisible());
+    QMetaObject::invokeMethod(save, "clicked");
+    QTest::qWait(50);
+    CHECK(station.checkPin(u"86420"_s));
 }
