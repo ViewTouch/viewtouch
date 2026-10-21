@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QHash>
+#include <QSet>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QRegularExpression>
@@ -17,7 +18,7 @@ namespace vt::app {
 
 namespace {
 
-QString tr(const char *text) { return QCoreApplication::translate("MenuImport", text); }
+QString tr(const char *text, int n = -1) { return QCoreApplication::translate("MenuImport", text, nullptr, n); }
 
 // The cells of one line; quotes may hold the separator and doubled quotes.
 QList<QStringList> rowsOf(const QString &text, QChar sep)
@@ -71,7 +72,7 @@ QString what(const QString &header)
     const QString h = plain(header);
     static const QList<std::pair<QString, QStringList>> names = {
         {u"name"_s, {u"name"_s, u"item"_s, u"item name"_s, u"product"_s, u"dish"_s, u"menu item"_s, u"nombre"_s, u"producto"_s, u"platillo"_s}},
-        {u"price"_s, {u"price"_s, u"cost"_s, u"amount"_s, u"precio"_s, u"costo"_s}},
+        {u"price"_s, {u"price"_s, u"base price"_s, u"default price"_s, u"menu price"_s, u"cost"_s, u"amount"_s, u"precio"_s, u"costo"_s}},
         {u"category"_s, {u"category"_s, u"categories"_s, u"family"_s, u"group"_s, u"section"_s, u"menu group"_s, u"type"_s,
                          u"categoria"_s, u"categorias"_s, u"seccion"_s, u"grupo"_s, u"tipo"_s}},
         {u"menu"_s, {u"menu"_s, u"reporting category"_s}},   // a category when there's no other
@@ -89,6 +90,7 @@ QString what(const QString &header)
         {u"sellable"_s, {u"sellable"_s}},
         {u"alcohol"_s, {u"contains alcohol"_s, u"alcohol"_s, u"alcoholic"_s}},
         {u"priceType"_s, {u"price type"_s}},
+        {u"isModifier"_s, {u"modifier"_s, u"is modifier"_s}},   // Toast's item list: Yes for a modifier option
     };
     for (const auto &[key, words] : names)
         if (words.contains(h))
@@ -216,6 +218,8 @@ MenuImport readTable(const QList<QStringList> &rows)
                 out.from = u"Square"_s;
             else if (headers.contains(u"clover id"_s))
                 out.from = u"Clover"_s;
+            else if (headers.contains(u"guid"_s) && at.contains(u"isModifier"_s))
+                out.from = u"Toast"_s;
         }
     }
     if (!at.contains(u"category"_s) && at.contains(u"menu"_s))
@@ -232,6 +236,9 @@ MenuImport readTable(const QList<QStringList> &rows)
     };
     const bool sized = at.contains(u"size"_s) || !optionValues.isEmpty();
     QHash<QString, int> byName;   // sized: the item each row is a size of
+    QSet<QString> seen;           // not sized: the names read, once each
+    QStringList twice;
+    int options = 0;              // Toast's modifier options, left out
     for (int r = firstRow; r < rows.size(); ++r) {
         const QStringList &row = rows[r];
         if (std::all_of(row.begin(), row.end(), [](const QString &c) { return c.trimmed().isEmpty(); }))
@@ -250,6 +257,12 @@ MenuImport readTable(const QList<QStringList> &rows)
             name = out.items.last().name;   // a size under the item's own row
         if (name.isEmpty()) {
             out.problems << tr("Row %1: no name").arg(line);
+            continue;
+        }
+        // A modifier option (Toast's item list has them among the items, but
+        // not which items they go with).
+        if (yes(cell(row, u"isModifier"_s))) {
+            ++options;
             continue;
         }
         if (yes(cell(row, u"archived"_s))) {
@@ -283,6 +296,13 @@ MenuImport readTable(const QList<QStringList> &rows)
                 item.sizes << ImportedPrice{size.isEmpty() ? tr("Regular") : size, p};
             continue;
         }
+        // The same item twice (Toast lists one once for each menu it's on): the first.
+        if (!sized && seen.contains(name.toLower())) {
+            if (!twice.contains(name, Qt::CaseInsensitive))
+                twice << name;
+            continue;
+        }
+        seen.insert(name.toLower());
         ImportedItem item;
         item.row = line;
         item.name = name;
@@ -309,6 +329,12 @@ MenuImport readTable(const QList<QStringList> &rows)
             byName.insert(name.toLower(), int(out.items.size()));
         out.items << item;
     }
+    // Said first: they're most of what's left out.
+    if (!twice.isEmpty())
+        out.problems.prepend(tr("In the file twice (the first is kept): %1").arg(twice.join(u", "_s)));
+    if (options > 0)
+        out.problems.prepend(tr("%n modifier option(s) left out: the file doesn't say which items they go with. "
+                           "Make them in Choice Groups.", options));
     return out;
 }
 
