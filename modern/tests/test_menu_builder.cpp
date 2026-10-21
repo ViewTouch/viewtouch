@@ -602,6 +602,32 @@ TEST_CASE("Menu import: Toast's menu export", "[menubuilder][import]")
     CHECK(r.problems == QStringList{u"No price for Mystery"_s});
 }
 
+TEST_CASE("Menu import: Toast's item list (MenuItem_Export.csv)", "[menubuilder][import]")
+{
+    // Its items and modifier options together, one row each; the same item
+    // once for each menu it's on; Latin-1, as Toast saves it.
+    const QByteArray file =
+        "Item ID,GUID,Name,Number,Imported ID,Base Price,Created Date,Archived,Modifier,SKU,PLU\n"
+        "1800000000766735067,003eb2af-4dd9,Cilantro,1800000000766735068,,0.00,9/14/2026,No,Yes,,\n"
+        "1800000000433270312,00ad0874-5d38,Carajillo,1800000000433270313,,10.99,8/14/2026,No,No,,\n"
+        "1800000000343959572,052235e4-8bdf,Pi\xf1" "a,1800000000343959573,,4.99,8/4/2026,No,No,,\n"
+        "1800000000909596644,08fb4269-cc71,Beans,1800000000909596645,,0.00,9/26/2026,No,Yes,,\n"
+        "1800000000343959369,09a5fddf-a217,Burrito Regular,1800000000343959370,,15.99,8/4/2026,No,No,,104\n"
+        "1800000000343959371,09a5fddf-a218,Burrito Regular,1800000000343959372,,15.99,8/4/2026,No,No,,\n"
+        "1800000000343959373,09a5fddf-a219,Old Special,1800000000343959374,,9.99,8/4/2026,Yes,No,,\n";
+    const auto r = app::readMenuCsv(QString::fromLatin1(file));
+    CHECK(r.from == u"Toast"_s);
+    REQUIRE(r.items.size() == 3);
+    CHECK(r.items[0].name == u"Carajillo"_s);
+    CHECK(r.items[0].price == 10.99);
+    CHECK(r.items[1].name == u"Piña"_s);
+    CHECK(r.items[2].number == u"104"_s);   // its PLU, not Toast's own Number
+    REQUIRE(r.problems.size() == 3);
+    CHECK(r.problems[0].contains(u"2 modifier option"_s));
+    CHECK(r.problems[1].contains(u"Burrito Regular"_s));
+    CHECK(r.problems[2].contains(u"Old Special is archived"_s));
+}
+
 TEST_CASE("Menu import: sizes, choice groups and alcohol onto the menu", "[menubuilder][import]")
 {
     PosService pos(test::seedPosData(), nullptr);

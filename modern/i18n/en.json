@@ -59,6 +59,10 @@
   "one": "%n item removed from the menu",
   "other": "%n items removed from the menu"
  },
+ "%n modifier option(s) left out: the file doesn't say which items they go with. Make them in Choice Groups.": {
+  "one": "%n modifier option left out: the file doesn't say which items it goes with. Make it in Choice Groups.",
+  "other": "%n modifier options left out: the file doesn't say which items they go with. Make them in Choice Groups."
+ },
  "%n more": {
   "one": "%n more",
   "other": "%n more"

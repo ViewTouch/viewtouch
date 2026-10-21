@@ -324,6 +324,10 @@
   "one": "%n item removido do cardápio",
   "other": "%n itens removidos do cardápio"
  },
+ "%n modifier option(s) left out: the file doesn't say which items they go with. Make them in Choice Groups.": {
+  "one": "%n opção de modificador deixada de fora: o arquivo não diz com quais itens ela vai. Crie-a em Grupos de opções.",
+  "other": "%n opções de modificador deixadas de fora: o arquivo não diz com quais itens elas vão. Crie-as em Grupos de opções."
+ },
  "%n more": {
   "one": "mais %n",
   "other": "mais %n"
@@ -1869,6 +1873,7 @@
  "In edit mode every zone shows (dimmed when its rules hide it now).": "No modo edição toda zona aparece (esmaecida quando as regras a escondem agora).",
  "In sync with the main server at %1.": "Sincronizado com o servidor principal às %1.",
  "In sync: %1 has a live copy of everything (since %2). If this computer stops, it takes over within about 20 seconds.": "Sincronizado: %1 tem uma cópia ao vivo de tudo (desde %2). Se este computador parar, ele assume em cerca de 20 segundos.",
+ "In the file twice (the first is kept): %1": "Duas vezes no arquivo (a primeira é mantida): %1",
  "In the pool (a full share)": "Na divisão (uma cota cheia)",
  "In training (practice only)": "Em treinamento (só treino)",
  "Ingredient": "Ingrediente",
