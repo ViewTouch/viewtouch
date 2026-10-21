@@ -48,16 +48,18 @@ Works on Fedora 44, Debian 13 (and Raspberry Pi OS based on it) and Ubuntu 26.04
 curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
 ```
 
+On a clean install that has no `curl` (Debian, some Ubuntu), use `wget -qO- https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh`. With no `sudo` (Debian installed with a root password), become root first with `su -`, then run the same line without `sudo`. Anything else it needs (certificates, `openssl` for the signature check, `sudo` and the rest for a locked-down screen) it installs itself.
+
 It asks one question:
 
 1. **Only for ViewTouch** (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down (`vtmodern-lockdown`, below) and restarts. The screen then asks, by touch, what this computer is, its name, the network, the time zone and the maintainer's code (the home screen's settings PIN; on the main register also the store's maintainer code), and starts ViewTouch. To answer ahead of time: `... | sudo sh -s -- --station` (add `--keep-ssh` to leave SSH on).
 2. **Next to the desktop**: it installs ViewTouch and runs `vtmodern-setup` (below), a text menu.
 
-On Debian 13 and Raspberry Pi OS (64-bit) it downloads the ready-made package from the [modern-packages](https://github.com/ViewTouch/viewtouch/releases/tag/modern-packages) release (a minute). Elsewhere, or with `--build`, it fetches the source and builds a package for this machine (a few minutes). With a package already at hand: `sudo sh install-viewtouch.sh vtmodern-*.rpm` (or `.deb`). To skip the questions next to a desktop, put the setup after `--`: `sudo sh install-viewtouch.sh -- kitchen auto Grill`.
+On Debian 13, Raspberry Pi OS (64-bit), Ubuntu 26.04 and Fedora 44 it downloads the ready-made package, signed, from the [modern-packages](https://github.com/ViewTouch/viewtouch/releases/tag/modern-packages) release (a minute). Elsewhere, or with `--build`, it fetches the source and builds a package for this machine (a few minutes). With a package already at hand: `sudo sh install-viewtouch.sh vtmodern-*.rpm` (or `.deb`). To skip the questions next to a desktop, put the setup after `--`: `sudo sh install-viewtouch.sh -- kitchen auto Grill`.
 
 ### A computer only for ViewTouch
 
-`sudo vtmodern-lockdown` (run by the installer's first choice) turns a fresh Raspberry Pi OS or Debian 13 into one:
+`sudo vtmodern-lockdown` (run by the installer's first choice) turns a fresh Raspberry Pi OS, Debian 13 or Ubuntu 26.04 into one (Fedora: next to the desktop only):
 
 - **The home screen** (`vtmodern --station`, `vtmodern-station.service`) instead of the desktop. It starts ViewTouch and starts it again if it stops by itself (after 5 seconds; after 3 stops in 3 minutes it stays on the home screen and says so). When ViewTouch is closed (Manager → Close ViewTouch) the home screen shows its icons: **Start ViewTouch**; on the main register **Setup Guide, Menu, Staff, Printers, Add a Screen, Reports, Back Up Now** (each opens ViewTouch there after a manager logs in, `--after-login`); and for the computer **Network** (Wi-Fi with an on-screen keyboard), **Date & Time**, **Updates** (**Check for a New ViewTouch** from the internet, then install it; everything for the computer now; or a new ViewTouch from a USB stick: only a signed package, its `.sig` beside it), **Remote Help** (SSH on or off), **Restart**, **Shut Down**, **Reset…** (start over and choose again what the computer is, or erase the store) and **About**. The settings icons (and **Maintainer Code**, to change it) ask for the maintainer's code.
 - **Its own account:** ViewTouch runs as `viewtouch` (or `vtpos`, when `viewtouch` is somebody's login), which can't log in and may run only `/usr/libexec/vtmodern/vtmodern-device` as root. That helper does the home screen's Wi-Fi, time zone, updates, restart and setup, and checks every value.

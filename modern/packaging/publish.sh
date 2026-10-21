@@ -5,7 +5,8 @@
 #   packaging/publish.sh [--apk-arm64 FILE] [--apk-armv7 FILE] [--dry-run]
 #
 # Takes the newest Debian 13 package for each architecture in modern/dist
-# (built and signed by build-packages.sh), and the tablet apps if given;
+# (built and signed by build-packages.sh), the Ubuntu 26.04 and Fedora 44
+# ones there (for new installs), and the tablet apps if given;
 # signs the apps and latest.json (what's newest, and its files) with the key
 # on this computer; uploads them all, each with its .sig and .sha256.
 set -eu
@@ -67,6 +68,27 @@ for arch in arm64 amd64; do
     echo "Package ($arch): $(basename "$deb") as $name"
 done
 [ -n "$version" ] || { echo "No Debian 13 package in $dist" >&2; exit 1; }
+
+# Ubuntu and Fedora too, for installing (install-viewtouch.sh): store
+# computers update from the Debian 13 ones only.
+for spec in "ubuntu26.04-arm64:vtmodern_*~ubuntu26.04_arm64*.deb" "ubuntu26.04-amd64:vtmodern_*~ubuntu26.04_amd64*.deb" \
+            "fedora44-aarch64:vtmodern-*.fc44.aarch64*.rpm" "fedora44-x86_64:vtmodern-*.fc44.x86_64*.rpm"; do
+    what=${spec%%:*}; pattern=${spec#*:}
+    # shellcheck disable=SC2086
+    file=$(ls -t "$dist"/$pattern 2>/dev/null | head -1 || true)
+    [ -n "$file" ] || continue
+    v=$(basename "$file" | sed -n 's/^vtmodern[_-]\([0-9.]*\)-.*/\1/p')
+    if [ "$v" != "$version" ]; then
+        echo "$(basename "$file") is version $v, not $version: build them together." >&2
+        exit 1
+    fi
+    name=vtmodern-$what.${file##*.}
+    cp "$file" "$out/$name"
+    sign "$out/$name"
+    packages="$packages,
+    \"$what\": \"$name\""
+    echo "Package ($what): $(basename "$file") as $name"
+done
 
 apps=
 for pair in "arm64-v8a:$apk64:ViewTouch-android-arm64.apk" "armeabi-v7a:$apk32:ViewTouch-android-armv7.apk"; do

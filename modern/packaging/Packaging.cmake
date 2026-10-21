@@ -76,7 +76,8 @@ set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
 set(CPACK_RPM_PACKAGE_RELOCATABLE OFF)
 set(CPACK_RPM_PACKAGE_LICENSE "GPL-3.0-or-later")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Productivity")
-set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtdeclarative, qt6-qtbase-gui, dejavu-sans-fonts, openssl-libs")
+# openssl, curl: signed updates; util-linux: runuser (vtmodern-setup), not in a minimal Fedora.
+set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtdeclarative, qt6-qtbase-gui, dejavu-sans-fonts, openssl-libs, openssl, curl, util-linux")
 # systemd-sysusers creates the viewtouch account in the install script
 set(CPACK_RPM_PACKAGE_REQUIRES_POST "systemd")
 set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, qt6-qtwayland, cups-client")

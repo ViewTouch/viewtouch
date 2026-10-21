@@ -95,6 +95,7 @@
 <p>One computer keeps the store's data: checks, menu, staff and reports. Every other screen (a terminal) connects to it over the network. All screens see the same checks and tables, and a check open on one screen can't be changed on another at the same time.</p>
 <p><b>Setting up a new computer.</b> On a computer with Linux (Raspberry Pi OS 64-bit, Debian 13, Fedora or Ubuntu) and an internet connection, open a terminal and paste:</p>
 <pre>curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh</pre>
+<p>If the computer says <i>curl: command not found</i>, type <code>wget -qO-</code> in place of <code>curl -fsSL</code>. If it says <i>sudo: command not found</i> (Debian set up with a root password), type <code>su -</code> and the root password first, then the same line without <code>sudo</code>. The installer gets everything else itself.</p>
 <p>It asks one question:</p>
 <ol>
 <li><b>Only for ViewTouch</b> (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down and restarts it. From then on everything is by touch: see <i>A computer only for ViewTouch</i> below.</li>
