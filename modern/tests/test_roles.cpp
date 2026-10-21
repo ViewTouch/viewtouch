@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "layout/layout.hh"
 #include "layout_fixture.hh"
@@ -7,6 +8,7 @@
 #include "qt_catch.hh"
 #include "stationcontroller.hh"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QSignalSpy>
@@ -14,6 +16,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QProcess>
 #include <QTest>
 
 #include <functional>
@@ -276,4 +279,38 @@ TEST_CASE("Roles: the home screen asks for the maintainer's code, and changes it
     QMetaObject::invokeMethod(save, "clicked");
     QTest::qWait(50);
     CHECK(station.checkPin(u"86420"_s));
+}
+
+// Run by the next test in a process of its own: the maintainer's built-in
+// profile is set up once per process, and other tests have done it by then.
+TEST_CASE("Roles: a staff login first after a start, on its own", "[.firstLoginAlone]")
+{
+    i18n::install({});
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    pos.shared()->setMaintainerPin(u"86420"_s);
+    for (const char d : std::string("1234"))
+        pos.pinKey(QString(QChar(d)));
+    // As a tap does: in the language of whoever is logged in, which the
+    // translator asks the session for (it used to wait for itself here).
+    bool ok = false;
+    pos.invoke(u"login"_s, {}, [&ok](const QVariant &r) { ok = r.toBool(); });
+    CHECK(ok);
+    CHECK(pos.userName() == u"Morgan (Manager)"_s);
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"86420"_s));
+    CHECK(pos.userName() == u"Maintainer"_s);
+}
+
+TEST_CASE("Roles: the first staff login after a start doesn't freeze the screen", "[roles]")
+{
+    QProcess p;
+    p.start(QCoreApplication::applicationFilePath(), {u"[.firstLoginAlone]"_s});
+    REQUIRE(p.waitForStarted());
+    const bool finished = p.waitForFinished(60'000);
+    if (!finished)
+        p.kill();
+    INFO(p.readAllStandardOutput().right(2000).toStdString());
+    REQUIRE(finished);   // it froze for good
+    CHECK(p.exitCode() == 0);
 }

@@ -115,14 +115,24 @@ const Employee *PosShared::employee(const std::string &id) const
 
 const Employee &maintainerEmployee()
 {
+    // Nothing translated in here: the first call can come from the translator
+    // itself (the language of whoever is logged in looks them up), and a
+    // translation made while this was set up came back to it and waited for
+    // itself: the first staff login after a start froze the screen for good.
+    // Shown translated by PosService::nameOf.
     static const Employee m = [] {
         Employee e;
         e.id = "maintainer";
-        e.name = ss(PosService::tr("Maintainer"));
+        e.name = "Maintainer";
         e.role = "maintainer";
         return e;
     }();
     return m;
+}
+
+QString PosService::nameOf(const Employee &e) const
+{
+    return e.id == maintainerEmployee().id ? tr("Maintainer") : qs(e.name);
 }
 
 void PosShared::setMaintainerPin(const QString &pin)
@@ -767,12 +777,12 @@ bool PosService::loginWithPin(const QString &pin)
         const std::int64_t id = it->second;
         s_->resumeChecks.erase(it);
         if (s_->open.contains(id) && !s_->lockedBy.contains(id) && openCheck(id))
-            emit notice(tr("Welcome back, %1: %2 is open again").arg(qs(e->name), qs(s_->open.at(id).label)));
+            emit notice(tr("Welcome back, %1: %2 is open again").arg(nameOf(*e), qs(s_->open.at(id).label)));
     }
     emit sessionChanged();
     emit loggedInChanged(true);
     if (!hasCheck())
-        emit notice(tr("Welcome, %1").arg(qs(e->name)));
+        emit notice(tr("Welcome, %1").arg(nameOf(*e)));
     return true;
 }
 
@@ -1912,7 +1922,7 @@ bool PosService::closePractice(Check &c)
     return true;
 }
 
-QString PosService::userName() const { return user() ? qs(user()->name) : QString(); }
+QString PosService::userName() const { return user() ? nameOf(*user()) : QString(); }
 QString PosService::userRole() const { return user() ? qs(user()->role) : QString(); }
 QString PosService::storeName() const { return qs(s_->settings.storeName); }
 
