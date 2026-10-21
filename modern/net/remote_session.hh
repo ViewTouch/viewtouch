@@ -12,9 +12,12 @@
 
 #include <memory>
 
+namespace vt::app { class PosService; }
+
 namespace vt::net {
 
 class LineChannel;
+class OfflineStore;
 
 // A terminal whose POS session lives on a server. Mirrors the session state
 // the server sends, forwards operations, and reconnects on its own when the
@@ -61,6 +64,17 @@ public:
     QVariantMap updateInfo() const override;
     void getUpdate() override;
     bool online() const override { return welcomed_; }
+    // Where the checks made offline are kept (offline.db in the data folder).
+    // Set before connecting: without it this screen can't work offline.
+    void setOfflineJournal(const QString &path);
+    OfflineStore *offlineStore() const { return offline_.get(); }
+    bool offlineReady() const override;
+    bool offlineMode() const override { return offlineMode_; }
+    int offlinePending() const override;
+    // Working offline: a store of its own on the offline kit (new checks,
+    // cash), until the store's computer is back and this screen has no
+    // check open; then the checks made meanwhile go to it.
+    void workOffline() override;
     int heldCount() const override { return welcomed_ ? 0 : int(kept_.size()); }
     bool loggedIn() const override { return v(u"loggedIn").toBool(); }
     QString userName() const override { return v(u"userName").toString(); }
@@ -255,6 +269,21 @@ private:
     QString resumeToken_;
     void resendKept(bool resumed);
     QVariantMap state_;
+    // Working offline (workOffline): the screen shows the offline store's
+    // state; what the store's computer says meanwhile waits here.
+    std::unique_ptr<OfflineStore> offline_;
+    app::PosService *local_ = nullptr;
+    bool offlineMode_ = false;
+    bool goingBack_ = false;   // the store is back: going back to it once no check is open here
+    bool uploading_ = false;   // the checks made offline, sent and not answered yet
+    QVariantMap serverState_;
+    QSet<int> localDirty_;     // the offline store's change signals since the last flush
+    QTimer localFlush_;
+    void flushLocal(bool all);
+    void maybeGoBack(bool tell);
+    void goBackOnline();
+    void sendOfflineChecks();
+    void tookOfflineChecks(const QJsonArray &results);
     QHash<QString, int> wanted_;   // what's asked for, by how many on the screen
     mutable QVariantList openMerged_;   // the open checks put together (until either part changes)
     mutable bool openMergedValid_ = false;

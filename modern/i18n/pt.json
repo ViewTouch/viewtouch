@@ -26,6 +26,7 @@
  " · this screen": " · esta tela",
  "!! CONTAINS %1": "!! CONTÉM %1",
  "\"%1\" isn't on the menu. Use a menu item's name, or turn off \"Options are menu items\".": "\"%1\" não está no cardápio. Use o nome de um item do cardápio, ou desligue \"As opções são itens do cardápio\".",
+ "#%1's cash": "Dinheiro da nº %1",
  "#%1, then Enter": "nº %1, depois Enter",
  "#123, 17.62, a name, phone, table, server, item…": "nº 123, 17.62, um nome, telefone, mesa, garçom, item…",
  "$ Off": "$ de desconto",
@@ -70,6 +71,7 @@
  "%1 can't be shared.": "%1 não pode ser dividido.",
  "%1 can't have a quantity.": "%1 não pode ter quantidade.",
  "%1 cannot open %2.": "%1 não pode abrir %2.",
+ "%1 cash taken while %2 was offline isn't in an open drawer.": "%1 em dinheiro recebidos enquanto %2 estava offline não estão em uma gaveta aberta.",
  "%1 categories, %2 items": "%1 categorias, %2 itens",
  "%1 characters per line: the row above should fill exactly one line.": "%1 caracteres por linha: a fileira acima deve preencher exatamente uma linha.",
  "%1 charged to %2's account (owes %3)": "%1 lançado na conta de %2 (deve %3)",
@@ -166,6 +168,7 @@
  "%1 is turned off.": "%1 está desligado.",
  "%1 isn't good at this hour or on this day.": "%1 não vale nesta hora ou neste dia.",
  "%1 isn't on the schedule now. A manager can clock you in from Manager → Schedule.": "%1 não está na escala agora. Um gerente pode bater seu ponto em Gerente → Escala.",
+ "%1 isn't on the staff here.": "%1 não faz parte da equipe aqui.",
  "%1 items": "%1 itens",
  "%1 left": "Restam %1",
  "%1 local taxes": "Impostos locais de %1",
@@ -276,6 +279,10 @@
  "%n check(s)": {
   "one": "%n conta",
   "other": "%n contas"
+ },
+ "%n check(s) made offline go to the store's computer once it's back.": {
+  "one": "%n conta feita offline vai para o computador da loja quando ele voltar.",
+  "other": "%n contas feitas offline vão para o computador da loja quando ele voltar."
  },
  "%n choice group(s)": {
   "one": "%n grupo de opções",
@@ -400,6 +407,10 @@
  "%n size(s)": {
   "one": "%n tamanho",
   "other": "%n tamanhos"
+ },
+ "%n tap(s) waiting for the store's computer were let go: add them again once it's back.": {
+  "one": "%n toque que esperava o computador da loja foi descartado: adicione-o de novo quando ele voltar.",
+  "other": "%n toques que esperavam o computador da loja foram descartados: adicione-os de novo quando ele voltar."
  },
  "%n tap(s) waiting: they go in when it's back.": {
   "one": "%n toque aguardando: entra quando a conexão voltar.",
@@ -841,6 +852,10 @@
  "Back online: sent %n tap(s) made while it was out.": {
   "one": "Conexão de volta: enviado %n toque feito enquanto estava fora.",
   "other": "Conexão de volta: enviados %n toques feitos enquanto estava fora."
+ },
+ "Back online: the store's computer has the %n check(s) made offline.": {
+  "one": "De volta online: o computador da loja tem a conta feita offline.",
+  "other": "De volta online: o computador da loja tem as %n contas feitas offline."
  },
  "Back to automatic?": "Voltar ao automático?",
  "Back to automatic…": "Voltar ao automático…",
@@ -2349,8 +2364,10 @@
  "Not sorted": "Sem classificação",
  "Not started today": "Não aberta hoje",
  "Not started yet: %1": "Ainda não abertas: %1",
+ "Not taken in yet: %1": "Ainda não recebidas: %1",
  "Not that one": "Não é esse",
  "Not watched (its status isn't asked)": "Não monitorada (o status não é perguntado)",
+ "Not while working offline: that needs the store's computer.": "Não enquanto trabalha offline: isso precisa do computador da loja.",
  "Note": "Nota",
  "Note (allergies, gate code…)": "Nota (alergias, código do portão…)",
  "Note (batch, amount…)": "Nota (lote, quantidade…)",
@@ -3400,6 +3417,8 @@
  "Take over the store": "Assumir a loja",
  "Take payments and close checks": "Receber pagamentos e fechar contas",
  "Take your slip below and show it at the counter.": "Pegue sua via abaixo e mostre no balcão.",
+ "Taken while %1 was offline": "Feita enquanto %1 estava offline",
+ "Taken while %1 was offline, as #%2": "Feita enquanto %1 estava offline, como nº %2",
  "Takeout": "Para viagem",
  "Takeout %1": "Para viagem %1",
  "Takeout and delivery": "Para viagem e entrega",
@@ -3485,6 +3504,7 @@
  "That card was declined: there's nothing to refund.": "Esse cartão foi recusado: não há nada a reembolsar.",
  "That card was taken offline and hasn't reached Stripe yet: refund it once the internet is back.": "Esse cartão foi aceito offline e ainda não chegou à Stripe: reembolse quando a internet voltar.",
  "That category is gone.": "Essa categoria não existe mais.",
+ "That check can't be read.": "Não é possível ler essa conta.",
  "That check is no longer open.": "Essa conta não está mais aberta.",
  "That check is not at this table.": "Essa conta não é desta mesa.",
  "That check isn't here any more.": "Essa conta não está mais aqui.",
@@ -3682,6 +3702,7 @@
  "The store's Stripe key isn't set (Manager -> Store Settings).": "A chave da Stripe da loja não está definida (Gerente -> Ajustes da loja).",
  "The store's Stripe key isn't set.": "A chave da Stripe da loja não está definida.",
  "The store's ZIP code": "CEP (ZIP) da loja",
+ "The store's computer is back: finish this check, and this screen goes back to it.": "O computador da loja voltou: termine esta conta e esta tela volta a ele.",
  "The store's label printer": "A impressora de etiquetas da loja",
  "The store's look": "O visual da loja",
  "The store's state": "Estado da loja",
@@ -3734,6 +3755,7 @@
  "These buttons lead here and will stop working:\n• %1\n\nYou can undo this.": "Estes botões levam até aqui e vão parar de funcionar:\n• %1\n\nVocê pode desfazer.",
  "They come off every menu screen. Checks they're already on keep them.": "Eles saem de todas as telas de cardápio. As contas em que já estão continuam com eles.",
  "They count with card tips in the Tips report and the tip pool.": "Elas contam com as gorjetas de cartão no relatório Gorjetas e na divisão.",
+ "They go to the store's computer once it's back.": "Elas vão para o computador da loja quando ele voltar.",
  "They owe %1 on their house account: settle it first.": "Deve %1 na conta da casa: quite primeiro.",
  "They're Here": "Chegaram",
  "They're not clocked in anymore.": "Eles não estão mais com ponto aberto.",
@@ -3764,6 +3786,7 @@
  "This page now looks like %1 (Undo takes it back; Save keeps it)": "Esta página agora parece %1 (Desfazer tira; Salvar mantém)",
  "This page on a phone, a tablet, a terminal and a kiosk": "Esta página num celular, tablet, terminal e totem",
  "This screen": "Esta tela",
+ "This screen can't work offline yet: it gets what it needs from the store's computer.": "Esta tela ainda não pode trabalhar offline: ela recebe o que precisa do computador da loja.",
  "This screen finds the main register on this network.": "Esta tela encontra o caixa principal nesta rede.",
  "This screen has no card reader (Manager -> Terminals).": "Esta tela não tem leitora de cartão (Gerente -> Terminais).",
  "This screen has no card reader beside it (Manager -> Terminals).": "Esta tela não tem leitora de cartão ao lado (Gerente -> Terminais).",
@@ -4151,9 +4174,12 @@
  "With that many points, a customer can take that much off a check.": "Com esses pontos, um cliente pode tirar esse valor de uma conta.",
  "Wood": "Madeira",
  "Words on it": "Texto nela",
+ "Work Offline": "Trabalhar offline",
  "Worked out from the state's file: confirm it at %1.": "Calculada a partir do arquivo do estado: confirme em %1.",
  "Workhorse": "Burro de carga",
  "Workhorse: sells well, earns little. Raise the price a little, or make it for less.": "Burro de carga: vende bem, rende pouco. Aumente um pouco o preço, ou faça por menos.",
+ "Working offline: new checks, paid in cash.": "Trabalhando offline: contas novas, pagas em dinheiro.",
+ "Working offline: new checks, paid in cash. They go to the store's computer once it's back.": "Trabalhando offline: contas novas, pagas em dinheiro. Elas vão para o computador da loja quando ele voltar.",
  "Worst delay · freezes over ¼ s": "Pior atraso · travamentos acima de ¼ s",
  "Worth": "Valor",
  "Write breaks like 12:30 PM-1:00 PM, inside the shift: %1": "Escreva as pausas como 12:30 PM-1:00 PM, dentro do turno: %1",

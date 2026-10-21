@@ -152,6 +152,10 @@ struct PosData {
     std::int64_t lastProblemId = 0;
 };
 
+// A screen's offline kit (PosService::offlineKit) as store data to run on
+// while it can't reach the store's computer; nullopt if it isn't one.
+std::optional<PosData> offlineData(const QJsonObject &kit);
+
 // State shared by every terminal of one store: open checks, today's closed
 // checks, menu, staff, settings, the drawer and business day, and which
 // terminal holds which check. Sessions change it and it tells all of them.
@@ -445,6 +449,13 @@ public:
 
     PosShared *shared() const { return s_; }
     void setPrinter(PosPrinter *printer) { s_->printer = printer; }
+
+    // For this screen to keep selling if it loses the store's computer (see
+    // app/pos_offline.cpp): what it needs, kept in its memory only.
+    QJsonObject offlineKit() const;
+    // A check this screen made while it was cut off: {id} (its number here),
+    // {skipped} (nothing to keep), or {error}. Taken in once.
+    QVariantMap takeOfflineCheck(const QJsonObject &record);
     // Test hook: replace the wall clock (epoch ms) for the shared store.
     void setClock(std::function<std::int64_t()> now) { s_->setClock(std::move(now)); }
 

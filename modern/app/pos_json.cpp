@@ -194,6 +194,7 @@ QJsonObject toJson(const Check &c)
              return a;
          }()}, {u"driverId"_s, qs(c.driverId)}, {u"driverName"_s, qs(c.driverName)},
         {u"outAt"_s, qint64(c.outAt)}, {u"deliveredAt"_s, qint64(c.deliveredAt)}, {u"pointsEarned"_s, c.pointsEarned}, {u"training"_s, c.training},
+        {u"offlineId"_s, qs(c.offlineId)},
     };
 }
 
@@ -293,6 +294,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.cashTip = Money::fromCents(i64(o.value(u"cashTipCents")));
     c.rush = o.value(u"rush").toBool();
     c.kiosk = o.value(u"kiosk").toBool();
+    c.offlineId = ss(o.value(u"offlineId").toString());
     c.dueAt = o.value(u"dueAt").toInteger(0);
     c.fireAt = o.value(u"fireAt").toInteger(0);
     c.promisedAt = o.value(u"promisedAt").toInteger(0);

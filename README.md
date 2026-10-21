@@ -57,6 +57,7 @@
 - **Switching over:** import the menu you already have, from Square, Clover or Toast's export or any spreadsheet (Excel or CSV), with its categories, sizes, modifier groups, barcodes and photos.
 - **Staff:** PIN login and clock in/out, breaks, roles with per-person permissions, manager approval on the spot, practice mode for training, and messages between screens.
 - **Many screens, one store:** paired, encrypted connections. Tablets and phones join by scanning the network. A standby server keeps running if the main computer fails.
+- **Keeps selling when the network drops:** a screen cut off from the store's computer works on its own (new checks, kitchen tickets, cash) and hands its checks to the store when it's back.
 - **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.
 - **Five languages:** English, Spanish, French, Portuguese and Chinese; each person's screens are in their own.
 - **Easy to read for everyone:** bigger text, high contrast, and colors that color-blind eyes tell apart, set for each person (on any screen they log into) or for a screen, like the kitchen's.
