@@ -313,6 +313,14 @@
  },
  "%n item(s) go to the printer %1, which isn't set up, and there's no kitchen printer: their tickets print nowhere: %2": "%n artículo(s) van a la impresora %1, que no está configurada, y no hay impresora de cocina: sus tickets no se imprimen en ninguna parte: %2",
  "%n item(s) go to the printer %1, which isn't set up, so they print in the kitchen: %2": "%n artículo(s) van a la impresora %1, que no está configurada, así que se imprimen en la cocina: %2",
+ "%n item(s) imported into %1. Tick the next ones.": {
+  "one": "%n artículo importado a %1. Marque los siguientes.",
+  "other": "%n artículos importados a %1. Marque los siguientes."
+ },
+ "%n item(s) imported. Tick the next ones.": {
+  "one": "%n artículo importado. Marque los siguientes.",
+  "other": "%n artículos importados. Marque los siguientes."
+ },
  "%n item(s) removed from the menu": {
   "one": "%n artículo quitado del menú",
   "other": "%n artículos quitados del menú"
@@ -1888,6 +1896,7 @@
  "If you can, seat the next party in a few minutes: the kitchen catches up first.": "Si puede, siente al próximo grupo en unos minutos: así la cocina se pone al día.",
  "Ignore touches": "Ignora los toques",
  "Import": "Importar",
+ "Import %n": "Importar %n",
  "Import %n item(s)": "Importar %n artículo(s)",
  "Import a menu": "Importar un menú",
  "Import a page…": "Importar una página…",
@@ -1913,6 +1922,7 @@
  "Install": "Instalar",
  "Install ViewTouch %1": "Instalar ViewTouch %1",
  "Into pool": "Al fondo común",
+ "Into: %1.": "En: %1.",
  "Into: %1. Rows without a category go in %2.": "A: %1. Las filas sin categoría van a %2.",
  "Inventory": "Inventario",
  "Invoice": "Factura",
@@ -3070,6 +3080,7 @@
  "Row %1: no picture %2 next to the spreadsheet": "Fila %1: no hay imagen %2 junto a la hoja de cálculo",
  "Row %1: no price for %2": "Fila %1: sin precio para %2",
  "Row %1: no price for %2 (%3)": "Fila %1: no hay precio para %2 (%3)",
+ "Rows without a category go in": "Las filas sin categoría van a",
  "Royalty": "Regalías",
  "Royalty (": "Regalía (",
  "Royalty (% of net sales)": "Regalías (% de ventas netas)",
@@ -3247,6 +3258,7 @@
  "Show only when": "Mostrar solo cuando",
  "Show photos": "Mostrar fotos",
  "Show the forecast first.": "Muestre el pronóstico primero.",
+ "Show the ones already on the menu": "Mostrar los que ya están en el menú",
  "Show this slip at the counter": "Muestre este papel en el mostrador",
  "Show what should be there while counting stock": "Mostrar lo que debería haber al contar el inventario",
  "Shown in turn; \"image:/path/to/photo.jpg\" for a picture. Running promotions are added by themselves.": "Se muestran por turno; \"image:/ruta/a/foto.jpg\" para una imagen. Las promociones vigentes se agregan solas.",
@@ -3900,6 +3912,7 @@
  "Thrown away (logged)": "Desechado (registrado)",
  "Thrown away today": "Desechado hoy",
  "Thursday": "Jueves",
+ "Tick these": "Marcar estos",
  "Tickets": "Órdenes",
  "Tickets printed": "Tickets impresos",
  "Tickets to an event: it sells out when this many are sold. 0 = not an event.": "Boletos para un evento: se agota cuando se venden estos. 0 = no es un evento.",
@@ -4084,6 +4097,7 @@
  "Unless set for a terminal in Terminals.": "A menos que se configure para una terminal en Terminales.",
  "Unsaved": "Sin guardar",
  "Unsaved changes": "Cambios sin guardar",
+ "Untick these": "Desmarcar estos",
  "Until": "Hasta",
  "Until tomorrow night": "Hasta mañana en la noche",
  "Until tonight": "Hasta esta noche",
@@ -4440,6 +4454,7 @@
  "older version": "versión anterior",
  "on %1": "en %1",
  "on break": "en descanso",
+ "on the menu": "en el menú",
  "open": "abierta",
  "or type the number": "o escriba el número",
  "out %1 → %2": "salida %1 → %2",
@@ -4541,6 +4556,7 @@
  "✓ Ready to open": "✓ Listo para abrir",
  "🌮 Ready-Made Picture…": "🌮 Imagen lista…",
  "👁 Preview": "👁 Vista previa",
+ "🔍 Find (name or category)": "🔍 Buscar (nombre o categoría)",
  "🔍 Find an item": "🔍 Buscar un artículo",
  "🔍 Find an item (name or number)": "🔍 Buscar (nombre o número)",
  "🖨 Printed Menu…": "🖨 Menú impreso…"

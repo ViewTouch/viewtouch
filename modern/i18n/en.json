@@ -55,6 +55,14 @@
   "one": "%n item goes to the printer %1, which isn't set up, so it prints in the kitchen: %2",
   "other": "%n items go to the printer %1, which isn't set up, so they print in the kitchen: %2"
  },
+ "%n item(s) imported into %1. Tick the next ones.": {
+  "one": "%n item imported into %1. Tick the next ones.",
+  "other": "%n items imported into %1. Tick the next ones."
+ },
+ "%n item(s) imported. Tick the next ones.": {
+  "one": "%n item imported. Tick the next ones.",
+  "other": "%n items imported. Tick the next ones."
+ },
  "%n item(s) removed from the menu": {
   "one": "%n item removed from the menu",
   "other": "%n items removed from the menu"
