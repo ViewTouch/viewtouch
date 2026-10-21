@@ -6,6 +6,7 @@
   python3 tools/i18n.py stale es        entries no longer used anywhere
   python3 tools/i18n.py check es        missing phrases, or translations that lose a %1
   python3 tools/i18n.py add es < new.json   add or change translations ({"English": "Español", ...})
+  python3 tools/i18n.py add-all new.json    every language at once ({"English": [es, fr, pt, zh], ...})
 
 Phrases come from qsTr("...") in QML, tr("...") / translate("main", "...") in
 C++, and the button and label text of the starter pages (seed/pages).
@@ -104,8 +105,25 @@ def phrases():
     return out
 
 
+# The languages ViewTouch ships, in add-all's order.
+LANGS = ["es", "fr", "pt", "zh"]
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "missing"
+    if cmd == "add-all" and len(sys.argv) > 2:
+        new = json.loads(pathlib.Path(sys.argv[2]).read_text())
+        bad = [en for en, tr in new.items() if not isinstance(tr, list) or len(tr) != len(LANGS)]
+        if bad:
+            print(f"Each phrase needs {len(LANGS)} translations ({', '.join(LANGS)}): {bad[:3]}", file=sys.stderr)
+            return 2
+        for i, lang in enumerate(LANGS):
+            path = ROOT / f"i18n/{lang}.json"
+            have = json.loads(path.read_text())
+            have.update({en: tr[i] for en, tr in new.items()})
+            path.write_text(json.dumps(have, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+        print(f"added or changed {len(new)} phrases in {', '.join(LANGS)}", file=sys.stderr)
+        return 0
     if cmd == "list":
         print(json.dumps(phrases(), ensure_ascii=False, indent=1))
         return 0
