@@ -28,6 +28,9 @@
 #include <QEventLoop>
 #include <QFile>
 #include <QGuiApplication>
+#include <QInputDevice>
+#include <QMouseEvent>
+#include <QPointingDevice>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QJsonDocument>
@@ -108,7 +111,7 @@ struct Options {
     QCommandLineOption select{u"select"_s, u"In edit mode, select these zones (comma separated)."_s, u"ids"_s};
     QCommandLineOption size{u"size"_s, u"Window size, e.g. 1280x720."_s, u"WxH"_s, u"1280x720"_s};
     QCommandLineOption screenshot{u"screenshot"_s, u"Render, save a PNG to <file>, and exit."_s, u"file"_s};
-    QCommandLineOption kiosk{u"kiosk"_s, u"Full screen with no mouse pointer and no way out (touch screens)."_s};
+    QCommandLineOption kiosk{u"kiosk"_s, u"Full screen with no way out (touch screens; the mouse pointer shows only while a mouse is used)."_s};
     QCommandLineOption standby{u"standby"_s,
         u"Be the store's standby server: keep a live copy of the main server's data, ready to take over if it "
          "stops (a manager does it from any screen). <server>: the main server's address, or auto. The first "
@@ -323,6 +326,47 @@ void keepScreenOn(bool on = true)
 }
 #endif
 
+// A kiosk's mouse pointer: hidden on a touch screen, shown while a mouse is
+// used (a register with no touch screen, a virtual machine), hidden again
+// at the next touch.
+class KioskPointer : public QObject
+{
+public:
+    using QObject::QObject;
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+            setHidden(true);
+            break;
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonPress: {
+            // Mouse events made from a touch come from the touch screen.
+            const auto *device = static_cast<QPointerEvent *>(event)->pointingDevice();
+            if (device && device->type() == QInputDevice::DeviceType::Mouse)
+                setHidden(false);
+            break;
+        }
+        default:
+            break;
+        }
+        return QObject::eventFilter(watched, event);
+    }
+    void setHidden(bool hidden)
+    {
+        if (hidden == hidden_)
+            return;
+        hidden_ = hidden;
+        if (hidden)
+            QGuiApplication::setOverrideCursor(Qt::BlankCursor);
+        else
+            QGuiApplication::restoreOverrideCursor();
+    }
+
+private:
+    bool hidden_ = false;
+};
+
 // Full screen unless asked for a window (or a window size, or a picture).
 void present(QQuickWindow *window, const Args &cli, const Options &o)
 {
@@ -330,8 +374,12 @@ void present(QQuickWindow *window, const Args &cli, const Options &o)
                           && (cli.isSet(o.windowed) || cli.isSet(o.size) || cli.isSet(o.screenshot));
     if (!inWindow)
         window->showFullScreen();
-    if (cli.isSet(o.kiosk) && !QGuiApplication::overrideCursor())
-        QGuiApplication::setOverrideCursor(Qt::BlankCursor);
+    static KioskPointer *pointer = nullptr;
+    if (cli.isSet(o.kiosk) && !pointer) {
+        pointer = new KioskPointer(qApp);
+        pointer->setHidden(true);
+        qApp->installEventFilter(pointer);
+    }
 }
 
 // Startup page/edit options, then the window. Returns the engine (null when
