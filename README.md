@@ -99,6 +99,14 @@ ctest --test-dir modern/build -j4      # optional: about 590 tests
 ./modern/build/vtmodern --demo-data    # optional, once: fill the demo store with two months of sales
 ```
 
+**Upgrade Procedure. Be sure to be in the build directory named (viewtouch)**
+
+```sh
+git pull origin main
+cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build modern/build -j2
+```
+
 ViewTouch starts with a demo store (menu, floor plan, staff), so you can try everything right away. Its data lives in `~/.local/share/ViewTouch/ViewTouch/`. Press **F11** to switch between full screen and a window.
 
 | Demo PIN | Who |
