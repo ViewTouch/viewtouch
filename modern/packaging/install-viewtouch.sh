@@ -18,8 +18,8 @@
 #   --no-reboot                                 with --station: don't restart at the end
 #
 # Works on Fedora (and RHEL-likes), Debian, Ubuntu and Raspberry Pi OS. On
-# Debian 13 and Raspberry Pi OS it downloads a ready-made package; elsewhere
-# it builds one from the source.
+# Debian 13, Raspberry Pi OS, Ubuntu 26.04 and Fedora 44 it downloads a
+# ready-made package (signed); elsewhere it builds one from the source.
 set -eu
 
 REPO=${VTM_REPO:-https://github.com/ViewTouch/viewtouch.git}
@@ -34,7 +34,7 @@ die() { echo "$*" >&2; exit 1; }
 for a in "$@"; do
     case "$a" in -h|--help) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
 done
-[ "$(id -u)" -eq 0 ] || die "Run this with sudo."
+[ "$(id -u)" -eq 0 ] || die "Run this as root: with sudo, or after su - (Debian without sudo)."
 [ -r /etc/os-release ] || die "Can't tell which Linux this is (no /etc/os-release)."
 . /etc/os-release
 case " ${ID:-} ${ID_LIKE:-} " in
@@ -51,6 +51,20 @@ pkg_install() {
         DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
     fi
 }
+# Someone at a keyboard? (/dev/tty can be there but not open: no terminal.)
+have_tty() { (exec </dev/tty) 2>/dev/null; }
+
+# What this script itself needs: a clean install can have no curl, no
+# certificates (no https) and no openssl (the signature check).
+missing=
+command -v curl >/dev/null 2>&1 || missing="$missing curl"
+command -v openssl >/dev/null 2>&1 || missing="$missing openssl"
+[ -s /etc/ssl/certs/ca-certificates.crt ] || [ -s /etc/pki/tls/certs/ca-bundle.crt ] || missing="$missing ca-certificates"
+if [ -n "$missing" ]; then
+    say "Installing what this installer needs:$missing"
+    # shellcheck disable=SC2086
+    pkg_install $missing
+fi
 
 # --- the arguments ----------------------------------------------------------------------
 package=
@@ -74,7 +88,7 @@ done
 # --- only for ViewTouch, or next to the desktop? ---------------------------------------------
 if [ -z "$station" ]; then
     station=no
-    if [ "$family" = debian ] && [ -r /dev/tty ]; then
+    if [ "$family" = debian ] && have_tty; then
         cat <<'EOF'
 
 How will this computer be used?
@@ -99,10 +113,10 @@ EOF
     fi
 fi
 [ "$station" = yes ] && [ "$family" != debian ] &&
-    die "A computer only for ViewTouch needs Raspberry Pi OS or Debian 13."
+    die "A computer only for ViewTouch needs Raspberry Pi OS, Debian 13 or Ubuntu 26.04 (on Fedora: ViewTouch next to the desktop)."
 
 # --- get a package ---------------------------------------------------------------------------
-# Debian 13 / Raspberry Pi OS: the ready-made one, if there is one for this computer.
+# The ready-made one, if there is one for this Linux and this computer.
 download() {   # url file
     if command -v curl >/dev/null 2>&1; then
         curl -fsSL --retry 3 -o "$2" "$1"
@@ -112,29 +126,41 @@ download() {   # url file
         return 1
     fi
 }
-if [ -z "$package" ] && [ "$build" = no ] && [ "$family" = debian ] && [ "${VERSION_ID:-}" = 13 ]; then
-    arch=$(dpkg --print-architecture)
-    url=$PACKAGES/vtmodern-debian13-$arch.deb
-    say "Downloading ViewTouch ($arch)"
+ready=
+case "$family:${ID:-}:${VERSION_ID:-}" in
+    debian:ubuntu:26.04) ready=ubuntu26.04-$(dpkg --print-architecture).deb ;;
+    debian:*:13) ready=debian13-$(dpkg --print-architecture).deb ;;   # Debian, Raspberry Pi OS
+    fedora:fedora:44) ready=fedora44-$(uname -m).rpm ;;
+esac
+is_package() {
+    if [ "$family" = fedora ]; then rpm -qp "$1" >/dev/null 2>&1; else dpkg-deb --info "$1" >/dev/null 2>&1; fi
+}
+if [ -z "$package" ] && [ "$build" = no ] && [ -n "$ready" ]; then
+    url=$PACKAGES/vtmodern-$ready
+    say "Downloading ViewTouch (${ready%.*})"
     tmpdir=$(mktemp -d)
-    if download "$url" "$tmpdir/vtmodern.deb" && dpkg-deb --info "$tmpdir/vtmodern.deb" >/dev/null 2>&1; then
+    file=$tmpdir/vtmodern.${ready##*.}
+    if download "$url" "$file" && is_package "$file"; then
         # Signed by this ViewTouch's key (below; VTM_KEY=FILE.pem for another
         # fork's packages with VTM_PACKAGES), or not installed.
-        command -v openssl >/dev/null 2>&1 || apt-get install -y -qq openssl >/dev/null
         cat > "$tmpdir/key.pem" <<'KEY'
 -----BEGIN PUBLIC KEY-----
 MCowBQYDK2VwAyEAVYSt7HW+x6/HiWKZRLf4GAcYa3ivJeUGfgwvoW4mzSE=
 -----END PUBLIC KEY-----
 KEY
         if [ -n "${VTM_KEY:-}" ]; then cp "$VTM_KEY" "$tmpdir/key.pem"; fi
-        download "$url.sig" "$tmpdir/vtmodern.deb.sig" ||
+        download "$url.sig" "$file.sig" ||
             die "The package's signature didn't download: not installing it."
-        openssl pkeyutl -verify -pubin -inkey "$tmpdir/key.pem" -rawin -in "$tmpdir/vtmodern.deb" \
-            -sigfile "$tmpdir/vtmodern.deb.sig" >/dev/null 2>&1 ||
+        openssl pkeyutl -verify -pubin -inkey "$tmpdir/key.pem" -rawin -in "$file" \
+            -sigfile "$file.sig" >/dev/null 2>&1 ||
             die "The package isn't signed by ViewTouch (or was changed on the way): not installing it."
         echo "Signature checked."
-        package=$tmpdir/vtmodern.deb
-        echo "Got $(dpkg-deb --field "$package" Package Version | tr '\n' ' ')"
+        package=$file
+        if [ "$family" = fedora ]; then
+            echo "Got $(rpm -qp --qf '%{NAME} %{VERSION}-%{RELEASE}' "$package")"
+        else
+            echo "Got $(dpkg-deb --field "$package" Package Version | tr '\n' ' ')"
+        fi
     else
         echo "No ready-made package for this computer; building one instead."
     fi
@@ -197,7 +223,7 @@ fi
 say "Setting up this machine"
 if [ $# -gt 0 ]; then
     vtmodern-setup "$@"
-elif [ -r /dev/tty ]; then
+elif have_tty; then
     vtmodern-setup < /dev/tty   # the menu, even when this script came through a pipe
 else
     echo "Installed. Now run:  sudo vtmodern-setup   (it asks what this machine is)"

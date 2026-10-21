@@ -64,7 +64,7 @@ jobs:
           umask 077
           printf '%s\n' "$UPDATE_SIGNING_KEY" > "$key"
           mkdir -p modern/dist
-          cp artifacts/vtmodern-debian-*/*.deb modern/dist/
+          cp artifacts/vtmodern-debian-*/*.deb artifacts/vtmodern-ubuntu-*/*.deb artifacts/vtmodern-fedora-*/*.rpm modern/dist/
           apk64=$(ls artifacts/ViewTouch-android-arm64-v8a/*.apk)
           apk32=$(ls artifacts/ViewTouch-android-armeabi-v7a/*.apk)
           VTM_SIGNING_KEY="$key" sh modern/packaging/publish.sh --apk-arm64 "$apk64" --apk-armv7 "$apk32"

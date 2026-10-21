@@ -134,6 +134,8 @@ Ready-made packages for Debian 13 / Raspberry Pi OS, Ubuntu 26.04 and Fedora (x8
 curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
 ```
 
+No `curl` on a clean install? Use `wget -qO- https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh`. No `sudo` (Debian installed with a root password)? Run `su -` first and leave out `sudo`. The installer gets everything else it needs itself.
+
 ---
 
 ## The original ViewTouch

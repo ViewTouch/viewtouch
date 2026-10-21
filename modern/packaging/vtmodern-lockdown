@@ -54,6 +54,18 @@ if [ "$undo" = yes ]; then
     exit 0
 fi
 
+# --- what it needs -----------------------------------------------------------------------
+# First: a clean install can have none of it (no sudo when Debian was
+# installed with a root password, no locales in a minimal one).
+say "Installing what the screen needs"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+# sudo: the home screen's helper. openssh-server: Remote Help (off until it's
+# turned on, below). locales: the language and region, below.
+apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
+    network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji openssh-server \
+    sudo locales
+
 # --- the account ViewTouch runs as ----------------------------------------------------
 # Normally "viewtouch" (a system account). If someone made "viewtouch" their
 # own login (it can use sudo), ViewTouch gets its own: vtpos.
@@ -99,14 +111,6 @@ visudo -cf "$tmp" >/dev/null || die "The sudo rule didn't check out."
 install -m 0440 "$tmp" "$sudoers"
 rm -f "$tmp"
 
-# --- what it needs -----------------------------------------------------------------------
-say "Installing what the screen needs"
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-# openssh-server: Remote Help on the home screen (off until it's turned on, below).
-apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
-    network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji openssh-server
-
 # --- US dates and 12-hour times ---------------------------------------------------------------
 # Raspberry Pi OS starts out British (13/10/26); a store in another country
 # keeps its own (VTM_LOCALE=en_GB.UTF-8 to choose).
@@ -117,9 +121,13 @@ if [ -z "$wanted" ] && { [ -z "$current" ] || [ "$current" = en_GB.UTF-8 ] || [ 
 fi
 if [ -n "$wanted" ] && [ "$wanted" != "$current" ]; then
     say "Language and region: $wanted"
-    sed -i "s/^# *\($wanted\)/\1/" /etc/locale.gen
-    grep -q "^$wanted" /etc/locale.gen || echo "$wanted UTF-8" >> /etc/locale.gen
-    locale-gen >/dev/null
+    if [ -f /etc/locale.gen ]; then   # Debian, Raspberry Pi OS
+        sed -i "s/^# *\($wanted\)/\1/" /etc/locale.gen
+        grep -q "^$wanted" /etc/locale.gen || echo "$wanted UTF-8" >> /etc/locale.gen
+        locale-gen >/dev/null
+    else                              # Ubuntu: by name
+        locale-gen "$wanted" >/dev/null
+    fi
     update-locale LANG="$wanted"
 fi
 
