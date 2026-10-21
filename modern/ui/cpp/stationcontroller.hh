@@ -74,6 +74,10 @@ public:
     // After 5 wrong settings PINs in a row: seconds to wait (a minute, doubling to 15).
     Q_INVOKABLE int pinWait() const;
     Q_INVOKABLE bool setPin(const QString &pin);
+    // The maintainer's code: this computer's settings PIN, and on the main
+    // register the store's maintainer code too (handed to the running store;
+    // finished("maintainer") says how it went).
+    Q_INVOKABLE bool setMaintainerCode(const QString &pin);
 
     Q_INVOKABLE void refreshNetwork();
     Q_INVOKABLE void scanWifi();
@@ -137,6 +141,8 @@ private:
     mutable int wrongPins_ = 0;
     mutable qint64 pinWaitUntil_ = 0;
     QString pinSalt_;
+    // To the store (the main register): tried until it's running.
+    void handToStore(const QString &pin, int triesLeft = 30);
     QProcess *pos_ = nullptr;
     QString posState_ = QStringLiteral("stopped");
     QList<QDateTime> crashes_;

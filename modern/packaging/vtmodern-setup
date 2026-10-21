@@ -43,6 +43,51 @@ run() {
     if [ -n "$DRY" ]; then echo "would run: $*"; else "$@"; fi
 }
 
+# The store's maintainer code: asked for (not shown as it's typed), then
+# handed to the store on its input (never on a command line), as the
+# account that owns the data. Tried for a minute while the store starts.
+read_code() {
+    printf '%s' "$1" >&2
+    stty -echo 2>/dev/null || true
+    read -r answer || answer=
+    stty echo 2>/dev/null || true
+    echo >&2
+    printf '%s' "$answer"
+}
+set_maintainer() {
+    owner=$(stat -c %U "$DATA_DIR" 2>/dev/null || echo root)
+    tries=30
+    while :; do
+        if printf '%s\n' "$1" | runuser -u "$owner" -- env QT_QPA_PLATFORM=offscreen \
+                vtmodern --data-dir "$DATA_DIR" --maintainer-pin - >/dev/null 2>&1; then
+            echo "The maintainer code is set."
+            return 0
+        fi
+        tries=$((tries - 1))
+        if [ "$tries" -le 0 ]; then
+            echo "The store didn't take the maintainer code yet: later, run  sudo vtmodern-setup maintainer" >&2
+            return 1
+        fi
+        sleep 2
+    done
+}
+# After setting up the store's data on this machine: its maintainer code, if
+# someone is here to type it.
+offer_maintainer() {
+    [ -t 0 ] && [ -z "$DRY" ] && [ -z "$STATION" ] || return 0
+    echo
+    echo "The maintainer's code: the store's technician logs in with it to erase the store,"
+    echo "update screens, pair a standby and the like (managers and the owner can't)."
+    code=$(read_code "Maintainer code (4 to 8 digits; Enter to set it later): ")
+    [ -n "$code" ] || { echo "Later:  sudo vtmodern-setup maintainer"; return 0; }
+    again=$(read_code "The same code again: ")
+    if [ "$code" != "$again" ]; then
+        echo "They don't match. Later:  sudo vtmodern-setup maintainer" >&2
+        return 0
+    fi
+    set_maintainer "$code" || true
+}
+
 need_root() {
     if [ -z "$DRY" ] && [ "$(id -u)" -ne 0 ]; then
         echo "Run this with sudo." >&2
@@ -241,6 +286,7 @@ $(guest_line)"
     echo "Other screens: run vtmodern-setup on them, then pair them with a code from"
     echo "Manager -> Terminals -> Pair a Device on this screen."
     firewall_note
+    offer_maintainer
     ;;
 server)
     need_root
@@ -249,6 +295,7 @@ server)
     echo "ViewTouch now keeps the store's data on this machine and serves the screens (port 7719)."
     echo "Set up each screen with vtmodern-setup, and pair it with a code from:  sudo vtmodern-setup pair"
     firewall_note
+    offer_maintainer
     ;;
 terminal)
     need_root
@@ -306,16 +353,9 @@ pair)
 maintainer)
     need_root
     code=${1:-}
-    if [ -z "$code" ]; then
-        printf 'Maintainer code (4 to 8 digits, or off): ' >&2
-        stty -echo 2>/dev/null || true
-        read -r code
-        stty echo 2>/dev/null || true
-        echo >&2
-    fi
-    # As the account that owns the data (the running store takes it at once).
-    owner=$(stat -c %U "$DATA_DIR" 2>/dev/null || echo root)
-    exec runuser -u "$owner" -- env QT_QPA_PLATFORM=offscreen vtmodern --data-dir "$DATA_DIR" --maintainer-pin "$code"
+    [ -n "$code" ] || code=$(read_code "Maintainer code (4 to 8 digits, or off): ")
+    printf '%s\n' "$code" | runuser -u "$(stat -c %U "$DATA_DIR" 2>/dev/null || echo root)" -- \
+        env QT_QPA_PLATFORM=offscreen vtmodern --data-dir "$DATA_DIR" --maintainer-pin -
     ;;
 forget)
     need_root

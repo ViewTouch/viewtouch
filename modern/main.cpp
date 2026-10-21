@@ -146,7 +146,7 @@ struct Options {
         u"Where reports are saved as CSV / PDF (default: <data dir>/exports)."_s, u"dir"_s};
     QCommandLineOption backup{u"backup"_s, u"Back up the database now (safe while ViewTouch runs) and exit."_s};
     QCommandLineOption maintainerPin{u"maintainer-pin"_s,
-        u"Set this store's maintainer code (4 to 8 digits; \"off\" removes it) and exit: the store's "
+        u"Set this store's maintainer code (4 to 8 digits; \"off\" removes it; \"-\": read from the input) and exit: the store's "
         "technician logs in with it, for what managers and the owner can't do (erasing the store, updates, "
         "the network and the standby, templates, backups). It's only set here, on the store's computer."_s,
         u"pin"_s};
@@ -1309,44 +1309,45 @@ int runStore(const Args &cli, const Options &o)
         watch->setInterval(15'000);
         QObject::connect(watch, &QTimer::timeout, newer, [newer, port = server->port()] { newer->search(port); });
         watch->start();
-        // `vtmodern --pairing-code` on this machine: the first terminal of a
-        // server without a screen gets paired this way.
-        control = std::make_unique<QLocalServer>();
-        control->setSocketOptions(QLocalServer::UserAccessOption);
-        const QString controlPath = controlSocketOf(cli, o);
-        QLocalServer::removeServer(controlPath);   // left over from a crash (we hold the lock)
-        if (!control->listen(controlPath))
-            qWarning().noquote() << "No local control socket:" << control->errorString();
-        QObject::connect(control.get(), &QLocalServer::newConnection, control.get(), [&control, shared] {
-            while (QLocalSocket *s = control->nextPendingConnection()) {
-                QObject::connect(s, &QLocalSocket::disconnected, s, &QObject::deleteLater);
-                QObject::connect(s, &QLocalSocket::readyRead, s, [s, shared] {
-                    if (!s->canReadLine())
-                        return;
-                    const QByteArray line = s->readLine().trimmed();
-                    // The maintainer's code, set from this computer's command line.
-                    if (line.startsWith("maintainer ")) {
-                        const QString pin = QString::fromLatin1(line.mid(11)).trimmed();
-                        shared->setMaintainerPin(pin == u"off" ? QString() : pin);
-                        qInfo().noquote() << (pin == u"off" ? "Maintainer code removed" : "Maintainer code set")
-                                          << "from this machine's command line";
-                        s->write("{\"ok\":true}\n");
-                        s->disconnectFromServer();
-                        return;
-                    }
-                    if (line == "pair") {
-                        const QString code = shared->startPairing(true);   // on this computer: may be the standby
-                        const QString until = vt::i18n::timeText(
-                            QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time());
-                        qInfo().noquote() << "Pairing opened from this machine's command line";
-                        s->write(QJsonDocument(QJsonObject{{u"code"_s, code}, {u"until"_s, until}})
-                                     .toJson(QJsonDocument::Compact) + '\n');
-                    }
-                    s->disconnectFromServer();
-                });
-            }
-        });
     }
+    // This computer's command line: `vtmodern --pairing-code` (the first
+    // terminal of a server without a screen gets paired this way; serving
+    // only) and `vtmodern --maintainer-pin` (any store).
+    control = std::make_unique<QLocalServer>();
+    control->setSocketOptions(QLocalServer::UserAccessOption);
+    const QString controlPath = controlSocketOf(cli, o);
+    QLocalServer::removeServer(controlPath);   // left over from a crash (we hold the lock)
+    if (!control->listen(controlPath))
+        qWarning().noquote() << "No local control socket:" << control->errorString();
+    QObject::connect(control.get(), &QLocalServer::newConnection, control.get(), [&control, &server, shared] {
+        while (QLocalSocket *s = control->nextPendingConnection()) {
+            QObject::connect(s, &QLocalSocket::disconnected, s, &QObject::deleteLater);
+            QObject::connect(s, &QLocalSocket::readyRead, s, [s, shared, &server] {
+                if (!s->canReadLine())
+                    return;
+                const QByteArray line = s->readLine().trimmed();
+                // The maintainer's code, set from this computer's command line.
+                if (line.startsWith("maintainer ")) {
+                    const QString pin = QString::fromLatin1(line.mid(11)).trimmed();
+                    shared->setMaintainerPin(pin == u"off" ? QString() : pin);
+                    qInfo().noquote() << (pin == u"off" ? "Maintainer code removed" : "Maintainer code set")
+                                      << "from this machine's command line";
+                    s->write("{\"ok\":true}\n");
+                    s->disconnectFromServer();
+                    return;
+                }
+                if (line == "pair" && server) {
+                    const QString code = shared->startPairing(true);   // on this computer: may be the standby
+                    const QString until = vt::i18n::timeText(
+                        QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time());
+                    qInfo().noquote() << "Pairing opened from this machine's command line";
+                    s->write(QJsonDocument(QJsonObject{{u"code"_s, code}, {u"until"_s, until}})
+                                 .toJson(QJsonDocument::Compact) + '\n');
+                }
+                s->disconnectFromServer();
+            });
+        }
+    });
     // Manager -> Network: this computer's role, the screens, the standby, the
     // printers; and for Store Settings -> About, where the store's data is.
     const QString aboutDb = QFileInfo(dbPathOf(cli, o)).absoluteFilePath();
@@ -1514,7 +1515,11 @@ int runPairingCode(const Args &cli, const Options &o)
 // computer only (the running store takes it at once; else it's stored).
 int runMaintainerPin(const Args &cli, const Options &o)
 {
-    const QString pin = cli.value(o.maintainerPin).trimmed();
+    QString pin = cli.value(o.maintainerPin).trimmed();
+    if (pin == u"-") {   // from the input (not on a command line others can see)
+        QTextStream in(stdin);
+        pin = in.readLine().trimmed();
+    }
     static const QRegularExpression digits(u"^[0-9]{4,8}$"_s);
     if (pin != u"off" && !digits.match(pin).hasMatch()) {
         qCritical().noquote() << "The maintainer code is 4 to 8 digits (or \"off\").";
@@ -1547,6 +1552,11 @@ int runMaintainerPin(const Args &cli, const Options &o)
         if (!store.open(&error)) {
             qCritical().noquote() << "Cannot open the database:" << error;
             return 1;
+        }
+        // A store not started yet would take the starter settings over it.
+        if (!store.hasMenu()) {
+            qCritical().noquote() << "This store hasn't started yet: start it once, then set the code.";
+            return 2;
         }
         auto data = store.load();
         if (!data) {
