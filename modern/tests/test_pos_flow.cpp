@@ -4872,8 +4872,11 @@ TEST_CASE("Rush Radar on the dashboard and the kitchen screen", "[ui][rush]")
     s.pos.shared()->rushPast.tableItems["classic-burger"] = 100;
     s.pos.shared()->rushPast.tableGuests = 100;
     // Four past weeks of this weekday: 16 checks an hour around now; Sam alone on the floor.
+    // Today at 7 PM, whenever the test runs (late at night the hour would be nearly over).
+    const qint64 sevenPm = QDateTime(QDate::currentDate(), QTime(19, 0)).toMSecsSinceEpoch();
+    s.pos.shared()->setClock([sevenPm] { return sevenPm; });
     {
-        const QDateTime now = QDateTime::currentDateTime();
+        const QDateTime now = QDateTime::fromMSecsSinceEpoch(sevenPm);
         for (int k = 1; k <= 4; ++k)
             s.pos.shared()->rushPast.days.insert(now.date().addDays(-7 * k).toJulianDay());
         const int day = now.date().dayOfWeek() % 7;
