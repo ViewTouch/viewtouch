@@ -1200,6 +1200,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"offlineCards"_s, s.offlineCards}, {u"offlineCardMax"_s, qint64(s.offlineCardMax)}, {u"tabHold"_s, qint64(s.tabHold)},
         {u"offlineCardTotal"_s, qint64(s.offlineCardTotal)},
         {u"surchargeBp"_s, qint64(s.surchargeBp)}, {u"cashDiscountBp"_s, qint64(s.cashDiscountBp)},
+        {u"maintainerPinSalt"_s, qs(s.maintainerPinSalt)}, {u"maintainerPinHash"_s, qs(s.maintainerPinHash)},
         {u"stripeLocation"_s, qs(s.stripeLocation)}, {u"cardTipOn"_s, qs(s.cardTipOn)},
         {u"stripeReaders"_s, [&] {
              QJsonArray a;
@@ -1503,6 +1504,8 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.offlineCardTotal = o.value(u"offlineCardTotal").toInteger(100000);
     s.surchargeBp = std::clamp<std::int64_t>(o.value(u"surchargeBp").toInteger(0), 0, 300);
     s.cashDiscountBp = std::clamp<std::int64_t>(o.value(u"cashDiscountBp").toInteger(0), 0, 1000);
+    s.maintainerPinSalt = ss(o.value(u"maintainerPinSalt").toString());
+    s.maintainerPinHash = ss(o.value(u"maintainerPinHash").toString());
     s.cardCurrency = ss(o.value(u"cardCurrency").toString(u"usd"_s));
     if (s.cardCurrency.empty())
         s.cardCurrency = "usd";

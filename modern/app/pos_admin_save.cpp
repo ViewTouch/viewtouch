@@ -23,6 +23,8 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
 {
     // A new one: added, by its name.
     if (index < 0) {
+        if (const char *p = fieldPermission(panel, {}); p && !can(QString::fromLatin1(p)))
+            return fail(qstrcmp(p, perm::Maintain) == 0 ? tr("That's the maintainer's.") : tr("That's the owner's."));
         if (!saveAdminRecord(panel, index, record))
             return false;
         QString name;
@@ -39,6 +41,18 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
     // Taxes and Store Settings are one record: what wasn't sent stays as it is
     // (a handheld whose form opened before the settings came saved only the
     // rate typed, and the others turned 0).
+    // The owner's and the maintainer's settings: not changed by anyone else.
+    if (index >= 0 && index < before.size()) {
+        const QVariantMap was = before[index].toMap();
+        for (auto it = record.begin(); it != record.end(); ++it) {
+            const char *p = fieldPermission(panel, it.key());
+            if (!p || can(QString::fromLatin1(p)) || (!was.contains(it.key()) && it.value().toString().isEmpty())
+                || was.value(it.key()).toString() == it.value().toString())
+                continue;
+            return fail(qstrcmp(p, perm::Maintain) == 0 ? tr("Only the maintainer can change that.")
+                                                       : tr("Only the owner can change that."));
+        }
+    }
     QVariantMap full = record;
     if ((panel == u"taxes" || panel == u"store") && index == 0 && !before.isEmpty()) {
         full = before[0].toMap();
@@ -63,6 +77,11 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
 
 bool PosService::adminDelete(const QString &panel, int index)
 {
+    // A device off the store (its screen stops at once), a card reader: not a manager's.
+    if (panel == u"terminals" && !require(perm::Maintain, tr("Removing a device")))
+        return false;
+    if (const char *p = fieldPermission(panel, {}); p && !require(p, tr("Removing it")))
+        return false;
     const QVariantList before = adminRecords(panel);
     if (!deleteAdminRecord(panel, index))
         return false;
@@ -789,7 +808,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     const bool active = record.value(u"active"_s, true).toBool();
     if (name.isEmpty())
         return fail(tr("The employee needs a name."));
-    if (!QStringList{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s}
+    if (!QStringList{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s, u"owner"_s}
              .contains(role))
         return fail(tr("Choose a role."));
     if (index < 0 && pin.isEmpty())
@@ -798,13 +817,15 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     if (!pin.isEmpty() && !digits.match(pin).hasMatch())
         return fail(tr("PINs are 4 to 8 digits."));
     // Managers can do the most: a PIN that's harder to guess.
-    if (!pin.isEmpty() && (role == u"manager" || role == u"admin") && pin.size() < 6)
+    if (!pin.isEmpty() && (role == u"manager" || role == u"admin" || role == u"owner") && pin.size() < 6)
         return fail(tr("Managers' PINs are 6 to 8 digits."));
     if (!pin.isEmpty()) {
         for (int i = 0; i < int(s_->employees.size()); ++i) {
             if (i != index && s_->employees[i].pinHash == hashPin(pin, s_->employees[i].pinSalt))
                 return fail(tr("Someone else already uses that PIN."));
         }
+        if (s_->isMaintainerPin(pin))
+            return fail(tr("Someone else already uses that PIN."));
     }
     std::set<std::string> allow, deny;
     for (const char *p : AllPermissions) {
@@ -849,7 +870,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     if (rate < 0 || rate > 1000)
         return fail(tr("Write the pay rate in dollars an hour."));
     std::vector<Job> otherJobs;
-    static const QStringList jobRoles{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s};
+    static const QStringList jobRoles{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s, u"owner"_s};
     for (const QString &line : record.value(u"otherJobs"_s).toString().split(u'\n', Qt::SkipEmptyParts)) {
         const QStringList parts = line.simplified().split(u' ');
         bool ok = parts.size() == 2;
@@ -887,6 +908,8 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
         e.pinSalt = newSalt();
         e.pinHash = hashPin(pin, e.pinSalt);
     }
+    if (const QString no = ownerRule(index >= 0 ? &s_->employees[index] : nullptr, e); !no.isEmpty())
+        return fail(no);
     if (index >= 0) {
         s_->employees[index] = e;
     } else {
@@ -897,6 +920,29 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
         s_->sink->saveEmployee(s_->employees[index]);
     emit s_->staffChanged();
     return true;
+}
+
+// Who's a manager or the owner, and pay, are the owner's to change; and the
+// store always keeps an owner. Empty: allowed.
+QString PosService::ownerRule(const Employee *before, const Employee &after) const
+{
+    const auto boss = [](const std::string &role) { return role == "manager" || role == "owner" || role == "admin"; };
+    const auto owner = [](const Employee &e) { return e.active && (e.role == "owner" || e.role == "admin"); };
+    if (!can(QString::fromLatin1(perm::Owner))) {
+        if (!before && boss(after.role))
+            return tr("Only the owner can add a manager.");
+        if (before && before->role != after.role && (boss(before->role) || boss(after.role)))
+            return tr("Only the owner can make someone a manager or the owner, or change a manager's job.");
+        if (before && boss(before->role) && before->active && !after.active)
+            return tr("Only the owner can deactivate a manager.");
+        if (before ? (before->payRate != after.payRate || before->otherJobs != after.otherJobs)
+                   : (after.payRate.cents() != 0 || !after.otherJobs.empty()))
+            return tr("Only the owner can change pay.");
+    }
+    if (before && owner(*before) && !owner(after)
+        && std::ranges::none_of(s_->employees, [&](const Employee &x) { return x.id != before->id && owner(x); }))
+        return tr("The store needs an owner: make someone else the owner first.");
+    return {};
 }
 
 
@@ -1145,6 +1191,10 @@ bool PosService::deleteAdminRecord(const QString &panel, int index)
         // Staff are deactivated, not erased: their sales and hours keep a name.
         if (user() && s_->employees[index].id == user()->id)
             return fail(tr("You cannot remove yourself."));
+        Employee off = s_->employees[index];
+        off.active = false;
+        if (const QString no = ownerRule(&s_->employees[index], off); !no.isEmpty())
+            return fail(no);
         s_->employees[index].active = false;
         if (s_->sink)
             s_->sink->saveEmployee(s_->employees[index]);

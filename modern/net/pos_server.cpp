@@ -635,7 +635,13 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         if (!c->session->can(u"layout.edit"_s)) {
             error = tr("%1 may not edit pages.").arg(c->session->userName());
         } else if (auto layout = layout::Layout::fromJson(m.value(u"layout").toObject(), &errors)) {
-            ok = layouts_->save(*layout, &error, c);
+            // Templates: the owner's; the store's own pages: the maintainer's (said on the screen too).
+            bool system = false;
+            const QString what = layout::protectedEdit(layouts_->layout(), *layout, &system);
+            if (!what.isEmpty() && !c->session->can(QString::fromLatin1(system ? core::perm::Maintain : core::perm::Owner)))
+                error = (system ? tr("Only the maintainer can change %1.") : tr("Only the owner can change %1.")).arg(what);
+            else
+                ok = layouts_->save(*layout, &error, c);
         } else {
             error = errors.join(u'\n');
         }
@@ -833,8 +839,8 @@ PosServer::UpdateFile PosServer::updateFor(const QString &platform, int build) c
 void PosServer::sendUpdate(Connection *c)
 {
     const auto refuse = [c](const QString &why) { c->channel->send({{u"t"_s, u"updateError"_s}, {u"text"_s, why}}); };
-    if (!c->session->can(QString::fromLatin1(core::perm::Manager)))
-        return refuse(tr("Updating a screen needs a manager."));
+    if (!c->session->can(QString::fromLatin1(core::perm::Maintain)))
+        return refuse(tr("Updating a screen is the maintainer's."));
     const UpdateFile u = updateFor(c->platform, c->build);
     if (u.path.isEmpty())
         return refuse(tr("The store has no newer version for this screen."));

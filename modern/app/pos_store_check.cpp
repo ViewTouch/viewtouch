@@ -118,7 +118,7 @@ QVariantMap PosService::storeCheck() const
         };
         QStringList under;
         for (const Employee &e : s_->employees) {
-            if (!e.active || e.sample || e.role == "manager" || e.role == "admin")
+            if (!e.active || e.sample || e.role == "manager" || e.role == "admin" || e.role == "owner")
                 continue;
             std::vector<core::Job> jobs{{e.role, e.payRate}};
             jobs.insert(jobs.end(), e.otherJobs.begin(), e.otherJobs.end());

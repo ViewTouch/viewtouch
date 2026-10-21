@@ -19,6 +19,12 @@ inline constexpr const char *Manager = "manager";        // manager pages
 inline constexpr const char *EditLayout = "layout.edit"; // edit pages
 inline constexpr const char *Discount = "check.discount"; // discounts and comps
 inline constexpr const char *OthersChecks = "check.others"; // open checks that are someone else's
+// The owner's: money, taxes, labor law, pay and who's a manager (role "owner").
+inline constexpr const char *Owner = "owner";
+// The store's technician's: what can break the store or lock it out (erase it,
+// updates, the network and the standby, devices, templates, backups). Only
+// the maintainer has it: a login of its own, set on the store's computer.
+inline constexpr const char *Maintain = "maintain";
 } // namespace perm
 
 // Every permission, for the per-person settings.
@@ -38,7 +44,7 @@ struct Job {
 struct Employee {
     std::string id;
     std::string name;
-    std::string role = "server";   // server | bartender | cashier | host | busser | manager | admin
+    std::string role = "server";   // server | bartender | cashier | host | busser | manager | owner (admin: the same) | maintainer
     // PINs are stored hashed (see app::hashPin); never the digits.
     std::string pinSalt;
     std::string pinHash;

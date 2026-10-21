@@ -71,4 +71,11 @@ struct RecordingSink : app::PosSink {
     void savePunch(const core::TimePunch &p) override { punches[p.id] = p; }
 };
 
+// The store's maintainer (a code set on its computer), logged in.
+inline bool loginMaintainer(app::PosService &pos)
+{
+    pos.shared()->setMaintainerPin(QStringLiteral("86420"));
+    return pos.loginWithPin(QStringLiteral("86420"));
+}
+
 } // namespace vt::test

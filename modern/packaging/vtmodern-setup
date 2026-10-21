@@ -10,6 +10,7 @@
 #   sudo vtmodern-setup timeclock [HOST] [NAME]  a time clock: clocking in and out, and schedules
 #   sudo vtmodern-setup standby CODE [HOST]      a standby server: a live copy that takes over
 #   sudo vtmodern-setup pair                     on a server without a screen: a code to pair a screen with
+#   sudo vtmodern-setup maintainer [CODE|off]    the store's maintainer code (asked for when not given)
 #   sudo vtmodern-setup off                      stop starting ViewTouch at boot
 #   sudo vtmodern-setup forget                   forget what this machine is (the data is kept)
 #   vtmodern-setup status                        what is set up now
@@ -301,6 +302,20 @@ standby)
 pair)
     need_root
     exec vtmodern --data-dir "$DATA_DIR" --pairing-code
+    ;;
+maintainer)
+    need_root
+    code=${1:-}
+    if [ -z "$code" ]; then
+        printf 'Maintainer code (4 to 8 digits, or off): ' >&2
+        stty -echo 2>/dev/null || true
+        read -r code
+        stty echo 2>/dev/null || true
+        echo >&2
+    fi
+    # As the account that owns the data (the running store takes it at once).
+    owner=$(stat -c %U "$DATA_DIR" 2>/dev/null || echo root)
+    exec runuser -u "$owner" -- env QT_QPA_PLATFORM=offscreen vtmodern --data-dir "$DATA_DIR" --maintainer-pin "$code"
     ;;
 forget)
     need_root

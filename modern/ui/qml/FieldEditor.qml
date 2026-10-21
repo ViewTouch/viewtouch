@@ -112,6 +112,7 @@ ColumnLayout {
         Loader {
             active: fe.inline
             visible: active
+            enabled: !fe.readOnly   // every kind of editor, at once
             Layout.minimumHeight: active ? fe.minHeight : 0
             sourceComponent: fe.inline ? fe.editorComponent : null
         }
@@ -120,6 +121,7 @@ ColumnLayout {
     Loader {
         active: !fe.inline
         visible: active
+        enabled: !fe.readOnly
         Layout.minimumHeight: active ? fe.minHeight : 0
         Layout.fillWidth: true
         sourceComponent: fe.inline ? null : fe.editorComponent

@@ -20,7 +20,44 @@ namespace vt::app {
 
 using namespace admin;
 
+// Settings that are the owner's or the maintainer's: shown to managers, not
+// changed by them (null: a manager's).
+const char *PosService::fieldPermission(const QString &panel, const QString &path) const
+{
+    static const QSet<QString> ownerStore = {
+        // Cards: the money's way in.
+        u"stripeSecretKey"_s, u"cardCurrency"_s, u"cardTipOn"_s, u"surchargePercent"_s, u"cashDiscountPercent"_s,
+        u"tabHold"_s, u"offlineCards"_s, u"offlineCardMax"_s, u"offlineCardTotal"_s,
+        // Labor law and pay.
+        u"laborState"_s, u"paidBreaks"_s, u"overtimeDailyHours"_s, u"doubleTimeDailyHours"_s, u"seventhDayRule"_s,
+        u"overtimeWeeklyHours"_s, u"mealBreakAfterHours"_s, u"restBreakEveryHours"_s, u"scheduleNoticeDays"_s,
+        u"restBetweenShiftsHours"_s, u"giftCardCashBelow"_s, u"tipAllocation"_s, u"tipOuts"_s, u"tipPool"_s,
+        // Franchise and accounting.
+        u"royaltyPercent"_s, u"adFundPercent"_s, u"chartOfAccounts"_s};
+    static const QSet<QString> maintainStore = {u"backupCopyDir"_s, u"encryptBackups"_s, u"backupPassword"_s};
+    if (panel == u"taxes" || panel == u"cardReaders")
+        return perm::Owner;
+    if (panel == u"store")
+        return ownerStore.contains(path) ? perm::Owner : maintainStore.contains(path) ? perm::Maintain : nullptr;
+    return nullptr;
+}
+
 QVariantList PosService::adminFields(const QString &panel)
+{
+    QVariantList out = adminFieldsAll(panel);
+    for (QVariant &f : out) {
+        QVariantMap m = f.toMap();
+        if (const char *p = fieldPermission(panel, m.value(u"path"_s).toString()); p && !can(QString::fromLatin1(p))) {
+            m.insert(u"readOnly"_s, true);
+            const QString whose = qstrcmp(p, perm::Maintain) == 0 ? tr("The maintainer's.") : tr("The owner's.");
+            m.insert(u"hint"_s, m.value(u"hint"_s).toString().isEmpty() ? whose : whose + u' ' + m.value(u"hint"_s).toString());
+            f = m;
+        }
+    }
+    return out;
+}
+
+QVariantList PosService::adminFieldsAll(const QString &panel)
 {
     const QVariantMap readonlyId = with(field(u"id"_s, tr("ID"), u"string"_s,
                                               tr("How buttons refer to it. Fixed once saved.")),
@@ -183,7 +220,7 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"name"_s, tr("Name"), u"string"_s), readonlyId,
             with(field(u"role"_s, tr("Role"), u"enum"_s), u"options"_s,
                  options({{"server", "Server"}, {"bartender", "Bartender"}, {"cashier", "Cashier"}, {"host", "Host"},
-                          {"busser", "Busser"}, {"driver", "Delivery driver"}, {"manager", "Manager"}, {"admin", "Admin"}})),
+                          {"busser", "Busser"}, {"driver", "Delivery driver"}, {"manager", "Manager"}, {"owner", "Owner"}})),
             field(u"pin"_s, tr("New PIN"), u"pin"_s, tr("4 to 8 digits. Leave empty to keep the current PIN.")),
             field(u"payRate"_s, tr("Pay rate ($ an hour)"), u"money"_s, tr("For their role, before tips. For the Labor report.")),
             field(u"otherJobs"_s, tr("Other jobs"), u"text"_s,

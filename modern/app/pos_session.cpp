@@ -64,7 +64,8 @@ QString PosSession::roleName(const QString &role) const
     static const QHash<QString, const char *> names = {
         {u"server"_s, QT_TR_NOOP("Server")}, {u"bartender"_s, QT_TR_NOOP("Bartender")},
         {u"cashier"_s, QT_TR_NOOP("Cashier")}, {u"host"_s, QT_TR_NOOP("Host")}, {u"busser"_s, QT_TR_NOOP("Busser")}, {u"driver"_s, QT_TR_NOOP("Driver")},
-        {u"manager"_s, QT_TR_NOOP("Manager")}, {u"admin"_s, QT_TR_NOOP("Admin")},
+        {u"manager"_s, QT_TR_NOOP("Manager")}, {u"admin"_s, QT_TR_NOOP("Owner")}, {u"owner"_s, QT_TR_NOOP("Owner")},
+        {u"maintainer"_s, QT_TR_NOOP("Maintainer")},
     };
     const auto it = names.constFind(role);
     return it == names.cend() ? role : tr(*it);

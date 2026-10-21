@@ -110,6 +110,9 @@ struct PastDay {
 // The built-in user a self-order kiosk takes orders as (role "kiosk": it
 // may only order). Not one of the staff: it can't log in with a PIN.
 const core::Employee &kioskEmployee();
+// The maintainer, logged in with the store's maintainer code: not on the
+// staff list, so nobody in the store can remove or demote them.
+const core::Employee &maintainerEmployee();
 
 // Everything the running POS needs at startup.
 struct PosData {
@@ -185,6 +188,9 @@ public:
     }
 
     const core::Employee *employee(const std::string &id) const;
+    // The maintainer's code, on this store (empty: none). On the computer only.
+    void setMaintainerPin(const QString &pin);
+    bool isMaintainerPin(const QString &pin) const;
 
     core::PosSettings settings;
     std::vector<core::MenuItem> menu;
@@ -1288,6 +1294,9 @@ private:
     bool fail(const QString &message);
     void changed(core::Check &check);   // persist + notify
     const core::Employee *employeeByPin(const QString &pin) const;
+    QString ownerRule(const core::Employee *before, const core::Employee &after) const;
+    QVariantList adminFieldsAll(const QString &panel);
+    const char *fieldPermission(const QString &panel, const QString &path) const;
     core::TimePunch *openPunch(const std::string &employeeId);
     // Start a shift: the job and its pay recorded on the punch.
     bool punchIn(const core::Employee &e, const core::Job &job, const QString &by = {});

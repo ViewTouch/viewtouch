@@ -663,16 +663,17 @@ TEST_CASE("Updates: a screen behind the store is told, and a manager there gets 
     CHECK(screens[0].toMap()[u"platform"_s] == me.platform);
     CHECK(screens[0].toMap()[u"hasUpdate"_s].toBool());
 
-    // A server can't fetch it; a manager can.
+    // A server can't fetch it; the maintainer can.
     h.pin("1111");
     QSignalSpy notices(h.remote.get(), &app::PosSession::notice);
     h.remote->getUpdate();
     REQUIRE(waitFor([&] { return h.remote->updateInfo().contains(u"error"_s); }));
-    CHECK(h.remote->updateInfo()[u"error"_s].toString().contains(u"manager"_s));
+    CHECK(h.remote->updateInfo()[u"error"_s].toString().contains(u"maintainer"_s));
     h.remote->invoke(u"logout"_s);
     REQUIRE(waitFor([&] { return !h.remote->loggedIn(); }));
     h.settle();
-    h.pin("1234");
+    store.shared.setMaintainerPin(u"86420"_s);
+    h.pin("86420");
     h.remote->getUpdate();
     REQUIRE(waitFor([&] { return h.remote->updateInfo().contains(u"ready"_s); }, 10000));
     QFile got(h.remote->updateInfo()[u"ready"_s].toString());

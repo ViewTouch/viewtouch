@@ -1,5 +1,7 @@
 #include "layout/layout.hh"
 
+#include <QObject>
+
 #include "layout/json_path.hh"
 
 #include <QDir>
@@ -595,6 +597,27 @@ bool Layout::saveDirectory(const QString &dir, QStringList *errors) const
             pagesDir.remove(file);
     }
     return ok;
+}
+
+QString protectedEdit(const Layout &before, const Layout &after, bool *system)
+{
+    if (system)
+        *system = false;
+    for (const Page &p : before.pages)
+        if (!after.page(p.id) && !p.role.isEmpty()) {
+            if (system)
+                *system = true;
+            return QObject::tr("the %1 page (it's one of the store's own)").arg(p.name);
+        }
+    for (const Page &p : before.pages) {
+        const Page *now = after.page(p.id);
+        if (now && p.kind == u"template" && !(*now == p))
+            return QObject::tr("the %1 template (every page built on it changes)").arg(p.name);
+    }
+    for (const Page &p : after.pages)
+        if (const Page *was = before.page(p.id); was && was->kind != p.kind && (was->kind == u"template" || p.kind == u"template"))
+            return QObject::tr("the %1 template").arg(p.name);
+    return {};
 }
 
 } // namespace vt::layout

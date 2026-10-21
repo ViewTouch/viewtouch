@@ -52,7 +52,7 @@ QString PosShared::startPairing(bool standby)
 
 bool PosService::factoryReset(const QString &confirm)
 {
-    if (!require(perm::Manager, tr("Factory reset")))
+    if (!require(perm::Maintain, tr("Factory reset")))
         return false;
     if (confirm.trimmed() != u"RESET")
         return fail(tr("Type RESET to confirm."));
@@ -76,7 +76,7 @@ bool PosService::backupNow()
 
 bool PosService::startPairing(bool standby)
 {
-    if (!require(perm::Manager, tr("Pairing a device")))
+    if (!require(standby ? perm::Maintain : perm::Manager, standby ? tr("Pairing a standby computer") : tr("Pairing a device")))
         return false;
     s_->startPairing(standby);
     emit notice(standby ? tr("On the standby computer: vtmodern-setup standby %1. The code works once, for 10 minutes.").arg(s_->pairing->code)

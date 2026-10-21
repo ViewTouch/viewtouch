@@ -86,6 +86,16 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     } else {
         startDay();
     }
+    // Every store has an owner: before there were owners, its first manager.
+    const auto owns = [](const Employee &e) { return e.active && (e.role == "owner" || e.role == "admin"); };
+    if (std::ranges::none_of(employees, owns))
+        for (Employee &e : employees)
+            if (e.active && e.role == "manager") {
+                e.role = "owner";
+                if (sink)
+                    sink->saveEmployee(e);
+                break;
+            }
 }
 
 const Employee *PosShared::employee(const std::string &id) const
@@ -94,11 +104,43 @@ const Employee *PosShared::employee(const std::string &id) const
         return nullptr;
     if (id == kioskEmployee().id)
         return &kioskEmployee();
+    if (id == maintainerEmployee().id)
+        return &maintainerEmployee();
     for (const Employee &e : employees) {
         if (e.id == id)
             return &e;
     }
     return nullptr;
+}
+
+const Employee &maintainerEmployee()
+{
+    static const Employee m = [] {
+        Employee e;
+        e.id = "maintainer";
+        e.name = ss(PosService::tr("Maintainer"));
+        e.role = "maintainer";
+        return e;
+    }();
+    return m;
+}
+
+void PosShared::setMaintainerPin(const QString &pin)
+{
+    if (pin.isEmpty()) {
+        settings.maintainerPinSalt.clear();
+        settings.maintainerPinHash.clear();
+    } else {
+        settings.maintainerPinSalt = newSalt();
+        settings.maintainerPinHash = hashPin(pin, settings.maintainerPinSalt);
+    }
+    saveSettings();
+}
+
+bool PosShared::isMaintainerPin(const QString &pin) const
+{
+    return !pin.isEmpty() && !settings.maintainerPinHash.empty()
+           && settings.maintainerPinHash == hashPin(pin, settings.maintainerPinSalt);
 }
 
 PosService::PosService(PosData data, PosSink *sink, QObject *parent)
@@ -663,6 +705,10 @@ const Employee *PosService::employeeByPin(const QString &pin) const
         self->pinWait_ = tr("Too many wrong PINs: try again in %n second(s).", "", int((waitUntil - t + 999) / 1000));
         return nullptr;
     }
+    if (s_->isMaintainerPin(pin)) {
+        guard.wrong = 0;
+        return &maintainerEmployee();
+    }
     for (const Employee &e : s_->employees) {
         if (e.active && e.pinHash == hashPin(pin, e.pinSalt)) {
             guard.wrong = 0;
@@ -774,6 +820,8 @@ bool PosService::clockIn()
     emit entryChanged();
     if (!e)
         return fail(tr("Enter your PIN, then Clock In."));
+    if (e->id == maintainerEmployee().id)
+        return fail(tr("The maintainer doesn't clock in."));
     if (openPunch(e->id))
         return fail(tr("%1 is already clocked in.").arg(qs(e->name)));
     if (const QString why = scheduleCheck(*e); !why.isEmpty())
@@ -889,7 +937,7 @@ bool PosService::clockOutFor(const Employee &employee)
     if (s_->sink)
         s_->sink->savePunch(*p);
     // Tipped jobs: the cash tips they kept (asked on this screen next).
-    if (s_->settings.declareCashTips && p->job != "manager" && p->job != "admin")
+    if (s_->settings.declareCashTips && p->job != "manager" && p->job != "admin" && p->job != "owner")
         cashTipsPunch_ = p->id;
     const double hours = double(p->workedMs(p->clockOut, s_->settings.paidBreaks)) / 3'600'000.0;
     emit sessionChanged();

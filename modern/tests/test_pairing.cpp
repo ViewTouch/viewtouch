@@ -168,6 +168,9 @@ TEST_CASE("Unpairing a device disconnects it and keeps it out", "[pairing]")
         if (terminals[i].toMap()[u"name"_s] == u"Bar Tablet"_s)
             tablet = i;
     REQUIRE(tablet >= 0);
+    CHECK_FALSE(store.manager.adminDelete(u"terminals"_s, tablet));   // a device off the store: the maintainer's
+    store.manager.logout();
+    REQUIRE(test::loginMaintainer(store.manager));
     REQUIRE(store.manager.adminDelete(u"terminals"_s, tablet));
     REQUIRE(rejected.wait(10000));
     CHECK(remote.isRejected());

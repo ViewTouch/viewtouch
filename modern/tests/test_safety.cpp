@@ -248,7 +248,7 @@ TEST_CASE("Encrypted backups: sealed, checked, copied, and restorable with the p
 TEST_CASE("Encrypt backups: a manager sets a backup password", "[safety][backup][sealed]")
 {
     app::PosService pos(test::seedPosData(), nullptr);
-    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(test::loginMaintainer(pos));   // backups' password: the maintainer's
     pos.shared()->backupKeyFor = [](const QString &password) {
         const QByteArray salt = storage::newSalt();
         return std::pair{storage::sealingKey(password, salt), salt};
@@ -463,12 +463,18 @@ TEST_CASE("Factory reset: backed up, then a fresh store", "[demo][backup]")
     CHECK(storage::verifyDatabase(backups.first()));
 }
 
-TEST_CASE("Factory reset from the Manager page: managers, typed RESET, backed up first", "[demo][reset]")
+TEST_CASE("Factory reset from the Manager page: the maintainer, typed RESET, backed up first", "[demo][reset]")
 {
     PosService pos(test::seedPosData(), nullptr);
     int asked = 0;
     bool backupWorks = true;
     REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.shared()->requestFactoryReset = [&] { ++asked; return backupWorks; };
+    CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // the owner: not theirs
+    CHECK(asked == 0);
+    pos.shared()->requestFactoryReset = nullptr;
+    pos.logout();
+    REQUIRE(test::loginMaintainer(pos));
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // not on the machine with the data
     pos.shared()->requestFactoryReset = [&] { ++asked; return backupWorks; };
     CHECK_FALSE(pos.factoryReset(u"reset please"_s));

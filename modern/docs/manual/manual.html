@@ -821,9 +821,17 @@
 <h2>Employees</h2>
 <p class="shot"><img src="shots/m33-employees.png" width="560" height="315"></p>
 <ul>
-<li>Name, role (server, bartender, cashier, host, busser, manager, admin) and a PIN of 4 to 8 digits; managers and admins 6 to 8, since they can do the most. Five wrong PINs in a row make a screen wait (30 seconds, then longer each time), and Store Check says someone may be guessing.</li>
+<li>Name, role (server, bartender, cashier, host, busser, manager, owner) and a PIN of 4 to 8 digits; managers and owners 6 to 8, since they can do the most. Five wrong PINs in a row make a screen wait (30 seconds, then longer each time), and Store Check says someone may be guessing.</li>
 <li>Each permission can be <i>As the role</i>, <i>Yes</i> or <i>No</i> for one person: take orders, take payments, discounts, void sent items, manager screens, edit pages.</li>
 <li>Staff are deactivated, not deleted, so their sales and hours keep a name.</li>
+</ul>
+
+<h2>Managers, the owner and the maintainer</h2>
+<ul>
+<li><b>Managers</b> run the shift: voids, comps, discounts, refunds, time punches, the schedule, the menu, staff PINs, the drawers, reports, End of Day, menu pages and buttons.</li>
+<li><b>The owner</b> also has the money and the law: card settings (the Stripe key, card readers, the surcharge, the cash discount, offline cards), taxes, the store's state and its labor rules, tip-outs and the tip pool, pay, who's a manager or the owner, forgetting a customer, franchise and accounting settings, and the templates every page builds on (the ready-made layouts change them). A manager sees those settings, marked <i>The owner's</i>, but can't change them. The store always keeps an owner: the last one can't step down until someone else is one. A store from before there were owners has its first manager as its owner (and an <i>Admin</i> is an owner).</li>
+<li><b>The maintainer</b> is the store's technician: erasing the store (Factory Reset), updating screens, pairing a standby computer, removing a device from the store, removing one of the store's own pages (login, tables, pay…), and where backups go and their password. The maintainer isn't on the staff list, so nobody in the store can remove or change them, and doesn't clock in. They log in with a code set on the store's computer, never on a screen: <code>sudo vtmodern-setup maintainer</code> (it asks for the code; <code>off</code> removes it). Six to eight digits are much harder to guess than four or five. No staff PIN can be the same as it.</li>
+
 <li><b>Language</b>: the screens switch to it when this person logs in (chapter 17).</li>
 <li><b>Pay rate</b> (an hour, before tips) and <b>Other jobs</b> with their pay, one per line: <code>bartender 9.00</code>. For the labor cost on Reports → Labor.</li>
 </ul>
