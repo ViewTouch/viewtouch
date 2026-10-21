@@ -27,8 +27,11 @@ Dialog {
                   ? importDialog.read.error
                   : importDialog.read.menuFile
                     ? qsTr("%1's menu, with its choices. Items already on this menu are left as they are.").arg(importDialog.read.from || "?")
-                    : qsTr("Into: %1. Rows without a category go in %2.").arg(importDialog.categoriesIn.join(", "))
-                                                                        .arg(menu.category ? menu.category.name : "?")
+                    : (importDialog.read.from ? qsTr("From %1's menu export.").arg(importDialog.read.from) + " " : "")
+                      + qsTr("Into: %1. Rows without a category go in %2.").arg(importDialog.categoriesIn.join(", "))
+                                                                          .arg(menu.category ? menu.category.name : "?")
+                      + ((importDialog.read.groups ?? []).length > 0
+                         ? " " + qsTr("Choice groups: %1.").arg(importDialog.read.groups.map(g => g.name).join(", ")) : "")
         }
         Label {
             visible: (importDialog.read.problems ?? []).length > 0
@@ -46,7 +49,13 @@ Dialog {
                 required property var modelData
                 width: ListView.view.width
                 Label { Layout.fillWidth: true; text: (modelData.photoData || modelData.photo ? "📷 " : "") + modelData.name; elide: Text.ElideRight }
-                Label { text: menu.pos.currencySymbol + Number(modelData.price).toFixed(2) }
+                Label {
+                    opacity: 0.7
+                    visible: text !== ""
+                    text: modelData.sizes ? qsTr("%n size(s)", "", modelData.sizes.length)
+                                          : modelData.groups ? qsTr("%n choice group(s)", "", modelData.groups.length) : ""
+                }
+                Label { text: (modelData.sizes ? qsTr("from") + " " : "") + menu.pos.currencySymbol + Number(modelData.price).toFixed(2) }
                 Label { Layout.preferredWidth: 180; text: modelData.category; opacity: 0.7; elide: Text.ElideRight }
             }
         }
@@ -69,7 +78,7 @@ Dialog {
                     if (importDialog.read.menuFile)
                         menu.pos.importMenuFile(importDialog.read.menuFile)
                     else
-                        menu.pos.importMenuRows(importDialog.items, menu.categoryId, updatePrices.checked)
+                        menu.pos.importMenuRows(importDialog.items, menu.categoryId, updatePrices.checked, importDialog.read.groups ?? [])
                     importDialog.close()
                 }
             }

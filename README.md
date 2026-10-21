@@ -54,6 +54,7 @@
 - **Kitchen:** kitchen, bar and expo touchscreens with ticket times, kitchen names and colors, and printers.
 - **Rush Radar:** each kitchen station's next half hour ("Grill backs up to 27 min at 7:42"), from what's on the line, the tables just seated, the waitlist and the store's usual nights, at the pace each station has shown. On the Dashboard and the kitchen screens.
 - **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime, tip-outs, inventory with recipes and automatic 86, and CSV/PDF export.
+- **Switching over:** import the menu you already have, from Square, Clover or Toast's export or any spreadsheet (Excel or CSV), with its categories, sizes, modifier groups, barcodes and photos.
 - **Staff:** PIN login and clock in/out, breaks, roles with per-person permissions, manager approval on the spot, practice mode for training, and messages between screens.
 - **Many screens, one store:** paired, encrypted connections. Tablets and phones join by scanning the network. A standby server keeps running if the main computer fails.
 - **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.

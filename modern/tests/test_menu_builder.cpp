@@ -250,6 +250,7 @@ TEST_CASE("Menu Builder: an item or a category moved to an exact place", "[menub
 }
 
 #include "app/menu_import.hh"
+#include "app/xlsx.hh"
 #include "layoutcontroller.hh"
 #include "layout_fixture.hh"
 
@@ -330,7 +331,352 @@ TEST_CASE("Menu import: reading the file on this device", "[menubuilder][import]
     xlsx.write("PK\x03\x04 a spreadsheet");
     xlsx.close();
     read = c.readMenuFile(QUrl::fromLocalFile(xlsx.fileName()));
-    CHECK(read[u"error"_s].toString().contains(u"CSV"_s));
+    CHECK(read[u"error"_s].toString().contains(u"damaged"_s));
+}
+
+namespace {
+
+// Raw DEFLATE, as a zip holds it: qCompress's zlib stream without its
+// length, header and checksum.
+QByteArray deflated(const QByteArray &data, int level = -1)
+{
+    const QByteArray z = qCompress(data, level);
+    return z.mid(6, z.size() - 10);
+}
+
+quint32 crc(const QByteArray &data)
+{
+    quint32 c = 0xffffffffu;
+    for (const char ch : data) {
+        c ^= uchar(ch);
+        for (int k = 0; k < 8; ++k)
+            c = c & 1 ? 0xedb88320u ^ (c >> 1) : c >> 1;
+    }
+    return ~c;
+}
+
+// A zip of these files, deflated, as Excel saves a workbook.
+QByteArray zipOf(const QList<std::pair<QString, QByteArray>> &files)
+{
+    QByteArray out, dir;
+    const auto le = [](QByteArray &b, quint32 v, int bytes) {
+        for (int i = 0; i < bytes; ++i)
+            b.append(char((v >> (8 * i)) & 0xff));
+    };
+    for (const auto &[name, data] : files) {
+        const QByteArray packed = deflated(data), n = name.toUtf8();
+        const quint32 at = quint32(out.size());
+        le(out, 0x04034b50, 4); le(out, 20, 2); le(out, 0, 2); le(out, 8, 2); le(out, 0, 4);
+        le(out, crc(data), 4); le(out, quint32(packed.size()), 4); le(out, quint32(data.size()), 4);
+        le(out, quint32(n.size()), 2); le(out, 0, 2);
+        out += n + packed;
+        le(dir, 0x02014b50, 4); le(dir, 20, 2); le(dir, 20, 2); le(dir, 0, 2); le(dir, 8, 2); le(dir, 0, 4);
+        le(dir, crc(data), 4); le(dir, quint32(packed.size()), 4); le(dir, quint32(data.size()), 4);
+        le(dir, quint32(n.size()), 2); le(dir, 0, 2); le(dir, 0, 2); le(dir, 0, 2); le(dir, 0, 2); le(dir, 0, 4);
+        le(dir, at, 4);
+        dir += n;
+    }
+    const quint32 dirAt = quint32(out.size());
+    out += dir;
+    le(out, 0x06054b50, 4); le(out, 0, 2); le(out, 0, 2); le(out, quint32(files.size()), 2); le(out, quint32(files.size()), 2);
+    le(out, quint32(dir.size()), 4); le(out, dirAt, 4); le(out, 0, 2);
+    return out;
+}
+
+// A workbook of these sheets; text cells as shared strings, numbers as numbers.
+QByteArray workbookOf(const QList<std::pair<QString, QList<QStringList>>> &sheets)
+{
+    QStringList strings;
+    QList<std::pair<QString, QByteArray>> files;
+    QByteArray book = "<?xml version=\"1.0\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+                      "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets>";
+    QByteArray rels = "<?xml version=\"1.0\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">";
+    for (int s = 0; s < sheets.size(); ++s) {
+        QByteArray xml = "<worksheet><sheetData>";
+        for (int r = 0; r < sheets[s].second.size(); ++r) {
+            xml += "<row r=\"" + QByteArray::number(r + 1) + "\">";
+            for (int c = 0; c < sheets[s].second[r].size(); ++c) {
+                const QString &v = sheets[s].second[r][c];
+                if (v.isEmpty())
+                    continue;   // as Excel does: an empty cell isn't written
+                const QByteArray ref = QByteArray(1, char('A' + c)) + QByteArray::number(r + 1);
+                bool number = false;
+                v.toDouble(&number);
+                if (number && !v.startsWith(u'0')) {
+                    xml += "<c r=\"" + ref + "\"><v>" + v.toUtf8() + "</v></c>";
+                } else {
+                    if (!strings.contains(v))
+                        strings << v;
+                    xml += "<c r=\"" + ref + "\" t=\"s\"><v>" + QByteArray::number(strings.indexOf(v)) + "</v></c>";
+                }
+            }
+            xml += "</row>";
+        }
+        xml += "</sheetData></worksheet>";
+        const QByteArray n = QByteArray::number(s + 1);
+        files.append({u"xl/worksheets/sheet%1.xml"_s.arg(s + 1), xml});
+        book += "<sheet name=\"" + sheets[s].first.toUtf8() + "\" sheetId=\"" + n + "\" r:id=\"rId" + n + "\"/>";
+        rels += "<Relationship Id=\"rId" + n + "\" Target=\"worksheets/sheet" + n + ".xml\" Type=\"x/worksheet\"/>";
+    }
+    rels += "<Relationship Id=\"rS\" Target=\"sharedStrings.xml\" Type=\"x/sharedStrings\"/></Relationships>";
+    QByteArray shared = "<sst>";
+    for (const QString &v : strings)
+        shared += "<si><t>" + v.toHtmlEscaped().toUtf8() + "</t></si>";
+    shared += "</sst>";
+    files.append({u"xl/workbook.xml"_s, book + "</sheets></workbook>"});
+    files.append({u"xl/_rels/workbook.xml.rels"_s, rels});
+    files.append({u"xl/sharedStrings.xml"_s, shared});
+    files.append({u"_rels/.rels"_s, "<Relationships><Relationship Id=\"r1\" Type=\"x/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>"});
+    return zipOf(files);
+}
+
+} // namespace
+
+TEST_CASE("Menu import: unpacking a zip as Excel saves it", "[menubuilder][import][xlsx]")
+{
+    // Fixed codes (short), codes sent with the block (long), stored (level 0).
+    QByteArray longText;
+    for (int i = 0; i < 4000; ++i)
+        longText += "Carne Asada " + QByteArray::number(i * 7919 % 1000) + ", ";
+    for (const QByteArray &data : {QByteArray("Horchata"), longText, QByteArray(70000, 'x')})   // past one stored block
+        for (const int level : {-1, 0, 9}) {
+            INFO(data.size() << " bytes, level " << level);
+            const auto out = app::inflate(deflated(data, level), data.size());
+            REQUIRE(out);
+            CHECK(*out == data);
+        }
+    CHECK_FALSE(app::inflate(deflated(longText), longText.size() - 1));   // longer than it should be
+    QByteArray broken = deflated(longText);
+    broken.truncate(broken.size() / 2);
+    CHECK_FALSE(app::inflate(broken, longText.size()));
+
+    const QByteArray zip = zipOf({{u"a.txt"_s, "one"}, {u"b/c.xml"_s, longText}});
+    const auto files = app::unzip(zip, 1 << 20);
+    REQUIRE(files);
+    REQUIRE(files->size() == 2);
+    CHECK(files->at(1).first == u"b/c.xml"_s);
+    CHECK(files->at(1).second == longText);
+    CHECK_FALSE(app::unzip(zip, 1000));   // unpacks to more than allowed
+    QByteArray changed = zip;
+    changed[40] = char(changed[40] ^ 0x55);   // inside a.txt's data: its check fails
+    QString error;
+    CHECK_FALSE(app::unzip(changed, 1 << 20, &error));
+    CHECK(error.contains(u"damaged"_s));
+
+    const auto sheets = app::readXlsx(workbookOf({{u"Menu"_s, {{u"Item"_s, u"Price"_s, u"Barcode"_s},
+                                                               {u"Café de Olla"_s, u"2.5"_s, u"012345678905"_s},
+                                                               {u"Tacos & Más"_s, u"3"_s}}}}));
+    REQUIRE(sheets);
+    REQUIRE(sheets->size() == 1);
+    CHECK(sheets->at(0).name == u"Menu"_s);
+    CHECK(sheets->at(0).rows.value(1) == QStringList{u"Café de Olla"_s, u"2.5"_s, u"012345678905"_s});
+    CHECK(sheets->at(0).rows.value(2) == QStringList{u"Tacos & Más"_s, u"3"_s});
+}
+
+TEST_CASE("Menu import: Square's item library, a row a size", "[menubuilder][import]")
+{
+    const auto r = app::readMenuCsv(
+        u"Token,Item Name,Variation Name,SKU,Description,Categories,Reporting Category,GTIN,Price,Archived,Sellable,"
+        u"Contains Alcohol,Option Name 1,Option Value 1,Modifier Set - Milk,Modifier Set - Syrups,Tax - Sales Tax (8.5%)\n"
+        u"T1,Latte,Small,,Espresso and milk,\"Coffee, Breakfast\",,,4.00,N,Y,N,,,Y,Y,Y\n"
+        u"T2,Latte,Large,,,,,,5.25,N,Y,N,,,,,Y\n"
+        u"T3,House IPA,Regular,,,,Beer,0012345,7.00,N,Y,Y,,,N,N,Y\n"
+        u"T4,Old Soup,Regular,,,Soups,,,6.00,Y,Y,N,,,N,N,Y\n"
+        u"T5,Tea,,,,Coffee,,,,N,Y,N,Size,Pot,N,N,Y\n"_s);
+    CHECK(r.from == u"Square"_s);
+    REQUIRE(r.items.size() == 2);
+    const app::ImportedItem &latte = r.items[0];
+    CHECK(latte.name == u"Latte"_s);
+    CHECK(latte.category == u"Coffee"_s);   // its first category
+    CHECK(latte.price == 4.0);
+    REQUIRE(latte.sizes.size() == 2);
+    CHECK(latte.sizes[1].name == u"Large"_s);
+    CHECK(latte.sizes[1].price == 5.25);
+    CHECK(latte.groups == QStringList{u"Milk"_s, u"Syrups"_s});
+    const app::ImportedItem &ipa = r.items[1];
+    CHECK(ipa.sizes.isEmpty());   // only Regular: no sizes
+    CHECK(ipa.category == u"Beer"_s);   // its reporting category
+    CHECK(ipa.alcohol);
+    CHECK(ipa.barcode == u"0012345"_s);
+    CHECK(r.problems.size() == 2);
+    CHECK(r.problems.value(0).contains(u"Old Soup is archived"_s));
+    CHECK(r.problems.value(1) == u"Row 6: no price for Tea (Pot)"_s);
+}
+
+TEST_CASE("Menu import: Clover's workbook, its items, categories and modifier groups", "[menubuilder][import][xlsx]")
+{
+    const QByteArray file = workbookOf({
+        {u"Items"_s, {{u"Clover ID"_s, u"Name"_s, u"Alternate Name"_s, u"Price"_s, u"Price Type"_s, u"Tax Rates"_s,
+                       u"Product Code"_s, u"Modifier Groups"_s, u"Hidden"_s},
+                      {u"AB1"_s, u"Steak Frites"_s, u""_s, u"24.5"_s, u"Fixed"_s, u"Sales Tax"_s, u""_s, u"Temperature, Sides"_s, u"No"_s},
+                      {u"AB2"_s, u"Market Fish"_s, u""_s, u"0"_s, u"Variable"_s, u""_s, u""_s, u""_s, u"No"_s},
+                      {u"AB3"_s, u"Soda"_s, u""_s, u"2"_s, u"Fixed"_s, u""_s, u"049000050103"_s, u"Size"_s, u"No"_s},
+                      {u"AB4"_s, u"Staff Water"_s, u""_s, u"0"_s, u"Fixed"_s, u""_s, u""_s, u""_s, u"Yes"_s}}},
+        {u"Categories"_s, {{u"Category Name"_s, u"Items in Category"_s},
+                           {u"Entrees"_s, u"Steak Frites, Market Fish"_s},
+                           {u"Drinks"_s, u"Soda"_s}}},
+        {u"Modifier Groups"_s, {{u"Modifier Group Name"_s, u"Modifier"_s, u"Price"_s, u"Min Required"_s, u"Max Allowed"_s},
+                                {u"Temperature"_s, u"Rare"_s, u""_s, u"1"_s, u"1"_s},
+                                {u""_s, u"Medium"_s},
+                                {u""_s, u"Well Done"_s},
+                                {u"Sides"_s, u"Salad"_s, u"0"_s},
+                                {u""_s, u"Truffle Fries"_s, u"3.5"_s},
+                                {u"Size"_s, u"Small"_s, u"0"_s, u"1"_s, u"1"_s},
+                                {u""_s, u"Large"_s, u"1"_s}}}});
+    const auto sheets = app::readXlsx(file);
+    REQUIRE(sheets);
+    const auto r = app::readMenuSheets(*sheets);
+    CHECK(r.from == u"Clover"_s);
+    REQUIRE(r.items.size() == 2);
+    CHECK(r.items[0].name == u"Steak Frites"_s);
+    CHECK(r.items[0].category == u"Entrees"_s);
+    CHECK(r.items[0].groups == QStringList{u"Temperature"_s, u"Sides"_s});
+    CHECK(r.items[1].category == u"Drinks"_s);
+    CHECK(r.items[1].barcode == u"049000050103"_s);
+    REQUIRE(r.items[1].sizes.size() == 2);   // the Size group: its sizes
+    CHECK(r.items[1].sizes[1].price == 3.0);
+    CHECK(r.items[1].groups.isEmpty());
+    REQUIRE(r.groups.size() == 2);   // Size is gone
+    CHECK(r.groups[0].name == u"Temperature"_s);
+    CHECK(r.groups[0].min == 1);
+    CHECK(r.groups[0].max == 1);
+    CHECK(r.groups[0].options.size() == 3);
+    CHECK(r.groups[1].max == 0);   // Sides: any number
+    CHECK(r.groups[1].options[1].price == 3.5);
+    CHECK(r.problems.size() == 2);
+    CHECK(r.problems.value(0).contains(u"Market Fish is priced as it's sold"_s));
+    CHECK(r.problems.value(1).contains(u"Staff Water is hidden"_s));
+}
+
+TEST_CASE("Menu import: Toast's menu export", "[menubuilder][import]")
+{
+    const QByteArray json = R"({
+      "restaurantGuid": "x",
+      "menus": [
+        {"name": "Dinner", "menuGroups": [
+          {"name": "Pizza", "menuItems": [
+            {"name": "Margherita", "description": "Tomato, basil", "price": null, "plu": "101", "modifierGroupReferences": [1, 2]}
+          ], "menuGroups": [
+            {"name": "White Pies", "menuItems": [{"name": "Bianca", "price": 14, "modifierGroupReferences": [2]}]}
+          ]},
+          {"name": "Drinks", "menuItems": [
+            {"name": "Lemonade", "price": 3.5, "modifierGroupReferences": [3]},
+            {"name": "Mystery", "price": null}
+          ]}
+        ]},
+        {"name": "Lunch", "menuGroups": [{"name": "Pizza", "menuItems": [{"name": "Margherita", "price": 9}]}]}
+      ],
+      "modifierGroupReferences": {
+        "1": {"referenceId": 1, "name": "Size", "minSelections": 1, "maxSelections": 1, "modifierOptionReferences": [10, 11]},
+        "2": {"referenceId": 2, "name": "Toppings", "minSelections": 0, "maxSelections": null, "modifierOptionReferences": [12, 13]},
+        "3": {"referenceId": 3, "name": "Size", "minSelections": 1, "maxSelections": 1, "modifierOptionReferences": [14, 15]}
+      },
+      "modifierOptionReferences": {
+        "10": {"referenceId": 10, "name": "12 inch", "price": 12},
+        "11": {"referenceId": 11, "name": "16 inch", "price": 16},
+        "12": {"referenceId": 12, "name": "Basil", "price": 0},
+        "13": {"referenceId": 13, "name": "Pepperoni", "price": 2.5},
+        "14": {"referenceId": 14, "name": "Small", "price": 0},
+        "15": {"referenceId": 15, "name": "Large", "price": 1}
+      }
+    })";
+    const QJsonDocument doc = QJsonDocument::fromJson(json);
+    REQUIRE(app::isToastMenu(doc));
+    const auto r = app::readToastMenu(doc);
+    CHECK(r.from == u"Toast"_s);
+    REQUIRE(r.items.size() == 3);   // Margherita once
+    const app::ImportedItem &m = r.items[0];
+    CHECK(m.category == u"Pizza"_s);
+    CHECK(m.number == u"101"_s);
+    REQUIRE(m.sizes.size() == 2);   // priced by its size
+    CHECK(m.sizes[0].price == 12.0);
+    CHECK(m.price == 12.0);
+    CHECK(m.groups == QStringList{u"Toppings"_s});
+    CHECK(r.items[1].name == u"Bianca"_s);
+    CHECK(r.items[1].section == u"White Pies"_s);
+    CHECK(r.items[2].name == u"Lemonade"_s);
+    REQUIRE(r.items[2].sizes.size() == 2);   // the other Size (Size 2), its own prices
+    CHECK(r.items[2].sizes[1].price == 4.5);
+    REQUIRE(r.groups.size() == 1);
+    CHECK(r.groups[0].max == 0);
+    CHECK(r.problems == QStringList{u"No price for Mystery"_s});
+}
+
+TEST_CASE("Menu import: sizes, choice groups and alcohol onto the menu", "[menubuilder][import]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QVariantList groups{
+        QVariantMap{{u"name"_s, u"Steak Temp"_s}, {u"min"_s, 1}, {u"max"_s, 1},
+                    {u"options"_s, QVariantList{QVariantMap{{u"name"_s, u"Rare"_s}, {u"price"_s, u"0.00"_s}},
+                                                QVariantMap{{u"name"_s, u"Well"_s}, {u"price"_s, u"0.00"_s}}}}},
+        QVariantMap{{u"name"_s, u"Unused"_s}, {u"min"_s, 0}, {u"max"_s, 0},
+                    {u"options"_s, QVariantList{QVariantMap{{u"name"_s, u"A"_s}, {u"price"_s, u"1.00"_s}}}}}};
+    const QVariantList rows{
+        QVariantMap{{u"name"_s, u"Flat White"_s}, {u"price"_s, 4.0}, {u"category"_s, u"Coffee"_s}, {u"number"_s, u"555"_s},
+                    {u"sizes"_s, QVariantList{QVariantMap{{u"name"_s, u"Small"_s}, {u"price"_s, 4.0}},
+                                              QVariantMap{{u"name"_s, u"Large"_s}, {u"price"_s, 5.25}}}},
+                    {u"groups"_s, QStringList{u"Milk"_s}}},
+        QVariantMap{{u"name"_s, u"Ribeye"_s}, {u"price"_s, 31.0}, {u"category"_s, u"Steaks"_s}, {u"section"_s, u"From the Grill"_s},
+                    {u"groups"_s, QStringList{u"steak temp"_s}}},
+        QVariantMap{{u"name"_s, u"Pilsner"_s}, {u"price"_s, 6.0}, {u"category"_s, u"Beer"_s}, {u"alcohol"_s, true}}};
+    CHECK(pos.importMenuRows(rows, {}, false, groups) == 3);
+    const auto item = [&](const QString &name) {
+        for (const QVariant &m : pos.menuItems())
+            if (m.toMap()[u"name"_s] == name)
+                return m.toMap();
+        return QVariantMap{};
+    };
+    const auto group = [&](const QString &name) {
+        for (const core::ModifierGroup &g : pos.settings().modifierGroups)
+            if (QString::fromStdString(g.name) == name)
+                return &g;
+        return static_cast<const core::ModifierGroup *>(nullptr);
+    };
+    const QVariantMap flat = item(u"Flat White"_s);
+    CHECK(flat[u"price"_s] == u"$4.00"_s);
+    CHECK(flat[u"number"_s] == u"555"_s);
+    const QVariantList sizes = flat[u"sizes"_s].toList();
+    REQUIRE(sizes.size() == 2);
+    CHECK(sizes[1].toMap()[u"name"_s] == u"Large"_s);
+    CHECK(sizes[1].toMap()[u"price"_s] == u"5.25"_s);
+    const QVariantMap ribeye = item(u"Ribeye"_s);
+    CHECK(ribeye[u"section"_s] == u"From the Grill"_s);
+    REQUIRE(group(u"Steak Temp"_s));
+    CHECK(group(u"Steak Temp"_s)->min == 1);
+    CHECK(ribeye[u"groups"_s].toStringList().contains(QString::fromStdString(group(u"Steak Temp"_s)->id)));
+    CHECK_FALSE(group(u"Unused"_s));   // no item asks for it
+    CHECK(item(u"Pilsner"_s)[u"taxClass"_s] == u"alcohol"_s);
+    // Again: nothing doubles, and the group here is used as it is.
+    CHECK(pos.importMenuRows({rows[1]}, {}, false, groups) == 0);
+    int temps = 0;
+    for (const core::ModifierGroup &g : pos.settings().modifierGroups)
+        temps += g.name == "Steak Temp";
+    CHECK(temps == 1);
+}
+
+TEST_CASE("Menu import: an Excel file and a Toast file, read on this device", "[menubuilder][import][xlsx]")
+{
+    QTemporaryDir dir;
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    LayoutController c(*l);
+    QFile xlsx(dir.filePath(u"menu.xlsx"_s));
+    REQUIRE(xlsx.open(QIODevice::WriteOnly));
+    xlsx.write(workbookOf({{u"Sheet1"_s, {{u"Item"_s, u"Price"_s, u"Category"_s}, {u"Agua Fresca"_s, u"3.25"_s, u"Drinks"_s}}}}));
+    xlsx.close();
+    QVariantMap read = c.readMenuFile(QUrl::fromLocalFile(xlsx.fileName()));
+    REQUIRE(read[u"items"_s].toList().size() == 1);
+    CHECK(read[u"items"_s].toList()[0].toMap()[u"price"_s].toDouble() == 3.25);
+
+    QFile toast(dir.filePath(u"MenuExport.json"_s));
+    REQUIRE(toast.open(QIODevice::WriteOnly));
+    toast.write(R"([{"name": "All Day", "menuGroups": [{"name": "Sides", "menuItems": [{"name": "Fries", "price": 4}]}]}])");
+    toast.close();
+    read = c.readMenuFile(QUrl::fromLocalFile(toast.fileName()));
+    CHECK(read[u"from"_s] == u"Toast"_s);
+    REQUIRE(read[u"items"_s].toList().size() == 1);
+    CHECK(read[u"items"_s].toList()[0].toMap()[u"category"_s] == u"Sides"_s);
 }
 
 TEST_CASE("Starter menus: added alongside, ready to order", "[menubuilder][templates]")
@@ -971,4 +1317,18 @@ TEST_CASE("Barcodes: on an item's card, one item's each; scanned: an item, a cou
     CHECK(imported == 1);
     REQUIRE(pos.findItem(u"028400090858"_s));
     CHECK(pos.findItem(u"028400090858"_s)->name == "Chips");
+    // A spreadsheet that dropped its first 0; a scanner that adds one.
+    REQUIRE(pos.importMenuRows({QVariantMap{{u"name"_s, u"Pretzels"_s}, {u"price"_s, 2.0}, {u"barcodes"_s, u"49000050103"_s}}},
+                               u"burgers"_s, false) == 1);
+    REQUIRE(pos.findItem(u"049000050103"_s));
+    CHECK(pos.findItem(u"049000050103"_s)->name == "Pretzels");
+    CHECK(pos.findItem(u"0028400090858"_s)->name == "Chips");
+    CHECK_FALSE(pos.findItem(u"0000000"_s));
+    // One another item has (but for its 0): left off, the rest imported.
+    said.clear();
+    CHECK(pos.importMenuRows({QVariantMap{{u"name"_s, u"Popcorn"_s}, {u"price"_s, 2.0}, {u"barcodes"_s, u"28400090858, 77777777"_s}}},
+                             u"burgers"_s, false) == 1);
+    CHECK(pos.findItem(u"Popcorn"_s)->barcodes == std::vector<std::string>{"77777777"});
+    CHECK(said.join(u" "_s).contains(u"28400090858 (Chips's)"_s));
+    CHECK_FALSE(pos.saveMenuItemCard({{u"id"_s, QString::fromStdString(pos.findItem(u"Popcorn"_s)->id)}, {u"name"_s, u"Popcorn"_s}, {u"barcodes"_s, u"0028400090858"_s}}));
 }

@@ -297,6 +297,9 @@ const MenuItem *PosService::findItem(const QString &idOrName) const
         for (const MenuItem &m : s_->menu)
             if (std::ranges::find(m.barcodes, key) != m.barcodes.end())
                 return &m;
+        for (const MenuItem &m : s_->menu)
+            if (std::ranges::any_of(m.barcodes, [&](const std::string &b) { return sameBarcode(b, key); }))
+                return &m;
     }
     return nullptr;
 }
@@ -310,6 +313,21 @@ QStringList PosService::barcodeList(const QString &text)
     return out;
 }
 
+// One barcode, but for leading zeros: a spreadsheet drops a UPC's first 0,
+// and a scanner may add one (EAN-13).
+bool PosService::sameBarcode(const std::string &a, const std::string &b)
+{
+    const auto digits = [](const std::string &s) -> std::string_view {
+        if (s.size() < 6 || !std::ranges::all_of(s, [](char c) { return c >= '0' && c <= '9'; }))
+            return {};
+        return std::string_view(s).substr(std::min(s.find_first_not_of('0'), s.size()));
+    };
+    if (a == b)
+        return true;
+    const std::string_view x = digits(a);
+    return !x.empty() && x == digits(b);
+}
+
 QString PosService::barcodeProblem(const QStringList &codes, const std::string &itemId) const
 {
     static const QRegularExpression shape(u"^[0-9A-Za-z-]{4,40}$"_s);
@@ -317,7 +335,7 @@ QString PosService::barcodeProblem(const QStringList &codes, const std::string &
         if (!shape.match(c).hasMatch())
             return tr("A barcode is 4 to 40 letters and digits: \"%1\".").arg(c);
         for (const MenuItem &m : s_->menu)
-            if (m.id != itemId && std::ranges::find(m.barcodes, ss(c)) != m.barcodes.end())
+            if (m.id != itemId && std::ranges::any_of(m.barcodes, [&](const std::string &b) { return sameBarcode(b, ss(c)); }))
                 return tr("%1 already has the barcode %2.").arg(qs(m.name), c);
     }
     return {};

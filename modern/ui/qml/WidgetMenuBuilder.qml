@@ -762,7 +762,7 @@ Item {
                         Layout.preferredWidth: implicitWidth
                         text: qsTr("Import…")
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("A spreadsheet saved as CSV, or another store's menu")
+                        ToolTip.text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's")
                         onClicked: importFile.open()
                     }
                     TouchButton {
@@ -2075,12 +2075,12 @@ Item {
     }
 
     // Many at once: "Carne Asada 3.50" a line, or "Tacos: Carne Asada 3.50, Al Pastor 3.25".
-    // A spreadsheet saved as CSV (a USB stick, this computer): read here,
-    // shown, then added.
+    // A spreadsheet (CSV or Excel), or Square's, Clover's or Toast's menu export
+    // (a USB stick, this computer): read here, shown, then added.
     FileDialog {
         id: importFile
-        title: qsTr("A menu saved as CSV")
-        nameFilters: [qsTr("Menus and spreadsheets saved as CSV (*.csv *.tsv *.txt *.json)"), qsTr("All files (*)")]
+        title: qsTr("A menu or a spreadsheet")
+        nameFilters: [qsTr("Menus and spreadsheets (*.xlsx *.csv *.tsv *.txt *.json)"), qsTr("All files (*)")]
         onAccepted: {
             importDialog.read = w.zone.controller.readMenuFile(selectedFile)
             importDialog.open()

@@ -27,6 +27,7 @@
 #include "core/employee.hh"
 #include "core/settings.hh"
 #include "app/menu_import.hh"
+#include "app/xlsx.hh"
 #include "layout/menu_screens.hh"
 #include "layout/reflow.hh"
 #include "layout/schema.hh"
@@ -947,10 +948,14 @@ QVariantMap LayoutController::readMenuFile(const QUrl &file) const
         return {{u"error"_s, tr("Can't open it: %1").arg(f.errorString())}};
     QByteArray bytes = f.readAll();
     // Another store's menu (Export...): shown like a spreadsheet's rows.
-    if (const QJsonDocument doc = QJsonDocument::fromJson(bytes); doc.isObject()) {
+    if (const QJsonDocument doc = QJsonDocument::fromJson(bytes); doc.isArray() && vt::app::isToastMenu(doc)) {
+        return menuRows(vt::app::readToastMenu(doc), {});
+    } else if (doc.isObject()) {
         const QVariantMap menu = doc.object().toVariantMap();
+        if (vt::app::isToastMenu(doc))
+            return menuRows(vt::app::readToastMenu(doc), {});
         if (menu.value(u"format"_s) != u"viewtouch-menu"_s)
-            return {{u"error"_s, tr("That isn't a ViewTouch menu file.")}};
+            return {{u"error"_s, tr("That isn't a ViewTouch, Toast or spreadsheet menu file.")}};
         QHash<QString, QString> categoryName;
         for (const QVariant &c : menu.value(u"categories"_s).toList())
             categoryName.insert(c.toMap().value(u"id"_s).toString(), c.toMap().value(u"name"_s).toString());
@@ -969,20 +974,46 @@ QVariantMap LayoutController::readMenuFile(const QUrl &file) const
         return {{u"items"_s, items}, {u"menuFile"_s, menu}, {u"problems"_s, QStringList()},
                 {u"from"_s, menu.value(u"store"_s)}};
     }
-    if (bytes.startsWith("PK"))
-        return {{u"error"_s, tr("That's a spreadsheet file: save it as CSV first (File → Save As → CSV).")}};
-    // UTF-8, else Latin-1 (older spreadsheets).
-    QString text = QString::fromUtf8(bytes);
-    if (text.contains(QChar::ReplacementCharacter))
-        text = QString::fromLatin1(bytes);
-    vt::app::MenuImport read = vt::app::readMenuCsv(text);
-    // Photos: picture files beside the spreadsheet (or a path), read here.
-    const QDir beside = QFileInfo(f.fileName()).absoluteDir();
+    vt::app::MenuImport read;
+    if (bytes.startsWith("PK")) {   // an Excel workbook (Square's and Clover's exports)
+        QString error;
+        const auto sheets = vt::app::readXlsx(bytes, &error);
+        if (!sheets)
+            return {{u"error"_s, error}};
+        read = vt::app::readMenuSheets(*sheets);
+    } else {
+        // UTF-8, else Latin-1 (older spreadsheets).
+        QString text = QString::fromUtf8(bytes);
+        if (text.contains(QChar::ReplacementCharacter))
+            text = QString::fromLatin1(bytes);
+        read = vt::app::readMenuCsv(text);
+    }
+    return menuRows(read, QFileInfo(f.fileName()).absoluteDir());
+}
+
+// What a file read: rows for importMenuRows (photos beside the file read
+// in), the choice groups, what's left out.
+QVariantMap LayoutController::menuRows(vt::app::MenuImport read, const QDir &beside) const
+{
     QVariantList items;
     int photos = 0;
     for (const vt::app::ImportedItem &i : read.items) {
         QVariantMap row{{u"row"_s, i.row}, {u"name"_s, i.name}, {u"price"_s, i.price}, {u"category"_s, i.category},
                         {u"description"_s, i.description}, {u"onIt"_s, i.onIt}, {u"barcodes"_s, i.barcode}};
+        if (!i.section.isEmpty())
+            row.insert(u"section"_s, i.section);
+        if (!i.number.isEmpty())
+            row.insert(u"number"_s, i.number);
+        if (i.alcohol)
+            row.insert(u"alcohol"_s, true);
+        if (!i.groups.isEmpty())
+            row.insert(u"groups"_s, i.groups);
+        if (!i.sizes.isEmpty()) {
+            QVariantList sizes;
+            for (const vt::app::ImportedPrice &s : i.sizes)
+                sizes.append(QVariantMap{{u"name"_s, s.name}, {u"price"_s, s.price}});
+            row.insert(u"sizes"_s, sizes);
+        }
         if (!i.photo.isEmpty()) {
             QString path = QDir::isAbsolutePath(i.photo) ? i.photo : beside.filePath(i.photo);
             if (!QFileInfo::exists(path))   // "Tacos.JPG" for tacos.jpg
@@ -1004,7 +1035,15 @@ QVariantMap LayoutController::readMenuFile(const QUrl &file) const
         }
         items.append(row);
     }
-    return {{u"items"_s, items}, {u"problems"_s, read.problems}, {u"columns"_s, read.columns}, {u"photos"_s, photos}};
+    QVariantList groups;
+    for (const vt::app::ImportedGroup &g : read.groups) {
+        QVariantList options;
+        for (const vt::app::ImportedPrice &o : g.options)
+            options.append(QVariantMap{{u"name"_s, o.name}, {u"price"_s, QString::number(o.price, 'f', 2)}});
+        groups.append(QVariantMap{{u"name"_s, g.name}, {u"min"_s, g.min}, {u"max"_s, g.max}, {u"options"_s, options}});
+    }
+    return {{u"items"_s, items}, {u"groups"_s, groups}, {u"problems"_s, read.problems}, {u"columns"_s, read.columns},
+            {u"photos"_s, photos}, {u"from"_s, read.from}};
 }
 
 QString LayoutController::emojiPicture(const QString &emoji)
