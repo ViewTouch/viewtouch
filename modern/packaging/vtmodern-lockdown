@@ -103,8 +103,9 @@ rm -f "$tmp"
 say "Installing what the screen needs"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
+# openssh-server: Remote Help on the home screen (off until it's turned on, below).
 apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
-    network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
+    network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji openssh-server
 
 # --- US dates and 12-hour times ---------------------------------------------------------------
 # Raspberry Pi OS starts out British (13/10/26); a store in another country
@@ -206,7 +207,9 @@ keys=no
 for f in /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys; do
     [ -s "$f" ] && keys=yes
 done
-# Read first (before 50-cloud-init.conf and the like): these win.
+# Read first (before 50-cloud-init.conf and the like): these win. (The
+# folder is there with openssh-server; made anyway, so this never stops here.)
+install -d -m 755 /etc/ssh/sshd_config.d
 {
     echo "# vtmodern-lockdown"
     echo "PermitRootLogin no"
