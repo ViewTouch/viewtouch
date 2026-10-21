@@ -20,6 +20,8 @@
 #include <functional>
 
 namespace vt::storage { class LayoutStore; }
+namespace vt::app { struct MenuImport; }
+class QDir;
 
 // Drives the page UI: owns the running layout and the navigator, publishes
 // the current page to QML, and runs zone actions when touched. In edit mode
@@ -306,6 +308,7 @@ signals:
     void commandRequested(const QString &name, const QVariantMap &args);
 
 private:
+    QVariantMap menuRows(vt::app::MenuImport read, const QDir &beside) const;
     using Done = std::function<void(bool ok)>;
 
     void runChain(QList<vt::layout::Action> actions, int index, QString startPage);

@@ -459,6 +459,7 @@ public:
     // Barcodes typed in a field ("012345678905, 4006381333931"), and why
     // they can't be item `itemId`'s (empty: they can).
     static QStringList barcodeList(const QString &text);
+    static bool sameBarcode(const std::string &a, const std::string &b);
     QString barcodeProblem(const QStringList &codes, const std::string &itemId) const;
     QString format(Money amount) const;
 
@@ -898,7 +899,7 @@ public:
     // "Tacos: Carne Asada 3.50, Al Pastor 3.25" / one per line; returns how many were added.
     int addMenuItemsFromText(const QString &categoryId, const QString &text);
     // Rows read from a spreadsheet: [{name, price, category, description, onIt}].
-    int importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices);
+    int importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {});
     // Starter menus (menu_templates.cpp): [{id, name, description, categories, items}].
     QVariantList menuTemplates() const override;
     // What would trip up service: [{text, item, group, category, serious}].

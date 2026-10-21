@@ -1138,16 +1138,52 @@ int PosService::addMenuItemsFromText(const QString &categoryId, const QString &t
     return added;
 }
 
-// Rows read from a spreadsheet (LayoutController::readMenuFile): each in
-// its category (made if new; none named: `categoryId`); an item already on
-// the menu is skipped, or gets the new price with `updatePrices`.
-int PosService::importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices)
+// Rows read from a spreadsheet or another POS's menu
+// (LayoutController::readMenuFile): each in its category (made if new; none
+// named: `categoryId`); an item already on the menu is skipped, or gets the
+// new price with `updatePrices`. `groups` ({name, min, max, options}): the
+// choice groups the rows ask for by name; one of that name here is used as
+// it is.
+int PosService::importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups)
 {
     if (!require(perm::Manager, tr("Changing the menu")))
         return 0;
     const MenuStep step(this, tr("Import"));
     int added = 0, updated = 0;
-    QStringList skipped;
+    QStringList skipped, noGroup;
+    const auto groupNamed = [&](const QString &name) -> std::string {
+        for (const ModifierGroup &g : s_->settings.modifierGroups)
+            if (!isOwnGroup(g.id) && QString::compare(qs(g.name), name, Qt::CaseInsensitive) == 0)
+                return g.id;
+        return {};
+    };
+    // A barcode another item has already is left off (with its owner named).
+    QStringList taken;
+    const auto freeBarcodes = [&](const QString &text) {
+        QStringList out;
+        for (const QString &c : barcodeList(text)) {
+            const auto owner = std::ranges::find_if(s_->menu, [&](const MenuItem &m) {
+                return std::ranges::any_of(m.barcodes, [&](const std::string &b) { return sameBarcode(b, ss(c)); });
+            });
+            if (owner == s_->menu.end())
+                out << c;
+            else
+                taken << tr("%1 (%2's)").arg(c, qs(owner->name));
+        }
+        return out.join(u", "_s);
+    };
+    for (const QVariant &v : groups) {
+        const QVariantMap g = v.toMap();
+        const QString name = g.value(u"name"_s).toString().trimmed();
+        const bool asked = std::ranges::any_of(rows, [&](const QVariant &r) {
+            return r.toMap().value(u"groups"_s).toStringList().contains(name, Qt::CaseInsensitive);
+        });
+        if (name.isEmpty() || !asked || !groupNamed(name).empty())
+            continue;
+        if (!saveChoiceGroup({{u"name"_s, name}, {u"min"_s, g.value(u"min"_s)}, {u"max"_s, g.value(u"max"_s)},
+                              {u"options"_s, g.value(u"options"_s)}}))
+            return 0;
+    }
     for (const QVariant &v : rows) {
         const QVariantMap r = v.toMap();
         const QString name = r.value(u"name"_s).toString().trimmed();
@@ -1184,7 +1220,7 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
             QVariantMap card{{u"id"_s, qs(existing->id)}, {u"name"_s, qs(existing->name)}};
             if (!photo.isEmpty() && existing->image.empty())
                 card.insert(u"image"_s, photo);
-            if (const QString b = r.value(u"barcodes"_s).toString().trimmed(); !b.isEmpty() && existing->barcodes.empty())
+            if (const QString b = freeBarcodes(r.value(u"barcodes"_s).toString()); !b.isEmpty() && existing->barcodes.empty())
                 card.insert(u"barcodes"_s, b);
             if (updatePrices)
                 card.insert(u"price"_s, QString::number(price, 'f', 2));
@@ -1204,8 +1240,32 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
             card.insert(u"description"_s, d);
         if (const QString on = r.value(u"onIt"_s).toString().trimmed(); !on.isEmpty())
             card.insert(u"onIt"_s, on);
-        if (const QString b = r.value(u"barcodes"_s).toString().trimmed(); !b.isEmpty())
+        if (const QString b = freeBarcodes(r.value(u"barcodes"_s).toString()); !b.isEmpty())
             card.insert(u"barcodes"_s, b);
+        if (const QString s = r.value(u"section"_s).toString().simplified(); !s.isEmpty())
+            card.insert(u"section"_s, s);
+        // Its PLU, unless another item has it.
+        if (const QString n = r.value(u"number"_s).toString().trimmed();
+            !n.isEmpty() && std::ranges::none_of(s_->menu, [&](const MenuItem &m) { return qs(m.number) == n; }))
+            card.insert(u"number"_s, n);
+        if (r.value(u"alcohol"_s).toBool())
+            card.insert(u"taxClass"_s, u"alcohol"_s);
+        if (const QVariantList sizes = r.value(u"sizes"_s).toList(); sizes.size() >= 2) {
+            QVariantList list;
+            for (const QVariant &s : sizes)
+                list.append(QVariantMap{{u"name"_s, s.toMap().value(u"name"_s)},
+                                        {u"price"_s, QString::number(s.toMap().value(u"price"_s).toDouble(), 'f', 2)}});
+            card.insert(u"sizes"_s, list);
+        }
+        QStringList asks;
+        for (const QString &g : r.value(u"groups"_s).toStringList()) {
+            if (const std::string id = groupNamed(g); !id.empty())
+                asks << qs(id);
+            else if (!noGroup.contains(g, Qt::CaseInsensitive))
+                noGroup << g;
+        }
+        if (!asks.isEmpty())
+            card.insert(u"groups"_s, asks);
         if (!saveMenuItemCard(card))
             return added;
         ++added;
@@ -1215,6 +1275,12 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
         what += u"; "_s + tr("%n changed", nullptr, updated);
     if (!skipped.isEmpty())
         what += u"; "_s + tr("already on the menu: %1").arg(skipped.join(u", "_s));
+    if (!taken.isEmpty())
+        what += u"; "_s + tr("barcodes left off, another item has them: %1").arg(taken.join(u", "_s));
+    // Square's library names its modifier sets but not what's in them.
+    if (!noGroup.isEmpty())
+        what += u"; "_s + tr("the file doesn't say what's in %1: make them in Choice Groups, then pick them on the items")
+                              .arg(noGroup.join(u", "_s));
     emit notice(what);
     return added + updated;
 }

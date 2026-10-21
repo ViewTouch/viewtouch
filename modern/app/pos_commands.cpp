@@ -246,7 +246,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"menuExport"_s, [](PosService &p, const QVariantList &) { return QVariant(p.menuExport()); }},
         {u"importMenuFile"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.importMenuFile(a.value(0).toMap())); }},
         {u"importMenuRows"_s, [](PosService &p, const QVariantList &a) {
-             return QVariant(p.importMenuRows(a.value(0).toList(), a.value(1).toString(), a.value(2).toBool()) > 0); }},
+             return QVariant(p.importMenuRows(a.value(0).toList(), a.value(1).toString(), a.value(2).toBool(), a.value(3).toList()) > 0); }},
         {u"addMenuItemsFromText"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.addMenuItemsFromText(a.value(0).toString(), a.value(1).toString()) > 0); }},
         {u"deleteChoiceGroup"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.deleteChoiceGroup(a.value(0).toString())); }},

@@ -531,7 +531,7 @@ public:
     static QStringList allergenNames(const std::vector<std::string> &ids);
     Q_INVOKABLE void setAllergies(const QStringList &ids, int seat = 0) { invoke(QStringLiteral("setAllergies"), {ids, seat}); }
     Q_INVOKABLE void importMenuFile(const QVariantMap &file) { invoke(QStringLiteral("importMenuFile"), {file}); }
-    Q_INVOKABLE void importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices) { invoke(QStringLiteral("importMenuRows"), {rows, categoryId, updatePrices}); }
+    Q_INVOKABLE void importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {}) { invoke(QStringLiteral("importMenuRows"), {rows, categoryId, updatePrices, groups}); }
     Q_INVOKABLE void addMenuItemsFromText(const QString &categoryId, const QString &text) { invoke(QStringLiteral("addMenuItemsFromText"), {categoryId, text}); }
     Q_INVOKABLE void deleteChoiceGroup(const QString &id) { invoke(QStringLiteral("deleteChoiceGroup"), {id}); }
     Q_INVOKABLE void finishChoosing() { invoke(QStringLiteral("finishChoosing")); }
