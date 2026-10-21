@@ -7,7 +7,7 @@ set(VTM_PKG ${CMAKE_CURRENT_LIST_DIR})
 install(TARGETS vtmodern RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(PROGRAMS ${VTM_PKG}/vtmodern-setup DESTINATION ${CMAKE_INSTALL_SBINDIR})
 install(PROGRAMS ${VTM_PKG}/vtmodern-lockdown DESTINATION ${CMAKE_INSTALL_SBINDIR})
-install(PROGRAMS ${VTM_PKG}/vtmodern-device DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/vtmodern)
+install(PROGRAMS ${VTM_PKG}/vtmodern-device ${VTM_PKG}/vtmodern-screen DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/vtmodern)
 # The key ViewTouch packages are signed with: "Update from USB" installs only signed ones.
 # Where to look for a new one online (a fork sets its own: release-channel.sh).
 install(FILES ${VTM_PKG}/update-signing-key.pub.pem ${VTM_PKG}/release-channel.conf

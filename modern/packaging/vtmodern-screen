@@ -1,0 +1,19 @@
+#!/bin/sh
+# Runs the home screen's kiosk (cage, then ViewTouch in it) for
+# vtmodern-station.service. When it can't start with the graphics card (a
+# virtual machine without 3D acceleration, a card with no driver) it says
+# so, and the next start draws in software (slower, looks the same) until
+# the computer restarts. VTM_SOFTWARE_SCREEN=1 (a drop-in) always does.
+mark=${RUNTIME_DIRECTORY:-/run/vtmodern-station}/software-screen
+if [ "${VTM_SOFTWARE_SCREEN:-}" = 1 ] || [ -e "$mark" ]; then
+    echo "Drawing the screen in software."
+    export WLR_RENDERER=pixman WLR_NO_HARDWARE_CURSORS=1 LIBGL_ALWAYS_SOFTWARE=1
+fi
+start=$(date +%s)
+"$@"
+rc=$?
+if [ "$rc" -ne 0 ] && [ -z "${WLR_RENDERER:-}" ] && [ $(( $(date +%s) - start )) -lt 30 ]; then
+    echo "The screen didn't start with the graphics card (exit $rc): next, drawing it in software." >&2
+    touch "$mark" 2>/dev/null || true
+fi
+exit "$rc"
