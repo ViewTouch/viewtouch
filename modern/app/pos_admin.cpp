@@ -50,7 +50,7 @@ QString PosShared::startPairing(bool standby)
     return pairing->code;
 }
 
-bool PosService::factoryReset(const QString &confirm)
+bool PosService::factoryReset(const QString &confirm, bool empty)
 {
     if (!require(perm::Maintain, tr("Factory reset")))
         return false;
@@ -58,7 +58,7 @@ bool PosService::factoryReset(const QString &confirm)
         return fail(tr("Type RESET to confirm."));
     if (!s_->requestFactoryReset)
         return fail(tr("A factory reset is done on the computer that keeps the data."));
-    if (!s_->requestFactoryReset())
+    if (!s_->requestFactoryReset(empty))
         return fail(tr("The backup failed, so nothing was reset."));
     emit notice(tr("Backed up. Resetting and restarting..."));
     return true;

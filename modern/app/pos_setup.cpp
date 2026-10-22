@@ -150,6 +150,33 @@ bool PosService::setupRetireSamples()
     return true;
 }
 
+void emptyStarter(PosData &d)
+{
+    d.menu.clear();
+    d.ingredients.clear();
+    // The sample manager only: someone has to log in to set the store up.
+    std::erase_if(d.employees, [](const Employee &e) { return !(e.sample && e.role == "manager"); });
+    if (d.employees.size() > 1)
+        d.employees.resize(1);
+    PosSettings &s = d.settings;
+    s.storeName = PosSettings{}.storeName;
+    s.receiptHeader.clear();
+    s.menuCategories.clear();
+    s.modifierGroups.clear();
+    s.printers.clear();
+    s.labelPrinter.clear();
+    s.stations.clear();
+    s.vendors.clear();
+    s.promotions.clear();
+    s.priceChanges.clear();
+    s.openingChecklist.clear();
+    s.closingChecklist.clear();
+    s.displaySlides.clear();
+    s.loyaltyEnabled = false;
+    s.tax.foodPpm = s.tax.alcoholPpm = s.tax.merchandisePpm = s.tax.roomPpm = 0;
+    s.setupDone = false;
+}
+
 bool PosService::setupFinish(bool done)
 {
     if (!require(perm::Manager, tr("Setting up the store")))

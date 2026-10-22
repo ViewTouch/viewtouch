@@ -463,26 +463,133 @@ TEST_CASE("Factory reset: backed up, then a fresh store", "[demo][backup]")
     CHECK(storage::verifyDatabase(backups.first()));
 }
 
+TEST_CASE("Factory reset to an empty store: no menu, tables or sample staff, and it stays empty", "[demo][backup][reset]")
+{
+    QTemporaryDir dir;
+    const QString exe = QCoreApplication::applicationDirPath() + u"/../vtmodern"_s;
+    if (!QFile::exists(exe))
+        SKIP("vtmodern is not built next to the tests");
+    QProcess p;
+    p.setProcessEnvironment([] { auto e = QProcessEnvironment::systemEnvironment(); e.insert(u"QT_QPA_PLATFORM"_s, u"offscreen"_s); return e; }());
+    const QString db = dir.filePath(u"viewtouch.db"_s);
+    const auto run = [&](const QStringList &args) {
+        p.start(exe, QStringList{u"--data-dir"_s, dir.path()} + args);
+        REQUIRE(p.waitForFinished(120000));
+        return p.exitCode();
+    };
+    // Starts it once (as the store's screen), takes a picture, and closes.
+    const auto start = [&] { run({u"--windowed"_s, u"--screenshot"_s, dir.filePath(u"shot.png"_s)}); };
+    REQUIRE(run({u"--demo-data"_s}) == 0);
+    REQUIRE(run({u"--factory-reset"_s, u"--empty"_s}) == 0);
+    CHECK_FALSE(QFile::exists(db));
+    CHECK(QFile::exists(dir.filePath(u"start-empty"_s)));
+    const auto check = [&] {
+        storage::PosStore store(db);
+        REQUIRE(store.open());
+        CHECK(store.started());
+        const auto data = store.load();
+        REQUIRE(data);
+        CHECK(data->menu.empty());
+        CHECK(data->settings.menuCategories.empty());
+        CHECK(data->settings.modifierGroups.empty());
+        CHECK(data->settings.printers.empty());
+        CHECK(data->settings.tax.foodPpm == 0);
+        CHECK(data->closedToday.empty());
+        CHECK(data->pastDays.empty());
+        CHECK(data->customers.empty());
+        CHECK_FALSE(data->settings.tenders.empty());
+        REQUIRE(data->employees.size() == 1);       // the sample manager, for the setup guide
+        CHECK((data->employees[0].role == "manager" || data->employees[0].role == "owner"));
+        CHECK_FALSE(data->settings.setupDone);
+        storage::LayoutStore pages(db);
+        REQUIRE(pages.open());
+        const auto layout = pages.load();
+        REQUIRE(layout);
+        const layout::Page *floor = layout->pageByRole(u"tables"_s);
+        REQUIRE(floor);
+        CHECK(std::ranges::none_of(floor->zones, [](const layout::Zone &z) { return z.kind == u"table" || z.kind == u"decor"; }));
+        for (const char16_t *gone : {u"floor-dining", u"floor-bar", u"floor-patio", u"floor-dining-phone"})
+            CHECK_FALSE(layout->page(QString::fromUtf16(gone)));
+        CHECK(layout->validate().isEmpty());
+    };
+    start();
+    CHECK_FALSE(QFile::exists(dir.filePath(u"start-empty"_s)));   // used once
+    check();
+    start();   // and again: an empty menu isn't a new store (no starter menu put back)
+    check();
+
+    // A reset to the starter set has its menu again.
+    REQUIRE(run({u"--factory-reset"_s}) == 0);
+    CHECK_FALSE(QFile::exists(dir.filePath(u"start-empty"_s)));
+    start();
+    storage::PosStore store(db);
+    REQUIRE(store.open());
+    CHECK_FALSE(store.load()->menu.empty());
+}
+
+TEST_CASE("An empty store: the setup guide, a first item, and a sale", "[reset]")
+{
+    app::PosData data = test::seedPosData();
+    app::emptyStarter(data);
+    CHECK(data.menu.empty());
+    CHECK(data.ingredients.empty());
+    CHECK(data.settings.menuCategories.empty());
+    CHECK(data.settings.stations.empty());
+    CHECK(data.settings.vendors.empty());
+    CHECK(data.settings.openingChecklist.empty());
+    CHECK_FALSE(data.settings.tenders.empty());
+    CHECK_FALSE(data.settings.mealPeriods.empty());
+    REQUIRE(data.employees.size() == 1);
+    PosService pos(std::move(data), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));             // the sample manager
+    const QVariantMap info = pos.setupInfo();
+    CHECK(info[u"items"_s] == 0);
+    CHECK(info[u"samples"_s] == 1);
+    CHECK_FALSE(info[u"done"_s].toBool());
+    // The guide: the store's own manager, then the sample one off.
+    QSignalSpy notices(&pos, &PosService::notice);
+    const bool added = pos.setupAddEmployee(u"Ana"_s, u"manager"_s, u"864209"_s);
+    INFO((notices.isEmpty() ? QString() : notices.last()[0].toString()).toStdString());
+    REQUIRE(added);
+    REQUIRE(pos.setupRetireSamples());
+    REQUIRE(pos.saveCategory({{u"name"_s, u"Tacos"_s}}));
+    const QString tacos = pos.menuCategories().value(0).toMap()[u"id"_s].toString();
+    REQUIRE(pos.saveMenuItemCard({{u"name"_s, u"Taco"_s}, {u"price"_s, u"3.50"_s}, {u"family"_s, tacos}}));
+    REQUIRE(pos.setupFinish(true));
+    REQUIRE(pos.loginWithPin(u"864209"_s));
+    REQUIRE(pos.addItem(u"Taco"_s));
+    CHECK(pos.totals()[u"balanceCents"_s].toLongLong() == 350);   // no tax until it's set
+    REQUIRE(pos.openDrawerSession());
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    CHECK_FALSE(pos.loginWithPin(u"1234"_s));         // the sample manager is off
+}
+
 TEST_CASE("Factory reset from the Manager page: the maintainer, typed RESET, backed up first", "[demo][reset]")
 {
     PosService pos(test::seedPosData(), nullptr);
     int asked = 0;
     bool backupWorks = true;
     REQUIRE(pos.loginWithPin(u"1234"_s));
-    pos.shared()->requestFactoryReset = [&] { ++asked; return backupWorks; };
+    pos.shared()->requestFactoryReset = [&](bool) { ++asked; return backupWorks; };
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // the owner: not theirs
     CHECK(asked == 0);
     pos.shared()->requestFactoryReset = nullptr;
     pos.logout();
     REQUIRE(test::loginMaintainer(pos));
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // not on the machine with the data
-    pos.shared()->requestFactoryReset = [&] { ++asked; return backupWorks; };
+    pos.shared()->requestFactoryReset = [&](bool) { ++asked; return backupWorks; };
     CHECK_FALSE(pos.factoryReset(u"reset please"_s));
     backupWorks = false;
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // the backup failed: nothing happens
     backupWorks = true;
     REQUIRE(pos.factoryReset(u" RESET "_s));
     CHECK(asked == 2);
+    bool wantedEmpty = false;
+    pos.shared()->requestFactoryReset = [&](bool empty) { ++asked; wantedEmpty = empty; return true; };
+    REQUIRE(pos.factoryReset(u"RESET"_s, true));
+    CHECK(wantedEmpty);
+    asked = 2;
     pos.logout();
     REQUIRE(pos.loginWithPin(u"1111"_s));
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // managers only

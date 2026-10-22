@@ -28,7 +28,9 @@ public:
     bool open(QString *error = nullptr);
     QString path() const { return path_; }
 
-    bool hasMenu() const;
+    // Seeded once (its settings saved), whatever's on the menu now: a store
+    // whose menu was emptied isn't a new one.
+    bool started() const;
     // First-run setup (one transaction). Replaces settings, menu, employees
     // and the inventory.
     bool seed(const core::PosSettings &settings, const std::vector<core::MenuItem> &menu,

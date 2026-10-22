@@ -122,6 +122,9 @@ struct Options {
         u"Back to a fresh install: back up the database, then delete it (sales, customers, staff, menu, pages, "
          "settings). The next start begins with the starter set. Backups and saved exports stay. ViewTouch must "
          "not be running."_s};
+    QCommandLineOption empty{u"empty"_s,
+        u"With --factory-reset: the next start begins with an empty store (no menu, tables, sample staff, "
+         "printers or tax rates; one sample manager to run the setup guide)."_s};
     QCommandLineOption demoData{u"demo-data"_s,
         u"Fill a store that has no sales yet with demo history (two months, and the same months last year), "
          "customers, gift cards, a schedule and a waitlist, then exit."_s};
@@ -792,6 +795,20 @@ ApplicationWindow {
     return cli.isSet(o.kiosk) ? kKioskClosed : 1;   // a kiosk must not restart into it
 }
 
+// Left by a factory reset to an empty store: the next start, on no database,
+// begins with the starter set emptied (app::emptyStarter, Layout::clearFloors).
+QString startEmptyMarker(const Args &cli, const Options &o)
+{
+    return QDir(dataDirOf(cli, o)).filePath(u"start-empty"_s);
+}
+
+bool markStartEmpty(const Args &cli, const Options &o)
+{
+    QDir().mkpath(dataDirOf(cli, o));
+    QFile f(startEmptyMarker(cli, o));
+    return f.open(QIODevice::WriteOnly) && f.write("Factory reset: start with an empty store.\n") > 0;
+}
+
 // Delete the database (and printouts): the next start is a fresh install.
 void wipeStore(const Args &cli, const Options &o)
 {
@@ -837,6 +854,8 @@ int runStore(const Args &cli, const Options &o)
             return refuseDamagedDatabase(cli, o, dbPath, problem);
     }
 
+    // A factory reset to an empty store, starting now (on no database only).
+    const bool startEmpty = QFile::exists(startEmptyMarker(cli, o)) && !QFile::exists(dbPath) && !cli.isSet(o.layout);
     vt::storage::LayoutStore store(dbPath);
     QString dbError;
     const bool haveStore = store.open(&dbError);
@@ -886,10 +905,9 @@ int runStore(const Args &cli, const Options &o)
     if (!layout && !cli.isSet(o.layout)) {
         layout = vt::layout::Layout::loadDirectory(u":/seed"_s, &errors);
         if (layout && haveStore) {
-            QString error;
-            if (!store.save(*layout, &error))
-                qWarning().noquote() << "Could not store starter pages:" << error;
             // Remember them as given, as installed: later versions update them.
+            // (Started empty: the floors taken out stay out, and the one
+            // emptied counts as changed, so no update brings the tables back.)
             vt::storage::LayoutStore::StarterState state;
             for (const vt::layout::Page &p : layout->pages) {
                 state.seen << p.id;
@@ -897,6 +915,11 @@ int runStore(const Args &cli, const Options &o)
                     state.seen << p.id + u'#' + z.id;
                 state.installed.insert(p.id, vt::layout::Layout::fingerprint(p));
             }
+            if (startEmpty)
+                qInfo().noquote() << "Starting empty: floor plans taken out:" << layout->clearFloors().join(u", ");
+            QString error;
+            if (!store.save(*layout, &error))
+                qWarning().noquote() << "Could not store starter pages:" << error;
             store.setStarterState(state);
         }
     }
@@ -925,13 +948,17 @@ int runStore(const Args &cli, const Options &o)
     seedData.menu = vt::app::menuFromJson(readSeed(u"menu.json"_s).array());
     seedData.employees = vt::app::employeesFromJson(readSeed(u"employees.json"_s).array());
     seedData.ingredients = vt::app::ingredientsFromJson(readSeed(u"ingredients.json"_s).array());
+    if (startEmpty)
+        vt::app::emptyStarter(seedData);
 
     std::optional<vt::app::PosData> posData;
     if (havePosStore) {
-        if (!posStore.hasMenu() || cli.isSet(o.resetMenu)) {
+        if (!posStore.started() || cli.isSet(o.resetMenu)) {
             QString error;
             if (!posStore.seed(seedData.settings, seedData.menu, seedData.employees, &error, seedData.ingredients))
                 qWarning().noquote() << "Could not store starter menu:" << error;
+            else if (startEmpty)
+                QFile::remove(startEmptyMarker(cli, o));
         }
         QStringList posErrors;
         posData = posStore.load(&posErrors);
@@ -1254,13 +1281,19 @@ int runStore(const Args &cli, const Options &o)
     // Factory reset from the Manager page: back up now, then leave; main
     // deletes the database once it is closed and starts again.
     if (havePosStore) {
-        shared->requestFactoryReset = [&cli, &o, &writer] {
+        shared->requestFactoryReset = [&cli, &o, &writer](bool empty) {
             if (writer)
                 writer->flush();
             QString error;
             const QString target = backupBeforeReset(cli, o, &error);
             if (target.isEmpty()) {
                 qWarning().noquote() << "Factory reset: the backup failed:" << error;
+                return false;
+            }
+            if (!empty)
+                QFile::remove(startEmptyMarker(cli, o));
+            else if (!markStartEmpty(cli, o)) {
+                qWarning().noquote() << "Factory reset: couldn't mark it to start empty; nothing was reset.";
                 return false;
             }
             qInfo().noquote() << "Factory reset: backed up to" << target;
@@ -1604,7 +1637,7 @@ int runMaintainerPin(const Args &cli, const Options &o)
             return 1;
         }
         // A store not started yet would take the starter settings over it.
-        if (!store.hasMenu()) {
+        if (!store.started()) {
             qCritical().noquote() << "This store hasn't started yet: start it once, then set the code.";
             return 2;
         }
@@ -1806,6 +1839,15 @@ int runFactoryReset(const Args &cli, const Options &o)
         qInfo().noquote() << "Backed up to" << target;
     }
     wipeStore(cli, o);
+    if (cli.isSet(o.empty)) {
+        if (!markStartEmpty(cli, o)) {
+            qCritical().noquote() << "Reset, but couldn't mark it to start empty: the next start has the starter set.";
+            return 1;
+        }
+        qInfo().noquote() << "Factory reset done. The next start begins with an empty store.";
+        return 0;
+    }
+    QFile::remove(startEmptyMarker(cli, o));
     qInfo().noquote() << "Factory reset done. The next start begins with the starter pages, menu, staff and settings.";
     return 0;
 }
@@ -1832,7 +1874,7 @@ int runDemoData(const Args &cli, const Options &o)
         QFile f(u":/seed/pos/"_s + name);
         return f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()) : QJsonDocument();
     };
-    if (!store.hasMenu() || cli.isSet(o.resetMenu)) {
+    if (!store.started() || cli.isSet(o.resetMenu)) {
         if (!store.seed(vt::app::settingsFromJson(readSeed(u"settings.json"_s).object()),
                         vt::app::menuFromJson(readSeed(u"menu.json"_s).array()),
                         vt::app::employeesFromJson(readSeed(u"employees.json"_s).array()), &error,
@@ -2008,7 +2050,7 @@ int main(int argc, char *argv[])
     cli.addHelpOption();
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
-        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
+        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
