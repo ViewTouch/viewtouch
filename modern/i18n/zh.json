@@ -320,6 +320,14 @@
   "one": "%n 个菜品送往未设置的打印机 %1，因此在厨房打印：%2",
   "other": "%n 个菜品送往未设置的打印机 %1，因此在厨房打印：%2"
  },
+ "%n item(s) imported into %1. Tick the next ones.": {
+  "one": "已将 %n 个菜品导入到 %1。请勾选下一批。",
+  "other": "已将 %n 个菜品导入到 %1。请勾选下一批。"
+ },
+ "%n item(s) imported. Tick the next ones.": {
+  "one": "已导入 %n 个菜品。请勾选下一批。",
+  "other": "已导入 %n 个菜品。请勾选下一批。"
+ },
  "%n item(s) removed from the menu": {
   "one": "已从菜单移除 %n 个菜品",
   "other": "已从菜单移除 %n 个菜品"
@@ -1856,6 +1864,7 @@
  "If you can, seat the next party in a few minutes: the kitchen catches up first.": "如果可以，过几分钟再安排下一桌：先让厨房赶上。",
  "Ignore touches": "忽略点击",
  "Import": "导入",
+ "Import %n": "导入 %n 个",
  "Import %n item(s)": {
   "one": "导入 %n 个菜品",
   "other": "导入 %n 个菜品"
@@ -1883,6 +1892,7 @@
  "Install": "安装",
  "Install ViewTouch %1": "安装 ViewTouch %1",
  "Into pool": "放入池中",
+ "Into: %1.": "导入到：%1。",
  "Into: %1. Rows without a category go in %2.": "导入到：%1。没有分类的行放到 %2。",
  "Inventory": "库存",
  "Invoice": "发票",
@@ -3017,6 +3027,7 @@
  "Row %1: no picture %2 next to the spreadsheet": "第 %1 行：表格旁没有图片 %2",
  "Row %1: no price for %2": "第 %1 行：%2 没有价格",
  "Row %1: no price for %2 (%3)": "第 %1 行：%2（%3）没有价格",
+ "Rows without a category go in": "没有类别的行放入",
  "Royalty": "特许费",
  "Royalty (": "特许费 (",
  "Royalty (% of net sales)": "特许费（净销售额 %）",
@@ -3190,6 +3201,7 @@
  "Show only when": "仅在以下情况显示",
  "Show photos": "显示照片",
  "Show the forecast first.": "请先显示预测。",
+ "Show the ones already on the menu": "显示已在菜单上的",
  "Show this slip at the counter": "请在柜台出示此小票",
  "Show what should be there while counting stock": "清点库存时显示应有数量",
  "Shown in turn; \"image:/path/to/photo.jpg\" for a picture. Running promotions are added by themselves.": "轮流显示；图片用 \"image:/path/to/photo.jpg\"。进行中的促销会自动加入。",
@@ -3781,6 +3793,8 @@
  "This computer's PIN": "这台电脑的 PIN",
  "This computer's settings now ask for the new code.": "本电脑的设置现在需要新代码。",
  "This deletes every sale and past day, customers, gift cards, house accounts, the waitlist, the schedule, staff, the menu, inventory, settings, paired devices and your page changes. ViewTouch then restarts with the starter pages, menu, staff and settings.": "这会删除所有销售和以往营业日、顾客、礼品卡、签单账户、候位名单、排班、员工、菜单、库存、设置、已配对设备以及您对页面的修改。之后 ViewTouch 将以初始页面、菜单、员工和设置重新启动。",
+ "This is Toast's list of menu groups: it has no items in it. Import MenuItem_Export.csv, and make the categories here.": "这是 Toast 的菜单组列表：其中没有菜品。请导入 MenuItem_Export.csv，并在这里创建类别。",
+ "This is Toast's list of menus or of modifier options: it has no items in it. Import MenuItem_Export.csv, and make the choice groups here.": "这是 Toast 的菜单或修饰选项列表：其中没有菜品。请导入 MenuItem_Export.csv，并在这里创建选项组。",
  "This is a phone page: phones show it, other screens the page it's a version of.": "这是手机页面：手机显示它，其他屏幕显示它所对应的页面。",
  "This is the table's only check.": "这是这张桌子唯一的账单。",
  "This needs the ViewTouch computer setup (vtmodern-lockdown).": "这需要 ViewTouch 电脑设置 (vtmodern-lockdown)。",
@@ -3815,6 +3829,7 @@
  "Thrown away (logged)": "已丢弃（已记录）",
  "Thrown away today": "今日丢弃",
  "Thursday": "星期四",
+ "Tick these": "勾选这些",
  "Tickets": "小票",
  "Tickets printed": "已打印小票",
  "Tickets to an event: it sells out when this many are sold. 0 = not an event.": "活动门票：卖出这么多就售罄。0 = 不是活动。",
@@ -3997,6 +4012,7 @@
  "Unless set for a terminal in Terminals.": "除非在“终端”中为某个终端单独设置。",
  "Unsaved": "未保存",
  "Unsaved changes": "有未保存的更改",
+ "Untick these": "取消勾选这些",
  "Until": "到",
  "Until tomorrow night": "到明晚",
  "Until tonight": "到今晚",
@@ -4344,6 +4360,7 @@
  "older version": "旧版本",
  "on %1": "在 %1",
  "on break": "休息中",
+ "on the menu": "已在菜单上",
  "open": "未结",
  "or type the number": "或输入人数",
  "out %1 → %2": "下班 %1 → %2",
@@ -4456,6 +4473,7 @@
  "✓ Ready to open": "✓ 可以开店",
  "🌮 Ready-Made Picture…": "🌮 现成图片…",
  "👁 Preview": "👁 预览",
+ "🔍 Find (name or category)": "🔍 查找（名称或类别）",
  "🔍 Find an item": "🔍 查找菜品",
  "🔍 Find an item (name or number)": "🔍 查找菜品（名称或编号）"
 }

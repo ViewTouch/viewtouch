@@ -218,8 +218,20 @@ MenuImport readTable(const QList<QStringList> &rows)
                 out.from = u"Square"_s;
             else if (headers.contains(u"clover id"_s))
                 out.from = u"Clover"_s;
-            else if (headers.contains(u"guid"_s) && at.contains(u"isModifier"_s))
+            else if (headers.contains(u"guid"_s) && at.contains(u"isModifier"_s)) {
                 out.from = u"Toast"_s;
+                // Toast's other lists (menus, menu groups, modifier options) look
+                // like its item list but hold no items, and nothing says what
+                // goes where. Only the item list has SKU and PLU.
+                if (!headers.contains(u"sku"_s) && !headers.contains(u"plu"_s)) {
+                    out.problems << (headers.contains(u"parent name"_s)
+                                         ? tr("This is Toast's list of menu groups: it has no items in it. "
+                                              "Import MenuItem_Export.csv, and make the categories here.")
+                                         : tr("This is Toast's list of menus or of modifier options: it has no items in it. "
+                                              "Import MenuItem_Export.csv, and make the choice groups here."));
+                    return out;
+                }
+            }
         }
     }
     if (!at.contains(u"category"_s) && at.contains(u"menu"_s))

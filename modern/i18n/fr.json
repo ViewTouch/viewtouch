@@ -320,6 +320,14 @@
   "one": "%n article va à l'imprimante %1, qui n'est pas configurée, donc il s'imprime en cuisine : %2",
   "other": "%n articles vont à l'imprimante %1, qui n'est pas configurée, donc ils s'impriment en cuisine : %2"
  },
+ "%n item(s) imported into %1. Tick the next ones.": {
+  "one": "%n article importé dans %1. Cochez les suivants.",
+  "other": "%n articles importés dans %1. Cochez les suivants."
+ },
+ "%n item(s) imported. Tick the next ones.": {
+  "one": "%n article importé. Cochez les suivants.",
+  "other": "%n articles importés. Cochez les suivants."
+ },
  "%n item(s) removed from the menu": {
   "one": "%n article retiré du menu",
   "other": "%n articles retirés du menu"
@@ -1856,6 +1864,7 @@
  "If you can, seat the next party in a few minutes: the kitchen catches up first.": "Si possible, installez le prochain groupe dans quelques minutes : la cuisine rattrape d'abord son retard.",
  "Ignore touches": "Ignore les touchers",
  "Import": "Importer",
+ "Import %n": "Importer %n",
  "Import %n item(s)": {
   "one": "Importer %n article",
   "other": "Importer %n articles"
@@ -1883,6 +1892,7 @@
  "Install": "Installer",
  "Install ViewTouch %1": "Installer ViewTouch %1",
  "Into pool": "Dans le pool",
+ "Into: %1.": "Dans : %1.",
  "Into: %1. Rows without a category go in %2.": "Dans : %1. Les lignes sans catégorie vont dans %2.",
  "Inventory": "Inventaire",
  "Invoice": "Facture",
@@ -3017,6 +3027,7 @@
  "Row %1: no picture %2 next to the spreadsheet": "Ligne %1 : pas d'image %2 à côté du tableur",
  "Row %1: no price for %2": "Ligne %1 : pas de prix pour %2",
  "Row %1: no price for %2 (%3)": "Ligne %1 : pas de prix pour %2 (%3)",
+ "Rows without a category go in": "Les lignes sans catégorie vont dans",
  "Royalty": "Redevance",
  "Royalty (": "Redevance (",
  "Royalty (% of net sales)": "Redevance (% des ventes nettes)",
@@ -3190,6 +3201,7 @@
  "Show only when": "Afficher seulement quand",
  "Show photos": "Afficher les photos",
  "Show the forecast first.": "Affichez d'abord la prévision.",
+ "Show the ones already on the menu": "Afficher ceux déjà au menu",
  "Show this slip at the counter": "Montrez ce ticket au comptoir",
  "Show what should be there while counting stock": "Montrer ce qu'il devrait y avoir pendant le comptage du stock",
  "Shown in turn; \"image:/path/to/photo.jpg\" for a picture. Running promotions are added by themselves.": "Affichés tour à tour ; \"image:/chemin/vers/photo.jpg\" pour une image. Les promotions en cours s'ajoutent d'elles-mêmes.",
@@ -3781,6 +3793,8 @@
  "This computer's PIN": "PIN de cet ordinateur",
  "This computer's settings now ask for the new code.": "Les réglages de cet ordinateur demandent maintenant le nouveau code.",
  "This deletes every sale and past day, customers, gift cards, house accounts, the waitlist, the schedule, staff, the menu, inventory, settings, paired devices and your page changes. ViewTouch then restarts with the starter pages, menu, staff and settings.": "Cela supprime toutes les ventes et journées passées, les clients, cartes cadeaux, comptes clients, la liste d'attente, le planning, l'équipe, le menu, l'inventaire, les réglages, les appareils associés et vos modifications de pages. ViewTouch redémarre ensuite avec les pages, le menu, l'équipe et les réglages de départ.",
+ "This is Toast's list of menu groups: it has no items in it. Import MenuItem_Export.csv, and make the categories here.": "Ceci est la liste des groupes de menu de Toast : elle ne contient aucun article. Importez MenuItem_Export.csv et créez les catégories ici.",
+ "This is Toast's list of menus or of modifier options: it has no items in it. Import MenuItem_Export.csv, and make the choice groups here.": "Ceci est la liste des menus ou des options de modificateur de Toast : elle ne contient aucun article. Importez MenuItem_Export.csv et créez les groupes de choix ici.",
  "This is a phone page: phones show it, other screens the page it's a version of.": "C'est une page téléphone : les téléphones l'affichent, les autres écrans la page dont elle est une version.",
  "This is the table's only check.": "C'est la seule addition de la table.",
  "This needs the ViewTouch computer setup (vtmodern-lockdown).": "Il faut la configuration d'ordinateur ViewTouch (vtmodern-lockdown).",
@@ -3815,6 +3829,7 @@
  "Thrown away (logged)": "Jeté (noté)",
  "Thrown away today": "Jeté aujourd'hui",
  "Thursday": "Jeudi",
+ "Tick these": "Cocher ceux-ci",
  "Tickets": "Tickets",
  "Tickets printed": "Tickets imprimés",
  "Tickets to an event: it sells out when this many are sold. 0 = not an event.": "Billets pour un événement : épuisé quand ce nombre est vendu. 0 = pas un événement.",
@@ -3997,6 +4012,7 @@
  "Unless set for a terminal in Terminals.": "Sauf réglage pour un terminal dans Terminaux.",
  "Unsaved": "Non enregistré",
  "Unsaved changes": "Modifications non enregistrées",
+ "Untick these": "Décocher ceux-ci",
  "Until": "Jusqu'à",
  "Until tomorrow night": "Jusqu'à demain soir",
  "Until tonight": "Jusqu'à ce soir",
@@ -4344,6 +4360,7 @@
  "older version": "version plus ancienne",
  "on %1": "le %1",
  "on break": "en pause",
+ "on the menu": "au menu",
  "open": "ouverte",
  "or type the number": "ou tapez le nombre",
  "out %1 → %2": "départ %1 → %2",
@@ -4456,6 +4473,7 @@
  "✓ Ready to open": "✓ Prêt à ouvrir",
  "🌮 Ready-Made Picture…": "🌮 Image toute prête…",
  "👁 Preview": "👁 Aperçu",
+ "🔍 Find (name or category)": "🔍 Chercher (nom ou catégorie)",
  "🔍 Find an item": "🔍 Trouver un article",
  "🔍 Find an item (name or number)": "🔍 Trouver un article"
 }

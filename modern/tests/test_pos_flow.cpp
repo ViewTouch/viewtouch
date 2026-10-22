@@ -1717,6 +1717,75 @@ TEST_CASE("UI: Menu Builder: a printed menu, as a PDF", "[flow][ui][printmenu]")
     CHECK(pdf.size() > 2000);
 }
 
+TEST_CASE("UI: Menu Builder: an import ticked into categories, a few at a time", "[flow][ui][import]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(60);
+    };
+    const auto inCategory = [&](const QString &category) {
+        QStringList names;
+        const auto cats = s.pos.menuCategories();
+        const auto c = std::ranges::find_if(cats, [&](const QVariant &v) { return v.toMap()[u"name"_s] == category; });
+        if (c == cats.end())
+            return names;
+        for (const QVariant &v : s.pos.menuItems())
+            if (v.toMap()[u"family"_s] == c->toMap()[u"id"_s])
+                names << v.toMap()[u"name"_s].toString();
+        return names;
+    };
+    const QString already = s.pos.menuItems()[0].toMap()[u"name"_s].toString();
+    // Like Toast's item list: names and prices, no categories.
+    QVariantList items;
+    for (const auto &[name, price] : {std::pair{u"Fish Taco"_s, 4.5}, {u"Pork Taco"_s, 4.0}, {u"Horchata"_s, 3.0}, {already, 9.0}})
+        items << QVariantMap{{u"row"_s, 2}, {u"name"_s, name}, {u"price"_s, price}, {u"category"_s, QString()}};
+    // The dialog is the builder's (a Popup: not among the window's items).
+    QObject *dialog = nullptr;
+    for (QQuickItem *at = by(u"builderImport"_s); at && !dialog; at = at->parentItem())
+        dialog = at->findChild<QObject *>(u"builderImportDialog"_s, Qt::FindDirectChildrenOnly);
+    REQUIRE(dialog);
+    dialog->setProperty("read", QVariantMap{{u"items"_s, items}, {u"from"_s, u"Toast"_s}, {u"problems"_s, QStringList{}}});
+    QMetaObject::invokeMethod(dialog, "open");
+    QTest::qWait(250);
+    CHECK(dialog->property("chosen").toList().size() == 3);   // not the one on the menu
+    CHECK(dialog->property("shown").toList().size() == 3);
+
+    // The tacos into a new category.
+    tap(u"builderImportNone"_s);
+    CHECK(dialog->property("chosen").toList().isEmpty());
+    dialog->setProperty("search", u"taco"_s);
+    QTest::qWait(30);
+    tap(u"builderImportAll"_s);
+    CHECK(dialog->property("chosen").toList().size() == 2);
+    QQuickItem *into = by(u"builderImportInto"_s);
+    REQUIRE(into);
+    into->setProperty("editText", u"Tacos"_s);
+    s.shot("90-import-ticked");
+    tap(u"builderImportGo"_s);
+    QTest::qWait(100);
+    CHECK(inCategory(u"Tacos"_s) == QStringList{u"Fish Taco"_s, u"Pork Taco"_s});
+    CHECK(dialog->property("visible").toBool());              // Horchata's left
+    CHECK_FALSE(dialog->property("added").toString().isEmpty());
+    CHECK(dialog->property("shown").toList().size() == 1);
+    CHECK(dialog->property("chosen").toList().isEmpty());    // still unticked
+
+    // The rest, into another.
+    tap(u"builderImportAll"_s);
+    into->setProperty("editText", u"Drinks Too"_s);
+    tap(u"builderImportGo"_s);
+    QTest::qWait(100);
+    CHECK(inCategory(u"Drinks Too"_s) == QStringList{u"Horchata"_s});
+    CHECK_FALSE(dialog->property("visible").toBool());
+}
+
 TEST_CASE("UI: Menu Builder: an item's sizes", "[flow][ui][sizes]")
 {
     Screen s(false, 1280, 800);
