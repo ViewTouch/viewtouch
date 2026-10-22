@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "app/pos_json.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
@@ -38,7 +39,9 @@ TEST_CASE("PIN login: stored hashed, wrong PIN refused", "[pos]")
     Pos t;
     for (const core::Employee &e : test::seedPosData().employees) {
         CHECK(e.pinHash.size() == 64);          // SHA-256 hex
-        CHECK(e.pinHash.find("1234") == std::string::npos);
+        // Salted: not the bare PIN's hash. (Its hex can hold "1234" by chance.)
+        CHECK_FALSE(e.pinSalt.empty());
+        CHECK(e.pinHash != app::hashPin(u"1234"_s, {}));
     }
 
     QSignalSpy notices(&t.pos, &PosService::notice);
