@@ -197,7 +197,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"customerTip"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.customerTip(a.value(0).toString(), a.value(1).toLongLong())); }},
         {u"backupNow"_s, [](PosService &p, const QVariantList &) { return QVariant(p.backupNow()); }},
-        {u"factoryReset"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.factoryReset(a.value(0).toString())); }},
+        {u"factoryReset"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.factoryReset(a.value(0).toString(), a.value(1).toBool())); }},
         {u"findCustomers"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.findCustomers(a.value(0).toString())); }},
         {u"selectCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.selectCustomer(a.value(0).toString())); }},
         {u"useCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.useCustomer(a.value(0).toString())); }},

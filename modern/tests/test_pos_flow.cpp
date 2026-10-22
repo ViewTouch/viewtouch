@@ -4318,7 +4318,8 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
 {
     Screen s;
     int asked = 0;
-    s.pos.shared()->requestFactoryReset = [&] { ++asked; return true; };
+    bool wantedEmpty = false;
+    s.pos.shared()->requestFactoryReset = [&](bool empty) { ++asked; wantedEmpty = empty; return true; };
     REQUIRE(test::loginMaintainer(s.pos));
     REQUIRE(s.c.jumpTo(u"manager"_s));
     QTest::qWait(30);
@@ -4336,6 +4337,15 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
     s.shot("17-factory-reset");
     s.tapItem(button);
     CHECK(asked == 1);
+    CHECK_FALSE(wantedEmpty);
+    // An empty store instead.
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"resetEmpty"_s));
+    QTest::qWait(30);
+    CHECK(button->property("text").toString() == u"Back Up and Start Empty"_s);
+    s.shot("17-factory-reset-empty");
+    s.tapItem(button);
+    CHECK(asked == 2);
+    CHECK(wantedEmpty);
 }
 
 TEST_CASE("UI: the expo screen - kitchen names, what's made, ready in blue", "[flow][ui][expo]")

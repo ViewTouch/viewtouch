@@ -152,6 +152,14 @@ struct PosData {
     std::int64_t lastProblemId = 0;
 };
 
+// A store started empty (Factory Reset -> Start empty): the starter set
+// without its sample menu, choice groups, inventory, vendors, promotions,
+// printers, stations, checklists, slides and tax rates, and with one of its
+// staff, the sample manager, to log in once and run the setup guide (which
+// adds the store's own manager and turns the sample one off). Payment types,
+// meal periods and the store's settings stay.
+void emptyStarter(PosData &data);
+
 // A screen's offline kit (PosService::offlineKit) as store data to run on
 // while it can't reach the store's computer; nullopt if it isn't one.
 std::optional<PosData> offlineData(const QJsonObject &kit);
@@ -397,8 +405,9 @@ public:
     // computer can't encrypt (the app sets it; see storage/sealed.hh).
     std::function<std::pair<QByteArray, QByteArray>(const QString &password)> backupKeyFor;
     // Factory reset from the Manager page: main backs up, closes, deletes the
-    // database and starts again. False: not possible here.
-    std::function<bool()> requestFactoryReset;
+    // database and starts again (`empty`: with an empty store). False: not
+    // possible here.
+    std::function<bool(bool empty)> requestFactoryReset;
     // The store's computers and printers, for Manager -> Network (set by
     // the app): {role, term, terminals, standby, printers}.
     std::function<QVariantMap()> network;
@@ -1028,8 +1037,9 @@ public:
     bool addStoreImage(const QString &fileName, const QString &base64);
     bool removeStoreImage(const QString &ref);
     // Everything back to a fresh install, after a backup (managers; `confirm`
-    // must be "RESET"). ViewTouch restarts with the starter set.
-    bool factoryReset(const QString &confirm);
+    // must be "RESET"). ViewTouch restarts with the starter set, or `empty`
+    // (emptyStarter: no menu, tables or sample staff but one manager).
+    bool factoryReset(const QString &confirm, bool empty = false);
 
     // --- customers, gift cards, house accounts (pos_customers.cpp) ---------------
     // Search by phone digits or name ("" = the most recent).

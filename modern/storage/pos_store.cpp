@@ -267,10 +267,11 @@ bool PosStore::open(QString *error)
     return true;
 }
 
-bool PosStore::hasMenu() const
+bool PosStore::started() const
 {
     QSqlQuery q(QSqlDatabase::database(connection_));
-    return q.exec(u"SELECT COUNT(*) FROM menu_items"_s) && q.next() && q.value(0).toInt() > 0;
+    return q.exec(u"SELECT (SELECT COUNT(*) FROM settings WHERE key = 'pos') + (SELECT COUNT(*) FROM menu_items)"_s) && q.next()
+        && q.value(0).toInt() > 0;
 }
 
 bool PosStore::seed(const PosSettings &settings, const std::vector<MenuItem> &menu,

@@ -25,9 +25,17 @@ TEST_CASE("PosStore seeds, then loads settings, menu, employees", "[posstore]")
     PosStore store(dir.filePath(u"vt.db"_s));
     QString error;
     REQUIRE(store.open(&error));
-    CHECK_FALSE(store.hasMenu());
+    CHECK_FALSE(store.started());
     REQUIRE(store.seed(seed.settings, seed.menu, seed.employees, &error));
-    CHECK(store.hasMenu());
+    CHECK(store.started());
+    {
+        // Started: an empty menu (all of it deleted, or an empty store) isn't a new store.
+        QTemporaryDir other;
+        PosStore emptied(other.filePath(u"vt.db"_s));
+        REQUIRE(emptied.open());
+        REQUIRE(emptied.seed(seed.settings, {}, seed.employees, &error));
+        CHECK(emptied.started());
+    }
 
     const auto loaded = store.load();
     REQUIRE(loaded);

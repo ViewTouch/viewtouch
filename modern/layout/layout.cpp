@@ -330,6 +330,42 @@ Layout::PlacedZone Layout::sourceOf(const Page &variant, const QString &zoneId) 
     return {};
 }
 
+QStringList Layout::clearFloors()
+{
+    const Page *floor = pageByRole(u"tables"_s);
+    if (!floor)
+        return {};
+    const QString floorId = floor->id;
+    QStringList gone;
+    for (const Page &p : pages)
+        if (p.id != floorId && p.variantOf.isEmpty() && p.kind != u"template" && p.kind != u"library"
+            && std::ranges::any_of(p.zones, [](const Zone &z) { return z.kind == u"table"; }))
+            gone << p.id;
+    for (const Page &p : pages)
+        if (gone.contains(p.variantOf))
+            gone << p.id;
+    pages.removeIf([&](const Page &p) { return gone.contains(p.id); });
+    // A button to a plan that's gone, and on the floor its own tab (no
+    // other plans to switch to), its tables and decor.
+    const auto goesTo = [](const Zone &z, const QString &id) {
+        return std::ranges::any_of(z.actions, [&](const Action &a) {
+            return a.type() == u"jump" && a.str(u"page") == id;
+        });
+    };
+    for (Page &p : pages) {
+        p.zones.removeIf([&](const Zone &z) {
+            if (p.id == floorId && (z.kind == u"table" || z.kind == u"decor" || goesTo(z, floorId)))
+                return true;
+            return std::ranges::any_of(gone, [&](const QString &id) { return goesTo(z, id); });
+        });
+        for (Zone &z : p.zones)
+            if (z.kind == u"floorPlan" && gone.contains(z.props.value(u"plan").toString()))
+                z.props.remove(u"plan");
+    }
+    syncVariants();
+    return gone;
+}
+
 void Layout::syncVariants()
 {
     for (qsizetype i = 0; i < pages.size(); ++i) {

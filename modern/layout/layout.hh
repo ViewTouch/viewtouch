@@ -54,6 +54,12 @@ public:
     // required roles, zones off the canvas. Empty means the layout is sound.
     QStringList validate() const;
 
+    // A store started empty (Factory Reset -> Start empty): one floor plan,
+    // the tables page, with no tables or decor on it; the other floor plans
+    // (and their phone versions) and the buttons that went to them, gone.
+    // Returns the pages taken out.
+    QStringList clearFloors();
+
     // Bringing a saved layout up to date with a newer set of starter pages:
     // - starter pages it doesn't have and never had (`seen`) are added;
     // - starter pages it still has exactly as installed (their fingerprint

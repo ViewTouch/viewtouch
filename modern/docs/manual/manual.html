@@ -1217,8 +1217,12 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p>The live database on the store computer is protected by turning on disk encryption when installing the operating system (Fedora and Ubuntu: <i>Encrypt my data</i>). PINs are never stored, only scrambled (salted hashes).</p>
 <h2>Factory reset</h2>
 <p class="shot"><img src="shots/m50-factory-reset.png" width="480" height="270"></p>
-<p><b>Manager → Factory Reset…</b>, type RESET. ViewTouch backs up, deletes everything (sales, customers, staff, menu, settings, page changes) and starts again with the starter set. The backup lets you undo it with <code>--restore</code>.</p>
-<p>From the command line: <code>vtmodern --factory-reset</code>, and <code>vtmodern --demo-data</code> to fill an empty store with two months of demo history for training.</p>
+<p><b>Manager → Factory Reset…</b>, choose what it starts again with, and type RESET. ViewTouch backs up, deletes everything (sales, customers, staff, menu, settings, page changes) and restarts. The backup lets you undo it with <code>--restore</code>.</p>
+<ul>
+<li><b>The sample café</b>: the starter set, with its menu, tables, staff and settings, to try things out on.</li>
+<li><b>An empty store</b>, to start using ViewTouch for real: no menu items, categories or choice groups, no tables (one empty floor plan; the Bar and Patio plans are gone), no sample staff, printers, kitchen stations, vendors, promotions, checklists or tax rates. The payment types, meal periods and screens stay. One sample manager is left to get in: log in with <b>1234</b>, and the setup guide has you name the store, set its taxes, add your first items and add yourself as a manager with your own PIN; at Finish the sample manager is turned off. Then draw your tables (Edit mode, a Table from the palette), set up printers, and build the menu in <b>Menu Builder</b> (or import it).</li>
+</ul>
+<p>From the command line: <code>vtmodern --factory-reset</code> (add <code>--empty</code> for an empty store), and <code>vtmodern --demo-data</code> to fill an empty store with two months of demo history for training.</p>
 
 <!-- ======================================================================= -->
 <h1>16. The self-order kiosk</h1>

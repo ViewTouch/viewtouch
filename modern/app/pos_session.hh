@@ -585,7 +585,7 @@ public:
     Q_INVOKABLE void kioskRemove(qint64 lineId) { invoke(QStringLiteral("kioskRemove"), {lineId}); }
     Q_INVOKABLE void kioskFinish(const QVariantMap &guest) { invoke(QStringLiteral("kioskFinish"), {guest}); }
     Q_INVOKABLE void kioskCancel() { invoke(QStringLiteral("kioskCancel")); }
-    Q_INVOKABLE void factoryReset(const QString &confirm) { invoke(QStringLiteral("factoryReset"), {confirm}); }
+    Q_INVOKABLE void factoryReset(const QString &confirm, bool empty = false) { invoke(QStringLiteral("factoryReset"), {confirm, empty}); }
     Q_INVOKABLE void findCustomers(const QString &query) { invoke(QStringLiteral("findCustomers"), {query}); }
     Q_INVOKABLE void selectCustomer(const QString &id) { invoke(QStringLiteral("selectCustomer"), {id}); }
     Q_INVOKABLE void useCustomer(const QString &id = {}) { invoke(QStringLiteral("useCustomer"), {id}); }
