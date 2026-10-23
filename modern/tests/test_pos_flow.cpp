@@ -4469,6 +4469,26 @@ TEST_CASE("Touch: the phone pages on a phone", "[ui][touch]")
     CHECK(report.isEmpty());
 }
 
+TEST_CASE("Touch: a check with lines on a phone: its keys a finger tall", "[ui][touch]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(s.c.openCategory(u"drinks"_s));
+    for (const char *item : {"draft-beer", "lemonade", "soda"})
+        s.c.orderItem(QString::fromLatin1(item));
+    if (s.pos.choosingInfo()[u"active"_s].toBool())
+        s.pos.finishChoosing();
+    REQUIRE(s.pos.lines().size() >= 3);
+    QTest::qWait(300);
+    s.shot("touch-phone-check");
+    QStringList small;
+    smallTargets(s.window->contentItem(), s.window, &small);
+    small.removeDuplicates();
+    INFO(small.join(u"\n"_s).toStdString());
+    CHECK(small.isEmpty());
+}
+
 // --- the user manual's screenshots (hidden: run with "[.manual]" and VTM_SHOTS) ---------------
 
 #include "app/pos_demo.hh"

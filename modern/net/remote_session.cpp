@@ -159,10 +159,21 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
     // A server that pings and then says nothing for 10 s is out of reach
     // (Wi-Fi gone without the socket closing): say so, give up what was
     // waiting, and reconnect.
+    // This app asleep (Android pauses it while the screen is off or another
+    // app is in front) isn't the server gone quiet: woken, it waits for the
+    // server's next ping (every 3 s) before deciding.
     watchdog_.setInterval(2000);
     connect(&watchdog_, &QTimer::timeout, this, [this] {
-        if (welcomed_ && serverPings_ && QDateTime::currentMSecsSinceEpoch() - heard_ > silentMs_) {
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        const bool woke = lastWatch_ > 0 && now - lastWatch_ > 3 * watchdog_.interval();
+        lastWatch_ = now;
+        if (woke) {
+            heard_ = std::max(heard_, now);
+            return;
+        }
+        if (welcomed_ && serverPings_ && now - heard_ > silentMs_) {
             qCWarning(lcRemote) << "the server stopped answering";
+            lastDrop_ = u"the server was silent for %1 s"_s.arg((now - heard_) / 1000);
             socket_.abort();
             if (welcomed_)
                 onDisconnected();
@@ -321,13 +332,18 @@ void RemoteSession::onConnected()
     const AppBuild me = appBuild();
     QJsonObject hello{{u"t"_s, u"hello"_s}, {u"terminal"_s, terminal_}, {u"protocol"_s, ProtocolVersion},
                       {u"version"_s, me.version}, {u"build"_s, me.number}, {u"commit"_s, me.commit},
-                      {u"platform"_s, me.platform},
+                      {u"platform"_s, platform_.isEmpty() ? me.platform : platform_},
                       // Big things (the closed checks) only while they're shown: see want().
                       {u"subscribes"_s, true},
                       // Back after the Wi-Fi dropped: the session it had, if the server kept it.
                       {u"resume"_s, resumeToken_}};
     if (!requestedScreen_.isEmpty())
         hello.insert(u"screen"_s, requestedScreen_);
+    // Why it was cut off last time, for the store's log.
+    if (!lastDrop_.isEmpty())
+        hello.insert(u"lastDrop"_s, std::exchange(lastDrop_, {}));
+    if (!updateReady_.isEmpty() && QFile::exists(updateReady_))
+        hello.insert(u"updateReady"_s, updateReadyBuild_);   // not sent again
     send(hello);
 }
 
@@ -355,7 +371,9 @@ void RemoteSession::onDisconnected()
             it.value()(QVariant(!kept_.isEmpty() && kept_.contains(it.key())));
     }
     if (was) {
-        qCWarning(lcRemote) << "lost the server; reconnecting";
+        if (lastDrop_.isEmpty())
+            lastDrop_ = socket_.error() != QAbstractSocket::UnknownSocketError ? socket_.errorString() : u"closed"_s;
+        qCWarning(lcRemote).noquote() << "lost the server (" + lastDrop_ + "); reconnecting";
         emit onlineChanged();
         if (!offlineMode_)
             emit notice(tr("Lost the connection to the server. Reconnecting…"));
@@ -681,8 +699,10 @@ QVariantMap RemoteSession::updateInfo() const
                     // Build 0: made without git (or a store older than build numbers): not compared.
                     {u"behind"_s, me.number > 0 && storeBuild_ > me.number},
                     {u"ahead"_s, me.number > 0 && storeBuild_ > 0 && storeBuild_ < me.number}};
-    if (!storeUpdate_.isEmpty())
+    if (!storeUpdate_.isEmpty()) {
         out.insert(u"update"_s, storeUpdate_);
+        out.insert(u"byItself"_s, storeUpdate_.value(u"byItself"_s).toBool());
+    }
     if (updateProgress_ >= 0)
         out.insert(u"downloading"_s, updateProgress_);
     if (!updateReady_.isEmpty())
@@ -731,7 +751,11 @@ void RemoteSession::finishUpdate(const QJsonObject &done)
         return;
     }
     updateReady_ = f.fileName();
-    openUpdate();
+    updateReadyBuild_ = done.value(u"build").toInt();
+    emit updateChanged();
+    // Got by itself (nobody here): Install waits for whoever uses it next.
+    if (!done.value(u"byItself").toBool())
+        openUpdate();
 }
 
 void RemoteSession::openUpdate()

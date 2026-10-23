@@ -39,7 +39,9 @@ Rectangle {
     Text {
         anchors.centerIn: parent
         width: parent.width - 8
+        height: parent.height   // a name shrunk to fit its width stays in the middle
         horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         text: key.text
         color: key.textColor
         font.family: key.keySt.keyFont ?? key.fontFamily

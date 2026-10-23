@@ -40,6 +40,9 @@ class LayoutController : public QObject {
     Q_PROPERTY(QString pageName READ pageName NOTIFY pageChanged)
     Q_PROPERTY(QString pageKind READ pageKind NOTIFY pageChanged)
     Q_PROPERTY(QSize canvasSize READ canvasSize NOTIFY pageChanged)
+    // The screen's height over its width (the page view sets it): a phone's
+    // pages take its shape, the room going to their biggest panel.
+    Q_PROPERTY(double viewAspect READ viewAspect WRITE setViewAspect NOTIFY pageChanged)
     Q_PROPERTY(int pageGrid READ pageGrid NOTIFY pageChanged)
     Q_PROPERTY(QVariantMap background READ background NOTIFY pageChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pageChanged)
@@ -103,6 +106,8 @@ public:
     QString pageName() const;
     QString pageKind() const;
     QSize canvasSize() const;
+    double viewAspect() const { return viewAspect_; }
+    void setViewAspect(double aspect);
     int pageGrid() const;
     QVariantMap background() const;
     bool canGoBack() const { return nav_.canGoBack(); }
@@ -323,6 +328,7 @@ private:
     void onDraftChanged();
     void ensureCurrentPageExists();
     void refresh();
+    double viewAspect_ = 0;
     void setStatus(const QString &text);
     const vt::layout::Page *currentPage() const { return activeLayout().page(nav_.current()); }
     // What this screen shows for the current page: its phone version, or
@@ -333,7 +339,9 @@ private:
         QSize canvas;
         QList<vt::layout::Layout::PlacedZone> zones;
         QHash<const vt::layout::Zone *, QRect> moved;   // reflowed: rect on this screen
+        QHash<const vt::layout::Zone *, QRect> fitted;  // to the phone's shape (nothing else changes)
     };
+    void fitToScreen(Shown &s) const;
     Shown shown() const;
     void updateFormFactor();
     QString formFactor_ = QStringLiteral("standard");
