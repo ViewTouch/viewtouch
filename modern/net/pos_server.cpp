@@ -66,8 +66,11 @@ struct PosServer::Connection {
         std::unique_ptr<QFile> file;
         QCryptographicHash hash{QCryptographicHash::Sha256};
         int part = 0, parts = 0, build = 0;
+        bool byItself = false;   // the store's setting, not someone touching Update Now
     };
     std::unique_ptr<Sending> update;
+    int updateReady = 0;     // the build of the update it already has (hello)
+    int updateOffered = 0;   // the build it was sent by itself (once)
 };
 
 // A handheld gone out of reach with someone logged in: its session, with
@@ -332,6 +335,7 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
         for (auto &c : connections_) {
             if ((c->standby && c->synced) || c->session)
                 c->channel->send({{u"t"_s, u"ping"_s}});
+            offerUpdate(c.get());
             if (c->session && c->answersPings && now - c->heard > silentMs_)
                 silent.push_back(c.get());
         }
@@ -542,6 +546,7 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         c->version = m.value(u"version").toString();
         c->platform = m.value(u"platform").toString();
         c->resumeToken = m.value(u"resume").toString();
+        c->updateReady = m.value(u"updateReady").toInt();
         // Back after the Wi-Fi dropped (the same run of the app): its session
         // as it was, logged in with the check open. From the connection this
         // server hasn't noticed is gone yet, or from those kept away.
@@ -596,7 +601,9 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
                             {u"state"_s, QJsonObject::fromVariantMap(c->sent)}, {u"resumed"_s, resumed}};
         if (const UpdateFile u = updateFor(c->platform, c->build); !u.path.isEmpty())
             welcome.insert(u"update"_s, QJsonObject{{u"name"_s, QFileInfo(u.path).fileName()}, {u"build"_s, u.build},
-                                                    {u"size"_s, QFileInfo(u.path).size()}});
+                                                    {u"size"_s, QFileInfo(u.path).size()},
+                                                    // Sent by itself when nobody is on it (Store Settings).
+                                                    {u"byItself"_s, shared_->settings.screensUpdate && c->platform.startsWith(u"android"_s)}});
         c->channel->send(welcome);
         sendKit(c);
         if (const QString drop = m.value(u"lastDrop").toString(); !drop.isEmpty())
@@ -914,10 +921,10 @@ PosServer::UpdateFile PosServer::updateFor(const QString &platform, int build) c
 // part goes when the network has taken the one before (a whole app at once
 // was 160 MB in this computer's memory, and its pings stuck behind it).
 // The maintainer's only: installing it is theirs to decide.
-void PosServer::sendUpdate(Connection *c)
+void PosServer::sendUpdate(Connection *c, bool byItself)
 {
     const auto refuse = [c](const QString &why) { c->channel->send({{u"t"_s, u"updateError"_s}, {u"text"_s, why}}); };
-    if (!c->session->can(QString::fromLatin1(core::perm::Maintain)))
+    if (!byItself && !c->session->can(QString::fromLatin1(core::perm::Maintain)))
         return refuse(tr("Updating a screen is the maintainer's."));
     if (c->update)
         return;   // already on its way
@@ -930,8 +937,24 @@ void PosServer::sendUpdate(Connection *c)
         return refuse(tr("Can't read %1: %2").arg(QFileInfo(u.path).fileName(), sending->file->errorString()));
     sending->parts = std::max(1, int((sending->file->size() + kUpdatePart - 1) / kUpdatePart));
     sending->build = u.build;
+    sending->byItself = byItself;
     c->update = std::move(sending);
     sendUpdatePart(c);
+}
+
+// Phones and tablets (Store Settings -> Screens): a newer app sent by
+// itself while nobody is logged in there, once, and not to one that has it.
+void PosServer::offerUpdate(Connection *c)
+{
+    if (!shared_->settings.screensUpdate || !c->session || c->update || c->session->loggedIn()
+        || !c->platform.startsWith(u"android"_s))
+        return;
+    const UpdateFile u = updateFor(c->platform, std::max(c->build, c->updateReady));
+    if (u.path.isEmpty() || u.build == c->updateOffered)
+        return;
+    c->updateOffered = u.build;
+    qCInfo(lcServer) << "sending" << QFileInfo(u.path).fileName() << "to" << c->session->terminalName() << "(nobody on it)";
+    sendUpdate(c, true);
 }
 
 void PosServer::sendUpdatePart(Connection *c)
@@ -947,7 +970,8 @@ void PosServer::sendUpdatePart(Connection *c)
         if (last)
             part.insert(u"done"_s, QJsonObject{{u"name"_s, QFileInfo(*u->file).fileName()}, {u"build"_s, u->build},
                                                {u"size"_s, qint64(u->file->size())},
-                                               {u"sha256"_s, QString::fromLatin1(u->hash.result().toHex())}});
+                                               {u"sha256"_s, QString::fromLatin1(u->hash.result().toHex())},
+                                               {u"byItself"_s, u->byItself}});
         c->channel->send(part);
         if (last) {
             qCInfo(lcServer) << "sent" << QFileInfo(*u->file).fileName() << "to" << c->session->terminalName();

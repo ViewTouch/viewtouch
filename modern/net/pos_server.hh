@@ -123,7 +123,8 @@ private:
     QTimer pingTimer_;   // the standby knows the main is alive; terminals, the store
     qint64 silentMs_ = 15'000;
     QString updatesDir_;
-    void sendUpdate(Connection *c);
+    void sendUpdate(Connection *c, bool byItself = false);
+    void offerUpdate(Connection *c);      // Store Settings: phones and tablets update by themselves
     void sendUpdatePart(Connection *c);   // the next parts, as the network takes them   // a terminal that answered pings, silent this long: gone
     std::function<QByteArray()> snapshot_;
 };

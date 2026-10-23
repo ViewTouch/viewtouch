@@ -252,6 +252,7 @@ write("pos/settings.json", {
                          "Count the drawers", "Lock the back door"],
     "autoLogoutMinutes": 3,
     "phoneLockSeconds": 30,
+    "screensUpdate": True,
     "tableLongMinutes": 90,
     # Points for what regulars spend, and what the points buy.
     "loyalty": {"enabled": True, "pointsPerDollar": 1,

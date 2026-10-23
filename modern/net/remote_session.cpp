@@ -332,7 +332,7 @@ void RemoteSession::onConnected()
     const AppBuild me = appBuild();
     QJsonObject hello{{u"t"_s, u"hello"_s}, {u"terminal"_s, terminal_}, {u"protocol"_s, ProtocolVersion},
                       {u"version"_s, me.version}, {u"build"_s, me.number}, {u"commit"_s, me.commit},
-                      {u"platform"_s, me.platform},
+                      {u"platform"_s, platform_.isEmpty() ? me.platform : platform_},
                       // Big things (the closed checks) only while they're shown: see want().
                       {u"subscribes"_s, true},
                       // Back after the Wi-Fi dropped: the session it had, if the server kept it.
@@ -342,6 +342,8 @@ void RemoteSession::onConnected()
     // Why it was cut off last time, for the store's log.
     if (!lastDrop_.isEmpty())
         hello.insert(u"lastDrop"_s, std::exchange(lastDrop_, {}));
+    if (!updateReady_.isEmpty() && QFile::exists(updateReady_))
+        hello.insert(u"updateReady"_s, updateReadyBuild_);   // not sent again
     send(hello);
 }
 
@@ -697,8 +699,10 @@ QVariantMap RemoteSession::updateInfo() const
                     // Build 0: made without git (or a store older than build numbers): not compared.
                     {u"behind"_s, me.number > 0 && storeBuild_ > me.number},
                     {u"ahead"_s, me.number > 0 && storeBuild_ > 0 && storeBuild_ < me.number}};
-    if (!storeUpdate_.isEmpty())
+    if (!storeUpdate_.isEmpty()) {
         out.insert(u"update"_s, storeUpdate_);
+        out.insert(u"byItself"_s, storeUpdate_.value(u"byItself"_s).toBool());
+    }
     if (updateProgress_ >= 0)
         out.insert(u"downloading"_s, updateProgress_);
     if (!updateReady_.isEmpty())
@@ -747,7 +751,11 @@ void RemoteSession::finishUpdate(const QJsonObject &done)
         return;
     }
     updateReady_ = f.fileName();
-    openUpdate();
+    updateReadyBuild_ = done.value(u"build").toInt();
+    emit updateChanged();
+    // Got by itself (nobody here): Install waits for whoever uses it next.
+    if (!done.value(u"byItself").toBool())
+        openUpdate();
 }
 
 void RemoteSession::openUpdate()

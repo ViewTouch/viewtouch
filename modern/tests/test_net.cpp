@@ -683,6 +683,72 @@ TEST_CASE("Updates: a screen behind the store is told, and a manager there gets 
     got.remove();
 }
 
+TEST_CASE("Updates: phones and tablets get the store's newer app by themselves while nobody is on them", "[net][remote][updates]")
+{
+    Store store;
+    store.server.setHeartbeat(100, 15'000);   // looks every ping
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    store.server.setUpdatesDir(dir.path());
+    const net::AppBuild me = net::appBuild();
+    const QString apk = u"ViewTouch-b%1-arm64-v8a.apk"_s.arg(me.number + 3);
+    QByteArray payload(2 * 1024 * 1024 + 77, '\0');
+    for (int i = 0; i < payload.size(); ++i)
+        payload[i] = char(i * 13);
+    {
+        QFile f(dir.filePath(apk));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(payload);
+    }
+    WifiRelay wifi(store.server.port());
+    const auto phone = [&](const QString &name, quint16 port = 0) {
+        auto t = std::make_unique<net::RemoteSession>(name);
+        t->setPlatform(u"android-arm64"_s);
+        net::Credentials creds = store.pairedDevice(name);
+        creds.port = port ? port : store.server.port();
+        t->setCredentials(creds);
+        t->connectTo(u"127.0.0.1"_s, creds.port);
+        REQUIRE(t->waitForWelcome(5000));
+        return t;
+    };
+
+    // Someone logged in: not while they work.
+    auto busy = phone(u"Phone 1"_s);
+    for (const char *d = "1111"; *d; ++d)
+        busy->pinKey(QString(QChar(*d)));
+    busy->invoke(u"login"_s);
+    REQUIRE(waitFor([&] { return busy->loggedIn(); }));
+    CHECK(busy->updateInfo()[u"byItself"_s].toBool());   // it says so (no "the maintainer can")
+    // Nobody on it: it comes by itself, and waits for someone to touch Install.
+    auto idle = phone(u"Phone 2"_s, wifi.server.serverPort());
+    REQUIRE(waitFor([&] { return idle->updateInfo().contains(u"ready"_s); }, 10000));
+    QFile got(idle->updateInfo()[u"ready"_s].toString());
+    REQUIRE(got.open(QIODevice::ReadOnly));
+    CHECK(got.readAll() == payload);
+    waitFor([] { return false; }, 400);
+    CHECK_FALSE(busy->updateInfo().contains(u"ready"_s));
+    CHECK_FALSE(busy->updateInfo().contains(u"downloading"_s));
+    // Logged out: its turn.
+    busy->invoke(u"logout"_s);
+    REQUIRE(waitFor([&] { return busy->updateInfo().contains(u"ready"_s); }, 10000));
+
+    // Back after a dropped connection with it already here: not sent again.
+    for (auto &[in, out] : wifi.pairs)
+        in->abort();
+    REQUIRE(waitFor([&] { return !idle->isConnected(); }));
+    REQUIRE(waitFor([&] { return idle->isConnected(); }, 8000));
+    waitFor([] { return false; }, 500);
+    CHECK_FALSE(idle->updateInfo().contains(u"downloading"_s));
+
+    // Turned off in Store Settings: the maintainer updates each one.
+    store.shared.settings.screensUpdate = false;
+    auto off = phone(u"Phone 3"_s);
+    waitFor([] { return false; }, 500);
+    CHECK_FALSE(off->updateInfo().contains(u"ready"_s));
+    CHECK_FALSE(off->updateInfo()[u"byItself"_s].toBool());
+    got.remove();
+}
+
 TEST_CASE("Versions: MAJOR.MINOR and the build number, by every build; the recent builds built in", "[net][version]")
 {
     const net::AppBuild me = net::appBuild();

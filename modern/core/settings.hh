@@ -337,6 +337,9 @@ struct PosSettings {
     // A phone (handheld) whose screen was off this long asks for a PIN again
     // (its check comes back when they log in). -1: never.
     int phoneLockSeconds = 30;
+    // Phones and tablets get the store's newer app by themselves while
+    // nobody is logged in on them (Android still asks before installing).
+    bool screensUpdate = true;
     // Dim a screen nobody has touched for this long (0: never). Kitchen,
     // bar and expo screens and the self-order kiosk stay on.
     int screenSaverMinutes = 10;
