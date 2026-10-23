@@ -89,6 +89,14 @@ android {
         }
     }
 
+    // See proguard-rules.pro: what the app's Java libraries carry that it doesn't use, left out.
+    buildTypes {
+        release {
+            minifyEnabled = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
     defaultConfig {
         resConfig "en"
         minSdkVersion qtMinSdkVersion

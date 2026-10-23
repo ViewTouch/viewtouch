@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include "net/build_info.hh"
 #include <QRegularExpression>
+#include <QFile>
 #include <QFileInfo>
 #include <QDir>
 #include <QCryptographicHash>
@@ -60,6 +61,13 @@ struct PosServer::Connection {
     // (its answer was lost with the connection) is answered, not done twice.
     QHash<qint64, QJsonValue> answered;
     QList<qint64> answeredOrder;
+    // An update on its way to it, a part at a time as the network takes them.
+    struct Sending {
+        std::unique_ptr<QFile> file;
+        QCryptographicHash hash{QCryptographicHash::Sha256};
+        int part = 0, parts = 0, build = 0;
+    };
+    std::unique_ptr<Sending> update;
 };
 
 // A handheld gone out of reach with someone logged in: its session, with
@@ -73,6 +81,8 @@ struct PosServer::Away {
 };
 
 namespace {
+
+constexpr qint64 kUpdatePart = 1 << 20;   // an update's parts (1 MB)
 
 // A screen's state, piece by piece, and which change signal says each one
 // may have changed (its property's NOTIFY, the same signal the screen on
@@ -454,6 +464,7 @@ void PosServer::onNewConnection()
         connections_.push_back(std::move(c));
         connect(socket, &QTcpSocket::readyRead, this, [this, raw] { onReadyRead(raw); });
         connect(socket, &QTcpSocket::disconnected, this, [this, raw] { drop(raw); });
+        connect(socket, &QSslSocket::encryptedBytesWritten, this, [this, raw] { sendUpdatePart(raw); });
     }
 }
 
@@ -899,32 +910,51 @@ PosServer::UpdateFile PosServer::updateFor(const QString &platform, int build) c
     return {};
 }
 
-// The update for this screen, in parts (like the standby's copy), the last
-// with its fingerprint. Managers only: installing it is theirs to decide.
+// The update for this screen, in parts, the last with its fingerprint. A
+// part goes when the network has taken the one before (a whole app at once
+// was 160 MB in this computer's memory, and its pings stuck behind it).
+// The maintainer's only: installing it is theirs to decide.
 void PosServer::sendUpdate(Connection *c)
 {
     const auto refuse = [c](const QString &why) { c->channel->send({{u"t"_s, u"updateError"_s}, {u"text"_s, why}}); };
     if (!c->session->can(QString::fromLatin1(core::perm::Maintain)))
         return refuse(tr("Updating a screen is the maintainer's."));
+    if (c->update)
+        return;   // already on its way
     const UpdateFile u = updateFor(c->platform, c->build);
     if (u.path.isEmpty())
         return refuse(tr("The store has no newer version for this screen."));
-    QFile f(u.path);
-    if (!f.open(QIODevice::ReadOnly))
-        return refuse(tr("Can't read %1: %2").arg(QFileInfo(u.path).fileName(), f.errorString()));
-    const QByteArray data = f.readAll();
-    const QString hash = QString::fromLatin1(QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex());
-    constexpr qsizetype chunk = 1 << 20;
-    const int parts = std::max(1, int((data.size() + chunk - 1) / chunk));
-    for (int i = 0; i < parts; ++i) {
-        QJsonObject part{{u"t"_s, u"updatePart"_s}, {u"i"_s, i}, {u"n"_s, parts},
-                         {u"data"_s, QString::fromLatin1(data.mid(i * chunk, chunk).toBase64())}};
-        if (i == parts - 1)
-            part.insert(u"done"_s, QJsonObject{{u"name"_s, QFileInfo(u.path).fileName()}, {u"build"_s, u.build},
-                                               {u"size"_s, qint64(data.size())}, {u"sha256"_s, hash}});
+    auto sending = std::make_unique<Connection::Sending>();
+    sending->file = std::make_unique<QFile>(u.path);
+    if (!sending->file->open(QIODevice::ReadOnly))
+        return refuse(tr("Can't read %1: %2").arg(QFileInfo(u.path).fileName(), sending->file->errorString()));
+    sending->parts = std::max(1, int((sending->file->size() + kUpdatePart - 1) / kUpdatePart));
+    sending->build = u.build;
+    c->update = std::move(sending);
+    sendUpdatePart(c);
+}
+
+void PosServer::sendUpdatePart(Connection *c)
+{
+    Connection::Sending *u = c->update.get();
+    // A couple of parts waiting to go out at most.
+    while (u && c->socket->bytesToWrite() + c->socket->encryptedBytesToWrite() < 2 * kUpdatePart) {
+        const QByteArray data = u->file->read(kUpdatePart);
+        u->hash.addData(data);
+        QJsonObject part{{u"t"_s, u"updatePart"_s}, {u"i"_s, u->part}, {u"n"_s, u->parts},
+                         {u"data"_s, QString::fromLatin1(data.toBase64())}};
+        const bool last = ++u->part == u->parts;
+        if (last)
+            part.insert(u"done"_s, QJsonObject{{u"name"_s, QFileInfo(*u->file).fileName()}, {u"build"_s, u->build},
+                                               {u"size"_s, qint64(u->file->size())},
+                                               {u"sha256"_s, QString::fromLatin1(u->hash.result().toHex())}});
         c->channel->send(part);
+        if (last) {
+            qCInfo(lcServer) << "sent" << QFileInfo(*u->file).fileName() << "to" << c->session->terminalName();
+            c->update.reset();
+            u = nullptr;
+        }
     }
-    qCInfo(lcServer) << "sent" << QFileInfo(u.path).fileName() << "to" << c->session->terminalName();
 }
 
 void PosServer::dropRevoked()
