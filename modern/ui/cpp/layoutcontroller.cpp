@@ -610,6 +610,60 @@ QSize LayoutController::canvasSize() const
 
 // --- screens of different sizes ----------------------------------------------------
 
+void LayoutController::setViewAspect(double aspect)
+{
+    if (std::abs(aspect - viewAspect_) < 0.005)
+        return;
+    viewAspect_ = aspect;
+    if (formFactor_ == u"phone" && !editing()) {
+        refresh();
+        emit pageChanged();
+    }
+}
+
+// A phone's page made as tall as its screen (no bands above and below): the
+// check (the order screen, Pay) or else the biggest panel (the floor plan)
+// takes the difference, what's below it moves with its bottom. A screen shorter than the page: that panel
+// gives up room, down to 240.
+void LayoutController::fitToScreen(Shown &s) const
+{
+    if (viewAspect_ <= 0 || s.canvas.width() <= 0)
+        return;
+    const auto rectOf = [&](const vt::layout::Zone *z) { return s.moved.value(z, z->rect); };
+    int extra = int(std::lround(s.canvas.width() * viewAspect_)) - s.canvas.height();
+    // Taller: the check gets it. Shorter: the biggest other panel (the menu
+    // scrolls) gives it up, so the check stays whole.
+    const auto check = [](const vt::layout::Zone *z) { return z->kind == u"orderList" || z->kind == u"paymentPanel"; };
+    const bool toCheck = extra > 0;
+    const vt::layout::Zone *main = nullptr;
+    for (const Layout::PlacedZone &pz : s.zones) {
+        const QString &k = pz.zone->kind;
+        if (k == u"button" || k == u"label" || k == u"image" || k == u"table" || k == u"comment" || k == u"decor")
+            continue;
+        const auto rank = [&](const vt::layout::Zone *z) { return check(z) == toCheck; };
+        if (!main || (rank(pz.zone) && !rank(main))
+            || (rank(pz.zone) == rank(main) && rectOf(pz.zone).height() > rectOf(main).height()))
+            main = pz.zone;
+    }
+    if (!main)
+        return;
+    const QRect m = rectOf(main);
+    extra = std::clamp(extra, std::min(0, 240 - m.height()), s.canvas.height());
+    if (std::abs(extra) < 8)
+        return;
+    for (const Layout::PlacedZone &pz : s.zones) {
+        QRect r = rectOf(pz.zone);
+        if (pz.zone == main)
+            r.setHeight(r.height() + extra);
+        else if (r.top() >= m.bottom())
+            r.translate(0, extra);
+        else
+            continue;
+        s.fitted.insert(pz.zone, r);
+    }
+    s.canvas.setHeight(s.canvas.height() + extra);
+}
+
 LayoutController::Shown LayoutController::shown() const
 {
     const Layout &l = activeLayout();
@@ -619,7 +673,9 @@ LayoutController::Shown LayoutController::shown() const
     // The editor always works on the page as designed.
     if (page && formFactor_ == u"phone" && !editing() && page->variantOf.isEmpty()) {
         vt::layout::PhoneView v = vt::layout::phoneView(l, id);
-        return {v.pageId, v.canvas, std::move(v.zones), std::move(v.moved)};
+        Shown phone{v.pageId, v.canvas, std::move(v.zones), std::move(v.moved), {}};
+        fitToScreen(phone);
+        return phone;
     }
     s.zones = l.effectiveZones(id);
     return s;
@@ -2055,7 +2111,7 @@ void LayoutController::refresh()
         // Laid out again for a phone: its own rect there, a plain shape, and
         // the look it has on its own page.
         const bool moved = s.moved.contains(pz.zone);
-        QRect rect = moved ? s.moved.value(pz.zone) : z.rect;
+        QRect rect = s.fitted.value(pz.zone, moved ? s.moved.value(pz.zone) : z.rect);
         if (nextLeft >= 0 && !moved && rect.y() >= colTop && rect.y() + rect.height() <= colBottom) {
             if (rect.x() >= colLeft && rect.x() + rect.width() <= colRight)
                 rect.translate(canvasW - colLeft - colRight, 0);          // the check's column: right

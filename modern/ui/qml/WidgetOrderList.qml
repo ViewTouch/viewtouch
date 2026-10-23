@@ -17,6 +17,9 @@ Item {
     // Again keys were 6 or 7 pixels there.
     readonly property real unit: Math.max(12, zone.touch(15) * zone.textScale,
                                           Math.min((zone.st.fontSize ?? 28) * zone.textScale, w.width * 0.05 * zone.textScale))
+    // A phone: the check's own keys (Choose, the course, − + Again) a finger
+    // tall, 40 pixels; elsewhere as tall as their text needs.
+    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(40) : 0
     readonly property var check: pos ? pos.check : ({})
     // A swiped line: from here, since selecting it rebuilds the lines (and the row).
     function swipeOff(lineId) {
@@ -105,7 +108,7 @@ Item {
                 objectName: "anotherRound"
                 visible: (w.check.roundSize ?? 0) > 0 && w.zone.keyShown("round")
                 Layout.preferredWidth: w.unit * 6.4
-                Layout.preferredHeight: w.unit * 1.5
+                Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
                 text: w.zone.keyText("round", qsTr("Another Round"))
                 baseColor: "#1f6f78"
                 fontScale: 0.5
@@ -115,7 +118,7 @@ Item {
                 objectName: "wholeCheckKey"
                 visible: w.small && w.zone.keyShown("whole")
                 Layout.preferredWidth: w.unit * 6.4
-                Layout.preferredHeight: w.unit * 1.5
+                Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
                 text: w.whole ? qsTr("Close ▴") : qsTr("Whole Check ▾")
                 baseColor: w.whole ? "#2f6fd6" : "#343c49"
                 fontScale: 0.5
@@ -304,7 +307,7 @@ Item {
             visible: w.controls && w.pos && w.pos.hasCheck && !!w.check.lastOrder
                      && !(w.pos.lines ?? []).some(l => !l.comment && !l.fee)
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 1.9
+            Layout.preferredHeight: Math.max(w.unit * 1.9, w.tapH)
             fontScale: 0.4
             text: qsTr("Same as Last Time: %1").arg(w.check.lastOrder ?? "")
             baseColor: "#1f6f78"
@@ -316,7 +319,7 @@ Item {
             visible: w.controls && w.pos && w.pos.hasCheck && (w.check.goesWith ?? []).length > 0 && !w.folded
                      && (w.pos.lines ?? []).some(l => !l.comment && !l.fee)
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 1.6
+            Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             spacing: w.unit * 0.25
             Text {
                 text: qsTr("Often added:")
@@ -330,7 +333,7 @@ Item {
                     required property var modelData
                     objectName: "goesWith-" + modelData.id
                     Layout.fillWidth: true
-                    Layout.preferredHeight: w.unit * 1.5
+                    Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
                     fontScale: 0.4
                     text: "+ " + modelData.name
                     baseColor: "#2b3a4a"
@@ -411,7 +414,7 @@ Item {
             id: bar
             visible: w.controls && w.pos && w.pos.hasCheck && !w.folded
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 1.6
+            Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             Layout.fillHeight: false
             readonly property real key: Math.min(w.unit * 1.5, width / 13)
             Row {
@@ -433,7 +436,7 @@ Item {
                         required property int modelData
                         objectName: "course" + modelData
                         visible: w.zone.keyShown("course")
-                        width: bar.key; height: parent.height
+                        width: Math.max(bar.key, w.tapH); height: parent.height
                         text: modelData
                         accent: (w.check.course ?? 1) === modelData
                         onClicked: w.pos.setCourse(modelData)
@@ -484,7 +487,7 @@ Item {
                 id: row
                 required property var modelData
                 width: ListView.view.width - listBar.room
-                height: col.implicitHeight + w.unit * 0.4
+                height: Math.max(col.implicitHeight + w.unit * 0.4, w.tapH)   // a phone: a finger tall
                 radius: 6
                 color: modelData.selected ? "#2f6fd6" : "transparent"
                 // Tapped while the server was out of reach: goes in when it's back.
@@ -578,10 +581,20 @@ Item {
                             elide: Text.ElideRight
                         }
                         // Choices for an unsent item: amber while a required one is missing.
+                        // A phone: the key on the touched line (a finger tall), the others
+                        // just say so (so every line stays one line).
+                        Text {
+                            visible: row.modelData.choices && w.tapH > 0 && !row.modelData.selected && row.modelData.needsChoice
+                            text: qsTr("Choose ›")
+                            color: "#f5b940"
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.8
+                            font.bold: true
+                        }
                         WidgetKey {
-                            visible: row.modelData.choices
+                            visible: row.modelData.choices && (w.tapH === 0 || row.modelData.selected)
                             Layout.preferredWidth: w.unit * 3.4
-                            Layout.preferredHeight: w.unit * 1.4
+                            Layout.preferredHeight: Math.max(w.unit * 1.4, w.tapH)
                             text: qsTr("Choose")
                             baseColor: row.modelData.needsChoice ? "#a86a12" : "#343c49"
                             fontScale: 0.5
@@ -640,10 +653,11 @@ Item {
                         readonly property real units: (row.modelData.sent ? 0 : 3.7) + 3
                                                       + (tableChecks.checks.length > 0 && !w.paid ? 3 : 0)
                         readonly property real key: Math.min(w.unit * 1.6, (col.width - w.unit * 2) / units)
+                        readonly property real keyH: Math.max(key, w.tapH)
                         WidgetKey {
                             objectName: "lineLess"
                             visible: !row.modelData.sent
-                            width: qtyBar.key * 1.3; height: qtyBar.key
+                            width: Math.max(qtyBar.key * 1.3, w.tapH); height: qtyBar.keyH
                             fontScale: 0.6
                             text: "−"
                             onClicked: w.pos.lineLess(row.modelData.id)
@@ -651,7 +665,7 @@ Item {
                         Text {
                             visible: !row.modelData.sent
                             width: qtyBar.key * 1.1
-                            height: qtyBar.key
+                            height: qtyBar.keyH
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                             text: row.modelData.quantity
@@ -663,14 +677,14 @@ Item {
                         WidgetKey {
                             objectName: "lineMore"
                             visible: !row.modelData.sent
-                            width: qtyBar.key * 1.3; height: qtyBar.key
+                            width: Math.max(qtyBar.key * 1.3, w.tapH); height: qtyBar.keyH
                             fontScale: 0.6
                             text: "+"
                             onClicked: w.pos.lineMore(row.modelData.id)
                         }
                         WidgetKey {
                             objectName: "lineAgain"
-                            width: qtyBar.key * 3; height: qtyBar.key
+                            width: qtyBar.key * 3; height: qtyBar.keyH
                             fontScale: 0.45
                             text: w.zone.keyText("quantity", qsTr("Again"))
                             onClicked: w.pos.repeatLine(row.modelData.id)
@@ -679,7 +693,7 @@ Item {
                         WidgetKey {
                             objectName: "lineMove"
                             visible: tableChecks.checks.length > 0 && !w.paid
-                            width: qtyBar.key * 3; height: qtyBar.key
+                            width: qtyBar.key * 3; height: qtyBar.keyH
                             fontScale: 0.45
                             text: qsTr("Move…")
                             onClicked: sheet.mode = "move"
@@ -720,7 +734,7 @@ Item {
                     WidgetKey {
                         objectName: "undoLast"
                         Layout.preferredWidth: w.unit * 3.6
-                        Layout.preferredHeight: w.unit * 1.5
+                        Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
                         fontScale: 0.5
                         baseColor: "#a86a12"
                         text: w.zone.keyText("undo", qsTr("Undo"))

@@ -2,12 +2,14 @@ import QtQuick
 import QtQuick.Layouts
 
 // A message from another screen ("86 salmon", "need a runner"), across the
-// top of the screens it's for until someone here touches OK.
+// top of the screens it's for until someone here touches OK. A phone
+// (compact): one line, the page moved down under it rather than covered.
 Rectangle {
     id: banner
     property PosService pos
     property bool kitchenScreen: false   // kitchen, bar and expo screens
     property var seen: ({})              // message ids already OK'd here
+    property bool compact: false
 
     // Newest first: the ones for this screen not yet OK'd.
     readonly property var waiting: {
@@ -22,7 +24,7 @@ Rectangle {
     readonly property var shown: waiting.length ? waiting[waiting.length - 1] : null   // the oldest first
 
     visible: shown !== null
-    height: visible ? 74 : 0
+    height: visible ? (compact ? 48 : 74) : 0
     color: "#2f6fd6"
     border.color: "white"
     border.width: 2
@@ -32,7 +34,18 @@ Rectangle {
         anchors.leftMargin: 18
         anchors.rightMargin: 10
         spacing: 14
+        Text {
+            visible: banner.compact
+            Layout.fillWidth: true
+            function plain(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;") }   // what they typed, as typed
+            text: banner.shown ? "<b>" + plain(banner.shown.from) + ":</b> " + plain(banner.shown.text) : ""
+            textFormat: Text.StyledText
+            color: "white"
+            font.pixelSize: 17
+            elide: Text.ElideRight
+        }
         Column {
+            visible: !banner.compact
             Layout.fillWidth: true
             Text {
                 text: !banner.shown ? ""
@@ -58,9 +71,9 @@ Rectangle {
         }
         WidgetKey {
             objectName: "messageOk"
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: banner.compact ? 72 : 120
             Layout.fillHeight: true
-            Layout.margins: 8
+            Layout.margins: banner.compact ? 4 : 8
             text: qsTr("OK")
             baseColor: "#1f6b40"
             fontScale: 0.4

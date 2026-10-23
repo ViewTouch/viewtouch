@@ -177,6 +177,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.margins: root.editing ? 12 : 0
+                // A phone: under the message across the top, not behind it.
+                Layout.topMargin: (root.editing ? 12 : 0) + (messages.compact ? messages.height : 0)
                 // Off while something covers the whole screen: Qt still offers a
                 // touch to the tap handlers underneath whatever took it, so the
                 // page's buttons were pressed through the kiosk, a sheet or the
@@ -187,6 +189,12 @@ ApplicationWindow {
                 controller: root.controller
                 editor: root.editing ? root.editor : null
                 focus: true
+                // A phone's pages take this screen's shape (see LayoutController::fitToScreen).
+                Binding {
+                    target: root.controller
+                    property: "viewAspect"
+                    value: pageView.width > 0 && pageView.height > 0 ? pageView.height / pageView.width : 0
+                }
 
                 Keys.onPressed: event => {
                     if (root.editing)
@@ -460,14 +468,16 @@ ApplicationWindow {
                     if (i.downloading !== undefined)
                         return qsTr("Getting the update… %1%").arg(i.downloading)
                     return qsTr("This screen runs an older ViewTouch (%1) than the store (%2).").arg(i.text ?? "").arg(i.storeText ?? "")
-                         + (i.update ? (updateStrip.maintainer ? "" : " " + qsTr("The store's maintainer can update it here (log in with the maintainer's code)."))
+                         + (i.update ? (updateStrip.maintainer || i.byItself ? "" : " " + qsTr("The store's maintainer can update it here (log in with the maintainer's code)."))
                                      : " " + qsTr("Put the new version on the store's computer (Manager → Network)."))
                 }
             }
             WidgetKey {
                 objectName: "updateNow"
-                visible: !!updateStrip.info.behind && !!updateStrip.info.update && updateStrip.maintainer
-                         && updateStrip.info.downloading === undefined && (!updateStrip.info.ready || Qt.platform.os === "android")
+                // Install: anyone (Android asks them); getting it: the maintainer.
+                visible: updateStrip.info.ready ? Qt.platform.os === "android"
+                       : !!updateStrip.info.behind && !!updateStrip.info.update && updateStrip.maintainer
+                         && updateStrip.info.downloading === undefined
                 Layout.preferredWidth: 170
                 Layout.preferredHeight: 48
                 text: updateStrip.info.ready ? qsTr("Install") : qsTr("Update Now")
@@ -1029,6 +1039,8 @@ ApplicationWindow {
 
     // Messages from other screens, across the top.
     MessageBanner {
+        id: messages
+        compact: root.controller.formFactor === "phone"
         anchors.top: parent.top
         anchors.left: parent.left
         width: root.posWidth

@@ -11,7 +11,9 @@ Item {
     readonly property var choosing: pos ? pos.choosing : ({})
     readonly property string face: zone.st.font ?? "DejaVu Sans"
     readonly property color ink: zone.st.textColor ?? "#e6e9ef"
-    readonly property real unit: Math.max(16, Math.min(34, w.width / 30)) * zone.textScale
+    // A phone: its keys (2.6 of this) a finger tall, 40 pixels.
+    readonly property bool phone: zone && zone.controller ? zone.controller.formFactor === "phone" : false
+    readonly property real unit: Math.max(16, phone ? zone.touch(15.5) : 0, Math.min(34, w.width / 30)) * zone.textScale
 
     Text {
         id: title
