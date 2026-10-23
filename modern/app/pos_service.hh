@@ -460,8 +460,12 @@ public:
     void setPrinter(PosPrinter *printer) { s_->printer = printer; }
 
     // For this screen to keep selling if it loses the store's computer (see
-    // app/pos_offline.cpp): what it needs, kept in its memory only.
+    // app/pos_offline.cpp): what it needs, kept in its memory only. Most of
+    // it is the same for every screen (made once for all of them); the rest is
+    // this screen's own: its name and where its check numbers start.
     QJsonObject offlineKit() const;
+    QJsonObject offlineKitShared() const;
+    QJsonObject offlineKitOwn() const;
     // A check this screen made while it was cut off: {id} (its number here),
     // {skipped} (nothing to keep), or {error}. Taken in once.
     QVariantMap takeOfflineCheck(const QJsonObject &record);

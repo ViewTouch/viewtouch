@@ -33,6 +33,7 @@ public:
 
     void setKit(const QJsonObject &kit);
     bool hasKit() const { return !kit_.isEmpty(); }
+    const QJsonObject &kit() const { return kit_; }
     // A store of this screen's own on the kit (nullptr: no kit yet), until stop().
     app::PosService *start();
     void stop();

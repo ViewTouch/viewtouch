@@ -97,7 +97,7 @@ private:
     // offline kit): on connecting, and again as the menu, staff, settings,
     // drawers or the day change. The checks it made meanwhile come back
     // as "offlineChecks".
-    void sendKit(Connection *c);
+    void sendKit(Connection *c, QByteArray *common = nullptr);   // common: the kits' shared part, made once a round
     void takeOfflineChecks(Connection *c, const QJsonArray &checks);
     QTimer kitSoon_;   // after a change
     QTimer kitTick_;   // and every few minutes
