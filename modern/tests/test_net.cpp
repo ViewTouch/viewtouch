@@ -1067,6 +1067,24 @@ struct OfflineSide {
 
 } // namespace
 
+TEST_CASE("A handheld asleep (screen off) longer than its silence limit stays connected when it wakes", "[net][remote]")
+{
+    OfflineSide t;   // pings every 200 ms; the handheld gives up after 1 s of silence
+    t.store.server.setHeartbeat(200, 60'000);   // the store's computer doesn't sleep (here it shares the thread)
+    t.connect();
+    REQUIRE(t.h->remote->online());
+    QSignalSpy online(t.h->remote.get(), &net::RemoteSession::onlineChanged);
+    // Android pausing the app: nothing runs here for 2.5 s (the server neither).
+    QThread::msleep(2500);
+    waitFor([] { return false; }, 1200);   // awake: the watchdog looks, the pings come again
+    CHECK(t.h->remote->online());
+    CHECK(online.isEmpty());   // never dropped
+
+    // Really cut off: still noticed, after the limit.
+    t.wifi.cut = true;
+    CHECK(waitFor([&] { return !t.h->remote->online(); }, 4000));
+}
+
 TEST_CASE("Working offline: a handheld keeps selling, and the store takes its checks in", "[net][remote][offline]")
 {
     OfflineSide t;

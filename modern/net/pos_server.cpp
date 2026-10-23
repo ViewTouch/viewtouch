@@ -588,7 +588,11 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
                                                     {u"size"_s, QFileInfo(u.path).size()}});
         c->channel->send(welcome);
         sendKit(c);
-        qCInfo(lcServer) << (resumed ? "terminal back:" : "terminal connected:") << name;
+        if (const QString drop = m.value(u"lastDrop").toString(); !drop.isEmpty())
+            qCInfo(lcServer).noquote() << (resumed ? "terminal back:" : "terminal connected:") << name
+                                       << "(it lost the connection:" << drop.left(200) + u')';
+        else
+            qCInfo(lcServer) << (resumed ? "terminal back:" : "terminal connected:") << name;
         emit terminalsChanged();
         return;
     }

@@ -252,6 +252,8 @@ private:
     void openUpdate();
     qint64 silentMs_ = 10'000;   // a server that pings, heard from no longer than this: gone
     qint64 heard_ = 0;           // when the server last said anything
+    qint64 lastWatch_ = 0;       // the watchdog's last look (a long gap: this app was asleep)
+    QString lastDrop_;           // why the connection was lost (told to the server on the way back)
     bool serverPings_ = false;   // it pings (older servers don't)
     bool welcomed_ = false;
     qint64 nextId_ = 1;
