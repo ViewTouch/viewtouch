@@ -26,6 +26,15 @@ bool offlineTender(TenderKind kind) { return kind == TenderKind::Cash || kind ==
 
 QJsonObject PosService::offlineKit() const
 {
+    QJsonObject kit = offlineKitShared();
+    const QJsonObject own = offlineKitOwn();
+    for (auto it = own.begin(); it != own.end(); ++it)
+        kit.insert(it.key(), it.value());
+    return kit;
+}
+
+QJsonObject PosService::offlineKitShared() const
+{
     // Settings without what only the store's computer may know: the screens'
     // keys, the backup and standby keys, Stripe's, the texting address, the
     // maintainer's code.
@@ -58,6 +67,16 @@ QJsonObject PosService::offlineKit() const
     for (const DrawerSession &d : s_->drawers)
         if (d.open())
             drawers.append(toJson(d));
+    return {{u"version"_s, 1}, {u"made"_s, qint64(now())},
+            {u"settings"_s, toJson(settings)}, {u"menu"_s, menu}, {u"employees"_s, employees},
+            {u"openChecks"_s, open}, {u"punches"_s, punches}, {u"drawers"_s, drawers},
+            {u"day"_s, QJsonObject{{u"id"_s, qint64(s_->day.id)}, {u"openedAt"_s, qint64(s_->day.openedAt)}}},
+            {u"lastCheckId"_s, qint64(s_->lastCheckId)},
+            {u"lastDrawerId"_s, qint64(s_->lastDrawerId)}, {u"lastPunchId"_s, qint64(s_->lastPunchId)}};
+}
+
+QJsonObject PosService::offlineKitOwn() const
+{
     // Its checks' numbers start after the store's, a hundred apart for each
     // screen (two screens cut off at once don't make the same numbers).
     qint64 place = 0;
@@ -68,12 +87,7 @@ QJsonObject PosService::offlineKit() const
     }
     if (place >= qint64(s_->settings.terminals.size()))
         place = 0;
-    return {{u"version"_s, 1}, {u"made"_s, qint64(now())}, {u"terminal"_s, terminal_},
-            {u"settings"_s, toJson(settings)}, {u"menu"_s, menu}, {u"employees"_s, employees},
-            {u"openChecks"_s, open}, {u"punches"_s, punches}, {u"drawers"_s, drawers},
-            {u"day"_s, QJsonObject{{u"id"_s, qint64(s_->day.id)}, {u"openedAt"_s, qint64(s_->day.openedAt)}}},
-            {u"lastCheckId"_s, qint64(s_->lastCheckId)}, {u"firstCheckId"_s, qint64(s_->lastCheckId + 1 + 100 * place)},
-            {u"lastDrawerId"_s, qint64(s_->lastDrawerId)}, {u"lastPunchId"_s, qint64(s_->lastPunchId)}};
+    return {{u"terminal"_s, terminal_}, {u"firstCheckId"_s, qint64(s_->lastCheckId + 1 + 100 * place)}};
 }
 
 std::optional<PosData> offlineData(const QJsonObject &kit)

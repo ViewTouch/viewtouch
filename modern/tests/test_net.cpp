@@ -1171,6 +1171,35 @@ TEST_CASE("Working offline: a handheld keeps selling, and the store takes its ch
     CHECK(std::ranges::count_if(t.store.shared.open, [](const auto &kv) { return kv.second.label == "T5"; }) == 1);
 }
 
+TEST_CASE("Working offline: every screen's kit, made once for all of them, is still its own", "[net][remote][offline]")
+{
+    OfflineSide t;
+    t.connect();
+    const auto same = [&](net::RemoteSession &screen, const QString &name) {
+        QJsonObject got = screen.offlineStore()->kit(), want = PosService(&t.store.shared, name).offlineKit();
+        got.remove(u"made"_s);
+        want.remove(u"made"_s);
+        return got == want;
+    };
+    CHECK(same(*t.h->remote, u"Handheld"_s));
+    auto other = std::make_unique<net::RemoteSession>(u"Handheld 2"_s);
+    other->setCredentials(t.store.pairedDevice(u"Handheld 2"_s));
+    other->setOfflineJournal(t.dir.filePath(u"offline2.db"_s));
+    other->connectTo(u"127.0.0.1"_s, t.store.server.port());
+    REQUIRE(other->waitForWelcome(5000));
+    REQUIRE(waitFor([&] { return other->offlineReady(); }));
+    CHECK(same(*other, u"Handheld 2"_s));   // (the first one's is a terminal behind: a new kit comes with the next change)
+    CHECK(t.h->remote->offlineStore()->kit()[u"firstCheckId"_s] != other->offlineStore()->kit()[u"firstCheckId"_s]);
+
+    // A change: a new kit for both a few seconds later, from one shared part.
+    t.store.shared.settings.storeName = "Renamed";
+    emit t.store.shared.adminChanged();
+    REQUIRE(waitFor([&] { return other->offlineStore()->kit()[u"settings"_s].toObject()[u"storeName"_s] == u"Renamed"_s
+                                 && t.h->remote->offlineStore()->kit()[u"settings"_s].toObject()[u"storeName"_s] == u"Renamed"_s; }, 8000));
+    CHECK(same(*t.h->remote, u"Handheld"_s));
+    CHECK(same(*other, u"Handheld 2"_s));
+}
+
 TEST_CASE("Working offline: the kit keeps the store's secrets, and a check is taken in once", "[net][offline]")
 {
     test::RecordingSink sink;

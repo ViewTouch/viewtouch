@@ -367,8 +367,9 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     // The screens' offline kits: a few seconds after what's in them changed,
     // and every five minutes (the checks open, the next check number).
     const auto sendKits = [this] {
+        QByteArray common;   // the same for every screen: made once (with fifty screens, a pause otherwise)
         for (auto &c : connections_)
-            sendKit(c.get());
+            sendKit(c.get(), &common);
     };
     kitSoon_.setSingleShot(true);
     kitSoon_.setInterval(5'000);
@@ -674,7 +675,7 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
     }
 }
 
-void PosServer::sendKit(Connection *c)
+void PosServer::sendKit(Connection *c, QByteArray *common)
 {
     if (!c->session || c->standby)
         return;
@@ -682,7 +683,15 @@ void PosServer::sendKit(Connection *c)
     const core::TerminalConfig *paired = shared_->settings.pairedTerminal(c->terminalId.toStdString());
     if (!paired || paired->screen == "selfOrder" || paired->screen == "timeClock")
         return;
-    c->channel->send({{u"t"_s, u"offlineKit"_s}, {u"kit"_s, c->session->offlineKit()}});
+    QByteArray made;
+    if (!common)
+        common = &made;
+    if (common->isEmpty())
+        *common = QJsonDocument(c->session->offlineKitShared()).toJson(QJsonDocument::Compact);
+    // This screen's own part, then the shared one: {"terminal":…,"firstCheckId":…,<shared>}
+    QByteArray own = QJsonDocument(c->session->offlineKitOwn()).toJson(QJsonDocument::Compact);
+    own.chop(1);
+    c->channel->sendRaw("{\"t\":\"offlineKit\",\"kit\":" + own + ',' + common->mid(1) + '}');
 }
 
 void PosServer::takeOfflineChecks(Connection *c, const QJsonArray &checks)
