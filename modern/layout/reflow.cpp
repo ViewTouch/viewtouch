@@ -144,10 +144,12 @@ QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, in
         p.height = area.height();
     };
 
+    // Buttons about 56 high on a phone (150 of the page's 1080 across), not
+    // stretched to fill it: what's left goes to the panels.
     Plan best;
-    for (int columns : {2, 3}) {
-        for (int rowHeight : {220, 190, 160, 130, 110}) {
-            Plan p = layOut(zones, order, area, gap, columns, rowHeight, rowHeight >= 160 ? 96 : 72);
+    for (int columns : {3, 4}) {
+        for (int rowHeight : {150, 130, 110}) {
+            Plan p = layOut(zones, order, area, gap, columns, rowHeight, rowHeight >= 150 ? 88 : 72);
             if (p.height <= area.height()) {
                 growMain(p);
                 return p.rects;
@@ -158,7 +160,7 @@ QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, in
     }
     // Still too tall: the panels give up height together, as far as they can.
     for (double squeeze : {0.85, 0.7, 0.55, 0.4}) {
-        Plan p = layOut(zones, order, area, gap, 3, 110, 72, squeeze);
+        Plan p = layOut(zones, order, area, gap, 4, 110, 72, squeeze);
         if (p.height <= area.height()) {
             growMain(p);
             return p.rects;

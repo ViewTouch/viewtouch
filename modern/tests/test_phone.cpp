@@ -82,9 +82,12 @@ TEST_CASE("Reflow: reading order, full-width labels and panels, a grid of button
     CHECK(r[1].width() == area.width());                     // ...across the whole width
     CHECK(r[2].top() > r[1].bottom());                       // then the buttons, left to right
     CHECK(r[2].left() == area.left());
-    CHECK(r[0].top() == r[2].top());                          // two per row
+    CHECK(r[0].top() == r[2].top());                          // three per row
     CHECK(r[0].left() > r[2].right());
-    CHECK(r[5].top() > r[2].bottom());
+    CHECK(r[5].top() == r[2].top());
+    CHECK(r[5].left() > r[0].right());
+    CHECK(r[6].top() > r[2].bottom());
+    CHECK(r[2].height() <= 150);                              // finger-sized, not stretched
     CHECK(r[4].top() > r[6].bottom());                       // the panel after the buttons
     CHECK(r[4].width() == area.width());
     for (qsizetype i = 0; i < r.size(); ++i) {
@@ -225,8 +228,9 @@ TEST_CASE("Phone pages: versions, the phone frame, and back to standard", "[phon
     CHECK(ids.contains(u"flow-send"_s));
     CHECK_FALSE(ids.contains(u"tab-lunch"_s));                 // the landscape tabs are not
     const QRect burger = shownRect(c, u"item-1"_s);
-    CHECK(QRect(16, 878, 1048, 1032).contains(burger));        // in the frame's content area
-    CHECK(burger.width() > 400);                               // big, two across
+    CHECK(QRect(16, 1004, 1048, 988).contains(burger));        // in the frame's content area
+    CHECK(burger.width() < 1048 / 2);                          // three or four across...
+    CHECK(burger.height() <= 150);                             // ...not stretched to fill it
 
     // Touching a laid-out button still does what it does.
     c.activate(u"item-1"_s);

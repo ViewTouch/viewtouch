@@ -17,7 +17,8 @@ Item {
     readonly property var shown: ((pos && pos.myUsuals.length >= 4) ? [{ id: "♥", name: qsTr("♥ Mine"), color: "#7a2f55", mine: true }] : [])
         .concat((pos ? pos.menuCategories : []).filter(c =>
         c.count > 0 && (period !== "" ? (c.periods.length === 0 || c.periods.includes(period)) : c.now)))
-    readonly property real gap: 16
+    readonly property bool phone: zone && zone.controller ? zone.controller.formFactor === "phone" : false
+    readonly property real gap: phone ? 8 : 16
     readonly property int rows: Math.max(1, Math.ceil(shown.length / columns))
     // Dark text on light buttons.
     function inkOn(c) {
@@ -35,12 +36,12 @@ Item {
                 required property var modelData
                 objectName: modelData.mine ? "category-mine" : "category-" + modelData.id
                 width: (w.width - w.gap * (w.columns - 1)) / w.columns
-                // As tall as fits, up to a comfortable size.
-                height: Math.min(260, (w.height - w.gap * (w.rows - 1)) / w.rows)
+                // As tall as fits, up to a comfortable size (a phone: about 56 on the screen).
+                height: Math.min(w.phone ? w.zone.touch(56) : 260, (w.height - w.gap * (w.rows - 1)) / w.rows)
                 text: modelData.mine ? modelData.name : qsTranslate("Page", modelData.name)
                 baseColor: modelData.color || (w.zone.st.keyFill ?? "#343c49")
                 textColor: modelData.color ? w.inkOn(modelData.color) : (w.zone.st.keyTextColor ?? "white")
-                fontScale: 0.2
+                fontScale: w.phone ? 0.3 : 0.2
                 onClicked: w.zone.controller.openCategory(modelData.id)
             }
         }

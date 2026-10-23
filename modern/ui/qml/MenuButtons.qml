@@ -17,6 +17,11 @@ Flickable {
     property var categories: []
     property PosService pos
     property int setColumns: 0        // the page's columns (0: fit)
+    // A phone: buttons about 96 by 56 on the screen, as many across as fit
+    // (not stretched to fill the space); screenScale turns screen pixels into the page's.
+    property bool compact: false
+    property real screenScale: 1
+    function screenPx(px) { return px / Math.max(0.1, screenScale) }
     property bool pagePhotos: false
     property bool sectioned: true     // headings and spaces (one category shown)
     property var st: ({})             // the page's key style
@@ -90,9 +95,11 @@ Flickable {
         return best
     }
     readonly property int columns: sizeWidth > 0 ? Math.max(1, Math.round(width / sizeWidth))
+                                 : compact ? Math.max(3, Math.min(6, Math.floor(width / screenPx(96))))
                                  : setColumns > 0 ? setColumns : fitColumns
     readonly property real cellWidth: width / columns
-    readonly property real cellHeight: sizeWidth > 0 ? cellWidth * (photos ? 0.95 : ({ small: 0.62, medium: 0.68, large: 0.72 })[buttonSize])
+    readonly property real cellHeight: compact && sizeWidth <= 0 ? Math.min(cellWidth * (photos ? 0.95 : 0.7), screenPx(photos ? 96 : 56))
+                                     : sizeWidth > 0 ? cellWidth * (photos ? 0.95 : ({ small: 0.62, medium: 0.68, large: 0.72 })[buttonSize])
                                      : setColumns > 0 ? Math.min(cellWidth * (photos ? 0.9 : 0.6), Math.max(110, height / 3))
                                      : Math.max(90, Math.min(cellWidth * (photos ? 0.9 : 0.75),
                                                              (height - headings * headerHeight) / rowsFor(columns)))
@@ -203,7 +210,8 @@ Flickable {
                                 readonly property var slow: cell.isGap ? null : mb.busyOf(cell.modelData)
                                 Rectangle {
                                     objectName: "busyMark-" + (cell.isGap ? "" : cell.modelData.id)
-                                    visible: !!parent.slow && cell.modelData.available
+                                    // A phone: the line above the menu says it (no room on the button).
+                                    visible: !!parent.slow && cell.modelData.available && !mb.compact
                                     z: 2
                                     anchors.bottom: parent.bottom
                                     anchors.right: parent.right
@@ -249,7 +257,7 @@ Flickable {
                                     }
                                 }
                                 Text {
-                                    visible: !!cell.modelData.number
+                                    visible: !!cell.modelData.number && !mb.compact   // too small to read on a phone
                                     z: 2
                                     anchors.top: parent.top
                                     anchors.left: parent.left
@@ -296,7 +304,8 @@ Flickable {
                                         readonly property int longest: cell.isGap ? 4 : Math.max(4, ...cell.modelData.name.split(/\s+/).map(x => x.length))
                                         // Never past what keeps its longest word whole.
                                         readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData) * mb.textScale
-                                        font.pixelSize: Math.max(factor < 1 ? 11 : 13,
+                                        font.pixelSize: mb.compact ? Math.max(mb.screenPx(10), Math.min(mb.screenPx(13.5) * factor, cell.width * 1.35 / longest))
+                                                      : Math.max(factor < 1 ? 11 : 13,
                                                                  Math.min(Math.min(cell.height * 0.16, cell.width * 0.11) * factor,
                                                                           cell.width * 1.6 / longest))
                                         font.bold: true
@@ -312,7 +321,7 @@ Flickable {
                                         color: !cell.modelData.available ? "#ff6b6b" : name.color
                                         opacity: cell.modelData.available ? 0.8 : 1
                                         font.family: card.st.keyFont ?? mb.face
-                                        font.pixelSize: Math.max(12, name.font.pixelSize * 0.8)
+                                        font.pixelSize: mb.compact ? mb.screenPx(11) : Math.max(12, name.font.pixelSize * 0.8)
                                     }
                                 }
                                 // A MouseArea: inside a Flickable a TapHandler loses the press.
