@@ -414,12 +414,15 @@ ApplicationWindow {
     }
 
     // This screen behind the store (or ahead of it): said, with the update
-    // for a manager to get. Not on the kiosk; Later hides it till the next connection.
+    // for the maintainer to get (the store's computer sends it only to them).
+    // Not on the kiosk; Later hides it till the next connection. A phone:
+    // the words above the buttons.
     Rectangle {
         id: updateStrip
         objectName: "updateStrip"
         readonly property var info: root.controller.pos ? root.controller.pos.updateInfo : ({})
-        readonly property bool manager: !!root.controller.pos && root.controller.pos.loggedIn && root.controller.pos.can("manager")
+        readonly property bool maintainer: !!root.controller.pos && root.controller.pos.loggedIn && root.controller.pos.can("maintain")
+        readonly property bool narrow: root.width < 640
         property bool later: false
         Connections {
             target: root.controller.pos
@@ -436,12 +439,15 @@ ApplicationWindow {
         border.color: "#f5b940"
         border.width: 2
         z: 9
-        RowLayout {
+        GridLayout {
             id: updateRow
             anchors.centerIn: parent
-            spacing: 12
+            columns: updateStrip.narrow ? 2 : 3
+            columnSpacing: 12
+            rowSpacing: 8
             Text {
-                Layout.maximumWidth: root.width * 0.55
+                Layout.columnSpan: updateStrip.narrow ? 2 : 1
+                Layout.maximumWidth: updateStrip.narrow ? root.width - 56 : root.width * 0.55
                 wrapMode: Text.WordWrap
                 color: "white"
                 font.pixelSize: 16
@@ -454,13 +460,13 @@ ApplicationWindow {
                     if (i.downloading !== undefined)
                         return qsTr("Getting the update… %1%").arg(i.downloading)
                     return qsTr("This screen runs an older ViewTouch (%1) than the store (%2).").arg(i.text ?? "").arg(i.storeText ?? "")
-                         + (i.update ? (updateStrip.manager ? "" : " " + qsTr("A manager can update it here."))
+                         + (i.update ? (updateStrip.maintainer ? "" : " " + qsTr("The store's maintainer can update it here (log in with the maintainer's code)."))
                                      : " " + qsTr("Put the new version on the store's computer (Manager → Network)."))
                 }
             }
             WidgetKey {
                 objectName: "updateNow"
-                visible: !!updateStrip.info.behind && !!updateStrip.info.update && updateStrip.manager
+                visible: !!updateStrip.info.behind && !!updateStrip.info.update && updateStrip.maintainer
                          && updateStrip.info.downloading === undefined && (!updateStrip.info.ready || Qt.platform.os === "android")
                 Layout.preferredWidth: 170
                 Layout.preferredHeight: 48
