@@ -78,7 +78,10 @@ Item {
         return f === "" ? qsTr("Other") : qsTranslate("Page", name !== "" ? name : f.charAt(0).toUpperCase() + f.slice(1))
     }
 
-    readonly property real gap: 12
+    readonly property real gap: phone ? 8 : 12
+    // A phone: the categories in one row to swipe, and smaller item buttons
+    // (more of them on the screen at once).
+    readonly property bool phone: zone && zone.controller ? zone.controller.formFactor === "phone" : false
     // Arranging (managers): touch an item, then move it or color it.
     // Kept by the controller: a menu change rebuilds the page.
     property bool arranging: zone && zone.controller ? zone.controller.widgetState(zone.zoneId + ".arranging") === true : false
@@ -93,6 +96,7 @@ Item {
         picked = id
         zone.controller.setWidgetState(zone.zoneId + ".picked", id)
     }
+    readonly property bool showTabs: !search && !popular && fixedFamily === "" && families.length > 1
     readonly property bool mayArrange: pos !== null && pos.loggedIn && pos.can("manager") && !search && !popular
 
     // Rush Radar: which stations are about to back up, and which aren't
@@ -140,10 +144,54 @@ Item {
         // three to a row; all with one text size, the largest at which each
         // name fits (each shrinking on its own left "Breakfast Plates" tiny
         // beside "Burgers").
+        // A phone: one row of chips, each as wide as its name, swiped sideways.
+        Flickable {
+            id: chips
+            objectName: "menuChips"
+            visible: w.phone && w.showTabs
+            Layout.fillWidth: true
+            Layout.preferredHeight: keyH
+            readonly property real keyH: w.zone ? w.zone.touch(40) : 56
+            readonly property real textPx: w.zone ? w.zone.touch(14) : 20
+            contentWidth: chipRow.width
+            contentHeight: height
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            interactive: contentWidth > width + 1
+            clip: true
+            Row {
+                id: chipRow
+                spacing: w.gap
+                Repeater {
+                    model: chips.visible ? w.families : []
+                    delegate: WidgetKey {
+                        required property string modelData
+                        objectName: chips.visible ? "menuFamily-" + modelData : ""
+                        width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                        height: chips.keyH
+                        text: w.title(modelData)
+                        accent: modelData === w.family
+                        pixelSize: chips.textPx
+                        onClicked: w.zone.controller.menuCategory = modelData
+                    }
+                }
+                WidgetKey {
+                    objectName: chips.visible ? "menuArrange" : ""
+                    visible: chips.visible && w.mayArrange && !w.arranging
+                    width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                    height: chips.keyH
+                    text: qsTr("Arrange…")
+                    pixelSize: chips.textPx
+                    onClicked: w.setArranging(true)
+                }
+            }
+            FontMetrics { id: chipText; font.pixelSize: chips.textPx; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+        }
+
         Flow {
             id: tabs
             Layout.fillWidth: true
-            visible: !w.search && !w.popular && w.fixedFamily === "" && w.families.length > 1
+            visible: !w.phone && w.showTabs
             spacing: w.gap * 0.6
             // As many as fit at 120 pixels on the screen (a phone: three).
             readonly property real screenWidth: w.width * (w.zone ? w.zone.screenScale : 1)
@@ -162,7 +210,7 @@ Item {
                 model: w.families
                 delegate: WidgetKey {
                     required property string modelData
-                    objectName: "menuFamily-" + modelData
+                    objectName: tabs.visible ? "menuFamily-" + modelData : ""
                     width: tabs.keyW
                     height: tabs.keyH
                     text: w.title(modelData)
@@ -172,7 +220,7 @@ Item {
                 }
             }
             WidgetKey {
-                objectName: "menuArrange"
+                objectName: tabs.visible ? "menuArrange" : ""
                 visible: w.mayArrange && !w.arranging
                 width: tabs.keyW
                 height: tabs.keyH
@@ -193,6 +241,8 @@ Item {
             textScale: w.zone ? w.zone.textScale : 1
             busy: w.busy
             setColumns: w.setColumns
+            compact: w.phone
+            screenScale: w.zone ? w.zone.screenScale : 1
             pagePhotos: w.pagePhotos
             // Headings and spaces: one category, as arranged in the Menu Builder.
             sectioned: !w.search && !w.popular && !w.special

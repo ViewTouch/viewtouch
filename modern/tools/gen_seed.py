@@ -1075,10 +1075,10 @@ tables_buttons, _ = grid_buttons([
     ("host", "Host Stand", [jump(page="seating")], {"style": fill(TEAL)}),
     ("manager", "Manager", [jump(role="manager")], {}),
     ("logout", "Log Out", [jump(role="logout")], {"style": fill(RED)}),
-], 1640, 3, 190)
+], 1834, 3, 130)
 phone_page("tables", "Tables", "tables", [
     label("title", 24, 24, 1032, 100, "Tables"),
-    zone("tables", 24, 140, 1032, 1480, kind="tableGrid"),
+    zone("tables", 24, 140, 1032, 1678, kind="tableGrid"),
     *tables_buttons,
 ], background={"fill": "#2a2118"})
 
@@ -1094,12 +1094,12 @@ phone_page("guest-count", "Guest Count", "guestCount", [
 # The order screen: tabs, the check, the page's buttons, qualifiers, actions.
 TAB = {"normal": {"fontSize": 34}}
 qualifiers, y = grid_buttons([(f"flow-{q}", q.capitalize(), [{"type": "qualifier", "qualifier": q}], {})
-                              for q in ("no", "extra", "lite", "side", "sub")], 1926, 5, 150, x=16, width=PW - 32)
+                              for q in ("no", "extra", "lite", "side", "sub")], 2008, 5, 110, x=16, width=PW - 32)
 actions, _ = grid_buttons([
     ("flow-void", "Void", [command("voidItem")], {"behavior": "double", "style": fill(RED)}),
     ("flow-send", "Send", [command("sendOrder")], {"style": fill(GREEN)}),
     ("flow-pay", "Pay", [jump(role="settle")], {"style": fill(BLUE)}),
-], y, 3, 172, x=16, width=PW - 32)
+], y, 3, 130, x=16, width=PW - 32)
 top_tabs, _ = grid_buttons([
     ("tab-categories", "‹ Menu", [jump(mode="index")], {"style": TAB}),
     ("tab-note", "Note", [jump(page="note")], {"style": TAB}),
@@ -1109,10 +1109,10 @@ top_tabs, _ = grid_buttons([
 ], 16, 5, 110, x=16, width=PW - 32)
 phone_page("order-template", "Order Template", "template", [
     *top_tabs,
-    zone("order-list", 16, 142, 1048, 720, kind="orderList"),
+    zone("order-list", 16, 142, 1048, 846, kind="orderList"),
     *qualifiers,
     *actions,
-], contentArea={"x": 16, "y": 878, "w": 1048, "h": 1032})
+], contentArea={"x": 16, "y": 1004, "w": 1048, "h": 988})
 
 tender_zones = []
 # Six payment types beside the keypad, each still a finger tall on a phone.

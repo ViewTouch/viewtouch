@@ -276,11 +276,11 @@ def phone_pages(pages):
     phone = json.loads(path.read_text())
     # The page's buttons, shared with it (tools/phone_versions.py), and the phone's own.
     buttons = [z for z in phone["zones"] if z["id"] not in ("tables", "bar-tabs")]
-    buttons.append(button("bar-tabs", "Bar Tabs", (722, 2052, 333, 190),
+    buttons.append(button("bar-tabs", "Bar Tabs", (722, 2126, 333, 130),
                           [{"type": "jump", "mode": "push", "page": "tabs"}], "#a86a12"))
 
     def make(pid, name, of, plan):
-        panel = {"id": "tables", "kind": "floorPlan", "rect": {"x": 24, "y": 24, "w": 1032, "h": 1600},
+        panel = {"id": "tables", "kind": "floorPlan", "rect": {"x": 24, "y": 24, "w": 1032, "h": 1794},
                  "shape": "rect", "behavior": "none", "props": {"tabs": True}}
         if plan:
             panel["props"]["plan"] = plan
