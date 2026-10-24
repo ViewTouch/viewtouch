@@ -164,6 +164,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"autoLogoutMinutes"_s, s_->settings.autoLogoutMinutes},
              {u"phoneLockSeconds"_s, s_->settings.phoneLockSeconds},
              {u"screensUpdate"_s, s_->settings.screensUpdate},
+             {u"style"_s, qs(s_->settings.style)},
              {u"screenSaverMinutes"_s, s_->settings.screenSaverMinutes},
              {u"tableLongMinutes"_s, s_->settings.tableLongMinutes},
              {u"loyaltyEnabled"_s, s_->settings.loyaltyEnabled}, {u"pointsPerDollar"_s, s_->settings.pointsPerDollar},

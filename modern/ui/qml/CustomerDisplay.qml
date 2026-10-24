@@ -16,7 +16,7 @@ Rectangle {
     readonly property var totals: hasCheck ? pos.totals : ({})
     readonly property var prompt: pos ? pos.customerPrompt : ({})
     readonly property var loyalty: prompt.loyalty ?? ({})
-    readonly property color accent: prompt.accent || "#2f6fd6"
+    readonly property color accent: prompt.accent || Ui.accent
     readonly property real unit: Math.max(14, Math.min(width, height * 1.6) / 40)
     // Pictures by ref ("store:logo.png", a path...): this screen's copy.
     function img(ref) { return pos ? (pos.imageRevision < 0 ? undefined : pos.imageUrl(ref)) : ref }

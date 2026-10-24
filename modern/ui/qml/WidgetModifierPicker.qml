@@ -9,8 +9,8 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var choosing: pos ? pos.choosing : ({})
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
-    readonly property color ink: zone.st.textColor ?? "#e6e9ef"
+    readonly property string face: zone.st.font ?? Ui.font
+    readonly property color ink: zone.st.textColor ?? Ui.text
     // A phone: its keys (2.6 of this) a finger tall, 40 pixels.
     readonly property bool phone: zone && zone.controller ? zone.controller.formFactor === "phone" : false
     readonly property real unit: Math.max(16, phone ? zone.touch(15.5) : 0, Math.min(34, w.width / 30)) * zone.textScale
@@ -65,7 +65,7 @@ Item {
                         Text {
                             anchors.baseline: parent.children[0].baseline
                             text: group.modelData.rule
-                            color: group.modelData.done ? "#8a94a6" : "#f5b940"
+                            color: group.modelData.done ? Ui.muted : "#f5b940"
                             font.family: w.face
                             font.pixelSize: w.unit * 0.7
                         }
@@ -89,7 +89,7 @@ Item {
                                          : modelData.chosen ? (modelData.chosenPrice ? "\n+" + modelData.chosenPrice : "")
                                          : modelData.price ? "\n+" + modelData.price : "")
                                 accent: modelData.chosen && !leftOff
-                                baseColor: leftOff ? "#8a2c30" : (keySt.keyFill ?? "#343c49")
+                                baseColor: leftOff ? "#8a2c30" : (keySt.keyFill ?? Ui.key)
                                 enabled: !modelData.soldOut || modelData.chosen
                                 opacity: enabled ? 1 : 0.4
                                 fontScale: 0.3
@@ -172,7 +172,7 @@ Item {
                         height: w.unit * 2.6
                         fontScale: 0.36
                         text: modelData[1]
-                        baseColor: modelData[0] === "no" ? "#8a2c30" : "#343c49"
+                        baseColor: modelData[0] === "no" ? "#8a2c30" : Ui.key
                         takesTouch: true
                         onClicked: w.chooseAs(modelData[0])
                     }

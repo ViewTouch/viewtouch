@@ -10,7 +10,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real unit: narrow ? Math.max(14, Math.min(w.width / 20, 44))
@@ -34,7 +34,7 @@ Item {
         picked = p
     }
     function colorFor(state) {
-        return state === "new" ? "#3a4250"
+        return state === "new" ? Ui.line
              : state === "cooking" ? zone.statusColor("deliveryCooking", "#a86a12")
              : state === "ready" ? zone.statusColor("deliveryReady", "#1f7a4a")
              : state === "out" ? zone.statusColor("deliveryOut", "#2f5fb0")
@@ -49,7 +49,7 @@ Item {
     }
 
     component Key: PosButton {
-        property color tint: "#2d3440"
+        property color tint: Ui.button
         Layout.fillWidth: true
         Layout.preferredHeight: w.unit * 2.6
         font.family: w.face
@@ -152,7 +152,7 @@ Item {
                 wrapMode: Text.WordWrap
                 visible: list.count === 0
                 text: qsTr("No deliveries open.")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9
             }
@@ -165,7 +165,7 @@ Item {
             spacing: w.unit * 0.4
             Text {
                 text: qsTr("Driver")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
                 font.bold: true
@@ -185,7 +185,7 @@ Item {
                         font.bold: true
                         text: modelData.name + (modelData.out > 0 ? "  ·  " + qsTr("%1 out").arg(modelData.out)
                                                 : !modelData.clockedIn ? "  ·  " + qsTr("off") : "")
-                        palette.button: w.driverId === modelData.id ? "#2f6fd6" : "#2d3440"
+                        palette.button: w.driverId === modelData.id ? Ui.accent : Ui.button
                         palette.buttonText: w.ink
                         opacity: modelData.clockedIn ? 1 : 0.6
                         onClicked: w.driverId = w.driverId === modelData.id ? "" : modelData.id
@@ -197,7 +197,7 @@ Item {
                 visible: w.drivers.length === 0
                 wrapMode: Text.WordWrap
                 text: qsTr("No drivers yet: give someone the Delivery driver role (Manager → Employees).")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.75
             }
@@ -207,7 +207,7 @@ Item {
                 wrapMode: Text.WordWrap
                 text: w.pickedOrders.length === 0 ? qsTr("Touch the orders going out together, then the driver.")
                     : qsTr("%n order(s) picked", "", w.pickedOrders.length)
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.75
             }

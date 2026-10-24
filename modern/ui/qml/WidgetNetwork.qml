@@ -111,7 +111,7 @@ Item {
                         Layout.fillWidth: true
                         implicitHeight: 54
                         radius: 8
-                        color: "#232933"
+                        color: Ui.panel
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 14
@@ -173,7 +173,7 @@ Item {
                         Layout.fillWidth: true
                         implicitHeight: printerRow.implicitHeight + 20
                         radius: 8
-                        color: "#232933"
+                        color: Ui.panel
                         RowLayout {
                             id: printerRow
                             anchors.fill: parent

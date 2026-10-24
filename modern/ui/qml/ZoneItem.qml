@@ -266,7 +266,7 @@ Item {
         fontSizeMode: Text.Fit
         minimumPixelSize: 10
         color: zone.ink
-        font.family: zone.st.font ?? "DejaVu Sans"
+        font.family: zone.st.font ?? Ui.font
         font.pixelSize: (zone.st.fontSize ?? 28) * zone.textScale
         font.bold: zone.st.bold ?? true
         style: zone.st.textStyle === "embossed" ? Text.Raised
@@ -292,7 +292,7 @@ Item {
             anchors.centerIn: parent
             text: qsTr("%1 left").arg(zone.stockLeft)
             color: zone.statusColor("low", "#f5b940")
-            font.family: zone.st.font ?? "DejaVu Sans"
+            font.family: zone.st.font ?? Ui.font
             font.pixelSize: Math.max(11, Math.min(zone.height * 0.16, 22))
             font.bold: true
         }
@@ -316,7 +316,7 @@ Item {
                 anchors.centerIn: parent
                 text: qsTr("SOLD OUT")
                 color: "white"
-                font.family: zone.st.font ?? "DejaVu Sans"
+                font.family: zone.st.font ?? Ui.font
                 font.pixelSize: Math.max(12, Math.min(zone.height * 0.22, 34))
                 font.bold: true
             }

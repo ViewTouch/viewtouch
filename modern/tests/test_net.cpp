@@ -1438,3 +1438,23 @@ TEST_CASE("Working offline: a screen restarted before the store came back still 
     REQUIRE(waitFor([&] { return remote->offlinePending() == 0; }));
     CHECK(t.takenIn(true));
 }
+
+TEST_CASE("Store style: the hub switches the pages' theme and tells every screen", "[net][style]")
+{
+    net::LayoutHub hub(seedLayout());
+    QSignalSpy changed(&hub, &net::LayoutHub::layoutChanged);
+    layout::Theme modern;
+    modern.name = u"Modern"_s;
+    REQUIRE(hub.useStyle(u"modern"_s, modern));
+    CHECK(changed.size() == 1);
+    CHECK(layout::Layout::styleOf(hub.layout().theme) == u"modern"_s);
+    CHECK(hub.layout().theme.name == u"Modern"_s);
+    CHECK_FALSE(hub.useStyle(u"modern"_s, modern));   // nothing to do
+    CHECK(changed.size() == 1);
+
+    // The setting keeps its value through JSON (Store Settings).
+    core::PosSettings s;
+    CHECK(s.style == "classic");
+    s.style = "modern";
+    CHECK(app::settingsFromJson(app::toJson(s)).style == "modern");
+}

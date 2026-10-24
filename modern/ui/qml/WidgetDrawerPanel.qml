@@ -11,7 +11,7 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var d: pos ? pos.drawer : ({})
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(30, w.width * 0.045))
     readonly property bool bank: (d.mode ?? "") === "serverBank"
@@ -83,14 +83,14 @@ Item {
                     required property var modelData
                     name: modelData.what + "  (" + modelData.time + ")"
                     value: modelData.amount
-                    tint: "#b8c0cc"
+                    tint: Ui.textSoft
                 }
             }
             Line { visible: !(w.d.blind ?? false); name: w.bank ? qsTr("Cash to turn in") : qsTr("Expected in drawer"); value: w.d.expected ?? ""; strong: true }
             Line {
                 visible: w.d.blind ?? false
                 name: qsTr("Counted blind: what should be there shows after the count")
-                tint: "#b8c0cc"
+                tint: Ui.textSoft
             }
             Repeater {
                 model: w.d.open ? [] : (w.d.countedPieces ?? [])
@@ -98,7 +98,7 @@ Item {
                     required property var modelData
                     name: "   " + modelData.text
                     value: modelData.amount
-                    tint: "#b8c0cc"
+                    tint: Ui.textSoft
                 }
             }
             Line { visible: !w.d.open; name: qsTr("Counted"); value: w.d.counted ?? "" }
@@ -115,7 +115,7 @@ Item {
         Text {
             visible: (w.d.others ?? []).length > 0
             text: w.bank ? qsTr("Other open banks") : qsTr("Other open drawers")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.8
         }
@@ -162,7 +162,7 @@ Item {
                                      : qsTr("Cash you take goes in your bank. To start with cash on hand, type it, then Start Bank."))
                          : w.d.open ? qsTr("At the end of the shift, touch Count Drawer and count the cash bill by bill (or type the total on the keypad first).")
                                     : qsTr("Type the starting cash on the keypad, then Start Drawer.")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.8
         }
@@ -222,7 +222,7 @@ Item {
                     height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(46) : 0)
                     text: modelData.name
                     fontScale: 0.32
-                    baseColor: modelData.chosen ? "#2f6fd6" : "#343c49"
+                    baseColor: modelData.chosen ? Ui.accent : Ui.key
                     onClicked: w.pos.setExpenseCategory(modelData.name)
                 }
             }

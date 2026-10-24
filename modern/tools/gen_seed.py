@@ -253,6 +253,7 @@ write("pos/settings.json", {
     "autoLogoutMinutes": 3,
     "phoneLockSeconds": 30,
     "screensUpdate": True,
+    "style": "classic",
     "tableLongMinutes": 90,
     # Points for what regulars spend, and what the points buy.
     "loyalty": {"enabled": True, "pointsPerDollar": 1,

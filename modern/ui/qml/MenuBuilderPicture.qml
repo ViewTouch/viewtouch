@@ -35,7 +35,7 @@ Popup {
                     width: 64
                     height: 64
                     radius: 10
-                    color: "#232933"
+                    color: Ui.panel
                     border.color: "#3a424f"
                     Text {
                         anchors.centerIn: parent

@@ -15,12 +15,12 @@ Item {
     readonly property color tint: floorState === "dirty" ? zone.statusColor("tableDirty", "#7a3b3b")
                                   : floorState === "reserved" ? zone.statusColor("tableReserved", "#5b4aa8")
                                   : floorState === "joined" ? zone.statusColor("tableOpen", "#a86a12")
-                                  : !status.open ? (zone.st.fill ?? "#2d3440")
-                                  : status.current ? zone.statusColor("tableCurrent", "#2f6fd6")
-                                  : status.mine ? zone.statusColor("tableMine", "#1f8a4c")
+                                  : !status.open ? (zone.st.fill ?? Ui.button)
+                                  : status.current ? zone.statusColor("tableCurrent", Ui.accent)
+                                  : status.mine ? zone.statusColor("tableMine", Ui.go)
                                   : zone.statusColor("tableOpen", "#a86a12")
     readonly property color ink: zone.readable(zone.st.textColor ?? "white", tint)
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property int seats: zone && zone.props ? (zone.props.seats ?? 0) : 0
     // How long the table has been seated, kept current.
     property real now: Date.now()

@@ -7,8 +7,8 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
-    readonly property color ink: zone.st.textColor ?? "#e6e9ef"
+    readonly property string face: zone.st.font ?? Ui.font
+    readonly property color ink: zone.st.textColor ?? Ui.text
 
     Text {
         id: heading
@@ -41,7 +41,7 @@ Item {
             }
             Text {
                 text: row.modelData.time + (row.modelData.who ? " · " + row.modelData.who : "")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: 18
             }
@@ -49,7 +49,7 @@ Item {
         Text {
             visible: history.count === 0
             text: qsTr("Nothing yet.")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: 22
         }

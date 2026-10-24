@@ -8,7 +8,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): bigger, and the choices in fewer columns.
     readonly property bool narrow: zone ? zone.narrow : false
@@ -140,7 +140,7 @@ Item {
                     Layout.fillHeight: true
                     text: modelData.label
                     pixelSize: w.reportKeyPx
-                    baseColor: w.reportId === modelData.id ? "#2f6fd6" : "#343c49"
+                    baseColor: w.reportId === modelData.id ? Ui.accent : Ui.key
                     onClicked: w.reportId = modelData.id
                 }
             }
@@ -167,7 +167,7 @@ Item {
                     text: index === 0 ? qsTr("Today") : index === 1 ? qsTr("Tomorrow")
                         : new Date(Date.now() + index * 86400000).toLocaleDateString(Qt.locale(), "ddd d")
                     fontScale: 0.34
-                    baseColor: w.forecastDay === index ? "#2f6fd6" : "#343c49"
+                    baseColor: w.forecastDay === index ? Ui.accent : Ui.key
                     onClicked: w.forecastDay = index
                 }
             }
@@ -192,7 +192,7 @@ Item {
                     Layout.fillHeight: true
                     text: modelData.label
                     pixelSize: w.periodKeyPx
-                    baseColor: w.period === modelData.id ? "#2f6fd6" : "#343c49"
+                    baseColor: w.period === modelData.id ? Ui.accent : Ui.key
                     onClicked: w.period = modelData.id
                 }
             }
@@ -202,7 +202,7 @@ Item {
                 Layout.fillHeight: true
                 text: qsTr("vs Last Year")
                 fontScale: 0.34
-                baseColor: w.compare ? "#1f8a4c" : "#343c49"
+                baseColor: w.compare ? Ui.go : Ui.key
                 onClicked: w.compare = !w.compare
             }
         }
@@ -259,7 +259,7 @@ Item {
                 Layout.preferredWidth: w.unit * 3
                 Layout.fillHeight: true
                 text: "◀"
-                baseColor: w.dayIndex < w.days.length - 1 ? "#343c49" : "#23282f"
+                baseColor: w.dayIndex < w.days.length - 1 ? Ui.key : "#23282f"
                 onClicked: if (w.dayIndex < w.days.length - 1) w.dayIndex++
             }
             Text {
@@ -277,7 +277,7 @@ Item {
                 Layout.preferredWidth: w.unit * 3
                 Layout.fillHeight: true
                 text: "▶"
-                baseColor: w.dayIndex > 0 ? "#343c49" : "#23282f"
+                baseColor: w.dayIndex > 0 ? Ui.key : "#23282f"
                 onClicked: if (w.dayIndex > 0) w.dayIndex--
             }
             WidgetKey {
@@ -326,7 +326,7 @@ Item {
                     Layout.preferredWidth: index === 0 ? -1 : w.unit * 7
                     horizontalAlignment: index === 0 ? Text.AlignLeft : Text.AlignRight
                     text: modelData
-                    color: "#8a94a6"
+                    color: Ui.muted
                     font.family: w.face
                     font.pixelSize: w.unit * 0.8
                 }
@@ -353,7 +353,7 @@ Item {
                     anchors.top: parent.top
                     width: parent.width
                     height: 1
-                    color: "#3a4250"
+                    color: Ui.line
                 }
                 RowLayout {
                     anchors.fill: parent
@@ -367,7 +367,7 @@ Item {
                             Layout.preferredWidth: index === 0 ? -1 : w.unit * 7
                             horizontalAlignment: index === 0 ? Text.AlignLeft : Text.AlignRight
                             text: modelData
-                            color: row.modelData.kind === "note" ? "#8a94a6" : w.ink
+                            color: row.modelData.kind === "note" ? Ui.muted : w.ink
                             font.family: w.face
                             font.pixelSize: row.section ? w.unit * 1.1 : w.unit
                             font.bold: row.section || row.total

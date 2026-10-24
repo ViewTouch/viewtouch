@@ -22,6 +22,11 @@ public:
 
     // `origin` identifies who saved, so they are not told about their own save.
     bool save(const layout::Layout &layout, QString *error, const void *origin);
+    // The store's style (Store Settings -> Screens -> Style): the pages'
+    // theme switched to it (Layout::useStyle), kept and sent to every
+    // screen. `builtIn`: the style's starter theme.
+    bool useStyle(const QString &id, const layout::Theme &builtIn);
+    bool refreshStyle(const layout::Theme &builtIn);   // Layout::refreshStyle, kept and sent
 
 signals:
     void layoutChanged(const vt::layout::Layout &layout, const void *origin);

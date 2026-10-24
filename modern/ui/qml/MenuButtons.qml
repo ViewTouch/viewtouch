@@ -25,7 +25,10 @@ Flickable {
     property bool pagePhotos: false
     property bool sectioned: true     // headings and spaces (one category shown)
     property var st: ({})             // the page's key style
-    property string face: "DejaVu Sans"
+    // The style's "menuColors": "fill" (a button in its category's color) or
+    // "mark" (a plain button with a strip of it across the top: Modern).
+    readonly property bool markOnly: st.menuColors === "mark"
+    property string face: Ui.font
     property real gap: 12
     property bool arranging: false
     property string picked: ""
@@ -176,11 +179,23 @@ Flickable {
                                 readonly property var st: mb.st
                                 radius: st.keyRadius !== undefined ? st.keyRadius : 14
                                 color: !cell.modelData.available ? "#3a3f48"
-                                     : press.pressed ? (st.keyLitFill ?? "#4c8dff") : (cell.itemColor || (st.keyFill ?? "#343c49"))
+                                     : press.pressed ? (st.keyLitFill ?? "#4c8dff")
+                                     : (!mb.markOnly && cell.itemColor) || (st.keyFill ?? Ui.key)
                                 readonly property bool isPicked: mb.arranging && mb.picked === cell.modelData.id
                                 readonly property var hits: cell.isGap ? [] : mb.allergyHits(cell.modelData)
-                                border.color: isPicked ? "#f5b940" : hits.length ? "#ff3b3b" : Qt.darker(color, 1.4)
+                                border.color: isPicked ? "#f5b940" : hits.length ? "#ff3b3b" : mb.markOnly ? (st.borderColor ?? "#2e3440") : Qt.darker(color, 1.4)
                                 border.width: isPicked ? 6 : hits.length ? 6 : 2
+                                // Modern: its category's color as a strip across the top.
+                                Rectangle {
+                                    visible: mb.markOnly && cell.itemColor !== "" && cell.modelData.available
+                                    anchors.top: parent.top
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.topMargin: parent.border.width + 2
+                                    width: parent.width - parent.radius * 2
+                                    height: Math.max(3, parent.height * 0.05)
+                                    radius: height / 2
+                                    color: cell.itemColor
+                                }
                                 // Has something the guest is allergic to.
                                 Rectangle {
                                     objectName: "allergyMark-" + cell.modelData.id
@@ -262,8 +277,9 @@ Flickable {
                                     anchors.top: parent.top
                                     anchors.left: parent.left
                                     anchors.margins: 8
+                                    anchors.topMargin: mb.markOnly ? 8 + Math.max(3, parent.height * 0.05) + 4 : 8   // under the strip
                                     text: cell.modelData.number ?? ""
-                                    color: "#8a94a6"
+                                    color: Ui.muted
                                     font.family: mb.face
                                     font.pixelSize: 14
                                     font.bold: true
@@ -298,7 +314,7 @@ Flickable {
                                         maximumLineCount: 2
                                         elide: Text.ElideRight
                                         text: cell.isGap ? "" : qsTranslate("Page", cell.modelData.name)
-                                        color: cell.itemColor ? StoreColors.ink(cell.itemColor) : (card.st.keyTextColor ?? "white")
+                                        color: cell.itemColor && !mb.markOnly ? StoreColors.ink(cell.itemColor) : (card.st.keyTextColor ?? "white")
                                         font.family: card.st.keyFont ?? mb.face
                                         // Smaller for a long word, so it never breaks mid-word.
                                         readonly property int longest: cell.isGap ? 4 : Math.max(4, ...cell.modelData.name.split(/\s+/).map(x => x.length))

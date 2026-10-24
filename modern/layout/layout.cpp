@@ -170,6 +170,7 @@ QJsonObject Layout::resolveStyle(const Zone &zone, const QString &viewingPageId,
     if (kindStyle)
         Style::mergeMissing(s, kindStyle->state(state));
     Style::mergeMissing(s, theme.style.state(state));
+    enforce(s, state == ZoneState::Normal ? u"normal"_s : state == ZoneState::Selected ? u"selected"_s : u"disabled"_s);
 
     if (state != ZoneState::Normal)
         Style::mergeMissing(s, resolveStyle(zone, viewingPageId, ZoneState::Normal));
@@ -182,14 +183,143 @@ QJsonObject Layout::resolveBackground(const QString &pageId) const
     for (const Page *p : templateChain(pageId))
         Style::mergeMissing(bg, p->background);
     Style::mergeMissing(bg, theme.background);
+    enforce(bg, u"background"_s);
     return bg;
+}
+
+void Layout::enforce(QJsonObject &style, const QString &part) const
+{
+    const QJsonObject over = theme.extra.value(u"enforce").toObject().value(part).toObject();
+    for (auto it = over.begin(); it != over.end(); ++it) {
+        if (it.key() == u"frameMap") {   // {"raised": "border"}: those frames become that one
+            const QJsonValue to = it.value().toObject().value(style.value(u"frame").toString());
+            if (!to.isUndefined())
+                style.insert(u"frame"_s, to);
+        } else {
+            style.insert(it.key(), it.value());
+        }
+    }
+}
+
+QString Layout::styleOf(const Theme &theme)
+{
+    const QString id = theme.extra.value(u"styleId").toString();
+    return id.isEmpty() ? u"classic"_s : id;
+}
+
+QString Layout::themePrint(const Theme &theme)
+{
+    QJsonObject o = theme.toJson();
+    for (const char *k : {"styleId", "otherStyles", "builtIn", "schemaVersion"})
+        o.remove(QLatin1String(k));
+    return QString::fromLatin1(QCryptographicHash::hash(QJsonDocument(o).toJson(QJsonDocument::Compact),
+                                                        QCryptographicHash::Sha256).toHex());
+}
+
+bool Layout::refreshStyle(const Theme &builtIn)
+{
+    const QString was = theme.extra.value(u"builtIn").toString();
+    const QString now = themePrint(builtIn);
+    if (was.isEmpty() || was == now || themePrint(theme) != was)
+        return false;   // not a starter theme, the same, or changed here
+    Theme next = builtIn;
+    for (const char *k : {"styleId", "otherStyles"})
+        if (theme.extra.contains(QLatin1String(k)))
+            next.extra.insert(QLatin1String(k), theme.extra.value(QLatin1String(k)));
+    next.extra.insert(u"builtIn"_s, now);
+    theme = std::move(next);
+    return true;
+}
+
+bool Layout::arrangePage(Page &page, const QString &id, const QString &from)
+{
+    QJsonObject places = page.extra.value(u"styleRects").toObject();
+    if (id == from || !places.contains(id))
+        return false;
+    const QJsonObject to = places.value(id).toObject();
+    QJsonObject left;
+    // A phone frame's area for the menu ("@contentArea") moves with its buttons.
+    const auto rectJson = [](const QRect &r) {
+        return QJsonObject{{u"x"_s, r.x()}, {u"y"_s, r.y()}, {u"w"_s, r.width()}, {u"h"_s, r.height()}};
+    };
+    if (const QJsonObject r = to.value(u"@contentArea").toObject(); !r.isEmpty()) {
+        left.insert(u"@contentArea"_s, rectJson(page.contentArea));
+        page.contentArea = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
+    }
+    // Only the buttons the style moves keep a place of each (the rest are
+    // in the same place in both).
+    for (Zone &z : page.zones) {
+        if (const QJsonObject r = to.value(z.id).toObject(); !r.isEmpty()) {
+            left.insert(z.id, rectJson(z.rect));
+            z.rect = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
+        }
+    }
+    places.remove(id);
+    places.insert(from, left);
+    page.extra.insert(u"styleRects"_s, places);
+    return true;
+}
+
+void Layout::arrangePages(const QStringList &ids)
+{
+    const QString id = styleOf(theme);
+    for (Page &p : pages) {
+        if (!ids.isEmpty() && !ids.contains(p.id))
+            continue;
+        // Which style it's arranged for: the one its kept places don't name.
+        const QJsonObject places = p.extra.value(u"styleRects").toObject();
+        const QString now = places.contains(u"classic"_s) ? u"modern"_s : u"classic"_s;
+        arrangePage(p, id, now);
+    }
+}
+
+bool Layout::useStyle(const QString &id, const Theme &builtIn)
+{
+    const QString was = styleOf(theme);
+    if (id.isEmpty() || id == was)
+        return false;
+    for (Page &p : pages)
+        arrangePage(p, id, was);
+    QJsonObject others = theme.extra.value(u"otherStyles").toObject();
+    QJsonObject leaving = theme.toJson();
+    leaving.remove(u"otherStyles"_s);
+    leaving.insert(u"styleId"_s, was);
+    Theme next = others.contains(id) ? Theme::fromJson(others.value(id).toObject()) : builtIn;
+    if (!others.contains(id))
+        next.extra.insert(u"builtIn"_s, themePrint(builtIn));
+    others.remove(id);
+    others.insert(was, leaving);
+    next.extra.insert(u"styleId"_s, id);
+    next.extra.insert(u"otherStyles"_s, others);
+    theme = std::move(next);
+    return true;
 }
 
 QString Layout::fingerprint(const Page &page)
 {
-    // QJsonObject keeps its keys sorted, so equal pages give equal text.
+    // As arranged for Classic (a starter page only moved to Modern is still
+    // as installed). QJsonObject keeps its keys sorted, so equal pages give
+    // equal text.
+    Page classic = page;
+    if (page.extra.value(u"styleRects").toObject().contains(u"classic"_s))
+        arrangePage(classic, u"classic"_s, u"modern"_s);
+    // A style's kept place that is where the button is anyway says nothing
+    // (pages switched by an earlier version kept every button's).
+    if (classic.extra.contains(u"styleRects")) {
+        QJsonObject places = classic.extra.value(u"styleRects").toObject();
+        for (auto it = places.begin(); it != places.end(); ++it) {
+            QJsonObject rects = it.value().toObject();
+            for (const Zone &z : classic.zones) {
+                const QJsonObject r = rects.value(z.id).toObject();
+                if (!r.isEmpty() && QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt()) == z.rect)
+                    rects.remove(z.id);
+            }
+            it.value() = rects;
+        }
+        classic.extra.insert(u"styleRects"_s, places);
+    }
     return QString::fromLatin1(
-        QCryptographicHash::hash(QJsonDocument(page.toJson()).toJson(QJsonDocument::Compact), QCryptographicHash::Sha256)
+        QCryptographicHash::hash(QJsonDocument(classic.toJson()).toJson(QJsonDocument::Compact), QCryptographicHash::Sha256)
             .toHex());
 }
 

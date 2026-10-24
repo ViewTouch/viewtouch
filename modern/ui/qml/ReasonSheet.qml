@@ -20,7 +20,7 @@ Rectangle {
         width: Math.min(parent.width - 24, 560)
         height: Math.min(parent.height - 24, column.implicitHeight + 40)
         radius: 14
-        color: "#232933"
+        color: Ui.panel
         border.color: sheet.info.kind === "void" ? "#c0392b" : "#b7791f"
         border.width: 2
 
@@ -39,7 +39,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 text: sheet.info.what ?? ""
-                color: "#b8c0cc"
+                color: Ui.textSoft
                 font.pixelSize: 18
                 wrapMode: Text.WordWrap
             }

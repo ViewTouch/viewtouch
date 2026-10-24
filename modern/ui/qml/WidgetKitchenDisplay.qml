@@ -27,7 +27,7 @@ Item {
         const next = ids[(ids.indexOf(w.station) + 1) % ids.length]
         w.pos.setKitchenStation(next === w.pageStation ? "" : next)
     }
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     // This screen's text size (Terminals: Text size), or the person's: the
     // tickets grow with it.
     readonly property real k: zone ? zone.textScale : 1
@@ -87,7 +87,7 @@ Item {
     // Green, then yellow after the store's warn minutes, red when late.
     function ageColor(ticket) {
         const minutes = (now - ticket.sentAt) / 60000
-        return minutes < (ticket.warnMinutes ?? 8) ? w.zone.statusColor("kitchenNew", "#1f8a4c")
+        return minutes < (ticket.warnMinutes ?? 8) ? w.zone.statusColor("kitchenNew", Ui.go)
              : minutes < (ticket.lateMinutes ?? 15) ? w.zone.statusColor("kitchenWarn", "#b7791f")
              : w.zone.statusColor("kitchenLate", "#c53030")
     }
@@ -496,7 +496,7 @@ Item {
                     radius: 10
                     color: "#f4f1ea"
                     // Rush tickets wear a red frame, VIP gold.
-                    border.color: tap.pressed ? "#2f6fd6" : card.ticket.rush ? "#ff3b3b"
+                    border.color: tap.pressed ? Ui.accent : card.ticket.rush ? "#ff3b3b"
                                 : card.ticket.vip ? "#d4af37" : "transparent"
                     border.width: card.ticket.rush || card.ticket.vip ? 8 : 4
                     clip: true
@@ -631,7 +631,7 @@ Item {
             Layout.preferredWidth: 340 * w.k
             Layout.fillHeight: true
             radius: 10
-            color: "#232933"
+            color: Ui.panel
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 14
@@ -716,7 +716,7 @@ Item {
         anchors.centerIn: parent
         visible: w.tickets.length === 0
         text: qsTr("All caught up")
-        color: "#8a94a6"
+        color: Ui.muted
         font.family: w.face
         font.pixelSize: 48 * w.k
     }

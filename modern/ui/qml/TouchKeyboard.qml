@@ -133,7 +133,7 @@ Rectangle {
                         color: tap.pressed ? "#4a7bd8"
                              : modelData === "enter" ? "#1f5f3a"
                              : modelData === "shift" && kb.shifted ? "#4a5672"
-                             : special ? "#2a313d" : "#343c49"
+                             : special ? "#2a313d" : Ui.key
                         Text {
                             anchors.centerIn: parent
                             width: key.width - 6

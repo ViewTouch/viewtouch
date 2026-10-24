@@ -42,8 +42,8 @@ Item {
                 anchors.leftMargin: 16
                 verticalAlignment: Text.AlignVCenter
                 text: w.pos && w.pos.textEntry !== "" ? w.pos.textEntry + "▏" : (w.zone && w.zone.props && w.zone.props.placeholder ? qsTranslate("Page", w.zone.props.placeholder) : qsTr("Type a note…"))
-                color: w.pos && w.pos.textEntry !== "" ? "white" : "#8a94a6"
-                font.family: w.zone.st.font ?? "DejaVu Sans"
+                color: w.pos && w.pos.textEntry !== "" ? "white" : Ui.muted
+                font.family: w.zone.st.font ?? Ui.font
                 font.pixelSize: parent.height * 0.45
                 // What's typed: its end shows. The hint: smaller to fit (a
                 // phone cut "Reason: price, change…" to "…ce, change…").

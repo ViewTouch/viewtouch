@@ -24,7 +24,7 @@ Rectangle {
     readonly property var info: pos ? pos.selfOrder : ({})
     readonly property var menu: pos ? pos.kioskMenu : ({})
     readonly property var brand: pos ? pos.customerPrompt : ({})
-    readonly property color accent: brand.accent || "#2f6fd6"
+    readonly property color accent: brand.accent || Ui.accent
     // Pictures by ref ("store:logo.png", a path...): this screen's copy.
     function img(ref) { return pos ? (pos.imageRevision < 0 ? undefined : pos.imageUrl(ref)) : ref }
     readonly property string logo: !brand.logo ? "" : img(brand.logo)
@@ -41,7 +41,7 @@ Rectangle {
     readonly property color bg: access ? "black" : lookSet.background || "#14181f"
     readonly property color card: access ? "#1c1c1c" : lookSet.card || "#2a313d"
     readonly property color panel: access ? "black" : lookSet.card ? Qt.darker(card, 1.25) : "#1d232c"
-    readonly property color go: access ? "#0b6b2f" : lookSet.go || "#1f8a4c"
+    readonly property color go: access ? "#0b6b2f" : lookSet.go || Ui.go
     readonly property color ink: access ? "white" : lookSet.text || "white"
     readonly property color muted: Qt.rgba(ink.r, ink.g, ink.b, access ? 0.9 : 0.62)
     readonly property color soft: Qt.rgba(ink.r, ink.g, ink.b, access ? 0.95 : 0.8)

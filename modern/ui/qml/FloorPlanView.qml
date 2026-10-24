@@ -13,7 +13,7 @@ ColumnLayout {
 
     property LayoutController controller
     property real unit: 20
-    property string face: "DejaVu Sans"
+    property string face: Ui.font
     property color ink: "white"
     // Text that reads on a table's color (ZoneItem.readable), and the
     // person's text size.
@@ -30,7 +30,7 @@ ColumnLayout {
     property string floorName: "floorPlan"
     // A table's look: tint(name), lines(name, seats) -> [line, ...],
     // picked(name) -> bool. Touches come back as tableTouched(name).
-    property var tint: name => "#2d3440"
+    property var tint: name => Ui.button
     property var lines: (name, seats) => []
     property var picked: name => false
     signal tableTouched(string name)
@@ -40,7 +40,8 @@ ColumnLayout {
     property bool listToggle: false
     property var sortKey: name => 0
     property var tileLines: (name, seats) => v.lines(name, seats)
-    property bool asList: listToggle && controller !== null && controller.widgetState(stateKey + "List") === true
+    property bool listFirst: false   // the list until Plan is touched
+    property bool asList: listToggle && controller !== null && (controller.widgetState(stateKey + "List") ?? listFirst) === true
     function showList(on) {
         asList = on
         if (controller) controller.setWidgetState(stateKey + "List", on)
@@ -76,7 +77,7 @@ ColumnLayout {
                 font.family: v.face
                 font.pixelSize: v.unit * 0.8
                 font.bold: true
-                palette.button: modelData.id === v.planShown ? "#2f6fd6" : "#2d3440"
+                palette.button: modelData.id === v.planShown ? Ui.accent : Ui.button
                 palette.buttonText: v.ink
                 onClicked: v.choose(modelData.id)
             }
@@ -94,7 +95,7 @@ ColumnLayout {
             font.family: v.face
             font.pixelSize: roomy ? v.unit * 0.8 : v.unit * 1.2
             font.bold: true
-            palette.button: "#343c49"
+            palette.button: Ui.key
             palette.buttonText: v.ink
             onClicked: v.showList(!v.asList)
         }

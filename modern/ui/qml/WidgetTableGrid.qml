@@ -10,7 +10,7 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property int columns: zone && zone.props && zone.props.columns ? zone.props.columns : 3
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property var tables: zone && zone.controller ? zone.controller.tables() : []
 
     GridView {
@@ -31,9 +31,9 @@ Item {
             height: grid.cellHeight
             // Again when the checks change (compared, not just read: an unused read is compiled away).
             readonly property var status: !w.pos || w.pos.checksRevision < 0 ? ({ open: false }) : w.pos.tableStatus(modelData.name)
-            readonly property color tint: !status.open ? (w.zone.st.fill ?? "#2d3440")
-                                          : status.current ? "#2f6fd6"
-                                          : status.mine ? "#1f8a4c" : "#a86a12"
+            readonly property color tint: !status.open ? (w.zone.st.fill ?? Ui.button)
+                                          : status.current ? Ui.accent
+                                          : status.mine ? Ui.go : "#a86a12"
             ZoneShape {
                 anchors.fill: parent
                 anchors.margins: 8

@@ -8,8 +8,8 @@ Button {
     id: b
     font.bold: true
     readonly property color fill: !b.enabled ? Qt.darker(b.palette.button, 1.35)
-                                  : b.down ? Qt.lighter(b.highlighted || b.checked ? "#2f6fd6" : b.palette.button, 1.35)
-                                  : b.highlighted || b.checked ? "#2f6fd6" : b.palette.button
+                                  : b.down ? Qt.lighter(b.highlighted || b.checked ? Ui.accent : b.palette.button, 1.35)
+                                  : b.highlighted || b.checked ? Ui.accent : b.palette.button
     contentItem: Text {
         text: b.text
         font: b.font

@@ -41,7 +41,7 @@ Item {
 
     // A choice: solid blue when it's the one picked.
     component Pick: PosButton {
-        palette.button: highlighted ? "#2f6fd6" : "#343c49"
+        palette.button: highlighted ? Ui.accent : Ui.key
         palette.buttonText: "white"
     }
 
@@ -65,7 +65,7 @@ Item {
                 text: w.dueAt > 0 ? qsTr("Ready %1").arg(w.check.due ?? "") : qsTr("As soon as possible")
                 font.pixelSize: 26
                 font.bold: true
-                color: w.dueAt > 0 ? "#7ec8ff" : "#e6e9ef"
+                color: w.dueAt > 0 ? "#7ec8ff" : Ui.text
             }
 
             Label { text: qsTr("Day"); opacity: 0.7; font.pixelSize: 16 }

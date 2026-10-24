@@ -18,8 +18,8 @@ Rectangle {
         width: Math.min(parent.width * 0.9, 460)
         height: column.implicitHeight + 40
         radius: 14
-        color: "#232933"
-        border.color: "#2f6fd6"
+        color: Ui.panel
+        border.color: Ui.accent
         border.width: 2
 
         ColumnLayout {
@@ -45,7 +45,7 @@ Rectangle {
                     Layout.preferredHeight: 64
                     text: modelData.name
                     fontScale: 0.32
-                    baseColor: "#2f6fd6"
+                    baseColor: Ui.accent
                     onClicked: chooser.pos.clockInAs(modelData.role)
                 }
             }

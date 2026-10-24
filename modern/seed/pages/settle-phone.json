@@ -13,7 +13,12 @@
   "hiddenZones": [
     "ask-tip",
     "off-amount",
-    "off-percent"
+    "off-percent",
+    "cash-exact",
+    "cash-20",
+    "cash-40",
+    "cash-50",
+    "cash-100"
   ],
   "zones": [
     {

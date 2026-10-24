@@ -3,8 +3,12 @@
 #include "layout/layout.hh"
 #include "qt_catch.hh"
 
+#include <QFile>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QTemporaryDir>
+
+#include <algorithm>
 
 using namespace Qt::StringLiterals;
 using namespace vt::layout;
@@ -358,4 +362,171 @@ TEST_CASE("Starter update: a new starter button joins a page the store edited", 
     const auto again = later.updateFromStarter(*starter, {u"check-options"_s, u"check-options#tax-exempt"_s}, installed);
     CHECK(again.buttonsAdded.isEmpty());
     CHECK_FALSE(later.page(u"check-options"_s)->zone(u"tax-exempt"_s));
+}
+
+TEST_CASE("Store style: Modern and back to Classic, the store's own theme changes kept in each", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const Theme modern = Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    CHECK(Layout::styleOf(l->theme) == u"classic"_s);
+    CHECK_FALSE(l->useStyle(u"classic"_s, modern));   // already
+
+    // A button the page made raised, with a texture and its own font: Modern's look over it, its color kept.
+    const Page *tables = l->page(u"tables"_s);
+    REQUIRE(tables);
+    Zone z;
+    z.id = u"own"_s;
+    z.kind = u"button"_s;
+    z.style.normal = QJsonObject{{u"frame"_s, u"raised"_s}, {u"texture"_s, u"sand"_s}, {u"font"_s, u"DejaVu Sans"_s},
+                                 {u"fill"_s, u"#aa3300"_s}, {u"shadow"_s, 6}};
+    const QJsonObject classicLook = l->resolveStyle(z, u"tables"_s, ZoneState::Normal);
+    CHECK(classicLook.value(u"frame"_s).toString() == u"raised"_s);
+    CHECK(classicLook.value(u"texture"_s).toString() == u"sand"_s);
+
+    // The store changed Classic's background before switching.
+    l->theme.background.insert(u"fill"_s, u"#102030"_s);
+    REQUIRE(l->useStyle(u"modern"_s, modern));
+    CHECK(Layout::styleOf(l->theme) == u"modern"_s);
+    const QJsonObject modernLook = l->resolveStyle(z, u"tables"_s, ZoneState::Normal);
+    CHECK(modernLook.value(u"frame"_s).toString() == u"border"_s);   // raised -> border
+    CHECK(modernLook.value(u"texture"_s).toString().isEmpty());
+    CHECK(modernLook.value(u"font"_s).toString() == u"Inter"_s);
+    CHECK(modernLook.value(u"shadow"_s).toInt() == 0);
+    CHECK(modernLook.value(u"fill"_s).toString() == u"#aa3300"_s);   // colors are the page's
+    Zone none = z;
+    none.style.normal.insert(u"frame"_s, u"none"_s);
+    CHECK(l->resolveStyle(none, u"tables"_s, ZoneState::Normal).value(u"frame"_s).toString() == u"none"_s);
+    CHECK(l->resolveBackground(u"tables"_s).value(u"texture"_s).toString().isEmpty());   // no wood floor
+    // A change to Modern's theme, then back to Classic: each as the store left it.
+    l->theme.style.normal.insert(u"keyFill"_s, u"#222222"_s);
+
+    // Saved and read back while Modern: still Modern, Classic waiting in it.
+    const auto saved = Layout::fromJson(l->toJson());
+    REQUIRE(saved);
+    CHECK(Layout::styleOf(saved->theme) == u"modern"_s);
+    *l = *saved;
+
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    CHECK(Layout::styleOf(l->theme) == u"classic"_s);
+    CHECK(l->theme.background.value(u"fill"_s).toString() == u"#102030"_s);
+    CHECK(l->resolveStyle(z, u"tables"_s, ZoneState::Normal) == classicLook);
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));   // its own, not the built-in one
+    CHECK(l->theme.style.normal.value(u"keyFill"_s).toString() == u"#222222"_s);
+}
+
+TEST_CASE("Store style: the starter pages' buttons move to Modern's places and back; still never edited", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const auto starter = *l;
+    const Page *before = l->page(u"order-template"_s);
+    REQUIRE(before);
+    const QRect classicPay = before->zone(u"flow-pay"_s)->rect;
+    const QString print = Layout::fingerprint(*before);
+    // A page of the store's own: nowhere else to go.
+    Page mine;
+    mine.id = u"mine"_s;
+    Zone z;
+    z.id = u"b"_s;
+    z.rect = QRect(10, 20, 30, 40);
+    mine.zones.append(z);
+    l->pages.append(mine);
+
+    Theme modern;
+    REQUIRE(l->useStyle(u"modern"_s, modern));
+    const Page *now = l->page(u"order-template"_s);
+    const QRect modernPay = now->zone(u"flow-pay"_s)->rect;
+    CHECK(modernPay != classicPay);
+    CHECK(modernPay == QRect(1672, 980, 232, 84));
+    CHECK(Layout::fingerprint(*now) == print);   // only moved for the style: as installed
+    CHECK(l->page(u"mine"_s)->zones.first().rect == QRect(10, 20, 30, 40));
+    CHECK_FALSE(l->page(u"mine"_s)->extra.contains(u"styleRects"_s));
+
+    // A newer version of the page comes while the store is on Modern: it
+    // replaces this one (never edited) and is moved to Modern too.
+    Layout newer = starter;
+    Page &np = *std::ranges::find(newer.pages, u"order-template"_s, &Page::id);
+    np.name = u"Order Template v2"_s;
+    QStringList seen;
+    for (const Page &p : starter.pages) {
+        seen << p.id;
+        for (const Zone &zz : p.zones)
+            seen << p.id + u'#' + zz.id;
+    }
+    QHash<QString, QString> installed;
+    for (const Page &p : starter.pages)
+        installed.insert(p.id, Layout::fingerprint(p));
+    const auto update = l->updateFromStarter(newer, seen, installed);
+    REQUIRE(update.updated.contains(u"order-template"_s));
+    l->arrangePages(update.updated);
+    CHECK(l->page(u"order-template"_s)->name == u"Order Template v2"_s);
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == modernPay);
+
+    // Moved by hand while Modern, then Classic: back where Classic had it; Modern keeps the move.
+    for (Zone &zz : std::ranges::find(l->pages, u"order-template"_s, &Page::id)->zones)
+        if (zz.id == u"flow-pay")
+            zz.rect.translate(-8, 0);
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == classicPay);
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == modernPay.translated(-8, 0));
+}
+
+TEST_CASE("Store style: a newer built-in theme replaces an unchanged one, never one the store changed", "[layout][style]")
+{
+    Layout l;
+    Theme v1;
+    v1.name = u"Modern"_s;
+    v1.style.normal.insert(u"radius"_s, 12);
+    REQUIRE(l.useStyle(u"modern"_s, v1));
+    Theme v2 = v1;
+    v2.style.normal.insert(u"radius"_s, 10);
+    CHECK_FALSE(l.refreshStyle(v1));   // the same
+    REQUIRE(l.refreshStyle(v2));
+    CHECK(l.theme.style.normal.value(u"radius"_s).toInt() == 10);
+    CHECK(Layout::styleOf(l.theme) == u"modern"_s);
+    CHECK(l.theme.extra.contains(u"otherStyles"_s));   // Classic still waiting
+    // The store's own change: kept from then on.
+    l.theme.style.normal.insert(u"fill"_s, u"#123456"_s);
+    Theme v3 = v2;
+    v3.style.normal.insert(u"radius"_s, 8);
+    CHECK_FALSE(l.refreshStyle(v3));
+    CHECK(l.theme.style.normal.value(u"fill"_s).toString() == u"#123456"_s);
+}
+
+TEST_CASE("Store style: the phone order frame's menu area moves with its buttons", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const QRect classic = l->page(u"order-template-phone"_s)->contentArea;
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    CHECK(l->page(u"order-template-phone"_s)->contentArea == QRect(16, 718, 1048, 1274));
+    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 560);
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    CHECK(l->page(u"order-template-phone"_s)->contentArea == classic);
+}
+
+TEST_CASE("Store style: switching keeps places only for the buttons that move; older switched pages still unedited", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const Page starter = *l->page(u"tables"_s);
+    const QStringList moved = starter.extra.value(u"styleRects").toObject().value(u"modern").toObject().keys();
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    const Page &now = *l->page(u"tables"_s);
+    CHECK(now.extra.value(u"styleRects").toObject().value(u"classic").toObject().keys() == moved);   // no walls, no tables
+    CHECK(Layout::fingerprint(now) == Layout::fingerprint(starter));
+
+    // Switched by the first Modern build: every button's Classic place kept.
+    Page older = now;
+    QJsonObject all;
+    for (const Zone &z : starter.zones)
+        all.insert(z.id, QJsonObject{{u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()}, {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}});
+    older.extra.insert(u"styleRects"_s, QJsonObject{{u"classic"_s, all}});
+    CHECK(Layout::fingerprint(older) == Layout::fingerprint(starter));   // still as installed
 }

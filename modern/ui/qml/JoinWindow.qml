@@ -22,12 +22,12 @@ ApplicationWindow {
 
     palette {
         window: "#171a1f"
-        windowText: "#e6e9ef"
+        windowText: Ui.text
         base: "#0f1216"
-        text: "#f2f4f7"
-        button: "#2d3440"
-        buttonText: "#f2f4f7"
-        highlight: "#2f6fd6"
+        text: Ui.text
+        button: Ui.button
+        buttonText: Ui.text
+        highlight: Ui.accent
         highlightedText: "white"
         placeholderText: "#6b7585"
     }
@@ -39,7 +39,7 @@ ApplicationWindow {
     }
 
     component Caption: Label {
-        color: "#8a94a6"
+        color: Ui.muted
         font.pixelSize: root.u * 0.9
     }
 
@@ -52,7 +52,7 @@ ApplicationWindow {
             radius: 8
             color: "#0f1216"
             border.width: root.target === parent ? 2 : 1
-            border.color: root.target === parent ? "#2f6fd6" : "#3a4250"
+            border.color: root.target === parent ? Ui.accent : Ui.line
         }
     }
 
@@ -65,7 +65,7 @@ ApplicationWindow {
             text: qsTr("Join a ViewTouch store")
             font.pixelSize: root.u * 2.2
             font.bold: true
-            color: "#f2f4f7"
+            color: Ui.text
         }
         Label {
             visible: root.join.problem !== ""
@@ -105,7 +105,7 @@ ApplicationWindow {
                         width: ListView.view.width
                         height: root.u * 3.6
                         radius: 10
-                        color: addressField.text === modelData.address ? "#2f6fd6" : "#232933"
+                        color: addressField.text === modelData.address ? Ui.accent : Ui.panel
                         Column {
                             anchors.verticalCenter: parent.verticalCenter
                             x: root.u
@@ -130,7 +130,7 @@ ApplicationWindow {
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
                         text: qsTr("Looking for ViewTouch servers…\nThe server must be running with --serve on this network.")
-                        color: "#8a94a6"
+                        color: Ui.muted
                         font.pixelSize: root.u
                     }
                 }

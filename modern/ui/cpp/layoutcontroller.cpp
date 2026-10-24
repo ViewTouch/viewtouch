@@ -634,7 +634,9 @@ void LayoutController::fitToScreen(Shown &s) const
     // Taller: the check gets it. Shorter: the biggest other panel (the menu
     // scrolls) gives it up, so the check stays whole.
     const auto check = [](const vt::layout::Zone *z) { return z->kind == u"orderList" || z->kind == u"paymentPanel"; };
-    const bool toCheck = extra > 0;
+    // (The style may say the menu gets it: Modern's check is a short strip
+    // that opens as a sheet.)
+    const bool toCheck = extra > 0 && activeLayout().theme.extra.value(u"phoneRoomTo").toString() != u"menu";
     const vt::layout::Zone *main = nullptr;
     for (const Layout::PlacedZone &pz : s.zones) {
         const QString &k = pz.zone->kind;
@@ -932,6 +934,15 @@ int LayoutController::pageGrid() const
 {
     const auto *p = currentPage();
     return p ? std::max(1, p->grid) : 8;
+}
+
+QVariantMap LayoutController::stylePalette() const
+{
+    const vt::layout::Theme &t = activeLayout().theme;
+    QVariantMap p = t.extra.value(u"palette").toObject().toVariantMap();
+    if (const QString font = t.style.normal.value(u"font").toString(); !font.isEmpty() && !p.contains(u"font"_s))
+        p.insert(u"font"_s, font);
+    return p;
 }
 
 QVariantMap LayoutController::background() const
@@ -1365,7 +1376,11 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     if (!period.isEmpty() && period != mealPeriod())
         return false;
     const QString screen = rule.value(u"screen").toString();
-    return screen.isEmpty() || screen == formFactor();
+    if (!screen.isEmpty() && screen != formFactor())
+        return false;
+    // The store's style (Store Settings -> Screens -> Style): a button only one style has.
+    const QString style = rule.value(u"style").toString();
+    return style.isEmpty() || style == vt::layout::Layout::styleOf(activeLayout().theme);
 }
 
 bool LayoutController::triggerHotkey(const QString &key)
@@ -2106,8 +2121,13 @@ void LayoutController::refresh()
     }
     const int canvasW = page ? page->canvas.width() : 1920;
     QList<ZoneModel::Row> rows;
+    const QString style = vt::layout::Layout::styleOf(l.theme);
     for (const Layout::PlacedZone &pz : s.zones) {
         const vt::layout::Zone &z = *pz.zone;
+        // Another style's button (showWhen.style): not on this screen at all.
+        if (const QString only = z.extra.value(u"showWhen").toObject().value(u"style").toString();
+            !only.isEmpty() && only != style)
+            continue;
         // Laid out again for a phone: its own rect there, a plain shape, and
         // the look it has on its own page.
         const bool moved = s.moved.contains(pz.zone);

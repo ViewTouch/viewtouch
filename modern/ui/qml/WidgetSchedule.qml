@@ -101,7 +101,7 @@ Item {
                                     Layout.fillWidth: true
                                     implicitHeight: chipText.implicitHeight + 10
                                     radius: 6
-                                    color: modelData.onClock ? "#1f6b40" : w.chosen && w.chosen.id === modelData.id ? "#3d5a99" : "#2e3644"
+                                    color: modelData.onClock ? Ui.goDark : w.chosen && w.chosen.id === modelData.id ? "#3d5a99" : "#2e3644"
                                     Column {
                                         id: chipText
                                         anchors.fill: parent

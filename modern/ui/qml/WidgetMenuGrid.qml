@@ -19,7 +19,7 @@ Item {
     readonly property bool search: zone && zone.props && zone.props.search === true
     readonly property bool popular: zone && zone.props && zone.props.popular === true
     readonly property string typed: pos && search ? pos.textEntry.trim().toLowerCase() : ""
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
 
     readonly property var items: pos ? pos.menuItems.filter(i => !i.modifier) : []
     // The menu's categories with items, in their order (Menu Builder).
@@ -96,6 +96,9 @@ Item {
         picked = id
         zone.controller.setWidgetState(zone.zoneId + ".picked", id)
     }
+    // The style's "menuTabs": "rail" puts the categories in a column down the
+    // left (Modern on a register); else in rows across the top.
+    readonly property bool rail: !phone && zone && zone.st.menuTabs === "rail"
     readonly property bool showTabs: !search && !popular && fixedFamily === "" && families.length > 1
     readonly property bool mayArrange: pos !== null && pos.loggedIn && pos.can("manager") && !search && !popular
 
@@ -167,7 +170,7 @@ Item {
                     delegate: WidgetKey {
                         required property string modelData
                         objectName: chips.visible ? "menuFamily-" + modelData : ""
-                        width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                        width: chipText.advanceWidth(text) * chips.textPx / 100 + chips.keyH * 0.7
                         height: chips.keyH
                         text: w.title(modelData)
                         accent: modelData === w.family
@@ -178,20 +181,22 @@ Item {
                 WidgetKey {
                     objectName: chips.visible ? "menuArrange" : ""
                     visible: chips.visible && w.mayArrange && !w.arranging
-                    width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                    width: chipText.advanceWidth(text) * chips.textPx / 100 + chips.keyH * 0.7
                     height: chips.keyH
                     text: qsTr("Arrange…")
                     pixelSize: chips.textPx
                     onClicked: w.setArranging(true)
                 }
             }
-            FontMetrics { id: chipText; font.pixelSize: chips.textPx; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            // Measured at a fixed size, then scaled: a measure at textPx went
+            // stale when the screen's scale settled (each chip as wide as the row).
+            FontMetrics { id: chipText; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
         }
 
         Flow {
             id: tabs
             Layout.fillWidth: true
-            visible: !w.phone && w.showTabs
+            visible: !w.phone && !w.rail && w.showTabs
             spacing: w.gap * 0.6
             // As many as fit at 120 pixels on the screen (a phone: three).
             readonly property real screenWidth: w.width * (w.zone ? w.zone.screenScale : 1)
@@ -199,7 +204,7 @@ Item {
             readonly property real keyW: perRow < 6 ? (w.width - spacing * (perRow - 1)) / perRow
                                                     : Math.max(160, (w.width - spacing * 5) / 6)
             readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(52) : 56)
-            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
             readonly property real textPx: {
                 let px = keyH * 0.38
                 for (const f of w.families.map(x => w.title(x)).concat([qsTr("Arrange…")]))
@@ -230,35 +235,103 @@ Item {
             }
         }
 
-        MenuButtons {
-            id: grid
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            items: w.shown
-            category: w.shownCategory
-            categories: w.categories
-            pos: w.pos
-            textScale: w.zone ? w.zone.textScale : 1
-            busy: w.busy
-            setColumns: w.setColumns
-            compact: w.phone
-            screenScale: w.zone ? w.zone.screenScale : 1
-            pagePhotos: w.pagePhotos
-            // Headings and spaces: one category, as arranged in the Menu Builder.
-            sectioned: !w.search && !w.popular && !w.special
-            st: w.zone ? w.zone.st : ({})
-            face: w.face
-            gap: w.gap
-            arranging: w.arranging
-            picked: w.picked
-            managing: w.mayArrange
-            allergies: w.allergies
-            onItemTapped: item => {
-                if (w.arranging) w.pick(item.id)
-                else if (item.available) w.zone.controller.orderItem(item.id, w.search)
+            spacing: w.gap
+            // The categories down the left (Modern): each with its color's dot.
+            Flickable {
+                id: railList
+                objectName: "menuRail"
+                visible: w.rail && w.showTabs
+                Layout.fillHeight: true
+                Layout.preferredWidth: Math.min(w.width * 0.2, 300)
+                contentHeight: railColumn.height
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                interactive: contentHeight > height + 1
+                readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(48) : 56)
+                Column {
+                    id: railColumn
+                    width: railList.width
+                    spacing: w.gap * 0.5
+                    Repeater {
+                        model: railList.visible ? w.families : []
+                        delegate: WidgetKey {
+                            id: railKey
+                            required property string modelData
+                            objectName: "menuFamily-" + modelData
+                            width: railColumn.width
+                            height: railList.keyH
+                            text: ""
+                            accent: modelData === w.family
+                            onClicked: w.zone.controller.menuCategory = modelData
+                            readonly property string dot: (w.categoryOf(modelData).color ?? "") || (modelData === "★" ? "#f5b940" : "")
+                            Row {
+                                anchors.fill: parent
+                                anchors.leftMargin: railList.keyH * 0.3
+                                anchors.rightMargin: railList.keyH * 0.2
+                                spacing: railList.keyH * 0.22
+                                Rectangle {
+                                    visible: railKey.dot !== "" && modelData !== "★" && modelData !== "♥"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: railList.keyH * 0.2; height: width; radius: width / 2
+                                    color: railKey.dot || "transparent"
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: parent.width - railList.keyH * 0.45
+                                    text: w.title(railKey.modelData)
+                                    color: railKey.textColor
+                                    font.family: railKey.keySt.keyFont ?? w.face
+                                    font.pixelSize: railList.keyH * 0.32
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                    }
+                    WidgetKey {
+                        objectName: railList.visible ? "menuArrange" : ""
+                        visible: railList.visible && w.mayArrange && !w.arranging
+                        width: railColumn.width
+                        height: railList.keyH
+                        text: qsTr("Arrange…")
+                        fontScale: 0.32
+                        onClicked: w.setArranging(true)
+                    }
+                }
             }
-            // A manager holds one: changed right here.
-            onItemHeld: item => quickCard.edit(item)
+            MenuButtons {
+                id: grid
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                items: w.shown
+                category: w.shownCategory
+                categories: w.categories
+                pos: w.pos
+                textScale: w.zone ? w.zone.textScale : 1
+                busy: w.busy
+                setColumns: w.setColumns
+                compact: w.phone
+                screenScale: w.zone ? w.zone.screenScale : 1
+                pagePhotos: w.pagePhotos
+                // Headings and spaces: one category, as arranged in the Menu Builder.
+                sectioned: !w.search && !w.popular && !w.special
+                st: w.zone ? w.zone.st : ({})
+                face: w.face
+                gap: w.gap
+                arranging: w.arranging
+                picked: w.picked
+                managing: w.mayArrange
+                allergies: w.allergies
+                onItemTapped: item => {
+                    if (w.arranging) w.pick(item.id)
+                    else if (item.available) w.zone.controller.orderItem(item.id, w.search)
+                }
+                // A manager holds one: changed right here.
+                onItemHeld: item => quickCard.edit(item)
+            }
         }
         // Arranging: move the picked item, color it, Done.
         RowLayout {
@@ -294,7 +367,7 @@ Item {
                 Layout.preferredWidth: 170; Layout.preferredHeight: parent.keyH
                 readonly property var item: w.pos ? w.pos.menuItems.find(i => i.id === w.picked) : null
                 text: "🎨 " + qsTr("Color…")
-                baseColor: item && item.buttonColor ? item.buttonColor : "#343c49"
+                baseColor: item && item.buttonColor ? item.buttonColor : Ui.key
                 fontScale: 0.32
                 onClicked: colorPopup.open()
             }
@@ -324,7 +397,7 @@ Item {
                 objectName: "arrangeDone"
                 Layout.preferredWidth: 150; Layout.preferredHeight: parent.keyH
                 text: qsTr("Done")
-                baseColor: "#1f6b40"
+                baseColor: Ui.goDark
                 fontScale: 0.34
                 onClicked: w.setArranging(false)
             }
@@ -337,7 +410,7 @@ Item {
                 : w.search ? (w.typed === "" ? qsTr("Type part of a name: \"cob\" finds Cobb.")
                                               : qsTr("Nothing on the menu has \"%1\".").arg(w.typed))
                 : qsTr("Nothing on the menu here yet (Manager -> Menu).")
-            color: "#8a94a6"
+            color: Ui.muted
             font.pixelSize: 24
         }
     }

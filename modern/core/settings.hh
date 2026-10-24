@@ -337,6 +337,9 @@ struct PosSettings {
     // A phone (handheld) whose screen was off this long asks for a PIN again
     // (its check comes back when they log in). -1: never.
     int phoneLockSeconds = 30;
+    // How every screen looks: "classic" (raised buttons, textures) or
+    // "modern" (flat, bordered, the Inter font). See Layout::useStyle.
+    std::string style = "classic";
     // Phones and tablets get the store's newer app by themselves while
     // nobody is logged in on them (Android still asks before installing).
     bool screensUpdate = true;
