@@ -25,6 +25,8 @@
 
 #include <QQmlApplicationEngine>
 #include <functional>
+#include <QFile>
+#include <QJsonDocument>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QDate>
@@ -4487,6 +4489,37 @@ TEST_CASE("Touch: a check with lines on a phone: its keys a finger tall", "[ui][
     small.removeDuplicates();
     INFO(small.join(u"\n"_s).toStdString());
     CHECK(small.isEmpty());
+}
+
+TEST_CASE("Store style: Modern's menu has the categories down the left; Classic's across the top", "[ui][style]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.c.jumpTo(u"menu-all"_s));
+    QTest::qWait(150);
+    const auto shown = [&](const char *name) {
+        QQuickItem *i = Screen::findBy(s.window->contentItem(), "objectName", QString::fromLatin1(name));
+        return i && i->isVisible() ? i : nullptr;
+    };
+    CHECK_FALSE(shown("menuRail"));
+    CHECK(shown("menuFamily-burgers"));   // in the rows across the top
+
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    layout::Layout modern = seedLayout();
+    REQUIRE(modern.useStyle(u"modern"_s, layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object())));
+    s.c.replaceLayout(modern);
+    REQUIRE(s.c.jumpTo(u"menu-all"_s));
+    QTest::qWait(150);
+    s.shot("style-modern-menu");
+    QQuickItem *rail = shown("menuRail");
+    REQUIRE(rail);
+    QQuickItem *salads = shown("menuFamily-salads");
+    REQUIRE(salads);
+    CHECK(salads->mapToItem(rail, QPointF(0, 0)).x() > -1);   // in the column
+    s.tapItem(salads);
+    CHECK(s.c.menuCategory() == u"salads"_s);
+    REQUIRE(shown("menuItem-caesar"));
 }
 
 // --- the user manual's screenshots (hidden: run with "[.manual]" and VTM_SHOTS) ---------------

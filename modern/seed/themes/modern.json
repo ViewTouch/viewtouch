@@ -24,7 +24,8 @@
    "keyFont": "Inter",
    "keyRadius": 12,
    "menuColors": "mark",
-   "keyBorderColor": "#2e3440"
+   "keyBorderColor": "#2e3440",
+   "menuTabs": "rail"
   },
   "selected": {
    "fill": "#2f6fe0",

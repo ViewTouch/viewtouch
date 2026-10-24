@@ -879,6 +879,9 @@ int runStore(const Args &cli, const Options &o)
                     state.seen << p.id;
             }
             const auto update = layout->updateFromStarter(*starter, state.seen, state.installed);
+            // New and updated starter pages come arranged for Classic: moved to the store's style.
+            if (const QStringList fresh = update.added + update.updated; !fresh.isEmpty())
+                layout->arrangePages(fresh);
             QString error;
             if ((!update.added.isEmpty() || !update.updated.isEmpty() || !update.buttonsAdded.isEmpty())
                 && !store.save(*layout, &error))
@@ -1513,10 +1516,15 @@ int runStore(const Args &cli, const Options &o)
     const auto applyStyle = [&hub, shared] {
         const QString id = QString::fromStdString(shared->settings.style);
         QFile f(id == u"classic" ? u":/seed/theme.json"_s : u":/seed/themes/"_s + id + u".json"_s);
-        if (vt::layout::Layout::styleOf(hub.layout().theme) == id || !f.open(QIODevice::ReadOnly))
+        if (!f.open(QIODevice::ReadOnly))
             return;
-        if (hub.useStyle(id, vt::layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object())))
+        const auto builtIn = vt::layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+        if (vt::layout::Layout::styleOf(hub.layout().theme) == id) {
+            if (hub.refreshStyle(builtIn))   // a newer starter theme for it
+                qInfo().noquote() << "Style" << id << "updated";
+        } else if (hub.useStyle(id, builtIn)) {
             qInfo().noquote() << "Style:" << id;
+        }
     };
     applyStyle();
     QObject::connect(shared, &vt::app::PosShared::adminChanged, &hub, applyStyle);

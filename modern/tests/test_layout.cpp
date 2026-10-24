@@ -8,6 +8,8 @@
 #include <QJsonDocument>
 #include <QTemporaryDir>
 
+#include <algorithm>
+
 using namespace Qt::StringLiterals;
 using namespace vt::layout;
 
@@ -413,4 +415,84 @@ TEST_CASE("Store style: Modern and back to Classic, the store's own theme change
     CHECK(l->resolveStyle(z, u"tables"_s, ZoneState::Normal) == classicLook);
     REQUIRE(l->useStyle(u"modern"_s, Theme{}));   // its own, not the built-in one
     CHECK(l->theme.style.normal.value(u"keyFill"_s).toString() == u"#222222"_s);
+}
+
+TEST_CASE("Store style: the starter pages' buttons move to Modern's places and back; still never edited", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const auto starter = *l;
+    const Page *before = l->page(u"order-template"_s);
+    REQUIRE(before);
+    const QRect classicPay = before->zone(u"flow-pay"_s)->rect;
+    const QString print = Layout::fingerprint(*before);
+    // A page of the store's own: nowhere else to go.
+    Page mine;
+    mine.id = u"mine"_s;
+    Zone z;
+    z.id = u"b"_s;
+    z.rect = QRect(10, 20, 30, 40);
+    mine.zones.append(z);
+    l->pages.append(mine);
+
+    Theme modern;
+    REQUIRE(l->useStyle(u"modern"_s, modern));
+    const Page *now = l->page(u"order-template"_s);
+    const QRect modernPay = now->zone(u"flow-pay"_s)->rect;
+    CHECK(modernPay != classicPay);
+    CHECK(modernPay == QRect(1672, 980, 232, 84));
+    CHECK(Layout::fingerprint(*now) == print);   // only moved for the style: as installed
+    CHECK(l->page(u"mine"_s)->zones.first().rect == QRect(10, 20, 30, 40));
+    CHECK_FALSE(l->page(u"mine"_s)->extra.contains(u"styleRects"_s));
+
+    // A newer version of the page comes while the store is on Modern: it
+    // replaces this one (never edited) and is moved to Modern too.
+    Layout newer = starter;
+    Page &np = *std::ranges::find(newer.pages, u"order-template"_s, &Page::id);
+    np.name = u"Order Template v2"_s;
+    QStringList seen;
+    for (const Page &p : starter.pages) {
+        seen << p.id;
+        for (const Zone &zz : p.zones)
+            seen << p.id + u'#' + zz.id;
+    }
+    QHash<QString, QString> installed;
+    for (const Page &p : starter.pages)
+        installed.insert(p.id, Layout::fingerprint(p));
+    const auto update = l->updateFromStarter(newer, seen, installed);
+    REQUIRE(update.updated.contains(u"order-template"_s));
+    l->arrangePages(update.updated);
+    CHECK(l->page(u"order-template"_s)->name == u"Order Template v2"_s);
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == modernPay);
+
+    // Moved by hand while Modern, then Classic: back where Classic had it; Modern keeps the move.
+    for (Zone &zz : std::ranges::find(l->pages, u"order-template"_s, &Page::id)->zones)
+        if (zz.id == u"flow-pay")
+            zz.rect.translate(-8, 0);
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == classicPay);
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    CHECK(l->page(u"order-template"_s)->zone(u"flow-pay"_s)->rect == modernPay.translated(-8, 0));
+}
+
+TEST_CASE("Store style: a newer built-in theme replaces an unchanged one, never one the store changed", "[layout][style]")
+{
+    Layout l;
+    Theme v1;
+    v1.name = u"Modern"_s;
+    v1.style.normal.insert(u"radius"_s, 12);
+    REQUIRE(l.useStyle(u"modern"_s, v1));
+    Theme v2 = v1;
+    v2.style.normal.insert(u"radius"_s, 10);
+    CHECK_FALSE(l.refreshStyle(v1));   // the same
+    REQUIRE(l.refreshStyle(v2));
+    CHECK(l.theme.style.normal.value(u"radius"_s).toInt() == 10);
+    CHECK(Layout::styleOf(l.theme) == u"modern"_s);
+    CHECK(l.theme.extra.contains(u"otherStyles"_s));   // Classic still waiting
+    // The store's own change: kept from then on.
+    l.theme.style.normal.insert(u"fill"_s, u"#123456"_s);
+    Theme v3 = v2;
+    v3.style.normal.insert(u"radius"_s, 8);
+    CHECK_FALSE(l.refreshStyle(v3));
+    CHECK(l.theme.style.normal.value(u"fill"_s).toString() == u"#123456"_s);
 }

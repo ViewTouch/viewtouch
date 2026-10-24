@@ -96,6 +96,9 @@ Item {
         picked = id
         zone.controller.setWidgetState(zone.zoneId + ".picked", id)
     }
+    // The style's "menuTabs": "rail" puts the categories in a column down the
+    // left (Modern on a register); else in rows across the top.
+    readonly property bool rail: !phone && zone && zone.st.menuTabs === "rail"
     readonly property bool showTabs: !search && !popular && fixedFamily === "" && families.length > 1
     readonly property bool mayArrange: pos !== null && pos.loggedIn && pos.can("manager") && !search && !popular
 
@@ -193,7 +196,7 @@ Item {
         Flow {
             id: tabs
             Layout.fillWidth: true
-            visible: !w.phone && w.showTabs
+            visible: !w.phone && !w.rail && w.showTabs
             spacing: w.gap * 0.6
             // As many as fit at 120 pixels on the screen (a phone: three).
             readonly property real screenWidth: w.width * (w.zone ? w.zone.screenScale : 1)
@@ -232,35 +235,103 @@ Item {
             }
         }
 
-        MenuButtons {
-            id: grid
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            items: w.shown
-            category: w.shownCategory
-            categories: w.categories
-            pos: w.pos
-            textScale: w.zone ? w.zone.textScale : 1
-            busy: w.busy
-            setColumns: w.setColumns
-            compact: w.phone
-            screenScale: w.zone ? w.zone.screenScale : 1
-            pagePhotos: w.pagePhotos
-            // Headings and spaces: one category, as arranged in the Menu Builder.
-            sectioned: !w.search && !w.popular && !w.special
-            st: w.zone ? w.zone.st : ({})
-            face: w.face
-            gap: w.gap
-            arranging: w.arranging
-            picked: w.picked
-            managing: w.mayArrange
-            allergies: w.allergies
-            onItemTapped: item => {
-                if (w.arranging) w.pick(item.id)
-                else if (item.available) w.zone.controller.orderItem(item.id, w.search)
+            spacing: w.gap
+            // The categories down the left (Modern): each with its color's dot.
+            Flickable {
+                id: railList
+                objectName: "menuRail"
+                visible: w.rail && w.showTabs
+                Layout.fillHeight: true
+                Layout.preferredWidth: Math.min(w.width * 0.2, 300)
+                contentHeight: railColumn.height
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                interactive: contentHeight > height + 1
+                readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(48) : 56)
+                Column {
+                    id: railColumn
+                    width: railList.width
+                    spacing: w.gap * 0.5
+                    Repeater {
+                        model: railList.visible ? w.families : []
+                        delegate: WidgetKey {
+                            id: railKey
+                            required property string modelData
+                            objectName: "menuFamily-" + modelData
+                            width: railColumn.width
+                            height: railList.keyH
+                            text: ""
+                            accent: modelData === w.family
+                            onClicked: w.zone.controller.menuCategory = modelData
+                            readonly property string dot: (w.categoryOf(modelData).color ?? "") || (modelData === "★" ? "#f5b940" : "")
+                            Row {
+                                anchors.fill: parent
+                                anchors.leftMargin: railList.keyH * 0.3
+                                anchors.rightMargin: railList.keyH * 0.2
+                                spacing: railList.keyH * 0.22
+                                Rectangle {
+                                    visible: railKey.dot !== "" && modelData !== "★" && modelData !== "♥"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: railList.keyH * 0.2; height: width; radius: width / 2
+                                    color: railKey.dot || "transparent"
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: parent.width - railList.keyH * 0.45
+                                    text: w.title(railKey.modelData)
+                                    color: railKey.textColor
+                                    font.family: railKey.keySt.keyFont ?? w.face
+                                    font.pixelSize: railList.keyH * 0.32
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                    }
+                    WidgetKey {
+                        objectName: railList.visible ? "menuArrange" : ""
+                        visible: railList.visible && w.mayArrange && !w.arranging
+                        width: railColumn.width
+                        height: railList.keyH
+                        text: qsTr("Arrange…")
+                        fontScale: 0.32
+                        onClicked: w.setArranging(true)
+                    }
+                }
             }
-            // A manager holds one: changed right here.
-            onItemHeld: item => quickCard.edit(item)
+            MenuButtons {
+                id: grid
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                items: w.shown
+                category: w.shownCategory
+                categories: w.categories
+                pos: w.pos
+                textScale: w.zone ? w.zone.textScale : 1
+                busy: w.busy
+                setColumns: w.setColumns
+                compact: w.phone
+                screenScale: w.zone ? w.zone.screenScale : 1
+                pagePhotos: w.pagePhotos
+                // Headings and spaces: one category, as arranged in the Menu Builder.
+                sectioned: !w.search && !w.popular && !w.special
+                st: w.zone ? w.zone.st : ({})
+                face: w.face
+                gap: w.gap
+                arranging: w.arranging
+                picked: w.picked
+                managing: w.mayArrange
+                allergies: w.allergies
+                onItemTapped: item => {
+                    if (w.arranging) w.pick(item.id)
+                    else if (item.available) w.zone.controller.orderItem(item.id, w.search)
+                }
+                // A manager holds one: changed right here.
+                onItemHeld: item => quickCard.edit(item)
+            }
         }
         // Arranging: move the picked item, color it, Done.
         RowLayout {

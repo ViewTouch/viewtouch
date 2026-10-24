@@ -59,6 +59,18 @@ public:
     // the pages' own (frames, shadows, fonts, textures; not colors).
     static QString styleOf(const Theme &theme);
     bool useStyle(const QString &id, const Theme &builtIn);
+    // A style's theme as ViewTouch made it ("builtIn": the fingerprint of the
+    // starter theme it is), never changed here: a newer starter theme for it
+    // takes its place (like a starter page). A theme the store changed stays.
+    bool refreshStyle(const Theme &builtIn);
+    static QString themePrint(const Theme &theme);
+    // A page's buttons where a style puts them: "styleRects" {style: {zone
+    // id: rect}} holds the other styles' places (a starter page brings its
+    // Modern ones; a store's own page has none and stays as it is). Moved to
+    // style `id`, the places it leaves are kept there for coming back.
+    static bool arrangePage(Page &page, const QString &id, const QString &from);
+    // The pages in `ids` (all when empty) moved to the theme's style.
+    void arrangePages(const QStringList &ids = {});
 
     // Human-readable problems: dangling references, duplicate ids, missing
     // required roles, zones off the canvas. Empty means the layout is sound.

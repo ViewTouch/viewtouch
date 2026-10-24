@@ -207,16 +207,75 @@ QString Layout::styleOf(const Theme &theme)
     return id.isEmpty() ? u"classic"_s : id;
 }
 
+QString Layout::themePrint(const Theme &theme)
+{
+    QJsonObject o = theme.toJson();
+    for (const char *k : {"styleId", "otherStyles", "builtIn", "schemaVersion"})
+        o.remove(QLatin1String(k));
+    return QString::fromLatin1(QCryptographicHash::hash(QJsonDocument(o).toJson(QJsonDocument::Compact),
+                                                        QCryptographicHash::Sha256).toHex());
+}
+
+bool Layout::refreshStyle(const Theme &builtIn)
+{
+    const QString was = theme.extra.value(u"builtIn").toString();
+    const QString now = themePrint(builtIn);
+    if (was.isEmpty() || was == now || themePrint(theme) != was)
+        return false;   // not a starter theme, the same, or changed here
+    Theme next = builtIn;
+    for (const char *k : {"styleId", "otherStyles"})
+        if (theme.extra.contains(QLatin1String(k)))
+            next.extra.insert(QLatin1String(k), theme.extra.value(QLatin1String(k)));
+    next.extra.insert(u"builtIn"_s, now);
+    theme = std::move(next);
+    return true;
+}
+
+bool Layout::arrangePage(Page &page, const QString &id, const QString &from)
+{
+    QJsonObject places = page.extra.value(u"styleRects").toObject();
+    if (id == from || !places.contains(id))
+        return false;
+    const QJsonObject to = places.value(id).toObject();
+    QJsonObject left;
+    for (Zone &z : page.zones) {
+        left.insert(z.id, QJsonObject{{u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()}, {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}});
+        if (const QJsonObject r = to.value(z.id).toObject(); !r.isEmpty())
+            z.rect = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
+    }
+    places.remove(id);
+    places.insert(from, left);
+    page.extra.insert(u"styleRects"_s, places);
+    return true;
+}
+
+void Layout::arrangePages(const QStringList &ids)
+{
+    const QString id = styleOf(theme);
+    for (Page &p : pages) {
+        if (!ids.isEmpty() && !ids.contains(p.id))
+            continue;
+        // Which style it's arranged for: the one its kept places don't name.
+        const QJsonObject places = p.extra.value(u"styleRects").toObject();
+        const QString now = places.contains(u"classic"_s) ? u"modern"_s : u"classic"_s;
+        arrangePage(p, id, now);
+    }
+}
+
 bool Layout::useStyle(const QString &id, const Theme &builtIn)
 {
     const QString was = styleOf(theme);
     if (id.isEmpty() || id == was)
         return false;
+    for (Page &p : pages)
+        arrangePage(p, id, was);
     QJsonObject others = theme.extra.value(u"otherStyles").toObject();
     QJsonObject leaving = theme.toJson();
     leaving.remove(u"otherStyles"_s);
     leaving.insert(u"styleId"_s, was);
     Theme next = others.contains(id) ? Theme::fromJson(others.value(id).toObject()) : builtIn;
+    if (!others.contains(id))
+        next.extra.insert(u"builtIn"_s, themePrint(builtIn));
     others.remove(id);
     others.insert(was, leaving);
     next.extra.insert(u"styleId"_s, id);
@@ -227,9 +286,14 @@ bool Layout::useStyle(const QString &id, const Theme &builtIn)
 
 QString Layout::fingerprint(const Page &page)
 {
-    // QJsonObject keeps its keys sorted, so equal pages give equal text.
+    // As arranged for Classic (a starter page only moved to Modern is still
+    // as installed). QJsonObject keeps its keys sorted, so equal pages give
+    // equal text.
+    Page classic = page;
+    if (page.extra.value(u"styleRects").toObject().contains(u"classic"_s))
+        arrangePage(classic, u"classic"_s, u"modern"_s);
     return QString::fromLatin1(
-        QCryptographicHash::hash(QJsonDocument(page.toJson()).toJson(QJsonDocument::Compact), QCryptographicHash::Sha256)
+        QCryptographicHash::hash(QJsonDocument(classic.toJson()).toJson(QJsonDocument::Compact), QCryptographicHash::Sha256)
             .toHex());
 }
 

@@ -20,6 +20,15 @@ bool LayoutHub::save(const layout::Layout &layout, QString *error, const void *o
     return true;
 }
 
+bool LayoutHub::refreshStyle(const layout::Theme &builtIn)
+{
+    layout::Layout l = layout_;
+    if (!l.refreshStyle(builtIn))
+        return false;
+    QString error;
+    return save(l, &error, nullptr);
+}
+
 bool LayoutHub::useStyle(const QString &id, const layout::Theme &builtIn)
 {
     layout::Layout l = layout_;
