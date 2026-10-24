@@ -496,3 +496,15 @@ TEST_CASE("Store style: a newer built-in theme replaces an unchanged one, never 
     CHECK_FALSE(l.refreshStyle(v3));
     CHECK(l.theme.style.normal.value(u"fill"_s).toString() == u"#123456"_s);
 }
+
+TEST_CASE("Store style: the phone order frame's menu area moves with its buttons", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const QRect classic = l->page(u"order-template-phone"_s)->contentArea;
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    CHECK(l->page(u"order-template-phone"_s)->contentArea == QRect(16, 718, 1048, 1274));
+    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 560);
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    CHECK(l->page(u"order-template-phone"_s)->contentArea == classic);
+}

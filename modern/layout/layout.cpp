@@ -238,8 +238,16 @@ bool Layout::arrangePage(Page &page, const QString &id, const QString &from)
         return false;
     const QJsonObject to = places.value(id).toObject();
     QJsonObject left;
+    // A phone frame's area for the menu ("@contentArea") moves with its buttons.
+    const auto rectJson = [](const QRect &r) {
+        return QJsonObject{{u"x"_s, r.x()}, {u"y"_s, r.y()}, {u"w"_s, r.width()}, {u"h"_s, r.height()}};
+    };
+    if (const QJsonObject r = to.value(u"@contentArea").toObject(); !r.isEmpty()) {
+        left.insert(u"@contentArea"_s, rectJson(page.contentArea));
+        page.contentArea = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
+    }
     for (Zone &z : page.zones) {
-        left.insert(z.id, QJsonObject{{u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()}, {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}});
+        left.insert(z.id, rectJson(z.rect));
         if (const QJsonObject r = to.value(z.id).toObject(); !r.isEmpty())
             z.rect = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
     }

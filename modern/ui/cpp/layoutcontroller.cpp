@@ -634,7 +634,9 @@ void LayoutController::fitToScreen(Shown &s) const
     // Taller: the check gets it. Shorter: the biggest other panel (the menu
     // scrolls) gives it up, so the check stays whole.
     const auto check = [](const vt::layout::Zone *z) { return z->kind == u"orderList" || z->kind == u"paymentPanel"; };
-    const bool toCheck = extra > 0;
+    // (The style may say the menu gets it: Modern's check is a short strip
+    // that opens as a sheet.)
+    const bool toCheck = extra > 0 && activeLayout().theme.extra.value(u"phoneRoomTo").toString() != u"menu";
     const vt::layout::Zone *main = nullptr;
     for (const Layout::PlacedZone &pz : s.zones) {
         const QString &k = pz.zone->kind;
