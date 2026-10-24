@@ -63,7 +63,8 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS
 qml6-module-qtquick-layouts, qml6-module-qtquick-shapes, qml6-module-qtquick-dialogs, \
 qml6-module-qtquick-window, qml6-module-qtqml-workerscript, libqt6sql6-sqlite, qt6-qpa-plugins, \
 fonts-dejavu-core, systemd, libssl3 | libssl3t64, openssl, curl")   # libcrypto: encrypted backups (loaded at run time)
-set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, qt6-wayland, cups-client")
+# fonts-inter: the Modern style's font (Store Settings -> Screens -> Style).
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, qt6-wayland, cups-client, fonts-inter")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/debian/conffiles
      "/etc/viewtouch/server.conf\n/etc/viewtouch/kiosk.conf\n")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
@@ -80,7 +81,7 @@ set(CPACK_RPM_PACKAGE_GROUP "Applications/Productivity")
 set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtdeclarative, qt6-qtbase-gui, dejavu-sans-fonts, openssl-libs, openssl, curl, util-linux")
 # systemd-sysusers creates the viewtouch account in the install script
 set(CPACK_RPM_PACKAGE_REQUIRES_POST "systemd")
-set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, qt6-qtwayland, cups-client")
+set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, qt6-qtwayland, cups-client, rsms-inter-fonts")
 set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${VTM_PKG}/postinst)
 set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${VTM_PKG}/prerm)
 set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE ${VTM_PKG}/postrm)

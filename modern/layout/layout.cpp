@@ -170,6 +170,7 @@ QJsonObject Layout::resolveStyle(const Zone &zone, const QString &viewingPageId,
     if (kindStyle)
         Style::mergeMissing(s, kindStyle->state(state));
     Style::mergeMissing(s, theme.style.state(state));
+    enforce(s, state == ZoneState::Normal ? u"normal"_s : state == ZoneState::Selected ? u"selected"_s : u"disabled"_s);
 
     if (state != ZoneState::Normal)
         Style::mergeMissing(s, resolveStyle(zone, viewingPageId, ZoneState::Normal));
@@ -182,7 +183,46 @@ QJsonObject Layout::resolveBackground(const QString &pageId) const
     for (const Page *p : templateChain(pageId))
         Style::mergeMissing(bg, p->background);
     Style::mergeMissing(bg, theme.background);
+    enforce(bg, u"background"_s);
     return bg;
+}
+
+void Layout::enforce(QJsonObject &style, const QString &part) const
+{
+    const QJsonObject over = theme.extra.value(u"enforce").toObject().value(part).toObject();
+    for (auto it = over.begin(); it != over.end(); ++it) {
+        if (it.key() == u"frameMap") {   // {"raised": "border"}: those frames become that one
+            const QJsonValue to = it.value().toObject().value(style.value(u"frame").toString());
+            if (!to.isUndefined())
+                style.insert(u"frame"_s, to);
+        } else {
+            style.insert(it.key(), it.value());
+        }
+    }
+}
+
+QString Layout::styleOf(const Theme &theme)
+{
+    const QString id = theme.extra.value(u"styleId").toString();
+    return id.isEmpty() ? u"classic"_s : id;
+}
+
+bool Layout::useStyle(const QString &id, const Theme &builtIn)
+{
+    const QString was = styleOf(theme);
+    if (id.isEmpty() || id == was)
+        return false;
+    QJsonObject others = theme.extra.value(u"otherStyles").toObject();
+    QJsonObject leaving = theme.toJson();
+    leaving.remove(u"otherStyles"_s);
+    leaving.insert(u"styleId"_s, was);
+    Theme next = others.contains(id) ? Theme::fromJson(others.value(id).toObject()) : builtIn;
+    others.remove(id);
+    others.insert(was, leaving);
+    next.extra.insert(u"styleId"_s, id);
+    next.extra.insert(u"otherStyles"_s, others);
+    theme = std::move(next);
+    return true;
 }
 
 QString Layout::fingerprint(const Page &page)

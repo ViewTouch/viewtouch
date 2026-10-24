@@ -50,6 +50,16 @@ public:
     QJsonObject resolveStyle(const Zone &zone, const QString &viewingPageId, ZoneState state) const;
     QJsonObject resolveBackground(const QString &pageId) const;
 
+    // The store's style (Store Settings -> Screens -> Style): "classic", or
+    // "modern". The theme in use says which it is ("styleId"); the other
+    // ones wait in it ("otherStyles"), with any changes the store made to
+    // them, for when the store switches back. `builtIn`: the style's
+    // starter theme, for a style this store has never used. A style's
+    // "enforce" (normal, selected, disabled, background) is its look over
+    // the pages' own (frames, shadows, fonts, textures; not colors).
+    static QString styleOf(const Theme &theme);
+    bool useStyle(const QString &id, const Theme &builtIn);
+
     // Human-readable problems: dangling references, duplicate ids, missing
     // required roles, zones off the canvas. Empty means the layout is sound.
     QStringList validate() const;
@@ -81,6 +91,10 @@ public:
                                     const QHash<QString, QString> &installed);
     static QString fingerprint(const Page &page);
 
+private:
+    void enforce(QJsonObject &style, const QString &part) const;   // the style's own look (useStyle)
+
+public:
     // The version of `pageId` made for `formFactor` screens ("phone"), if any.
     const Page *variantFor(const QString &pageId, const QString &formFactor) const;
 

@@ -39,8 +39,19 @@ Item {
                 // As tall as fits, up to a comfortable size (a phone: about 56 on the screen).
                 height: Math.min(w.phone ? w.zone.touch(56) : 260, (w.height - w.gap * (w.rows - 1)) / w.rows)
                 text: modelData.mine ? modelData.name : qsTranslate("Page", modelData.name)
-                baseColor: modelData.color || (w.zone.st.keyFill ?? "#343c49")
-                textColor: modelData.color ? w.inkOn(modelData.color) : (w.zone.st.keyTextColor ?? "white")
+                readonly property bool mark: w.zone.st.menuColors === "mark"   // Modern: a strip of its color
+                baseColor: (!mark && modelData.color) || (w.zone.st.keyFill ?? "#343c49")
+                textColor: modelData.color && !mark ? w.inkOn(modelData.color) : (w.zone.st.keyTextColor ?? "white")
+                Rectangle {
+                    visible: parent.mark && !!parent.modelData.color
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: 4
+                    width: parent.width - parent.radius * 2
+                    height: Math.max(3, parent.height * 0.06)
+                    radius: height / 2
+                    color: parent.modelData.color || "transparent"
+                }
                 fontScale: w.phone ? 0.3 : 0.2
                 onClicked: w.zone.controller.openCategory(modelData.id)
             }

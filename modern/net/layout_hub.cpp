@@ -20,4 +20,13 @@ bool LayoutHub::save(const layout::Layout &layout, QString *error, const void *o
     return true;
 }
 
+bool LayoutHub::useStyle(const QString &id, const layout::Theme &builtIn)
+{
+    layout::Layout l = layout_;
+    if (!l.useStyle(id, builtIn))
+        return false;
+    QString error;
+    return save(l, &error, nullptr);
+}
+
 } // namespace vt::net

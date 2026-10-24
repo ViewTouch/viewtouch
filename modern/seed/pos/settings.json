@@ -42,6 +42,7 @@
   "autoLogoutMinutes": 3,
   "phoneLockSeconds": 30,
   "screensUpdate": true,
+  "style": "classic",
   "tableLongMinutes": 90,
   "loyalty": {
     "enabled": true,

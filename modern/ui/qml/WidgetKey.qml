@@ -33,7 +33,8 @@ Rectangle {
 
     radius: keySt.keyRadius !== undefined ? keySt.keyRadius : Math.min(width, height) * 0.14
     color: tap.pressed || accent ? (keySt.keyLitFill ?? (tap.pressed ? "#4c8dff" : "#1f8a4c")) : baseColor
-    border.color: Qt.darker(color, 1.5)
+    // The style's own edge for keys (Modern: a thin gray one), else a darker shade.
+    border.color: !(tap.pressed || accent) && keySt.keyBorderColor ? keySt.keyBorderColor : Qt.darker(color, 1.5)
     border.width: 2
 
     Text {

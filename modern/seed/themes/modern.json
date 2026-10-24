@@ -1,0 +1,536 @@
+{
+ "schemaVersion": 1,
+ "name": "ViewTouch Modern",
+ "styleId": "modern",
+ "background": {
+  "fill": "#0f1115"
+ },
+ "style": {
+  "normal": {
+   "fill": "#1b1f27",
+   "textColor": "#e8ecf2",
+   "font": "Inter",
+   "fontSize": 28,
+   "bold": true,
+   "frame": "border",
+   "frameWidth": 2,
+   "borderColor": "#2e3440",
+   "radius": 14,
+   "shadow": 0,
+   "textStyle": "none",
+   "keyFill": "#1b1f27",
+   "keyTextColor": "#e8ecf2",
+   "keyLitFill": "#4c8dff",
+   "keyFont": "Inter",
+   "keyRadius": 12,
+   "menuColors": "mark",
+   "keyBorderColor": "#2e3440"
+  },
+  "selected": {
+   "fill": "#2f6fe0",
+   "frame": "border",
+   "borderColor": "#4c8dff",
+   "shadow": 0
+  },
+  "disabled": {
+   "opacity": 0.4
+  }
+ },
+ "kinds": {
+  "label": {
+   "normal": {
+    "fill": "transparent",
+    "frame": "none",
+    "shadow": 0,
+    "fontSize": 44,
+    "textColor": "#e8ecf2"
+   },
+   "selected": {
+    "fill": "transparent",
+    "frame": "none"
+   }
+  },
+  "comment": {
+   "normal": {
+    "fill": "#fff3b0",
+    "textColor": "#3d3200",
+    "frame": "flat",
+    "shadow": 0,
+    "fontSize": 20,
+    "bold": false
+   }
+  },
+  "image": {
+   "normal": {
+    "fill": "#f5efe0",
+    "textColor": "#2b2b2b"
+   }
+  },
+  "orderList": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "loginPad": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "guestCount": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "numPad": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "paymentPanel": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "logoutPanel": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "clock": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "checkList": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "keyboard": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "statusBar": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "adminPanel": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "reportView": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "drawerPanel": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "endOfDay": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "splitCheck": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "customerInfo": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "customerLookup": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "giftCard": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "waitlist": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "schedule": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "factoryReset": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "messageComposer": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "network": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "receiveDelivery": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "checkSearch": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "orderLater": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "menuGrid": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "menuCategories": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "menuBuilder": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "timeClock": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "dashboard": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "checklist": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "hostStand": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  },
+  "deliveryBoard": {
+   "normal": {
+    "fill": "#151820",
+    "frame": "border",
+    "shadow": 0,
+    "radius": 16,
+    "textColor": "#e8ecf2",
+    "fontSize": 28,
+    "bold": false,
+    "frameWidth": 2,
+    "borderColor": "#262b36"
+   }
+  }
+ },
+ "enforce": {
+  "normal": {
+   "shadow": 0,
+   "texture": "",
+   "textStyle": "none",
+   "font": "Inter",
+   "frameMap": {
+    "raised": "border",
+    "inset": "border"
+   }
+  },
+  "selected": {
+   "shadow": 0,
+   "texture": "",
+   "frameMap": {
+    "raised": "border",
+    "inset": "border"
+   }
+  },
+  "background": {
+   "texture": "",
+   "fill": "#0f1115"
+  }
+ }
+}

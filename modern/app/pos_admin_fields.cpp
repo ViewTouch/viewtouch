@@ -522,6 +522,11 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             with(with(field(u"phoneLockSeconds"_s, tr("Handhelds: ask for the PIN after the screen was off (seconds)"), u"int"_s,
                             tr("Phones and handhelds let their screen sleep; when it was off this long, the next touch asks "
                                "for a PIN (their check comes back). 0 = every time, -1 = never.")), u"min"_s, -1), u"max"_s, 3600),
+            with(field(u"style"_s, tr("Style"), u"enum"_s,
+                       tr("How every screen looks. Classic: raised buttons and textures, as ViewTouch always looked. "
+                          "Modern: flat buttons with thin borders, calm colors and a modern font. "
+                          "Switch back any time: your buttons, pages and colors stay as they are in each.")),
+                 u"options"_s, options({{"classic", "Classic"}, {"modern", "Modern"}})),
             field(u"screensUpdate"_s, tr("Phones and tablets get updates by themselves"), u"bool"_s,
                   tr("While nobody is logged in on one, it gets the newer app from this computer; "
                      "the next person to use it touches Install. Off: the maintainer updates each one.")),

@@ -1508,6 +1508,18 @@ int runStore(const Args &cli, const Options &o)
         if (origin != &controller)
             controller.replaceLayout(l);
     });
+    // The store's style (Store Settings -> Screens -> Style): its theme on
+    // every screen, now and whenever it's changed.
+    const auto applyStyle = [&hub, shared] {
+        const QString id = QString::fromStdString(shared->settings.style);
+        QFile f(id == u"classic" ? u":/seed/theme.json"_s : u":/seed/themes/"_s + id + u".json"_s);
+        if (vt::layout::Layout::styleOf(hub.layout().theme) == id || !f.open(QIODevice::ReadOnly))
+            return;
+        if (hub.useStyle(id, vt::layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object())))
+            qInfo().noquote() << "Style:" << id;
+    };
+    applyStyle();
+    QObject::connect(shared, &vt::app::PosShared::adminChanged, &hub, applyStyle);
 
     // A self-order kiosk for guests: by option, or this terminal's setting.
     if (cli.isSet(o.selfOrder) || pos.screenMode() == u"selfOrder")
