@@ -508,3 +508,25 @@ TEST_CASE("Store style: the phone order frame's menu area moves with its buttons
     REQUIRE(l->useStyle(u"classic"_s, Theme{}));
     CHECK(l->page(u"order-template-phone"_s)->contentArea == classic);
 }
+
+TEST_CASE("Store style: switching keeps places only for the buttons that move; older switched pages still unedited", "[layout][style]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const Page starter = *l->page(u"tables"_s);
+    const QStringList moved = starter.extra.value(u"styleRects").toObject().value(u"modern").toObject().keys();
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    REQUIRE(l->useStyle(u"classic"_s, Theme{}));
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    const Page &now = *l->page(u"tables"_s);
+    CHECK(now.extra.value(u"styleRects").toObject().value(u"classic").toObject().keys() == moved);   // no walls, no tables
+    CHECK(Layout::fingerprint(now) == Layout::fingerprint(starter));
+
+    // Switched by the first Modern build: every button's Classic place kept.
+    Page older = now;
+    QJsonObject all;
+    for (const Zone &z : starter.zones)
+        all.insert(z.id, QJsonObject{{u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()}, {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}});
+    older.extra.insert(u"styleRects"_s, QJsonObject{{u"classic"_s, all}});
+    CHECK(Layout::fingerprint(older) == Layout::fingerprint(starter));   // still as installed
+}

@@ -246,10 +246,13 @@ bool Layout::arrangePage(Page &page, const QString &id, const QString &from)
         left.insert(u"@contentArea"_s, rectJson(page.contentArea));
         page.contentArea = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
     }
+    // Only the buttons the style moves keep a place of each (the rest are
+    // in the same place in both).
     for (Zone &z : page.zones) {
-        left.insert(z.id, rectJson(z.rect));
-        if (const QJsonObject r = to.value(z.id).toObject(); !r.isEmpty())
+        if (const QJsonObject r = to.value(z.id).toObject(); !r.isEmpty()) {
+            left.insert(z.id, rectJson(z.rect));
             z.rect = QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt());
+        }
     }
     places.remove(id);
     places.insert(from, left);
@@ -300,6 +303,21 @@ QString Layout::fingerprint(const Page &page)
     Page classic = page;
     if (page.extra.value(u"styleRects").toObject().contains(u"classic"_s))
         arrangePage(classic, u"classic"_s, u"modern"_s);
+    // A style's kept place that is where the button is anyway says nothing
+    // (pages switched by an earlier version kept every button's).
+    if (classic.extra.contains(u"styleRects")) {
+        QJsonObject places = classic.extra.value(u"styleRects").toObject();
+        for (auto it = places.begin(); it != places.end(); ++it) {
+            QJsonObject rects = it.value().toObject();
+            for (const Zone &z : classic.zones) {
+                const QJsonObject r = rects.value(z.id).toObject();
+                if (!r.isEmpty() && QRect(r.value(u"x").toInt(), r.value(u"y").toInt(), r.value(u"w").toInt(), r.value(u"h").toInt()) == z.rect)
+                    rects.remove(z.id);
+            }
+            it.value() = rects;
+        }
+        classic.extra.insert(u"styleRects"_s, places);
+    }
     return QString::fromLatin1(
         QCryptographicHash::hash(QJsonDocument(classic.toJson()).toJson(QJsonDocument::Compact), QCryptographicHash::Sha256)
             .toHex());
