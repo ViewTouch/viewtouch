@@ -167,7 +167,7 @@ Item {
                     delegate: WidgetKey {
                         required property string modelData
                         objectName: chips.visible ? "menuFamily-" + modelData : ""
-                        width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                        width: chipText.advanceWidth(text) * chips.textPx / 100 + chips.keyH * 0.7
                         height: chips.keyH
                         text: w.title(modelData)
                         accent: modelData === w.family
@@ -178,14 +178,16 @@ Item {
                 WidgetKey {
                     objectName: chips.visible ? "menuArrange" : ""
                     visible: chips.visible && w.mayArrange && !w.arranging
-                    width: chipText.advanceWidth(text) + chips.keyH * 0.7
+                    width: chipText.advanceWidth(text) * chips.textPx / 100 + chips.keyH * 0.7
                     height: chips.keyH
                     text: qsTr("Arrange…")
                     pixelSize: chips.textPx
                     onClicked: w.setArranging(true)
                 }
             }
-            FontMetrics { id: chipText; font.pixelSize: chips.textPx; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            // Measured at a fixed size, then scaled: a measure at textPx went
+            // stale when the screen's scale settled (each chip as wide as the row).
+            FontMetrics { id: chipText; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
         }
 
         Flow {
