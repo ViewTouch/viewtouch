@@ -4982,6 +4982,93 @@ TEST_CASE("Manual: the phone screens", "[.manual]")
     snap("settle", "m63-phone-settle");
 }
 
+// The phone pictures and the two styles: m122 (four phone screens, made
+// into one picture), m123/m132 (the host stand and floor on a phone),
+// m160-m162 (Classic and Modern).
+TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
+{
+    const auto clean = [](Screen &s) {
+        QTest::qWait(200);
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        QTest::qWait(450);
+    };
+    const auto order = [](Screen &s) {
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
+        REQUIRE(s.pos.selectTable(u"T3"_s) == app::PosService::TableNeedsGuests);
+        s.pos.entryKey(u"3"_s);
+        REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        s.pos.addItem(u"cobb"_s);
+        s.pos.addItem(u"draft-beer"_s);
+        s.pos.addItem(u"caesar"_s);
+        if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+            for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+                if (!g.toMap()[u"done"_s].toBool())
+                    s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+            s.pos.finishChoosing();
+        }
+    };
+    {
+        Screen s(false, 540, 1080, u"phone"_s);
+        order(s);
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m122a-phone-menu");
+        s.c.jumpTo(u"settle"_s);
+        clean(s);
+        s.shot("m122b-phone-pay");
+        s.pos.releaseCheck();
+        s.pos.logout();
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+        s.c.jumpTo(u"admin-employees"_s);
+        clean(s);
+        s.shot("m122c-phone-employees");
+        s.c.jumpTo(u"time-clock"_s);
+        clean(s);
+        s.shot("m122d-phone-timeclock");
+    }
+    {
+        Screen s(false, 540, 1138, u"phone"_s);
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
+        s.c.jumpTo(u"tables"_s);
+        clean(s);
+        s.shot("m132-phone-floor");
+        s.c.jumpTo(u"floor-dining"_s);
+        clean(s);
+        s.shot("m132-phone-dining");
+        s.c.jumpTo(u"seating"_s);
+        clean(s);
+        s.shot("m123-seating-phone");
+    }
+    // The same order in Classic and in Modern.
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    {
+        Screen s;
+        order(s);
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m160-style-classic");
+        layout::Layout modern = seedLayout();
+        REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+        s.c.replaceLayout(modern);
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m161-style-modern");
+    }
+    {
+        Screen s(false, 540, 1080, u"phone"_s);
+        layout::Layout modern = seedLayout();
+        REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+        s.c.replaceLayout(modern);
+        order(s);
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m162-style-modern-phone");
+    }
+}
+
 TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")
 {
     Screen s(false, 540, 1080, u"phone"_s);
