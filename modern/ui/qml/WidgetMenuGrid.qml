@@ -245,12 +245,12 @@ Item {
                 objectName: "menuRail"
                 visible: w.rail && w.showTabs
                 Layout.fillHeight: true
-                Layout.preferredWidth: Math.min(w.width * 0.2, 300)
+                Layout.preferredWidth: Math.min(w.width * 0.25, 340)
                 contentHeight: railColumn.height
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 interactive: contentHeight > height + 1
-                readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(48) : 56)
+                readonly property real keyH: Math.max(72, w.zone ? w.zone.touch(52) : 72)
                 Column {
                     id: railColumn
                     width: railList.width
@@ -284,7 +284,7 @@ Item {
                                     text: w.title(railKey.modelData)
                                     color: railKey.textColor
                                     font.family: railKey.keySt.keyFont ?? w.face
-                                    font.pixelSize: railList.keyH * 0.32
+                                    font.pixelSize: railList.keyH * 0.36
                                     font.bold: true
                                     elide: Text.ElideRight
                                 }
