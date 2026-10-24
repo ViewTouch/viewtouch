@@ -25,7 +25,7 @@ Rectangle {
 
     visible: shown !== null
     height: visible ? (compact ? 48 : 74) : 0
-    color: "#2f6fd6"
+    color: Ui.accent
     border.color: "white"
     border.width: 2
 
@@ -75,7 +75,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.margins: banner.compact ? 4 : 8
             text: qsTr("OK")
-            baseColor: "#1f6b40"
+            baseColor: Ui.goDark
             fontScale: 0.4
             onClicked: {
                 const s = Object.assign({}, banner.seen)

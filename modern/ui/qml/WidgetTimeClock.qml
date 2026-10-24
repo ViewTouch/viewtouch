@@ -16,7 +16,7 @@ Item {
     property bool pickingOff: false
     property string offDay: ""
     onSomeoneChanged: pickingOff = false
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the keypad alone; then the person above their schedule.
     readonly property bool narrow: zone ? zone.narrow : false
@@ -47,7 +47,7 @@ Item {
             Layout.fillHeight: !w.narrow || !w.someone
             Layout.preferredHeight: w.narrow && w.someone ? w.unit * 18 : -1
             radius: 12
-            color: "#1d2128"
+            color: Ui.sunken
 
             // The keypad
             ColumnLayout {
@@ -59,7 +59,7 @@ Item {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: w.pin.length ? "●".repeat(w.pin.length) : qsTr("Type your PIN")
-                    color: w.pin.length ? w.ink : "#8a94a6"
+                    color: w.pin.length ? w.ink : Ui.muted
                     font.family: w.face
                     font.pixelSize: w.unit * 1.5
                 }
@@ -78,7 +78,7 @@ Item {
                             Layout.fillHeight: true
                             text: modelData === "Clear" ? qsTr("Clear") : modelData === "OK" ? qsTr("OK") : modelData
                             fontScale: modelData.length > 1 ? 0.3 : 0.45
-                            baseColor: modelData === "OK" ? "#1f6b40" : "#343c49"
+                            baseColor: modelData === "OK" ? Ui.goDark : Ui.key
                             onClicked: {
                                 if (modelData === "Clear") {
                                     w.pin = ""
@@ -119,7 +119,7 @@ Item {
                                                    + (w.info.job ? "  ·  " + w.info.job : "")
                         : w.info.status === "break" ? qsTr("On break since %1").arg(w.info.breakSince)
                         : qsTr("Not clocked in")
-                    color: w.info.status === "in" ? "#5fd08a" : w.info.status === "break" ? "#f5b940" : "#8a94a6"
+                    color: w.info.status === "in" ? "#5fd08a" : w.info.status === "break" ? "#f5b940" : Ui.muted
                     font.family: w.face
                     font.pixelSize: w.unit
                 }
@@ -127,7 +127,7 @@ Item {
                     Layout.fillWidth: true
                     text: qsTr("Today: %1 hours").arg(w.info.todayHours ?? "0")
                           + "  ·  " + qsTr("This week: %1 hours").arg(w.ot.weekHours ?? "0")
-                    color: "#b8c0cc"
+                    color: Ui.textSoft
                     font.family: w.face
                     font.pixelSize: w.unit * 0.8
                     wrapMode: Text.WordWrap
@@ -152,7 +152,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: w.unit * 3.2
                     text: qsTr("Clock In")
-                    baseColor: "#1f6b40"
+                    baseColor: Ui.goDark
                     fontScale: 0.32
                     onClicked: { w.touched(); w.pos.timeClockAct("in") }
                 }
@@ -201,7 +201,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: 12
-            color: "#1d2128"
+            color: Ui.sunken
 
             Text {
                 visible: !w.someone
@@ -210,7 +210,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: qsTr("Type your PIN to clock in or out, take a break, and see your schedule.")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 1.1
             }
@@ -222,7 +222,7 @@ Item {
                 z: 5
                 anchors.fill: parent
                 radius: 12
-                color: "#1d2128"
+                color: Ui.sunken
                 MouseArea { anchors.fill: parent }
                 ColumnLayout {
                     anchors.fill: parent
@@ -259,7 +259,7 @@ Item {
                     }
                     Text {
                         text: qsTr("Why? (optional)")
-                        color: "#8a94a6"
+                        color: Ui.muted
                         font.family: w.face
                         font.pixelSize: w.unit * 0.85
                     }
@@ -299,7 +299,7 @@ Item {
                             enabled: w.offDay !== ""
                             opacity: enabled ? 1 : 0.4
                             text: qsTr("Ask")
-                            baseColor: "#1f6b40"
+                            baseColor: Ui.goDark
                             fontScale: 0.32
                             onClicked: {
                                 w.touched()
@@ -328,7 +328,7 @@ Item {
                     }
                     Text {
                         text: qsTr("%1 hours this week").arg(w.info.weekHours ?? "0")
-                        color: "#8a94a6"
+                        color: Ui.muted
                         font.family: w.face
                         font.pixelSize: w.unit * 0.8
                     }
@@ -338,7 +338,7 @@ Item {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     text: qsTr("No shifts on the schedule for the next two weeks.")
-                    color: "#8a94a6"
+                    color: Ui.muted
                     font.family: w.face
                     font.pixelSize: w.unit
                 }
@@ -378,7 +378,7 @@ Item {
                             }
                             Text {
                                 text: modelData.now ? qsTr("now") : qsTr("%1 h").arg(modelData.length)
-                                color: modelData.now ? "#5fd08a" : "#8a94a6"
+                                color: modelData.now ? "#5fd08a" : Ui.muted
                                 font.family: w.face
                                 font.pixelSize: w.unit * 0.8
                                 font.bold: modelData.now
@@ -429,7 +429,7 @@ Item {
                             Layout.preferredWidth: w.unit * 5
                             Layout.preferredHeight: w.unit * 1.7
                             text: qsTr("Take It")
-                            baseColor: "#1f6b40"
+                            baseColor: Ui.goDark
                             fontScale: 0.36
                             onClicked: { w.touched(); w.pos.timeClockTake(modelData.id) }
                         }

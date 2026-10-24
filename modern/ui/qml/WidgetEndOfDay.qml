@@ -10,7 +10,7 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var day: pos ? pos.day : ({})
     readonly property var backup: day.backup ?? ({})
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(30, w.width * 0.04))
     property bool armed: false
@@ -31,7 +31,7 @@ Item {
         }
         Text {
             text: qsTr("Opened %1").arg(w.day.opened ?? "")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.85
         }
@@ -95,7 +95,7 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("Forgot hours ago? Clock them out, then fix the time in Schedule → Time Punches.")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.7
         }
@@ -143,7 +143,7 @@ Item {
                 text: !b.at ? qsTr("No backup yet this session.")
                      : b.ok ? qsTr("Backed up at %1.").arg(b.at) + (b.copy ? "  " + b.copy : "")
                             : qsTr("Backup failed at %1: %2").arg(b.at).arg(b.error)
-                color: !b.at ? "#8a94a6" : (b.ok && b.copyOk !== false) ? "#7ee2a8" : "#ff9a9e"
+                color: !b.at ? Ui.muted : (b.ok && b.copyOk !== false) ? "#7ee2a8" : "#ff9a9e"
                 font.family: w.face
                 font.pixelSize: w.unit * 0.75
             }
@@ -174,7 +174,7 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("Closing the day saves its reports (see Reports) and starts a new day. Checks cannot be reopened afterwards.")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.75
         }
@@ -212,7 +212,7 @@ Item {
         modal: true
         padding: 20
         onOpened: { noteText.text = ""; noteText.forceActiveFocus() }
-        background: Rectangle { color: "#232933"; radius: 14; border.color: "#2f6fd6"; border.width: 2 }
+        background: Rectangle { color: Ui.panel; radius: 14; border.color: Ui.accent; border.width: 2 }
         ColumnLayout {
             anchors.fill: parent
             spacing: 12

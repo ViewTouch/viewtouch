@@ -19,7 +19,7 @@ Item {
     readonly property string longText: time + "   ·   " + now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
     TextMetrics {
         id: longSize
-        font.family: w.zone.st.font ?? "DejaVu Sans"
+        font.family: w.zone.st.font ?? Ui.font
         font.pixelSize: w.height * 0.4
         text: w.longText
     }
@@ -31,7 +31,7 @@ Item {
         text: longSize.advanceWidth * 0.85 <= width ? w.longText
               : w.time + "   ·   " + w.now.toLocaleDateString(Qt.locale(), Qt.locale().name.startsWith("en") ? "ddd MMM d" : "ddd d MMM")
         color: w.zone.st.textColor ?? "white"
-        font.family: w.zone.st.font ?? "DejaVu Sans"
+        font.family: w.zone.st.font ?? Ui.font
         font.pixelSize: w.height * 0.4
         fontSizeMode: Text.HorizontalFit
         minimumPixelSize: 10

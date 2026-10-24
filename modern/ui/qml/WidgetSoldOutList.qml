@@ -7,7 +7,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property bool withModifiers: zone && zone.props && zone.props.modifiers === true
     readonly property var items: {
         const all = pos ? pos.menuItems.filter(m => w.withModifiers || !m.modifier) : []
@@ -36,7 +36,7 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 6
                 shape: "rounded"
-                st: ({ fill: tap.pressed ? "#4c8dff" : (cell.modelData.available ? "#2d3440" : "#7a2323"),
+                st: ({ fill: tap.pressed ? "#4c8dff" : (cell.modelData.available ? Ui.button : "#7a2323"),
                        frame: "raised", frameWidth: 3, radius: 12, shadow: 3 })
             }
             Column {
@@ -55,7 +55,7 @@ Item {
                     width: parent.width
                     text: (cell.modelData.available ? qsTr("Available") : qsTr("SOLD OUT (86)"))
                           + (cell.modelData.family ? "  ·  " + (cell.modelData.familyName || cell.modelData.family) : "")
-                    color: cell.modelData.available ? "#8a94a6" : "#ffd0d0"
+                    color: cell.modelData.available ? Ui.muted : "#ffd0d0"
                     font.family: w.face
                     font.pixelSize: 18 * grid.big
                     elide: Text.ElideRight

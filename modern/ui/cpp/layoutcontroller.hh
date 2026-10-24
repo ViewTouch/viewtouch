@@ -45,6 +45,9 @@ class LayoutController : public QObject {
     Q_PROPERTY(double viewAspect READ viewAspect WRITE setViewAspect NOTIFY pageChanged)
     Q_PROPERTY(int pageGrid READ pageGrid NOTIFY pageChanged)
     Q_PROPERTY(QVariantMap background READ background NOTIFY pageChanged)
+    // The style's colors for the built-in panels (the theme's "palette", its
+    // font the theme's): see Ui.qml.
+    Q_PROPERTY(QVariantMap stylePalette READ stylePalette NOTIFY pageChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pageChanged)
     Q_PROPERTY(ZoneModel *zones READ zones CONSTANT)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusChanged)
@@ -110,6 +113,7 @@ public:
     void setViewAspect(double aspect);
     int pageGrid() const;
     QVariantMap background() const;
+    QVariantMap stylePalette() const;
     bool canGoBack() const { return nav_.canGoBack(); }
     ZoneModel *zones() { return &zones_; }
     QString statusText() const { return status_; }

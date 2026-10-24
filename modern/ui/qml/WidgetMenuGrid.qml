@@ -19,7 +19,7 @@ Item {
     readonly property bool search: zone && zone.props && zone.props.search === true
     readonly property bool popular: zone && zone.props && zone.props.popular === true
     readonly property string typed: pos && search ? pos.textEntry.trim().toLowerCase() : ""
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
 
     readonly property var items: pos ? pos.menuItems.filter(i => !i.modifier) : []
     // The menu's categories with items, in their order (Menu Builder).
@@ -190,7 +190,7 @@ Item {
             }
             // Measured at a fixed size, then scaled: a measure at textPx went
             // stale when the screen's scale settled (each chip as wide as the row).
-            FontMetrics { id: chipText; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            FontMetrics { id: chipText; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
         }
 
         Flow {
@@ -204,7 +204,7 @@ Item {
             readonly property real keyW: perRow < 6 ? (w.width - spacing * (perRow - 1)) / perRow
                                                     : Math.max(160, (w.width - spacing * 5) / 6)
             readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(52) : 56)
-            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? "DejaVu Sans") : "DejaVu Sans" }
+            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
             readonly property real textPx: {
                 let px = keyH * 0.38
                 for (const f of w.families.map(x => w.title(x)).concat([qsTr("Arrange…")]))
@@ -367,7 +367,7 @@ Item {
                 Layout.preferredWidth: 170; Layout.preferredHeight: parent.keyH
                 readonly property var item: w.pos ? w.pos.menuItems.find(i => i.id === w.picked) : null
                 text: "🎨 " + qsTr("Color…")
-                baseColor: item && item.buttonColor ? item.buttonColor : "#343c49"
+                baseColor: item && item.buttonColor ? item.buttonColor : Ui.key
                 fontScale: 0.32
                 onClicked: colorPopup.open()
             }
@@ -397,7 +397,7 @@ Item {
                 objectName: "arrangeDone"
                 Layout.preferredWidth: 150; Layout.preferredHeight: parent.keyH
                 text: qsTr("Done")
-                baseColor: "#1f6b40"
+                baseColor: Ui.goDark
                 fontScale: 0.34
                 onClicked: w.setArranging(false)
             }
@@ -410,7 +410,7 @@ Item {
                 : w.search ? (w.typed === "" ? qsTr("Type part of a name: \"cob\" finds Cobb.")
                                               : qsTr("Nothing on the menu has \"%1\".").arg(w.typed))
                 : qsTr("Nothing on the menu here yet (Manager -> Menu).")
-            color: "#8a94a6"
+            color: Ui.muted
             font.pixelSize: 24
         }
     }

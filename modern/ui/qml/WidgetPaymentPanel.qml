@@ -8,7 +8,7 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property real unit: Math.max(12, Math.min(zone.st.fontSize ?? 28, w.width * 0.05)) * zone.textScale
     readonly property var totals: pos ? pos.totals : ({})
     readonly property bool owing: (totals.balanceCents ?? 0) > 0
@@ -67,10 +67,10 @@ Item {
                     name: modelData.name
                     value: modelData.amount
                     size: w.unit * 0.8
-                    tint: "#b8c0cc"
+                    tint: Ui.textSoft
                 }
             }
-            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: "#3a4250" }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Ui.line }
             Line {
                 visible: w.totals.hasGratuity ?? false
                 name: qsTr("Gratuity %1%").arg(w.totals.gratuityPercent ?? 0)
@@ -100,7 +100,7 @@ Item {
         Text {
             visible: w.pos && w.pos.payments.length > 0
             text: qsTr("Payments")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.75
         }
@@ -115,7 +115,7 @@ Item {
                 width: ListView.view.width
                 height: w.unit * 1.8
                 radius: 6
-                color: modelData.selected ? "#2f6fd6" : "transparent"
+                color: modelData.selected ? Ui.accent : "transparent"
                 TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedPayment = pay.modelData.id } }
                 Line {
                     anchors.fill: parent

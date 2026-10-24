@@ -229,7 +229,7 @@ Item {
         text: qsTranslate("Page", w.words)
         color: "white"
         opacity: w.sort === "area" ? 0.7 : 1
-        font.family: w.zone ? (w.zone.st.font ?? "DejaVu Sans") : "DejaVu Sans"
+        font.family: w.zone ? (w.zone.st.font ?? Ui.font) : Ui.font
         font.pixelSize: w.sort === "area" ? Math.min(40, Math.max(16, w.height * 0.12))
                                            : Math.max(12, Math.min(28, Math.min(w.width, w.height) * 0.3))
         font.bold: true

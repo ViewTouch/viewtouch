@@ -1079,6 +1079,24 @@
           "fill": "#b83232"
         }
       }
+    },
+    {
+      "id": "my-checks",
+      "kind": "checkList",
+      "rect": {
+        "x": 1472,
+        "y": 704,
+        "w": 432,
+        "h": 244
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "showWhen": {
+        "style": "modern"
+      },
+      "props": {
+        "mode": "mine"
+      }
     }
   ],
   "styleRects": {
@@ -1172,6 +1190,12 @@
         "y": 964,
         "w": 432,
         "h": 100
+      },
+      "my-checks": {
+        "x": 1472,
+        "y": 704,
+        "w": 432,
+        "h": 244
       }
     }
   }

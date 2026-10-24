@@ -13,13 +13,13 @@ Item {
     readonly property var sales: d.sales ?? ({})
     readonly property var labor: d.labor ?? ({})
     readonly property var kitchen: d.kitchen ?? ({})
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the numbers two a row, the lists one a row, scrolled.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real unit: narrow ? Math.max(12, Math.min(w.width / 22, 40))
                                         : Math.max(12, Math.min(w.width / 60, w.height / 34))
-    readonly property color muted: "#8a94a6"
+    readonly property color muted: Ui.muted
     readonly property color good: "#5fd08a"
     readonly property color warn: "#f5b940"
     readonly property color bad: "#ff8a8f"
@@ -38,7 +38,7 @@ Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
         radius: 12
-        color: "#1d2128"
+        color: Ui.sunken
         ColumnLayout {
             id: inner
             anchors.fill: parent

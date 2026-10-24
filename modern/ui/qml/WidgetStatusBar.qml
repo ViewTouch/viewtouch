@@ -12,7 +12,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         text: w.zone.controller ? w.zone.controller.statusText : ""
         color: w.zone.st.textColor ?? "white"
-        font.family: w.zone.st.font ?? "DejaVu Sans"
+        font.family: w.zone.st.font ?? Ui.font
         font.pixelSize: w.height * 0.4
         elide: Text.ElideRight
     }

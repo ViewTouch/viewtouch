@@ -17,7 +17,7 @@ ApplicationWindow {
     height: 800
     visible: true
     title: qsTr("ViewTouch")
-    color: "#14171c"
+    color: Ui.deep
 
     readonly property real u: Math.max(10, Math.min(width / 64, height / 40))
     readonly property bool portrait: height > width
@@ -40,13 +40,13 @@ ApplicationWindow {
     })
 
     palette {
-        window: "#14171c"
-        windowText: "#e6e9ef"
+        window: Ui.deep
+        windowText: Ui.text
         base: "#0f1216"
-        text: "#f2f4f7"
-        button: "#2d3440"
-        buttonText: "#f2f4f7"
-        highlight: "#2f6fd6"
+        text: Ui.text
+        button: Ui.button
+        buttonText: Ui.text
+        highlight: Ui.accent
         highlightedText: "white"
         placeholderText: "#6b7585"
     }
@@ -188,7 +188,7 @@ ApplicationWindow {
 
     component BigButton: PosButton {
         id: big
-        property color tint: "#2d3440"
+        property color tint: Ui.button
         Layout.preferredHeight: root.u * 3.6
         Layout.minimumWidth: root.u * 9
         font.pixelSize: root.u * 1.1
@@ -261,7 +261,7 @@ ApplicationWindow {
             radius: 8
             color: "#0f1216"
             border.width: parent.activeFocus ? 2 : 1
-            border.color: parent.activeFocus ? "#2f6fd6" : "#3a4250"
+            border.color: parent.activeFocus ? Ui.accent : Ui.line
         }
     }
 
@@ -497,7 +497,7 @@ ApplicationWindow {
                 }
                 BigButton {
                     text: qsTr("Connect")
-                    tint: "#2f6fd6"
+                    tint: Ui.accent
                     enabled: !root.station.busy
                     onClicked: { keyboard.visible = false; root.station.connectWifi(net.chosen, password.text) }
                 }
@@ -531,7 +531,7 @@ ApplicationWindow {
                     delegate: BigButton {
                         required property var modelData
                         text: modelData[1]
-                        tint: root.station.timeZone === modelData[0] ? "#2f6fd6" : "#2d3440"
+                        tint: root.station.timeZone === modelData[0] ? Ui.accent : Ui.button
                         onClicked: root.station.setTimeZone(modelData[0])
                     }
                 }
@@ -569,7 +569,7 @@ ApplicationWindow {
                     objectName: "checkOnline"
                     visible: root.onlineReady === ""
                     text: qsTr("Check for a New ViewTouch")
-                    tint: "#2f6fd6"
+                    tint: Ui.accent
                     enabled: !root.station.busy
                     onClicked: root.station.checkOnline()
                 }
@@ -577,7 +577,7 @@ ApplicationWindow {
                     objectName: "installOnline"
                     visible: root.onlineReady !== ""
                     text: qsTr("Install ViewTouch %1").arg(root.onlineReady)
-                    tint: "#1f8a4c"
+                    tint: Ui.go
                     enabled: !root.station.busy
                     onClicked: root.station.installOnline()
                 }
@@ -630,7 +630,7 @@ ApplicationWindow {
             }
             BigButton {
                 text: root.station.remoteSupport ? qsTr("Turn Off") : qsTr("Turn On")
-                tint: root.station.remoteSupport ? "#8a3a3a" : "#2f6fd6"
+                tint: root.station.remoteSupport ? "#8a3a3a" : Ui.accent
                 enabled: !root.station.busy
                 onClicked: root.station.setRemoteSupport(!root.station.remoteSupport)
             }
@@ -681,7 +681,7 @@ ApplicationWindow {
                         visible: !mp.confirming
                         enabled: mp.code.length >= 4
                         text: qsTr("Next")
-                        tint: "#2f6fd6"
+                        tint: Ui.accent
                         onClicked: mp.confirming = true
                     }
                     BigButton {
@@ -809,7 +809,7 @@ ApplicationWindow {
                         implicitWidth: stepLabel.implicitWidth + root.u * 1.6
                         implicitHeight: root.u * 2.2
                         radius: height / 2
-                        color: index === wiz.step ? "#2f6fd6" : index < wiz.step ? "#24426e" : "#232a34"
+                        color: index === wiz.step ? Ui.accent : index < wiz.step ? "#24426e" : "#232a34"
                         Label { id: stepLabel; anchors.centerIn: parent; text: modelData; color: "white"; font.pixelSize: root.u * 0.85 }
                     }
                 }
@@ -845,7 +845,7 @@ ApplicationWindow {
                             icon: modelData[1]
                             label: root.roleNames[modelData[0]]
                             detail: ""
-                            tint: wiz.role === modelData[0] ? "#2f6fd6" : "#2a313c"
+                            tint: wiz.role === modelData[0] ? Ui.accent : "#2a313c"
                             onTapped: {
                                 wiz.role = modelData[0]
                                 nameField.text = wiz.defaultNames[modelData[0]]
@@ -888,7 +888,7 @@ ApplicationWindow {
                     BigButton { text: "‹ " + qsTr("Back"); onClicked: wiz.step = 1 }
                     BigButton {
                         text: qsTr("Next")
-                        tint: "#2f6fd6"
+                        tint: Ui.accent
                         enabled: /^[A-Za-z0-9][A-Za-z0-9-]{0,62}$/.test(nameField.text.trim())
                         onClicked: { keyboard.visible = false; wiz.step = 3; root.station.refreshNetwork() }
                     }
@@ -915,7 +915,7 @@ ApplicationWindow {
                     spacing: root.u
                     BigButton { text: "‹ " + qsTr("Back"); onClicked: wiz.step = 2 }
                     BigButton { text: qsTr("Wi-Fi…"); onClicked: root.panel = "network" }
-                    BigButton { text: qsTr("Next"); tint: "#2f6fd6"; onClicked: wiz.step = 4 }
+                    BigButton { text: qsTr("Next"); tint: Ui.accent; onClicked: wiz.step = 4 }
                 }
             }
 
@@ -941,7 +941,7 @@ ApplicationWindow {
                         delegate: BigButton {
                             required property var modelData
                             text: modelData[1]
-                            tint: wiz.zoneChosen && root.station.timeZone === modelData[0] ? "#2f6fd6" : "#2d3440"
+                            tint: wiz.zoneChosen && root.station.timeZone === modelData[0] ? Ui.accent : Ui.button
                             onClicked: { wiz.zoneChosen = true; root.station.setTimeZone(modelData[0]) }
                         }
                     }
@@ -950,7 +950,7 @@ ApplicationWindow {
                 RowLayout {
                     spacing: root.u
                     BigButton { text: "‹ " + qsTr("Back"); onClicked: wiz.step = 3 }
-                    BigButton { text: qsTr("Next"); tint: "#2f6fd6"; enabled: wiz.zoneChosen; onClicked: wiz.step = 5 }
+                    BigButton { text: qsTr("Next"); tint: Ui.accent; enabled: wiz.zoneChosen; onClicked: wiz.step = 5 }
                 }
             }
 
@@ -1013,7 +1013,7 @@ ApplicationWindow {
                             visible: !wiz.confirming
                             enabled: wiz.pin.length >= 4
                             text: qsTr("Next")
-                            tint: "#2f6fd6"
+                            tint: Ui.accent
                             onClicked: wiz.confirming = true
                         }
                         BigButton {
@@ -1063,7 +1063,7 @@ ApplicationWindow {
                 Layout.preferredHeight: root.u * 4.2
                 Layout.minimumWidth: root.u * 6
                 text: modelData === "clear" ? qsTr("Clear") : modelData === "ok" ? qsTr("OK") : modelData
-                tint: modelData === "ok" ? "#2f6fd6" : "#2d3440"
+                tint: modelData === "ok" ? Ui.accent : Ui.button
                 font.pixelSize: root.u * 1.6
                 onClicked: modelData === "clear" ? keys.clear() : modelData === "ok" ? keys.enter() : keys.digit(modelData)
             }
@@ -1082,7 +1082,7 @@ ApplicationWindow {
         property string typed: ""
         property bool wrong: false
         onOpened: { typed = ""; wrong = false }
-        background: Rectangle { color: "#1c2128"; radius: root.u * 0.8; border.color: "#3a4250" }
+        background: Rectangle { color: "#1c2128"; radius: root.u * 0.8; border.color: Ui.line }
         ColumnLayout {
             spacing: root.u
             Heading { text: qsTr("This computer's PIN"); horizontalAlignment: Text.AlignHCenter }
@@ -1137,7 +1137,7 @@ ApplicationWindow {
             action = a
             open()
         }
-        background: Rectangle { color: "#1c2128"; radius: root.u * 0.8; border.color: "#3a4250" }
+        background: Rectangle { color: "#1c2128"; radius: root.u * 0.8; border.color: Ui.line }
         ColumnLayout {
             width: parent.width
             spacing: root.u * 1.4

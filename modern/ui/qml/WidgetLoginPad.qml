@@ -17,7 +17,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             text: w.zone.label || qsTr("Enter your PIN")
             color: w.zone.st.textColor ?? "white"
-            font.family: w.zone.st.font ?? "DejaVu Sans"
+            font.family: w.zone.st.font ?? Ui.font
             font.pixelSize: w.height * 0.05
         }
 
@@ -55,7 +55,7 @@ Item {
                     accent: modelData === "enter"
                     fontScale: modelData.length > 1 ? 0.3 : 0.42
                     textColor: w.zone.st.textColor ?? "white"
-                    fontFamily: w.zone.st.font ?? "DejaVu Sans"
+                    fontFamily: w.zone.st.font ?? Ui.font
                     onClicked: modelData === "enter" ? w.zone.controller.login() : w.pos.pinKey(modelData)
                 }
             }

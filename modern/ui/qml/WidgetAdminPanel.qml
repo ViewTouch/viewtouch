@@ -217,7 +217,7 @@ Item {
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
             height: visible ? 64 : 0
             radius: 8
-            color: w.pos && w.pos.pairing.active ? "#173a26" : "#232933"
+            color: w.pos && w.pos.pairing.active ? "#173a26" : Ui.panel
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 10
@@ -394,7 +394,7 @@ Item {
                 visible: (!w.single || w.sectioned) && !w.narrow
                 Layout.fillHeight: true
                 implicitWidth: 1
-                color: "#3a4250"
+                color: Ui.line
             }
 
             // --- form ---
@@ -564,7 +564,7 @@ Item {
                     Item { Layout.fillWidth: true }
                     PosButton {
                         visible: !w.single && w.index >= 0
-                        palette.button: w.armDelete ? "#a42828" : "#343c49"   // red once it's armed
+                        palette.button: w.armDelete ? "#a42828" : Ui.key   // red once it's armed
                         text: w.armDelete ? qsTr("Tap again to confirm")
                                           : (w.panel === "employees" ? qsTr("Deactivate") : qsTr("Remove"))
                         onClicked: {

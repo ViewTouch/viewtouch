@@ -23,7 +23,7 @@ Item {
         anchors.fill: parent
         controller: w.zone ? w.zone.controller : null
         unit: Math.max(14, Math.min(w.width / 22, 44)) * w.zone.textScale
-        face: w.zone.st.font ?? "DejaVu Sans"
+        face: w.zone.st.font ?? Ui.font
         ink: w.zone.st.textColor ?? "white"
         readable: (text, fill) => w.zone.readable(text, fill)
         textScale: w.zone.textScale
@@ -34,6 +34,8 @@ Item {
         floorName: "floorPlanArea"
         // A phone: Plan / List (big tiles: yours first, the longest since a Send on top).
         listToggle: w.props.list === true || (w.zone && w.zone.controller && w.zone.controller.formFactor === "phone")
+        // The style may start it as the list (Modern: "tablesList").
+        listFirst: !!w.zone && w.zone.st.tablesList === true
         sortKey: name => {
             const s = w.status(name)
             if (!s.open) return 3e6
@@ -57,9 +59,9 @@ Item {
             return floor === "dirty" ? w.zone.statusColor("tableDirty", "#7a3b3b")
                  : floor === "reserved" ? w.zone.statusColor("tableReserved", "#5b4aa8")
                  : floor === "joined" ? w.zone.statusColor("tableOpen", "#a86a12")
-                 : !s.open ? (w.zone.st.fill ?? "#2d3440")
-                 : s.current ? w.zone.statusColor("tableCurrent", "#2f6fd6")
-                 : s.mine ? w.zone.statusColor("tableMine", "#1f8a4c")
+                 : !s.open ? (w.zone.st.fill ?? Ui.button)
+                 : s.current ? w.zone.statusColor("tableCurrent", Ui.accent)
+                 : s.mine ? w.zone.statusColor("tableMine", Ui.go)
                  : w.zone.statusColor("tableOpen", "#a86a12")
         }
         lines: (name, seats) => {

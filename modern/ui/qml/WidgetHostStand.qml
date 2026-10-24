@@ -10,7 +10,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real unit: (narrow ? Math.max(14, Math.min(w.width / 20, 44))
@@ -92,7 +92,7 @@ Item {
 
     component Key: PosButton {
         id: key
-        property color tint: "#2d3440"
+        property color tint: Ui.button
         Layout.fillWidth: true
         Layout.preferredHeight: w.unit * 2.6
         font.family: w.face
@@ -103,7 +103,7 @@ Item {
         opacity: enabled ? 1 : 0.4
     }
     component Small: Text {
-        color: "#8a94a6"
+        color: Ui.muted
         font.family: w.face
         font.pixelSize: w.unit * 0.75
         Layout.fillWidth: true
@@ -190,13 +190,13 @@ Item {
                 Key {
                     objectName: "hostWaiting"
                     text: qsTr("Waiting (%1)").arg(w.waiting.length)
-                    tint: !w.showBooked ? "#2f6fd6" : "#2d3440"
+                    tint: !w.showBooked ? Ui.accent : Ui.button
                     onClicked: w.showBooked = false
                 }
                 Key {
                     objectName: "hostBooked"
                     text: qsTr("Reservations (%1)").arg(w.booked.length)
-                    tint: w.showBooked ? "#2f6fd6" : "#2d3440"
+                    tint: w.showBooked ? Ui.accent : Ui.button
                     onClicked: w.showBooked = true
                 }
             }
@@ -216,7 +216,7 @@ Item {
                     width: partyList.width
                     height: w.unit * 2.6
                     radius: 8
-                    color: w.partyId === modelData.id ? "#2f6fd6" : partyTap.pressed ? "#3a4250" : "#262b33"
+                    color: w.partyId === modelData.id ? Ui.accent : partyTap.pressed ? Ui.line : "#262b33"
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: w.unit * 0.6
@@ -260,7 +260,7 @@ Item {
                 Key {
                     objectName: "hostWalkIn"
                     text: qsTr("Walk-in")
-                    tint: w.partyId === -1 ? "#2f6fd6" : "#2d3440"
+                    tint: w.partyId === -1 ? Ui.accent : Ui.button
                     onClicked: w.partyId = w.partyId === -1 ? null : -1
                 }
                 Key {
@@ -315,7 +315,7 @@ Item {
                       : w.partySize > 0 ? qsTr("Now touch a table, or several to push together.")
                       : w.picked.length > 0 ? qsTr("%1 picked. Touch a party to seat or hold, or mark them.").arg(w.picked.join(", "))
                       : qsTr("Touch a party or Walk-in, then their table.")
-                color: w.pickedSeats > 0 && w.pickedSeats < w.partySize ? "#f5b940" : "#8a94a6"
+                color: w.pickedSeats > 0 && w.pickedSeats < w.partySize ? "#f5b940" : Ui.muted
             }
             // Rush Radar: the kitchen about to back up. Seating more now makes
             // it worse; a few minutes more at the bar or the door helps.
@@ -355,7 +355,7 @@ Item {
                 Key {
                     objectName: "hostSeat"
                     text: qsTr("Seat")
-                    tint: "#1f8a4c"
+                    tint: Ui.go
                     enabled: w.partySize > 0 && w.pickedFree
                     onClicked: {
                         const server = w.seatServer

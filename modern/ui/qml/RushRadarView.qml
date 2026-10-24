@@ -9,7 +9,7 @@ Item {
     id: r
     property PosService pos
     property real unit: 16
-    property string face: "DejaVu Sans"
+    property string face: Ui.font
     property bool compact: false
     // Read again every half minute: what's coming moves on with the clock.
     property int tick: 0
@@ -26,7 +26,7 @@ Item {
         : qsTr("%1 is at %2 min now.").arg(mine.name).arg(mine.peakWait)
     readonly property var stations: (radar.stations ?? []).filter(s => (all || s.id === station)
                                                                      && (s.queue > 0 || s.coming > 0 || s.peakWait > 0))
-    readonly property color muted: "#8a94a6"
+    readonly property color muted: Ui.muted
     function tint(level) { return level === "late" ? "#ff8a8f" : level === "busy" ? "#f5b940" : "#5fd08a" }
     implicitHeight: compact ? head.implicitHeight : col.implicitHeight
 
@@ -113,7 +113,7 @@ Item {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 1
                                 text: modelData.minute === 0 ? qsTr("now %1").arg(modelData.wait) : modelData.wait
-                                color: "#14171c"
+                                color: Ui.deep
                                 font.family: r.face
                                 font.pixelSize: r.unit * 0.65
                                 font.bold: true

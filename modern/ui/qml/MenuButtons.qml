@@ -28,7 +28,7 @@ Flickable {
     // The style's "menuColors": "fill" (a button in its category's color) or
     // "mark" (a plain button with a strip of it across the top: Modern).
     readonly property bool markOnly: st.menuColors === "mark"
-    property string face: "DejaVu Sans"
+    property string face: Ui.font
     property real gap: 12
     property bool arranging: false
     property string picked: ""
@@ -180,7 +180,7 @@ Flickable {
                                 radius: st.keyRadius !== undefined ? st.keyRadius : 14
                                 color: !cell.modelData.available ? "#3a3f48"
                                      : press.pressed ? (st.keyLitFill ?? "#4c8dff")
-                                     : (!mb.markOnly && cell.itemColor) || (st.keyFill ?? "#343c49")
+                                     : (!mb.markOnly && cell.itemColor) || (st.keyFill ?? Ui.key)
                                 readonly property bool isPicked: mb.arranging && mb.picked === cell.modelData.id
                                 readonly property var hits: cell.isGap ? [] : mb.allergyHits(cell.modelData)
                                 border.color: isPicked ? "#f5b940" : hits.length ? "#ff3b3b" : mb.markOnly ? (st.borderColor ?? "#2e3440") : Qt.darker(color, 1.4)
@@ -279,7 +279,7 @@ Flickable {
                                     anchors.margins: 8
                                     anchors.topMargin: mb.markOnly ? 8 + Math.max(3, parent.height * 0.05) + 4 : 8   // under the strip
                                     text: cell.modelData.number ?? ""
-                                    color: "#8a94a6"
+                                    color: Ui.muted
                                     font.family: mb.face
                                     font.pixelSize: 14
                                     font.bold: true

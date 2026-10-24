@@ -10,14 +10,14 @@ Item {
     readonly property string list: zone && zone.props && zone.props.list ? zone.props.list : "closing"
     readonly property var tasks: pos ? (pos.checklists[list] ?? []) : []
     readonly property int done: pos ? (pos.checklists[list + "Done"] ?? 0) : 0
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(w.width / 26, w.height / 20))
 
     Rectangle {
         anchors.fill: parent
         radius: 12
-        color: "#1d2128"
+        color: Ui.sunken
     }
     ColumnLayout {
         anchors.fill: parent
@@ -35,7 +35,7 @@ Item {
             }
             Text {
                 text: qsTr("%1 of %2 done").arg(w.done).arg(w.tasks.length)
-                color: w.done === w.tasks.length && w.tasks.length > 0 ? "#5fd08a" : "#8a94a6"
+                color: w.done === w.tasks.length && w.tasks.length > 0 ? "#5fd08a" : Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9
             }
@@ -45,7 +45,7 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("No tasks yet: Manager → Settings, Opening / Closing checklist.")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.9
         }
@@ -69,8 +69,8 @@ Item {
                         Layout.preferredWidth: w.unit * 1.3
                         Layout.preferredHeight: w.unit * 1.3
                         radius: 6
-                        color: row.modelData.done ? "#1f8a4c" : "transparent"
-                        border.color: row.modelData.done ? "#1f8a4c" : "#8a94a6"
+                        color: row.modelData.done ? Ui.go : "transparent"
+                        border.color: row.modelData.done ? Ui.go : Ui.muted
                         border.width: 2
                         Text {
                             anchors.centerIn: parent
@@ -84,7 +84,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: row.modelData.task
-                        color: row.modelData.done ? "#b8c0cc" : w.ink
+                        color: row.modelData.done ? Ui.textSoft : w.ink
                         font.family: w.face
                         font.pixelSize: w.unit
                         font.strikeout: row.modelData.done
@@ -93,7 +93,7 @@ Item {
                     Text {
                         visible: row.modelData.done
                         text: row.modelData.by + "  ·  " + row.modelData.at
-                        color: "#8a94a6"
+                        color: Ui.muted
                         font.family: w.face
                         font.pixelSize: w.unit * 0.75
                     }

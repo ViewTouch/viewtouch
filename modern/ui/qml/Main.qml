@@ -189,6 +189,12 @@ ApplicationWindow {
                 controller: root.controller
                 editor: root.editing ? root.editor : null
                 focus: true
+                // The built-in panels in the store's style's colors (Ui.qml).
+                Binding {
+                    target: Ui
+                    property: "theme"
+                    value: root.controller.stylePalette
+                }
                 // A phone's pages take this screen's shape (see LayoutController::fitToScreen).
                 Binding {
                     target: root.controller
@@ -405,7 +411,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 56
                 text: qsTr("Work Offline")
                 fontScale: 0.3
-                baseColor: "#343c49"
+                baseColor: Ui.key
                 onClicked: root.controller.pos.workOffline()
             }
             WidgetKey {
@@ -415,7 +421,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 56
                 text: qsTr("Take Over Now")
                 fontScale: 0.3
-                baseColor: "#343c49"
+                baseColor: Ui.key
                 onClicked: approvalPad.takingOver = true
             }
         }
@@ -490,7 +496,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 48
                 text: qsTr("Later")
                 fontScale: 0.3
-                baseColor: "#343c49"
+                baseColor: Ui.key
                 onClicked: updateStrip.later = true
             }
         }
@@ -579,7 +585,7 @@ ApplicationWindow {
                         height: 4 * allergySheet.u
                         text: (on ? "✓ " : "") + modelData.name
                         fontScale: 0.3
-                        baseColor: on ? "#c62828" : "#343c49"
+                        baseColor: on ? "#c62828" : Ui.key
                         onClicked: {
                             const list = allergySheet.chosen.slice()
                             const at = list.indexOf(modelData.id)
@@ -669,7 +675,7 @@ ApplicationWindow {
                     Layout.preferredHeight: 3.4 * couponSheet.u
                     text: qsTr("Apply")
                     fontScale: 0.3
-                    baseColor: "#2f6fd6"
+                    baseColor: Ui.accent
                     onClicked: couponSheet.apply()
                 }
             }
@@ -748,7 +754,7 @@ ApplicationWindow {
                 width: parent.width
                 wrapMode: Text.WordWrap
                 text: qsTr("The buyer's exemption certificate: its number and who it's for (12-3456789, St. Mary's School). It's kept with the check and printed on the receipt; keep a copy of the certificate.")
-                color: "#b8c0cc"
+                color: Ui.textSoft
                 font.pixelSize: 1.0 * exemptSheet.u
             }
             TextField {
@@ -769,7 +775,7 @@ ApplicationWindow {
                     height: 3.4 * exemptSheet.u
                     text: qsTr("Tax Exempt")
                     fontScale: 0.3
-                    baseColor: "#2f6fd6"
+                    baseColor: Ui.accent
                     enabled: exemptCert.text.trim() !== ""
                     onClicked: { root.controller.pos.setTaxExempt(exemptCert.text); exemptSheet.open = false }
                 }
@@ -852,7 +858,7 @@ ApplicationWindow {
                 height: 3.6 * holdSheet.u
                 text: qsTr("Hold Card")
                 fontScale: 0.3
-                baseColor: "#2f6fd6"
+                baseColor: Ui.accent
                 onClicked: { holdSheet.open = false; root.controller.command("holdCard") }
             }
             Text {
@@ -928,7 +934,7 @@ ApplicationWindow {
                     height: 3.2 * holdSheet.u
                     text: qsTr("Close")
                     fontScale: 0.28
-                    baseColor: "#343c49"
+                    baseColor: Ui.key
                     onClicked: { holdSheet.open = false; holdTip.text = ""; pageView.forceActiveFocus() }
                 }
             }
@@ -972,7 +978,7 @@ ApplicationWindow {
                         Layout.preferredHeight: 44
                         text: qsTr("OK")
                         fontScale: 0.3
-                        baseColor: "#343c49"
+                        baseColor: Ui.key
                         onClicked: root.controller.pos.seeCardAlert(modelData.ref)
                     }
                 }
@@ -1107,7 +1113,7 @@ ApplicationWindow {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Touch to wake")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.pixelSize: Math.min(root.width, root.height) * 0.03
             }
         }
@@ -1175,7 +1181,7 @@ ApplicationWindow {
                     width: parent.keyW
                     height: cardWait.u * 2.6
                     fontScale: 0.28
-                    baseColor: "#1f8a4c"
+                    baseColor: Ui.go
                     text: qsTr("Tap Credit Card")
                     onClicked: cardWait.reader.presentTestCard("credit")
                 }
@@ -1295,7 +1301,7 @@ ApplicationWindow {
                     height: receiptSheet.u * 2.8
                     fontScale: 0.34
                     text: qsTr("Email")
-                    baseColor: "#1f8a4c"
+                    baseColor: Ui.go
                     onClicked: (root.controller.pos as PosService).emailReceipt(receiptSheet.offer.checkId, receiptEmail.text)
                 }
             }
@@ -1469,7 +1475,7 @@ ApplicationWindow {
             Text {
                 width: parent.width
                 text: qsTr("Hold any button to see what it does. Touch here to close.")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.pixelSize: 13
                 wrapMode: Text.WordWrap
             }

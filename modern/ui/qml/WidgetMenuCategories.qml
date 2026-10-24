@@ -11,7 +11,7 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property int columns: zone && zone.props && zone.props.columns > 0 ? zone.props.columns : 3
     readonly property string period: zone && zone.props && zone.props.period ? zone.props.period : ""
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     // With items, and on the menu at this meal (or all day).
     // ♥ Mine first, once the person logged in has a few usuals.
     readonly property var shown: ((pos && pos.myUsuals.length >= 4) ? [{ id: "♥", name: qsTr("♥ Mine"), color: "#7a2f55", mine: true }] : [])
@@ -23,7 +23,7 @@ Item {
     // Dark text on light buttons.
     function inkOn(c) {
         const k = Qt.color(c)
-        return 0.299 * k.r + 0.587 * k.g + 0.114 * k.b > 0.6 ? "#14171c" : "white"
+        return 0.299 * k.r + 0.587 * k.g + 0.114 * k.b > 0.6 ? Ui.deep : "white"
     }
 
     Grid {
@@ -40,7 +40,7 @@ Item {
                 height: Math.min(w.phone ? w.zone.touch(56) : 260, (w.height - w.gap * (w.rows - 1)) / w.rows)
                 text: modelData.mine ? modelData.name : qsTranslate("Page", modelData.name)
                 readonly property bool mark: w.zone.st.menuColors === "mark"   // Modern: a strip of its color
-                baseColor: (!mark && modelData.color) || (w.zone.st.keyFill ?? "#343c49")
+                baseColor: (!mark && modelData.color) || (w.zone.st.keyFill ?? Ui.key)
                 textColor: modelData.color && !mark ? w.inkOn(modelData.color) : (w.zone.st.keyTextColor ?? "white")
                 Rectangle {
                     visible: parent.mark && !!parent.modelData.color
@@ -62,7 +62,7 @@ Item {
         anchors.centerIn: parent
         visible: w.shown.length === 0
         text: qsTr("Nothing on the menu yet: Manager → Menu Builder.")
-        color: "#8a94a6"
+        color: Ui.muted
         font.family: w.face
         font.pixelSize: 28
     }

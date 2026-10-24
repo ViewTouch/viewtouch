@@ -79,7 +79,7 @@ Rectangle {
         scale: g.narrow ? 1 : g.zoom
         radius: 14
         color: "#20252e"
-        border.color: "#3a4250"
+        border.color: Ui.line
 
         ColumnLayout {
             anchors.fill: parent
@@ -101,13 +101,13 @@ Rectangle {
                     delegate: Rectangle {
                         required property int index
                         width: 14; height: 14; radius: 7
-                        color: index <= g.step ? "#2f6fd6" : "#3a4250"
+                        color: index <= g.step ? Ui.accent : Ui.line
                     }
                 }
             }
             Label {
                 text: qsTr("Step %1 of %2").arg(g.step + 1).arg(g.steps.length)
-                color: "#8a94a6"
+                color: Ui.muted
                 font.pixelSize: 15
             }
 
@@ -141,7 +141,7 @@ Rectangle {
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: "#b8c0cc"
+                        color: Ui.textSoft
                         font.pixelSize: 17
                         text: qsTr("Skip any step with Next; everything can be changed later in Manager. Finish Later closes the guide until the next time a manager logs in.")
                     }
@@ -201,7 +201,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 visible: g.logoRef === ""
                                 text: qsTr("No logo yet")
-                                color: "#8a94a6"
+                                color: Ui.muted
                             }
                         }
                         ColumnLayout {
@@ -257,7 +257,7 @@ Rectangle {
                                 height: 110
                                 radius: 10
                                 color: modelData.colors[0]
-                                border.color: g.chosenLook === modelData.id ? "#ffffff" : "#3a4250"
+                                border.color: g.chosenLook === modelData.id ? "#ffffff" : Ui.line
                                 border.width: g.chosenLook === modelData.id ? 4 : 1
                                 Row {
                                     x: 12; y: 12
@@ -321,7 +321,7 @@ Rectangle {
                         Layout.fillWidth: true
                         visible: text !== ""
                         wrapMode: Text.WordWrap
-                        color: "#b8c0cc"
+                        color: Ui.textSoft
                         font.pixelSize: 15
                         text: g.info.zip === g.zip.slice(0, 5) ? (g.info.taxArea ?? "") : ""
                     }
@@ -349,7 +349,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.topMargin: 10
                         wrapMode: Text.WordWrap
-                        color: "#b8c0cc"
+                        color: Ui.textSoft
                         font.pixelSize: 16
                         text: qsTr("The ZIP code fills these in from the state's published rates; change them if your accountant says so. Other tax rates and cash rounding: Manager -> Taxes.")
                     }
@@ -537,7 +537,7 @@ Rectangle {
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: "#b8c0cc"
+                        color: Ui.textSoft
                         font.pixelSize: 18
                         text: qsTr("Every screen can be rearranged: Manager -> Edit Pages. This guide stays on the Manager page as Setup Guide….")
                     }

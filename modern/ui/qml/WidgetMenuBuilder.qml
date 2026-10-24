@@ -540,7 +540,7 @@ Item {
                         width: foundList.width
                         height: 64
                         radius: 8
-                        color: w.editingItem && w.itemId === modelData.id ? "#2b3a52" : "#232933"
+                        color: w.editingItem && w.itemId === modelData.id ? "#2b3a52" : Ui.panel
                         readonly property var cat: w.categories.find(c => c.id === modelData.family)
                         RowLayout {
                             anchors.fill: parent
@@ -593,7 +593,7 @@ Item {
                         width: groupList.width
                         height: 64
                         radius: 8
-                        color: w.editingGroup && w.draft.id === modelData.id ? "#2b3a52" : "#232933"
+                        color: w.editingGroup && w.draft.id === modelData.id ? "#2b3a52" : Ui.panel
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: 10
@@ -640,7 +640,7 @@ Item {
                         width: categoryList.width
                         height: 64
                         radius: 8
-                        color: modelData.id === w.categoryId ? "#2b3a52" : "#232933"
+                        color: modelData.id === w.categoryId ? "#2b3a52" : Ui.panel
                         border.color: modelData.id === w.categoryId ? "#4c8dff" : "transparent"
                         RowLayout {
                             anchors.fill: parent
@@ -994,7 +994,7 @@ Item {
                     visible: w.preview && !w.selecting
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: "#14171c"
+                    color: Ui.deep
                     radius: 8
                     clip: true
                     readonly property real design: 1300
@@ -1034,7 +1034,7 @@ Item {
                             anchors.margins: 4
                             radius: 10
                             readonly property string tint: modelData.add ? "#1f5f3a"
-                                                          : (modelData.buttonColor || (w.category ? w.category.color : "") || "#343c49")
+                                                          : (modelData.buttonColor || (w.category ? w.category.color : "") || Ui.key)
                             color: tint
                             opacity: modelData.add || modelData.availableSet ? 1 : 0.5
                             readonly property bool marked: !modelData.add && (w.selecting ? w.selected.includes(modelData.id)
@@ -1140,7 +1140,7 @@ Item {
                                 anchors.margins: 6
                                 width: 30; height: 30; radius: 15
                                 color: "#f5b940"
-                                Label { anchors.centerIn: parent; text: "✓"; color: "#14171c"; font.bold: true; font.pixelSize: 18 }
+                                Label { anchors.centerIn: parent; text: "✓"; color: Ui.deep; font.bold: true; font.pixelSize: 18 }
                             }
                         }
                     }
@@ -2168,8 +2168,8 @@ Item {
                     objectName: "builderMoveTo-" + modelData.id
                     Layout.fillWidth: true
                     text: modelData.name
-                    palette.button: modelData.color || "#343c49"
-                    palette.buttonText: StoreColors.ink(modelData.color || "#343c49")
+                    palette.button: modelData.color || Ui.key
+                    palette.buttonText: StoreColors.ink(modelData.color || Ui.key)
                     onClicked: {
                         // Closed first: the move rebuilds these buttons (this one too).
                         const id = modelData.id, b = w

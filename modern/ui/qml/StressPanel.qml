@@ -28,7 +28,7 @@ Rectangle {
     z: 95
     radius: 10
     color: "#e6141820"
-    border.color: done ? (st.passed ? "#2fa35a" : "#d64545") : "#3a4250"
+    border.color: done ? (st.passed ? "#2fa35a" : "#d64545") : Ui.line
     border.width: done ? 3 : 1
 
     // Around the restaurant: a page every 15 seconds. (Main.qml builds this

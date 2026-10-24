@@ -19,8 +19,8 @@ Rectangle {
         width: Math.min(parent.width - 24, 640)
         height: Math.min(parent.height - 24, column.implicitHeight + 40)
         radius: 14
-        color: "#232933"
-        border.color: "#2f6fd6"
+        color: Ui.panel
+        border.color: Ui.accent
         border.width: 2
 
         ColumnLayout {
@@ -55,7 +55,7 @@ Rectangle {
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData.from + "  ·  " + modelData.when
-                                color: "#8a94a6"
+                                color: Ui.muted
                                 font.pixelSize: 15
                             }
                             Text {

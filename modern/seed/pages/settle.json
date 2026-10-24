@@ -423,6 +423,120 @@
           "mode": "back"
         }
       ]
+    },
+    {
+      "id": "cash-exact",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Exact",
+      "actions": [
+        {
+          "type": "tender",
+          "tender": "cash"
+        }
+      ],
+      "showWhen": {
+        "style": "modern"
+      }
+    },
+    {
+      "id": "cash-20",
+      "kind": "button",
+      "rect": {
+        "x": 762,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "$20",
+      "actions": [
+        {
+          "type": "tender",
+          "tender": "cash",
+          "amount": 2000
+        }
+      ],
+      "showWhen": {
+        "style": "modern"
+      }
+    },
+    {
+      "id": "cash-40",
+      "kind": "button",
+      "rect": {
+        "x": 932,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "$40",
+      "actions": [
+        {
+          "type": "tender",
+          "tender": "cash",
+          "amount": 4000
+        }
+      ],
+      "showWhen": {
+        "style": "modern"
+      }
+    },
+    {
+      "id": "cash-50",
+      "kind": "button",
+      "rect": {
+        "x": 1102,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "$50",
+      "actions": [
+        {
+          "type": "tender",
+          "tender": "cash",
+          "amount": 5000
+        }
+      ],
+      "showWhen": {
+        "style": "modern"
+      }
+    },
+    {
+      "id": "cash-100",
+      "kind": "button",
+      "rect": {
+        "x": 1272,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "$100",
+      "actions": [
+        {
+          "type": "tender",
+          "tender": "cash",
+          "amount": 10000
+        }
+      ],
+      "showWhen": {
+        "style": "modern"
+      }
     }
   ],
   "styleRects": {
@@ -540,6 +654,36 @@
         "y": 944,
         "w": 456,
         "h": 120
+      },
+      "cash-exact": {
+        "x": 592,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "cash-20": {
+        "x": 762,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "cash-40": {
+        "x": 932,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "cash-50": {
+        "x": 1102,
+        "y": 660,
+        "w": 158,
+        "h": 100
+      },
+      "cash-100": {
+        "x": 1272,
+        "y": 660,
+        "w": 158,
+        "h": 100
       }
     }
   }

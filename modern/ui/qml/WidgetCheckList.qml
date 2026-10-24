@@ -6,17 +6,19 @@ import QtQuick.Controls.Fusion
 //   merge   merge it into the check you are on, then go back
 //   closed  checks closed today (managers): reopen one and go to Settle
 //   tabs    the bar's open tabs: open one
+//   mine    the logged-in person's own, with no My / All switch (a short list beside the tables)
 Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property string mode: zone && zone.props && zone.props.mode ? zone.props.mode : ""
     readonly property var checks: {
         if (!pos) return []
         if (mode === "closed") return pos.closedChecks
         if (mode === "merge") return pos.openChecks.filter(c => !c.current)
         if (mode === "tabs") return pos.openChecks.filter(c => c.type === "tab")
+        if (mode === "mine") return pos.openChecks.filter(c => c.forMe)
         if (filter !== "") return pos.openChecks.filter(c => c.label === filter)   // a table's: all of them
         return showAll ? pos.openChecks : pos.openChecks.filter(c => c.forMe)
     }
@@ -103,7 +105,7 @@ Item {
             ZoneShape {
                 anchors.fill: parent
                 anchors.margins: 8
-                st: ({ fill: tap.pressed ? "#3b4556" : (card.modelData.mine ? "#1f5f3a" : "#2d3440"),
+                st: ({ fill: tap.pressed ? "#3b4556" : (card.modelData.mine ? "#1f5f3a" : Ui.button),
                        frame: "raised", frameWidth: 3, radius: 14, shadow: 4 })
                 // Someone else's you may not open (a manager's PIN can).
                 opacity: card.locked ? 0.55 : 1
@@ -143,7 +145,7 @@ Item {
                              : card.modelData.due ? qsTr("%1 · ready %2").arg(card.modelData.server).arg(card.modelData.due)
                              : qsTr("%1 · %2 min").arg(card.modelData.server).arg(card.modelData.minutes))
                           + (card.modelData.busyOn ? " · " + qsTr("on %1").arg(card.modelData.busyOn) : "")
-                    color: "#b8c0cc"
+                    color: Ui.textSoft
                     font.family: w.face
                     font.pixelSize: 20
                     elide: Text.ElideRight
@@ -169,11 +171,11 @@ Item {
         Text {
             anchors.centerIn: parent
             visible: grid.count === 0
-            text: w.choosesWhose && !w.showAll ? qsTr("You have no open checks")
+            text: (w.choosesWhose && !w.showAll) || w.mode === "mine" ? qsTr("You have no open checks")
                  : w.mode === "closed" ? qsTr("No checks closed today")
                  : w.mode === "tabs" ? qsTr("No tabs open. Touch New Tab… to start one.")
                  : w.mode === "merge" ? qsTr("No other open checks") : qsTr("No open checks")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: 32
         }

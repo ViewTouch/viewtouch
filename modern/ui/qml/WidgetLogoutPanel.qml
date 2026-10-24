@@ -7,7 +7,7 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property real unit: Math.min(w.height * 0.14, w.width * 0.07)
     readonly property int myChecks: {
         if (!pos) return 0
@@ -32,7 +32,7 @@ Item {
             visible: w.pos && w.pos.loggedIn
             Layout.fillWidth: true
             text: w.pos ? w.pos.roleName(w.pos.userRole) : ""
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.8
         }

@@ -4522,6 +4522,50 @@ TEST_CASE("Store style: Modern's menu has the categories down the left; Classic'
     REQUIRE(shown("menuItem-caesar"));
 }
 
+TEST_CASE("Store style: Modern's own buttons (Pay's cash amounts, my checks by the tables) and its palette", "[ui][style]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    const auto shown = [&](const char *name) {
+        QQuickItem *i = Screen::findBy(s.window->contentItem(), "objectName", QString::fromLatin1(name));
+        return i && i->isVisible() ? i : nullptr;
+    };
+    const auto zoneIds = [&] {
+        QStringList ids;
+        for (int r = 0; r < s.c.zones()->rowCount(); ++r)
+            ids << s.c.zones()->data(s.c.zones()->index(r), ZoneModel::ZoneIdRole).toString();
+        return ids;
+    };
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    CHECK_FALSE(zoneIds().contains(u"cash-20"_s));   // Classic: not there
+    CHECK_FALSE(s.c.stylePalette().contains(u"panel"_s));   // Classic's colors: Ui.qml's own
+
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    layout::Layout modern = seedLayout();
+    REQUIRE(modern.useStyle(u"modern"_s, layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object())));
+    s.c.replaceLayout(modern);
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    QTest::qWait(100);
+    CHECK(s.c.stylePalette().value(u"panel"_s).toString() == u"#151820"_s);
+    CHECK(s.c.stylePalette().value(u"font"_s).toString() == u"Inter"_s);
+    REQUIRE(zoneIds().contains(u"cash-20"_s));
+    s.shot("style-modern-pay");
+    s.c.activate(u"cash-20"_s);
+    QTest::qWait(50);
+    REQUIRE(s.pos.payments().size() == 1);
+    CHECK(s.pos.payments().first().toMap().value(u"amount"_s).toString().contains(u"20.00"_s));
+
+    // By the tables: this person's own checks, with no My / All switch.
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    QTest::qWait(100);
+    REQUIRE(zoneIds().contains(u"my-checks"_s));
+    CHECK(Screen::findKey(s.window->contentItem(), u"All Checks"_s) == nullptr);   // no switch in it
+}
+
 // --- the user manual's screenshots (hidden: run with "[.manual]" and VTM_SHOTS) ---------------
 
 #include "app/pos_demo.hh"

@@ -10,7 +10,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the items, then the checks below, at a phone's size.
     readonly property bool narrow: zone ? zone.narrow : false
@@ -46,7 +46,7 @@ Item {
             }
             Text {
                 text: qsTr("1. Touch an item")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
             }
@@ -64,7 +64,7 @@ Item {
                     width: ListView.view.width - linesBar.room
                     height: w.unit * 2.2
                     radius: 8
-                    color: modelData.selected ? "#2f6fd6" : "#2d3440"
+                    color: modelData.selected ? Ui.accent : Ui.button
                     TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedLine = line.modelData.id } }
                     RowLayout {
                         anchors.fill: parent
@@ -96,7 +96,7 @@ Item {
             Layout.fillHeight: true
             Text {
                 text: qsTr("2. Move it to")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
             }
@@ -139,7 +139,7 @@ Item {
             Text {
                 Layout.topMargin: w.unit * 0.5
                 text: qsTr("Or")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
             }

@@ -27,8 +27,8 @@ Rectangle {
         width: Math.min(parent.width * 0.9, 420)
         height: column.implicitHeight + 40
         radius: 14
-        color: "#232933"
-        border.color: "#1f8a4c"
+        color: Ui.panel
+        border.color: Ui.go
         border.width: 2
 
         ColumnLayout {
@@ -49,7 +49,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
                 radius: 8
-                color: "#14171c"
+                color: Ui.deep
                 Text {
                     objectName: "cashTipsAmount"
                     anchors.centerIn: parent
@@ -96,7 +96,7 @@ Rectangle {
                     opacity: enabled ? 1 : 0.5
                     text: qsTr("Save")
                     fontScale: 0.3
-                    baseColor: "#1f6b40"
+                    baseColor: Ui.goDark
                     onClicked: prompt.pos.declareCashTips(prompt.typed)
                 }
             }

@@ -60,8 +60,8 @@ Rectangle {
         width: Math.min(parent.width - 24, sheet.wide ? 900 : 520)
         height: Math.min(parent.height - 24, sheet.wide ? 640 : 1100)
         radius: 14
-        color: "#232933"
-        border.color: "#1f8a4c"
+        color: Ui.panel
+        border.color: Ui.go
         border.width: 2
 
         ColumnLayout {
@@ -80,7 +80,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 text: qsTr("Touch a row, type how many, then Next.")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.pixelSize: 15
                 wrapMode: Text.WordWrap
             }
@@ -117,7 +117,7 @@ Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 52
                                 radius: 8
-                                color: current ? "#2f6fd6" : "#14171c"
+                                color: current ? Ui.accent : Ui.deep
                                 border.color: current ? "#9cc0ff" : "transparent"
                                 onCurrentChanged: if (current) list.contentY = Math.max(0, Math.min(y - list.height / 2 + height / 2, list.contentHeight - list.height))
                                 RowLayout {
@@ -208,7 +208,7 @@ Rectangle {
                     Layout.preferredHeight: 60
                     text: sheet.bank ? qsTr("Check Out") : qsTr("Count Drawer")
                     fontScale: 0.3
-                    baseColor: "#1f6b40"
+                    baseColor: Ui.goDark
                     onClicked: sheet.done()
                 }
             }

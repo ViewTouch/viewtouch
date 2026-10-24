@@ -7,7 +7,7 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     readonly property var people: {
         const list = pos ? pos.staff.filter(p => !p.me) : []
         return list.sort((a, b) => (b.clockedIn - a.clockedIn) || a.name.localeCompare(b.name))
@@ -32,7 +32,7 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 8
                 shape: "rounded"
-                st: ({ fill: tap.pressed ? "#3b4556" : (cell.modelData.clockedIn ? "#1f5f3a" : "#2d3440"),
+                st: ({ fill: tap.pressed ? "#3b4556" : (cell.modelData.clockedIn ? "#1f5f3a" : Ui.button),
                        frame: "raised", frameWidth: 3, radius: 14, shadow: 4 })
             }
             Column {
@@ -52,7 +52,7 @@ Item {
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: (w.pos ? w.pos.roleName(cell.modelData.role) : cell.modelData.role) + (cell.modelData.clockedIn ? qsTr(" · on the clock") : "")
-                    color: "#b8c0cc"
+                    color: Ui.textSoft
                     font.family: w.face
                     font.pixelSize: 20
                 }
@@ -70,7 +70,7 @@ Item {
             anchors.centerIn: parent
             visible: grid.count === 0
             text: qsTr("Nobody else is set up")
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: 28
         }

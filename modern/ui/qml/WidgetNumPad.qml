@@ -40,8 +40,8 @@ Item {
                     : w.amount ? (w.pos.entry !== "" ? w.pos.entryAmount
                                                 : w.pos.hasCheck ? qsTr("Balance due") : w.pos.entryAmount)
                                               : (w.pos.entry === "" ? "0" : w.pos.entry)
-                color: w.pos && w.pos.entry === "" ? "#8a94a6" : "white"
-                font.family: w.zone.st.font ?? "DejaVu Sans"
+                color: w.pos && w.pos.entry === "" ? Ui.muted : "white"
+                font.family: w.zone.st.font ?? Ui.font
                 // Shrunk to fit the width: on a phone the hint ("or type the
                 // number", "Balance due") was cut off at the left.
                 anchors.leftMargin: 12
@@ -68,7 +68,7 @@ Item {
                     text: modelData === "clear" ? qsTr("Clear") : modelData === "back" ? "⌫" : modelData
                     fontScale: modelData === "clear" ? 0.3 : 0.42
                     textColor: w.zone.st.textColor ?? "white"
-                    fontFamily: w.zone.st.font ?? "DejaVu Sans"
+                    fontFamily: w.zone.st.font ?? Ui.font
                     onClicked: w.pos.entryKey(modelData)
                 }
             }

@@ -34,7 +34,7 @@ Popup {
     }
     onOpened: refresh()
 
-    background: Rectangle { color: "#1c2128"; radius: 12; border.color: "#3a4250" }
+    background: Rectangle { color: "#1c2128"; radius: 12; border.color: Ui.line }
 
     ColumnLayout {
         anchors.fill: parent
@@ -93,7 +93,7 @@ Popup {
                 Rectangle {
                     anchors { fill: parent; margins: 6 }
                     radius: 8
-                    color: tap.pressed ? "#2f6fd6" : "#262c35"
+                    color: tap.pressed ? Ui.accent : "#262c35"
                     Image {
                         id: thumb
                         anchors { left: parent.left; right: parent.right; top: parent.top; margins: 8 }
@@ -117,7 +117,7 @@ Popup {
                         text: modelData.folder
                         elide: Text.ElideRight
                         horizontalAlignment: Text.AlignHCenter
-                        color: "#8a94a6"
+                        color: Ui.muted
                         font.pixelSize: 11
                     }
                     TapHandler {

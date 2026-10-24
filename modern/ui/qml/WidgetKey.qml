@@ -14,9 +14,9 @@ Rectangle {
         return ({})
     }
     property string text
-    property color baseColor: keySt.keyFill ?? "#343c49"
+    property color baseColor: keySt.keyFill ?? Ui.key
     property color textColor: keySt.keyTextColor ?? "white"
-    property string fontFamily: "DejaVu Sans"
+    property string fontFamily: Ui.font
     property real fontScale: 0.42
     // A size for its text shared with the keys beside it (> 0): one size for
     // the row, not each shrunk on its own (a short name looked bigger).
@@ -32,7 +32,7 @@ Rectangle {
     signal held()
 
     radius: keySt.keyRadius !== undefined ? keySt.keyRadius : Math.min(width, height) * 0.14
-    color: tap.pressed || accent ? (keySt.keyLitFill ?? (tap.pressed ? "#4c8dff" : "#1f8a4c")) : baseColor
+    color: tap.pressed || accent ? (keySt.keyLitFill ?? (tap.pressed ? "#4c8dff" : Ui.go)) : baseColor
     // The style's own edge for keys (Modern: a thin gray one), else a darker shade.
     border.color: !(tap.pressed || accent) && keySt.keyBorderColor ? keySt.keyBorderColor : Qt.darker(color, 1.5)
     border.width: 2

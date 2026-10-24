@@ -27,7 +27,7 @@ Rectangle {
         width: Math.min(parent.width * 0.9, 420)
         height: column.implicitHeight + 40
         radius: 14
-        color: "#232933"
+        color: Ui.panel
         border.color: "#f5b940"
         border.width: 2
 
@@ -59,7 +59,7 @@ Rectangle {
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: pad.pin.length ? "●".repeat(pad.pin.length) : qsTr("Manager PIN")
-                color: pad.pin.length ? "white" : "#8a94a6"
+                color: pad.pin.length ? "white" : Ui.muted
                 font.pixelSize: 26
             }
             GridLayout {
@@ -76,7 +76,7 @@ Rectangle {
                         Layout.preferredHeight: 64
                         text: modelData === "Cancel" ? qsTr("Cancel") : modelData === "OK" ? qsTr("OK") : modelData
                         fontScale: modelData.length > 1 ? 0.3 : 0.45
-                        baseColor: modelData === "OK" ? "#1f6b40" : modelData === "Cancel" ? "#6b2a2a" : "#343c49"
+                        baseColor: modelData === "OK" ? Ui.goDark : modelData === "Cancel" ? "#6b2a2a" : Ui.key
                         onClicked: {
                             if (modelData === "Cancel") {
                                 if (pad.asking) {

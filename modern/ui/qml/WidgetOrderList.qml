@@ -11,7 +11,7 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property string face: zone.st.font ?? "DejaVu Sans"
+    readonly property string face: zone.st.font ?? Ui.font
     // At least 15 pixels on the screen (its smallest text, 0.6 of it, 9): a
     // phone draws the page smaller than it was made, and the seat, course and
     // Again keys were 6 or 7 pixels there.
@@ -76,7 +76,7 @@ Item {
         width: w.width
         height: w.wholeHeight
         radius: 8
-        color: w.zone && w.zone.st.fill ? w.zone.st.fill : "#232933"
+        color: w.zone && w.zone.st.fill ? w.zone.st.fill : Ui.panel
         border.color: "#4c8dff"
         border.width: 2
         MouseArea { anchors.fill: parent }   // the menu under it isn't touched
@@ -120,14 +120,14 @@ Item {
                 Layout.preferredWidth: w.unit * 6.4
                 Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
                 text: w.whole ? qsTr("Close ▴") : qsTr("Whole Check ▾")
-                baseColor: w.whole ? "#2f6fd6" : "#343c49"
+                baseColor: w.whole ? Ui.accent : Ui.key
                 fontScale: 0.5
                 onClicked: w.whole ? (w.whole = false) : w.openWhole()
             }
             Text {
                 visible: !w.folded
                 text: qsTr("#%1").arg(w.check.id ?? "")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
             }
@@ -137,7 +137,7 @@ Item {
             text: (w.check.server ?? "") + "  ·  "
                   + ((w.check.guests ?? 1) === 1 ? qsTr("1 guest") : qsTr("%1 guests").arg(w.check.guests))
                   + "  ·  " + (w.check.due ? qsTr("ready %1").arg(w.check.due) : (w.check.opened ?? ""))
-            color: "#8a94a6"
+            color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.7
             Layout.fillWidth: true
@@ -261,7 +261,7 @@ Item {
                     readonly property bool needed: value === "" && (modelData === "name" || (modelData === "address" && who.delivery))
                     text: value !== "" ? value
                         : modelData === "name" ? qsTr("+ Name") : modelData === "phone" ? qsTr("+ Phone") : qsTr("+ Address")
-                    baseColor: needed ? "#a86a12" : (keySt.keyFill ?? "#343c49")
+                    baseColor: needed ? "#a86a12" : (keySt.keyFill ?? Ui.key)
                     onClicked: sheet.ask(modelData)
                 }
             }
@@ -270,7 +270,7 @@ Item {
                 width: who.keyW; height: who.height
                 fontScale: 0.42
                 text: w.check.due ? w.check.due : qsTr("Ready Later…")
-                baseColor: w.check.due ? "#1f6f78" : (keySt.keyFill ?? "#343c49")
+                baseColor: w.check.due ? "#1f6f78" : (keySt.keyFill ?? Ui.key)
                 onClicked: w.zone.controller.jumpTo("order-later")
             }
         }
@@ -395,7 +395,7 @@ Item {
                 width: index === 0 ? seats.chipWidth * 1.5 : seats.chipWidth
                 height: seats.chip
                 accent: !more && seat === seats.current
-                baseColor: more ? "#2a3140" : allergic ? "#7a2226" : "#343c49"
+                baseColor: more ? "#2a3140" : allergic ? "#7a2226" : Ui.key
                 fontScale: index === 0 ? 0.36 : 0.45
                 text: more ? "+" : (allergic ? "⚠" : "") + (index === 0 ? w.zone.keyText("seat", qsTr("Shared")) : seat)
                       + (items > 0 && !more ? " ·" + items : "")
@@ -426,7 +426,7 @@ Item {
                     visible: w.zone.keyShown("course")
                     anchors.verticalCenter: parent.verticalCenter
                     text: w.zone.keyText("course", qsTr("Course"))
-                    color: "#8a94a6"
+                    color: Ui.muted
                     font.family: w.face
                     font.pixelSize: bar.key * 0.45
                 }
@@ -471,7 +471,7 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: "#3a4250"; visible: w.pos && w.pos.hasCheck }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Ui.line; visible: w.pos && w.pos.hasCheck }
 
         ListView {
             id: list
@@ -489,7 +489,7 @@ Item {
                 width: ListView.view.width - listBar.room
                 height: Math.max(col.implicitHeight + w.unit * 0.4, w.tapH)   // a phone: a finger tall
                 radius: 6
-                color: modelData.selected ? "#2f6fd6" : "transparent"
+                color: modelData.selected ? Ui.accent : "transparent"
                 // Tapped while the server was out of reach: goes in when it's back.
                 readonly property bool waiting: modelData.waiting === true
                 objectName: waiting ? "waitingLine" : ""
@@ -524,7 +524,7 @@ Item {
                     radius: parent.radius
                     visible: row.slide !== 0
                     color: row.slide < 0 ? (row.slide <= -row.swipeAt ? "#c0393f" : "#5a2a2d")
-                                         : (row.slide >= row.swipeAt ? "#1f8a4c" : "#22402f")
+                                         : (row.slide >= row.swipeAt ? Ui.go : "#22402f")
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: row.slide < 0 ? parent.right : undefined
@@ -573,7 +573,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1   // what's left after Choose and the price (big text)
                             text: (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
-                            color: row.modelData.voided ? "#8a94a6" : w.ink
+                            color: row.modelData.voided ? Ui.muted : w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
                             font.italic: row.modelData.comment
@@ -596,7 +596,7 @@ Item {
                             Layout.preferredWidth: w.unit * 3.4
                             Layout.preferredHeight: Math.max(w.unit * 1.4, w.tapH)
                             text: qsTr("Choose")
-                            baseColor: row.modelData.needsChoice ? "#a86a12" : "#343c49"
+                            baseColor: row.modelData.needsChoice ? "#a86a12" : Ui.key
                             fontScale: 0.5
                             onClicked: w.zone.controller.chooseLine(row.modelData.id)
                         }
@@ -628,14 +628,14 @@ Item {
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData.name
-                                color: "#b8c0cc"
+                                color: Ui.textSoft
                                 font.family: w.face
                                 font.pixelSize: w.unit * 0.8
                                 elide: Text.ElideRight
                             }
                             Text {
                                 text: modelData.price
-                                color: "#b8c0cc"
+                                color: Ui.textSoft
                                 font.family: w.face
                                 font.pixelSize: w.unit * 0.8
                             }
@@ -717,7 +717,7 @@ Item {
                 anchors.bottom: parent.bottom
                 height: w.unit * 2
                 radius: 6
-                color: "#1d2128"
+                color: Ui.sunken
                 border.color: "#f5b940"
                 RowLayout {
                     anchors.fill: parent
@@ -751,13 +751,13 @@ Item {
                 wrapMode: Text.WordWrap
                 text: w.pos && w.pos.hasCheck ? qsTr("Touch menu items to add them.")
                                              : qsTr("No check open.\nTouch an item to start a quick check.")
-                color: "#8a94a6"
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: "#3a4250"; visible: w.pos && w.pos.hasCheck }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Ui.line; visible: w.pos && w.pos.hasCheck }
 
         GridLayout {
             Layout.fillWidth: true
@@ -896,7 +896,7 @@ Item {
                 width: parent.width; height: sheet.key
                 fontScale: 0.42
                 text: qsTr("Save")
-                baseColor: "#1f8a4c"
+                baseColor: Ui.go
                 onClicked: sheet.saveWho()
             }
             // Table tools
@@ -939,7 +939,7 @@ Item {
                         height: sheet.key
                         fontScale: 0.4
                         text: modelData === 0 ? qsTr("Now") : qsTr("In %1 min").arg(modelData)
-                        baseColor: modelData === 0 ? "#a86a12" : "#343c49"
+                        baseColor: modelData === 0 ? "#a86a12" : Ui.key
                         onClicked: sheet.fireIn(modelData)
                     }
                 }

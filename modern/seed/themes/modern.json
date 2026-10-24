@@ -25,7 +25,8 @@
    "keyRadius": 12,
    "menuColors": "mark",
    "keyBorderColor": "#2e3440",
-   "menuTabs": "rail"
+   "menuTabs": "rail",
+   "tablesList": true
   },
   "selected": {
    "fill": "#2f6fe0",
@@ -534,5 +535,20 @@
    "fill": "#0f1115"
   }
  },
- "phoneRoomTo": "menu"
+ "phoneRoomTo": "menu",
+ "palette": {
+  "text": "#e8ecf2",
+  "textSoft": "#c9d1dc",
+  "muted": "#a3acba",
+  "key": "#1b1f27",
+  "button": "#1b1f27",
+  "panel": "#151820",
+  "sunken": "#13161c",
+  "deep": "#0f1115",
+  "line": "#2e3440",
+  "accent": "#2f6fe0",
+  "go": "#17804b",
+  "goDark": "#17804b",
+  "font": "Inter"
+ }
 }
