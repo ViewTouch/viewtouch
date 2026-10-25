@@ -530,3 +530,40 @@ TEST_CASE("Store style: switching keeps places only for the buttons that move; o
     older.extra.insert(u"styleRects"_s, QJsonObject{{u"classic"_s, all}});
     CHECK(Layout::fingerprint(older) == Layout::fingerprint(starter));   // still as installed
 }
+
+TEST_CASE("Starter pages: one taken for edited only for a starter button it missed is the starter again", "[layout][starter]")
+{
+    auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(l);
+    const Layout v2 = *l;   // the newer version: tables has its color key
+    REQUIRE(v2.page(u"tables"_s)->zone(u"table-key"_s));
+    // The store's copy, in Modern (as on the AIO): as v2 but without the key,
+    // its install record an older version's.
+    REQUIRE(l->useStyle(u"modern"_s, Theme{}));
+    Page &mine = *std::ranges::find(l->pages, u"tables"_s, &Page::id);
+    mine.zones.removeIf([](const Zone &z) { return z.id == u"table-key"; });
+    QStringList seen;
+    for (const Page &p : v2.pages) {
+        seen << p.id;
+        for (const Zone &z : p.zones)
+            if (z.id != u"table-key")
+                seen << p.id + u'#' + z.id;
+    }
+    QHash<QString, QString> installed;
+    for (const Page &p : v2.pages)
+        installed.insert(p.id, Layout::fingerprint(p));
+    installed.insert(u"tables"_s, u"an older version"_s);
+    auto update = l->updateFromStarter(v2, seen, installed);
+    CHECK(update.buttonsAdded.contains(u"tables#table-key"_s));
+    CHECK(update.installed.value(u"tables"_s) == Layout::fingerprint(*v2.page(u"tables"_s)));   // the starter again
+
+    // A newer version still: it comes whole now.
+    Layout v3 = v2;
+    std::ranges::find(v3.pages, u"tables"_s, &Page::id)->name = u"Tables v3"_s;
+    seen << u"tables#table-key"_s;
+    update = l->updateFromStarter(v3, seen, update.installed);
+    CHECK(update.updated.contains(u"tables"_s));
+    l->arrangePages(update.updated);
+    CHECK(l->page(u"tables"_s)->name == u"Tables v3"_s);
+    CHECK(l->page(u"tables"_s)->zone(u"quick"_s)->rect == QRect(1472, 16, 432, 72));   // and in Modern's places
+}

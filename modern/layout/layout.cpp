@@ -433,8 +433,10 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
             out.updated << fresh.id;
             out.installed.insert(fresh.id, print);
         } else {
-            out.installed.insert(fresh.id, *was);   // edited here: keep theirs
             addNewButtons(*mine, fresh);
+            // Edited here: keep theirs. Unless it is the new version now (all
+            // its edit was a starter button it missed): then it's that version.
+            out.installed.insert(fresh.id, fingerprint(*mine) == print ? print : *was);
         }
     }
     syncVariants();
