@@ -303,6 +303,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"deliveryBoard"_s, QT_TR_NOOP("Deliveries board")},
         {u"decor"_s, QT_TR_NOOP("Floor plan piece")},
         {u"floorPlan"_s, QT_TR_NOOP("Floor plans (with tabs)")},
+        {u"tableKey"_s, QT_TR_NOOP("Table colors (what they mean)")},
     };
     const auto it = names.constFind(kind);
     return it == names.cend() ? kind : tr(*it);

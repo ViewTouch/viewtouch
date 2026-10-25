@@ -229,7 +229,7 @@ QStringList widgetKinds()
             u"soldOutList"_s, u"orderList"_s, u"loginPad"_s, u"guestCount"_s, u"checkList"_s,
             u"paymentPanel"_s, u"numPad"_s, u"keyboard"_s, u"splitCheck"_s, u"drawerPanel"_s,
             u"reportView"_s, u"endOfDay"_s, u"logoutPanel"_s, u"clock"_s, u"statusBar"_s,
-            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"stockCount"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s};
+            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"stockCount"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s, u"tableKey"_s};
 }
 
 QStringList allKinds()
