@@ -224,6 +224,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetCheckList.qml
             ui/qml/WidgetKeyboard.qml
             ui/qml/WidgetClock.qml
+            ui/qml/WidgetTableKey.qml
             ui/qml/WidgetLogoutPanel.qml
             ui/qml/WidgetStatusBar.qml
             ui/qml/WidgetAdminPanel.qml

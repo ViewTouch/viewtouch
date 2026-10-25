@@ -4566,6 +4566,59 @@ TEST_CASE("Store style: Modern's own buttons (Pay's cash amounts, my checks by t
     CHECK(Screen::findKey(s.window->contentItem(), u"All Checks"_s) == nullptr);   // no switch in it
 }
 
+TEST_CASE("Store style: the table colors' key, and Modern on a phone's Pay and Log in", "[ui][style]")
+{
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    const auto zoneIds = [](Screen &s) {
+        QStringList ids;
+        for (int r = 0; r < s.c.zones()->rowCount(); ++r)
+            ids << s.c.zones()->data(s.c.zones()->index(r), ZoneModel::ZoneIdRole).toString();
+        return ids;
+    };
+    {
+        Screen s;
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
+        REQUIRE(s.c.jumpTo(u"tables"_s));
+        CHECK_FALSE(zoneIds(s).contains(u"table-key"_s));   // Classic: no key
+        layout::Layout modern = seedLayout();
+        REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+        s.c.replaceLayout(modern);
+        REQUIRE(s.c.jumpTo(u"tables"_s));
+        QTest::qWait(100);
+        REQUIRE(zoneIds(s).contains(u"table-key"_s));
+        CHECK(Screen::findBy(s.window->contentItem(), "text", u"Needs bussing"_s));
+        CHECK(Screen::findBy(s.window->contentItem(), "text", u"Seated long"_s));
+    }
+    {
+        Screen s(false, 540, 1080, u"phone"_s);
+        layout::Layout modern = seedLayout();
+        REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+        s.c.replaceLayout(modern);
+        REQUIRE(s.c.jumpTo(u"login"_s));
+        QTest::qWait(100);
+        bool start = false;
+        for (int r = 0; r < s.c.zones()->rowCount(); ++r) {
+            const QModelIndex i = s.c.zones()->index(r);
+            if (s.c.zones()->data(i, ZoneModel::ZoneIdRole).toString() == u"start")
+                start = s.c.zones()->data(i, ZoneModel::ZoneWRole).toInt() == 1000;   // across the phone
+        }
+        CHECK(start);
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
+        REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+        s.pos.addItem(u"cobb"_s);
+        REQUIRE(s.c.jumpTo(u"settle"_s));
+        QTest::qWait(100);
+        REQUIRE(zoneIds(s).contains(u"cash-20"_s));
+        s.c.activate(u"cash-20"_s);
+        QTest::qWait(50);
+        REQUIRE(s.pos.payments().size() == 1);
+        CHECK(s.pos.payments().first().toMap().value(u"amount"_s).toString().contains(u"20.00"_s));
+        s.shot("style-modern-phone-pay");
+    }
+}
+
 // --- the user manual's screenshots (hidden: run with "[.manual]" and VTM_SHOTS) ---------------
 
 #include "app/pos_demo.hh"

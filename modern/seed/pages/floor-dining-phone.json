@@ -150,6 +150,37 @@
           "fill": "#a86a12"
         }
       }
+    },
+    {
+      "id": "table-key",
+      "kind": "tableKey",
+      "rect": {
+        "x": 24,
+        "y": 1716,
+        "w": 1032,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "showWhen": {
+        "style": "modern"
+      }
     }
-  ]
+  ],
+  "styleRects": {
+    "modern": {
+      "tables": {
+        "x": 24,
+        "y": 24,
+        "w": 1032,
+        "h": 1680
+      },
+      "table-key": {
+        "x": 24,
+        "y": 1716,
+        "w": 1032,
+        "h": 110
+      }
+    }
+  }
 }

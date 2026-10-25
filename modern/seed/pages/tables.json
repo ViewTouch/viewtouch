@@ -1097,6 +1097,21 @@
       "props": {
         "mode": "mine"
       }
+    },
+    {
+      "id": "table-key",
+      "kind": "tableKey",
+      "rect": {
+        "x": 16,
+        "y": 984,
+        "w": 1440,
+        "h": 72
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "showWhen": {
+        "style": "modern"
+      }
     }
   ],
   "styleRects": {
@@ -1196,6 +1211,12 @@
         "y": 704,
         "w": 432,
         "h": 244
+      },
+      "table-key": {
+        "x": 16,
+        "y": 984,
+        "w": 1440,
+        "h": 72
       }
     }
   }
