@@ -2,78 +2,55 @@
 
 # ViewTouch©
 
-**The Original Graphical Touchscreen Restaurant Point of Sale Interface**
+**The original graphical touchscreen restaurant point of sale, rebuilt for today.**
 
-[![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Latest release](https://img.shields.io/github/v/release/ViewTouch/viewtouch?label=release&color=2f6fe0)](https://github.com/ViewTouch/viewtouch/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![C++](https://img.shields.io/badge/C%2B%2B-23-blue)](https://en.wikipedia.org/wiki/C%2B%2B23)
+[![C++23](https://img.shields.io/badge/C%2B%2B-23-blue)](https://en.wikipedia.org/wiki/C%2B%2B23)
+[![Qt 6](https://img.shields.io/badge/Qt-6.8%2B-41cd52)](https://www.qt.io/)
+[![Linux · Raspberry Pi · Android](https://img.shields.io/badge/runs%20on-Linux%20%C2%B7%20Raspberry%20Pi%20%C2%B7%20Android-555)](#get-started)
+[![Discord](https://img.shields.io/badge/chat-Discord-5865f2)](https://discord.com/invite/ySmH2U2Mzb)
+
+**[Download](https://github.com/ViewTouch/viewtouch/releases/latest)** · **[User manual (PDF)](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · **[Developer README](modern/README.md)** · **[Website](http://www.viewtouch.com)**
 
 *ViewTouch is a registered trademark in the USA*
-
-[Website](http://www.viewtouch.com) • [Wiki & Documentation](../../wiki) • [Download Image](http://www.viewtouch.com/nc.html)
 
 </div>
 
 ---
 
-## ViewTouch Modern
-
-**ViewTouch is now a ground-up rewrite of ViewTouch in C++23 and Qt 6 (QML).** It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today. It runs on Linux PCs, touch screens, Raspberry Pi and Android tablets, entirely on site.
-
-📖 **[User manual (PDF)](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · 🛠️ **[Developer README](modern/README.md)** · 🗺️ **[Plan](modern/docs/PLAN.md)**
+ViewTouch has been built from the ground up in **C++23 and Qt 6**. It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today: floor plans, handhelds at the table, a kitchen display, a self-order kiosk, reports and a standby computer. It runs **entirely on site**, on Linux PCs, touch screens, Raspberry Pi and Android tablets and phones. There are no monthly fees, and your data stays in the store.
 
 <table>
 <tr>
-<td width="50%"><img src="modern/docs/screenshots/floor-plan.jpg" alt="Floor plan"><br><sub><b>Floor plans.</b> Main, Dining Area, Bar and Patio, with walls and chairs. Tables show who has them, the total and how long they've been seated.</sub></td>
-<td width="50%"><img src="modern/docs/screenshots/order-choices.jpg" alt="Taking an order"><br><sub><b>Taking an order.</b> Items ask for their choices: temperature, sides, dressings.</sub></td>
-</tr>
-<tr>
-<td><img src="modern/docs/screenshots/payment.jpg" alt="Payment"><br><sub><b>Paying.</b> Cash, cards, gift cards, house accounts, discounts and splits.</sub></td>
-<td><img src="modern/docs/screenshots/kitchen-display.jpg" alt="Kitchen display"><br><sub><b>Kitchen display.</b> Touch to bump. Expo, rush and all-day counts too.</sub></td>
-</tr>
-<tr>
-<td><img src="modern/docs/screenshots/self-order-kiosk.jpg" alt="Self-order kiosk"><br><sub><b>Self-order kiosk.</b> Guests order on their own and pay at the counter.</sub></td>
-<td><img src="modern/docs/screenshots/customer-display.jpg" alt="Customer display"><br><sub><b>Customer display.</b> The guest sees the order, picks a tip and earns rewards.</sub></td>
-</tr>
-<tr>
-<td><img src="modern/docs/screenshots/spanish.jpg" alt="Spanish screens"><br><sub><b>Five languages.</b> English, Spanish, French, Portuguese and Chinese: each person's screens are in their own.</sub></td>
-<td><img src="modern/docs/screenshots/network.jpg" alt="Network"><br><sub><b>Keep running.</b> A standby computer takes over if the main one fails.</sub></td>
-</tr>
-<tr>
-<td><img src="modern/docs/screenshots/manager.jpg" alt="Manager"><br><sub><b>Manager.</b> Menu, staff, schedule, inventory, promotions and reports.</sub></td>
-<td><img src="modern/docs/screenshots/page-editor.jpg" alt="Page editor"><br><sub><b>Design your own screens.</b> Move, resize and restyle any button, with undo.</sub></td>
+<td width="50%"><img src="modern/docs/screenshots/style-classic.jpg" alt="The order screen in the Classic style"><br><sub><b>Classic.</b> Raised buttons and textures, as ViewTouch has always looked.</sub></td>
+<td width="50%"><img src="modern/docs/screenshots/style-modern.jpg" alt="The same order in the Modern style"><br><sub><b>Modern.</b> Flat buttons, calm colors, the categories in a column, and Void, Send and Pay together.</sub></td>
 </tr>
 </table>
+<p align="center"><sub>The same order, the same buttons. Pick the look in <b>Store Settings → Screens → Style</b> and switch back any time.</sub></p>
 
-### What it does
+## Get started
 
-- **Orders:** tables and seats, courses with hold and fire, modifier choices, notes, rush and VIP, transfer, move, merge, split and reopen checks.
-- **At the table on a handheld:** seat chips across the check, a buzz and a flash for every item, allergies by seat (only that guest's items are marked, and the kitchen ticket says whose), each server's own usual items, the tables as big tiles that show what hasn't been sent, and taps kept through a Wi-Fi dead spot and sent once it's back.
-- **Payments:** cash, Stripe card readers (beside the register, or ViewTouch on the reader as a handheld), a credit card surcharge that debit cards never pay (the reader says which kind of card it is) or a cash discount with both prices shown, gift cards, house accounts, discounts, party gratuity, tips asked on the customer display, server banks or a drawer per screen.
-- **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
-- **Kitchen:** kitchen, bar and expo touchscreens with ticket times, kitchen names and colors, and printers.
-- **Rush Radar:** each kitchen station's next half hour ("Grill backs up to 27 min at 7:42"), from what's on the line, the tables just seated, the waitlist and the store's usual nights, at the pace each station has shown. On the Dashboard and the kitchen screens.
-- **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime, tip-outs, inventory with recipes and automatic 86, and CSV/PDF export.
-- **Switching over:** import the menu you already have, from Square, Clover or Toast's export or any spreadsheet (Excel or CSV), with its categories, sizes, modifier groups, barcodes and photos.
-- **Staff:** PIN login and clock in/out, breaks, roles with per-person permissions, manager approval on the spot, practice mode for training, and messages between screens.
-- **Many screens, one store:** paired, encrypted connections. Tablets and phones join by scanning the network. A standby server keeps running if the main computer fails.
-- **Keeps selling when the network drops:** a screen cut off from the store's computer works on its own (new checks, kitchen tickets, cash) and hands its checks to the store when it's back.
-- **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.
-- **Five languages:** English, Spanish, French, Portuguese and Chinese; each person's screens are in their own.
-- **Easy to read for everyone:** bigger text, high contrast, and colors that color-blind eyes tell apart, set for each person (on any screen they log into) or for a screen, like the kitchen's.
+### Set up a store computer
 
-<table align="center"><tr>
-<td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
-<td align="center"><img src="modern/docs/screenshots/phone.jpg" alt="Phone pages" width="180"><br><sub>Phones get their own<br>pages, with the floor plan.</sub></td>
-<td align="center"><img src="modern/docs/screenshots/handheld-seats.jpg" alt="Ordering by seat on a phone" width="180"><br><sub>At the table: seats, a guest's<br>allergy, "+ Lemonade · Seat 3".</sub></td>
-<td align="center"><img src="modern/docs/screenshots/handheld-tables.jpg" alt="Tables as a list on a phone" width="180"><br><sub>Your tables first, with<br>what hasn't been sent.</sub></td>
-</tr></table>
+One line sets up a fresh **Raspberry Pi, Debian 13, Ubuntu 26.04 or Fedora** machine. It installs ViewTouch, locks the computer down for the store and starts on the ViewTouch home screen:
 
-### Download and build
+```sh
+curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
+```
 
-ViewTouch Modern needs **Linux with Qt 6.8 or newer**: Fedora 42+, Debian 13 (and Raspberry Pi OS based on it) or Ubuntu 25.04+.
+No `curl` on a clean install? Use `wget -qO- https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh`. No `sudo` (Debian installed with a root password)? Run `su -` first and leave out `sudo`.
 
-**1. Install what it needs to build**
+Every other screen is an **Android tablet or phone** (Android 9 or newer) running the ViewTouch app, or another Linux computer. Pair each one with a code from **Manager → Terminals**. After that, ViewTouch keeps itself up to date:
+
+- the store computer checks for signed updates and installs them when you touch **Install**;
+- phones and tablets get the new app from the store computer by themselves, while nobody is logged in on them.
+
+The packages and the Android app are on the **[latest release](https://github.com/ViewTouch/viewtouch/releases/latest)**.
+
+### Try it on your own computer
+
+You need **Linux with Qt 6.8 or newer**: Fedora 42+, Debian 13 (and Raspberry Pi OS based on it) or Ubuntu 25.04+.
 
 ```sh
 # Fedora
@@ -85,32 +62,18 @@ sudo apt install git g++ cmake ninja-build qt6-base-dev qt6-declarative-dev qt6-
     qml6-module-qtquick-dialogs qml6-module-qtquick-window qml6-module-qtqml-workerscript libqt6sql6-sqlite
 ```
 
-**2. Get the code and build it**
-
 ```sh
 git clone https://github.com/ViewTouch/viewtouch.git
 cd viewtouch
 cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build modern/build
-ctest --test-dir modern/build -j4      # optional: about 590 tests
+ctest --test-dir modern/build -j4      # optional: about 640 tests
+
+./modern/build/vtmodern --windowed     # a demo café opens
+./modern/build/vtmodern --demo-data    # optional, once: two months of sales to look at
 ```
 
-**3. Run it**
-
-```sh
-./modern/build/vtmodern --windowed     # a demo café opens; manager PIN 1234, server PIN 1111
-./modern/build/vtmodern --demo-data    # optional, once: fill the demo store with two months of sales
-```
-
-**Upgrade Procedure. Be sure to be in the build directory named (viewtouch)**
-
-```sh
-git pull origin main
-cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build modern/build -j2
-```
-
-ViewTouch starts with a demo store (menu, floor plan, staff), so you can try everything right away. Its data lives in `~/.local/share/ViewTouch/ViewTouch/`. Press **F11** to switch between full screen and a window.
+To update it later, run these in the `viewtouch` folder: `git pull`, then the two `cmake` lines again. Press **F11** to switch between full screen and a window. The demo store's data lives in `~/.local/share/ViewTouch/ViewTouch/`.
 
 | Demo PIN | Who |
 |---|---|
@@ -119,9 +82,73 @@ ViewTouch starts with a demo store (menu, floor plan, staff), so you can try eve
 | 2222 | Casey, cashier |
 | 5555 | Rosa, server whose screens are in Spanish |
 
-### Running a real store
+When you're ready for real, **Manager → Factory Reset → An empty store** starts over with no menu, tables or sample staff, and **Menu Builder → Import** brings in the menu you already have.
 
-Build installable packages (`.rpm` / `.deb`) with `modern/packaging/build-packages.sh`, install them on each computer, and pick each computer's part:
+## A look around
+
+<table>
+<tr>
+<td width="50%"><img src="modern/docs/screenshots/floor-plan.jpg" alt="Floor plan"><br><sub><b>Floor plans.</b> Main, Dining Area, Bar and Patio, with walls and chairs. Tables show who has them, the total and how long they've been seated.</sub></td>
+<td width="50%"><img src="modern/docs/screenshots/order-choices.jpg" alt="Taking an order"><br><sub><b>Taking an order.</b> Items ask for their choices (temperature, sides, dressings), by seat and by course.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/modern-tables.jpg" alt="Tables in the Modern style"><br><sub><b>Tables, Modern.</b> Your open checks beside the plan, and a key to what each table's color means.</sub></td>
+<td><img src="modern/docs/screenshots/modern-pay.jpg" alt="Pay in the Modern style"><br><sub><b>Pay, Modern.</b> Payment types in a grid, Exact, $20, $40, $50 and $100 at one touch, and the keypad on the right.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/payment.jpg" alt="Payment"><br><sub><b>Paying.</b> Cash, cards, gift cards, house accounts, discounts, splits and party gratuity.</sub></td>
+<td><img src="modern/docs/screenshots/kitchen-display.jpg" alt="Kitchen display"><br><sub><b>Kitchen display.</b> Touch to bump. Rush Radar says when a station is about to back up.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/self-order-kiosk.jpg" alt="Self-order kiosk"><br><sub><b>Self-order kiosk.</b> Guests order on their own and pay at the counter.</sub></td>
+<td><img src="modern/docs/screenshots/customer-display.jpg" alt="Customer display"><br><sub><b>Customer display.</b> The guest sees the order, picks a tip and earns rewards.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/manager.jpg" alt="Manager"><br><sub><b>Manager.</b> Menu, staff, schedule, inventory, promotions, reports and End of Day.</sub></td>
+<td><img src="modern/docs/screenshots/page-editor.jpg" alt="Page editor"><br><sub><b>Design your own screens.</b> Move, resize and restyle any button, with undo.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/spanish.jpg" alt="Spanish screens"><br><sub><b>Five languages.</b> English, Spanish, French, Portuguese and Chinese: each person's screens are in their own.</sub></td>
+<td><img src="modern/docs/screenshots/network.jpg" alt="Network"><br><sub><b>Keep running.</b> A standby computer takes over if the main one fails.</sub></td>
+</tr>
+</table>
+
+### On phones and tablets
+
+<table align="center"><tr>
+<td align="center"><img src="modern/docs/screenshots/handheld-seats.jpg" alt="Ordering by seat on a phone" width="180"><br><sub>At the table: seats, a guest's<br>allergy, "+ Lemonade · Seat 3".</sub></td>
+<td align="center"><img src="modern/docs/screenshots/modern-phone.jpg" alt="Modern on a phone" width="180"><br><sub>Modern on a phone: a short<br>check, the menu with the room.</sub></td>
+<td align="center"><img src="modern/docs/screenshots/handheld-tables.jpg" alt="Tables as a list on a phone" width="180"><br><sub>Your tables first, with<br>what hasn't been sent.</sub></td>
+<td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
+</tr></table>
+
+## What it does
+
+- **Orders:** tables and seats, courses with hold and fire, modifier choices, notes, rush and VIP. Transfer, move, merge, split and reopen checks.
+- **At the table on a handheld:**
+  - seat chips across the check, with a buzz and a flash for every item;
+  - allergies by seat: only that guest's items are marked, and the kitchen ticket says whose;
+  - each server's own usual items, and the tables as a list showing what hasn't been sent;
+  - pages fitted to the phone's screen, with every key a finger tall;
+  - taps kept through a Wi-Fi dead spot and sent once it's back.
+- **Payments:**
+  - cash, gift cards, house accounts, discounts, party gratuity, and tips asked on the customer display;
+  - server banks or a drawer per screen;
+  - Stripe card readers (optional; see below), with a credit card surcharge that debit cards never pay, or a cash discount with both prices shown.
+- **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
+- **Kitchen:** kitchen, bar and expo touchscreens with ticket times and printers. **Rush Radar** says each station's next half hour ("Grill backs up to 27 min at 7:42") from what's on the line, the tables just seated and the store's usual nights.
+- **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime by your state's rules, tip-outs and tip pools, inventory with recipes and automatic 86, and CSV and PDF export.
+- **Switching over:** import the menu you already have from Square, Clover or Toast, or from any spreadsheet (Excel or CSV), with its categories, sizes, modifier groups, barcodes and photos.
+- **Your look:** **Classic** or **Modern** for the whole store. Ready-made Looks, or colors taken from your logo, and every page and button editable on the screen.
+- **Staff:** PIN login, clock in and out, breaks, roles with per-person permissions, manager approval on the spot, practice mode for training, and messages between screens.
+- **Many screens, one store:** paired, encrypted connections. Tablets and phones find the store on the network and update themselves from it. A standby server keeps running if the main computer fails.
+- **Keeps selling when the network drops:** a screen cut off from the store's computer works on its own (new checks, kitchen tickets, cash) and hands its checks in when it's back.
+- **Safe:** every sale is saved at once, with automatic and optionally encrypted backups, a second copy on USB, and a damaged-database check at start.
+- **Easy to read for everyone:** bigger text, high contrast, and colors that color-blind eyes tell apart, for each person or for one screen.
+
+## Running a real store
+
+Build your own installable packages (`.rpm` / `.deb`) with `modern/packaging/build-packages.sh`, or use the ready-made ones from the [latest release](https://github.com/ViewTouch/viewtouch/releases/latest). Install one on each computer and pick its part:
 
 ```sh
 sudo vtmodern-setup store       # this computer keeps the data and has a screen
@@ -129,15 +156,9 @@ sudo vtmodern-setup server      # keeps the data, no screen (back office)
 sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a code from Manager → Terminals)
 ```
 
-Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
+Screens start full screen at boot, with no way out for staff. Printers, backups, the standby server, the self-order kiosk and everything else are in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)**. How it's built is in the **[developer README](modern/README.md)**.
 
-Ready-made packages for Debian 13 / Raspberry Pi OS, Ubuntu 26.04 and Fedora (x86_64 and aarch64), and the Android app, are on the **[latest release](https://github.com/ViewTouch/viewtouch/releases/latest)**. One command sets up a new machine from zero:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh
-```
-
-No `curl` on a clean install? Use `wget -qO- https://raw.githubusercontent.com/ViewTouch/viewtouch/main/modern/packaging/install-viewtouch.sh | sudo sh`. No `sudo` (Debian installed with a root password)? Run `su -` first and leave out `sudo`. The installer gets everything else it needs itself.
+**Card payments.** ViewTouch can take cards through Stripe card readers, but this is optional and off to start. It hasn't been tried yet on a real Stripe reader. Until it has, take cards on your processor's own terminal and ring them up in ViewTouch as Credit Card. Card numbers then never touch ViewTouch.
 
 ---
 
@@ -197,12 +218,15 @@ ViewTouch released under GNU Public License (GPL v3) with code hosted on GitHub.
 | 1997 | Linux/x86 | Intel architecture |
 | 2000 | Linux/x86 | C++ transition |
 | 2016+ | Raspberry Pi | Default platform (Pi 4/5) |
+| 2026 | Linux · Raspberry Pi · Android | Rebuilt in C++23 and Qt 6 (QML) |
 
-**Current Stack:**
-- **OS:** Debian Linux with XFCE desktop, And Ubuntu 24.04 Support
+**The original's stack** (the [`legacy`](../../tree/legacy) branch):
+- **OS:** Debian Linux with the XFCE desktop, and Ubuntu 24.04
 - **Display:** X Window System (network-transparent)
-- **Default Hardware:** Raspberry Pi family
-- **Auto-update:** Desktop icon compiles and installs latest code from GitHub
+- **Default hardware:** the Raspberry Pi family
+- **Auto-update:** a desktop icon compiled and installed the latest code from GitHub
+
+**Today's ViewTouch** (`main`): C++23 and Qt 6 (QML) on Debian 13, Raspberry Pi OS, Ubuntu 26.04 and Fedora, with Android tablets and phones as screens, signed packages and updates, and the store computer locked down for the store.
 
 Gene Mosher's passion and vision has overseen the development, management, and maintenance of ViewTouch code across six decades, spanning a wide array of computers and point of sale equipment. Gene owns the ViewTouch copyright and remains active in ViewTouch in 2025.  A personal note to everyone from Gene: I am getting on in years and everyone has always wanted me to tell them what will happen to ViewTouch if/when something happens to me. In 2025 I can reassure that I will be participating in the development of ViewTouch until my last breath, which could easily be 2050 (I'll be 101 then), and with Ariel, who is about half a century younger than I am, being awarded co-ownership of the ViewTouch code and documentation at ViewTouch/GitHub, nothing bad can happen, is going to happen, to ViewTouch.  I myself used to wonder about the future of ViewTouch, but I no longer do wonder about the future of ViewTouch.  It's going to be alive, healthy, vibrant and dynamic for a long, long time.  A new chapter has been opened for ViewTouch in 2025 and I could not be happier about it.  Anyone can be a part of the future of ViewTouch - I welcome all who will join us.
 
@@ -238,7 +262,7 @@ See [LICENSE](LICENSE) for full details.
 
 ## Payment Processing
 
-ViewTouch does not manage electronic payment processing. Please make your own decisions with regard to Electronic Funds Transfer functionality.
+ViewTouch can take cards through Stripe card readers, but this is optional and off to start (see **Card payments** under [Running a real store](#running-a-real-store)). Please make your own decisions with regard to Electronic Funds Transfer functionality, with your processor.
 
 ---
 
