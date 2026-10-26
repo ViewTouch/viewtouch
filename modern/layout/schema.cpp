@@ -18,14 +18,6 @@ QJsonArray options(std::initializer_list<std::pair<const char *, const char *>> 
     return arr;
 }
 
-QJsonArray options(const QStringList &values)
-{
-    QJsonArray arr;
-    for (const QString &v : values)
-        arr.append(QJsonObject{{u"value"_s, v}, {u"text"_s, v}});
-    return arr;
-}
-
 QJsonObject field(const QString &path, const QString &label, const QString &type, const QString &group)
 {
     return {{u"path"_s, path}, {u"label"_s, label}, {u"type"_s, type}, {u"group"_s, group}};
@@ -247,12 +239,6 @@ QStringList pageKinds()
     return {u"custom"_s, u"login"_s, u"tables"_s, u"guestCount"_s, u"index"_s, u"items"_s,
             u"modifier"_s, u"settle"_s, u"logout"_s, u"manager"_s, u"kitchen"_s, u"template"_s,
             u"library"_s};
-}
-
-QStringList pageRoles()
-{
-    return {u"login"_s, u"tables"_s, u"guestCount"_s, u"checkList"_s, u"settle"_s, u"logout"_s,
-            u"manager"_s, u"bar"_s, u"kitchen"_s, u"weigh"_s, u"timeClock"_s, u"menu"_s};
 }
 
 // What page kinds and roles are called on screen.

@@ -4243,7 +4243,7 @@ TEST_CASE("UI: Menu Builder keys fit, in English and Spanish", "[flow][ui][i18n]
         QQuickItem *root = s.window->contentItem();
         if (std::string(lang) == "es")
             CHECK(Screen::findBy(root, "text", u"Imprimir…"_s));
-        for (const QString name : {u"builderImport"_s, u"builderExport"_s, u"builderTemplates"_s, u"builderPrintMenu"_s}) {
+        for (const QString &name : {u"builderImport"_s, u"builderExport"_s, u"builderTemplates"_s, u"builderPrintMenu"_s}) {
             QQuickItem *key = Screen::findBy(root, "objectName", name);
             REQUIRE(key);
             INFO(lang << ": " << key->property("text").toString().toStdString());
@@ -4526,10 +4526,6 @@ TEST_CASE("Store style: Modern's own buttons (Pay's cash amounts, my checks by t
 {
     Screen s;
     REQUIRE(s.pos.loginWithPin(u"1111"_s));
-    const auto shown = [&](const char *name) {
-        QQuickItem *i = Screen::findBy(s.window->contentItem(), "objectName", QString::fromLatin1(name));
-        return i && i->isVisible() ? i : nullptr;
-    };
     const auto zoneIds = [&] {
         QStringList ids;
         for (int r = 0; r < s.c.zones()->rowCount(); ++r)
@@ -4825,7 +4821,7 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
         QTest::qWait(80);
         snap("m34b-about");
         // Further down: the updates this store has had, and what the builds changed.
-        if (QQuickItem *bar = Screen::findBy(s.window->contentItem(), "objectName", u"adminFormScroll"_s)) {
+        if (Screen::findBy(s.window->contentItem(), "objectName", u"adminFormScroll"_s)) {
             QQuickItem *updates = Screen::findBy(s.window->contentItem(), "text", u"Updates on this store"_s);
             QQuickItem *flick = updates;
             while (flick && !flick->inherits("QQuickFlickable"))
@@ -5351,7 +5347,8 @@ TEST_CASE("Memory: a screen through a long service stays flat", "[.memory]")
     REQUIRE(s.c.jumpTo(u"tables"_s));
     const auto rss = [] {
         QFile f(u"/proc/self/status"_s);
-        f.open(QIODevice::ReadOnly);
+        if (!f.open(QIODevice::ReadOnly))
+            return 0L;
         for (const QByteArray &line : f.readAll().split('\n'))
             if (line.startsWith("VmRSS:"))
                 return line.mid(6).trimmed().split(' ').first().toLong();
@@ -6344,7 +6341,7 @@ TEST_CASE("Practice card reader: the server taps a credit or a debit card; only 
     REQUIRE(s.pos.adminSave(u"terminals"_s, -1, {{u"name"_s, s.pos.terminalName()}, {u"cardReader"_s, u"simulated"_s}}));
     QQuickItem *root = s.window->contentItem();
     const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
-    for (const QString card : {u"testCardDebit"_s, u"testCardApprove"_s}) {
+    for (const QString &card : {u"testCardDebit"_s, u"testCardApprove"_s}) {
         REQUIRE(s.pos.startCheck(core::CheckType::Quick));
         REQUIRE(s.pos.addItem(u"coffee"_s));                   // $2.98
         REQUIRE(s.c.jumpTo(u"settle"_s));

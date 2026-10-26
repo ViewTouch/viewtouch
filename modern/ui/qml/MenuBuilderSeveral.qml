@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import QtQuick.Dialogs
 import QtQuick.Layouts
 
 // Menu Builder: Adding several items at once, with their prices.

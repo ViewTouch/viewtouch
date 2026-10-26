@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import QtQuick.Dialogs
 import QtQuick.Layouts
 
 // Menu Builder: A ready-made picture for an item.

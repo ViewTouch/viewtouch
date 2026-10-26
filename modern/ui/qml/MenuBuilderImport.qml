@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import QtQuick.Dialogs
 import QtQuick.Layouts
 
 // Menu Builder: Importing a menu (a spreadsheet or another store's): what comes in, and where.

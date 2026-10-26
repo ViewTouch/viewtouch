@@ -372,23 +372,23 @@ Item {
                 return m
             }
             readonly property int guests: w.check.guests ?? 0
-            readonly property int count: Math.max(guests, highest, current)
+            readonly property int seatCount: Math.max(guests, highest, current)   // (not "count": a list's own)
             visible: w.controls && w.pos !== null && w.pos.hasCheck && w.zone.keyShown("seat")
                      && (guests > 0 || current > 0 || highest > 0)
             Layout.fillWidth: true
             Layout.preferredHeight: chip
             readonly property real chip: Math.max(w.unit * 1.5, w.zone.touch(44))
             // Wide enough for its count, as many as fit; more scroll sideways.
-            readonly property real chipWidth: Math.max(chip, Math.min(chip * 1.5, (width - spacing * (count + 2)) / (count + 2)))
+            readonly property real chipWidth: Math.max(chip, Math.min(chip * 1.5, (width - spacing * (seatCount + 2)) / (seatCount + 2)))
             orientation: ListView.Horizontal
             spacing: w.unit * 0.2
             clip: true
             boundsBehavior: Flickable.StopAtBounds
-            model: count + 2   // Shared, 1..count, +
+            model: seatCount + 2   // Shared, 1..seatCount, +
             delegate: WidgetKey {
                 required property int index
-                readonly property bool more: index === seats.count + 1
-                readonly property int seat: more ? seats.count + 1 : index
+                readonly property bool more: index === seats.seatCount + 1
+                readonly property int seat: more ? seats.seatCount + 1 : index
                 readonly property int items: seats.counts[seat] ?? 0
                 readonly property bool allergic: !more && seat > 0 && ((w.check.seatAllergies ?? {})[String(seat)] ?? []).length > 0
                 objectName: more ? "seatAdd" : "seat" + seat
@@ -405,7 +405,7 @@ Item {
                 onHeld: w.zone.controller.commandWith("allergies", { seat: seat })
             }
             // The touched seat in view (seat 9 of 12).
-            onCurrentChanged: positionViewAtIndex(Math.min(current, count + 1), ListView.Contain)
+            onCurrentChanged: positionViewAtIndex(Math.min(current, seatCount + 1), ListView.Contain)
         }
 
         // Seat and course for new items (or a touched line); Fire. Sized from

@@ -315,7 +315,7 @@ QString PosSession::addImageFile(const QString &fileOrUrl)
     if (storeImageRef(name).isEmpty()) {
         const QString kind = kindOf(data);
         if (!kind.isEmpty())
-            name = (QFileInfo(name).completeBaseName().isEmpty() || content && name.contains(QRegularExpression(u"^[0-9]+$"_s))
+            name = (QFileInfo(name).completeBaseName().isEmpty() || (content && name.contains(QRegularExpression(u"^[0-9]+$"_s)))
                         ? u"picture"_s
                         : QFileInfo(name).completeBaseName())
                    + u'.' + kind;

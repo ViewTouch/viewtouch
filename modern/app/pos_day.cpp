@@ -1406,7 +1406,7 @@ Report PosService::buildReport(const QString &id) const
         std::vector<const Check *> checks;
         for (const Check &c : s_->closedToday)
             checks.push_back(&c);
-        for (const auto &[id, c] : s_->open)
+        for (const auto &[checkId, c] : s_->open)
             if (!c.training)
                 checks.push_back(&c);
         return id == u"audit" ? auditReport(checks, ctx) : exceptionsReport(checks, s_->drawers, ctx, s_->refundsToday);
