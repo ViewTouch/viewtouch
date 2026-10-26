@@ -5105,6 +5105,13 @@ TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
         REQUIRE(s.c.openCategory(u"burgers"_s));
         clean(s);
         s.shot("m161-style-modern");
+        s.c.jumpTo(u"settle"_s);
+        clean(s);
+        s.shot("m164-style-modern-pay");
+        s.pos.releaseCheck();
+        s.c.jumpTo(u"tables"_s);
+        clean(s);
+        s.shot("m163-style-modern-tables");
     }
     {
         Screen s(false, 540, 1080, u"phone"_s);
