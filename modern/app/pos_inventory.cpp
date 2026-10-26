@@ -378,17 +378,6 @@ Report PosService::menuEngineeringReport(const std::vector<Check> &closed, const
     return r;
 }
 
-QVariantList PosService::lowStock() const
-{
-    QVariantList out;
-    for (const Ingredient &g : s_->ingredients) {
-        if (g.low())
-            out.append(QVariantMap{{u"name"_s, qs(g.name)}, {u"onHand"_s, amountText(g.onHand)},
-                                   {u"unit"_s, qs(g.unit)}, {u"out"_s, g.onHand <= 0}});
-    }
-    return out;
-}
-
 // --- deliveries ------------------------------------------------------------------------
 
 bool PosService::receiveDelivery(const QVariantMap &r)

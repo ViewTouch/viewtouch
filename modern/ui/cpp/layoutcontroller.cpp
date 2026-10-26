@@ -2056,8 +2056,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
             return call(it->first, it->second, [done](const QVariant &ok) { done(ok.toBool()); });
     }
 
-    // Unknown here: let the host application handle it.
-    emit commandRequested(name, args);
+    // Not a command this version knows.
     setStatus(tr("'%1' is not available yet").arg(name));
     done(true);
 }

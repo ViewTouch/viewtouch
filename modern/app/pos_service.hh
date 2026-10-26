@@ -1139,7 +1139,6 @@ public:
     // What a line uses up (ingredient id -> amount).
     std::map<std::string, double> stockUse(const core::OrderLine &line) const;
     // Ingredients at or below their low mark.
-    QVariantList lowStock() const;
     core::Report foodCostReport(const std::vector<core::Check> &closed, const core::ReportContext &ctx) const;
     core::Report menuEngineeringReport(const std::vector<core::Check> &closed, const core::ReportContext &ctx) const;
     // What a line's recipe costs (its ingredients' cost; none without a recipe).

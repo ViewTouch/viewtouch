@@ -189,7 +189,6 @@ TEST_CASE("Inventory: sold out by itself when short, back when restocked; low-st
     CHECK(pos.soldOut().contains(u"veggie-burger"_s));
     CHECK(notices.join(u'|').contains(u"now sold out: Veggie Burger"_s));
     CHECK_FALSE(pos.addItem(u"veggie-burger"_s));     // can't be ordered
-    CHECK(pos.lowStock().size() >= 1);
     CHECK(pos.adminRecords(u"inventory"_s)[indexOf(pos, "veggie-patty")].toMap()[u"_detail"_s]
               .toString().contains(u"OUT"_s));
 

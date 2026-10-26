@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
 // A floor plan as drawn: every table where it stands, turned as it is, with

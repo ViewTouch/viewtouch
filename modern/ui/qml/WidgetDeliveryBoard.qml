@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
 // Deliveries: every open delivery, the oldest promise first, by where it is:

@@ -173,7 +173,7 @@ TEST_CASE("Surcharge: the reader beside the register reads the card first, then 
     pos.shared()->settings.stripeReaders.push_back(r);
     REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()}, {u"cardReader"_s, u"counter:tmr_1"_s}}));
 
-    for (const QString funding : {u"credit"_s, u"debit"_s}) {
+    for (const QString &funding : {u"credit"_s, u"debit"_s}) {
         stripe.updatedAmount = 0;
         REQUIRE(pos.startCheck(core::CheckType::Quick));
         REQUIRE(pos.addItem(u"coffee"_s));
@@ -312,7 +312,7 @@ TEST_CASE("Stripe test mode, live: a credit card pays the surcharge, a debit car
     REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()},
                                                {u"cardReader"_s, u"counter:"_s + QString::fromStdString(reader)}}));
 
-    for (const QString card : {u"credit"_s, u"debit"_s}) {
+    for (const QString &card : {u"credit"_s, u"debit"_s}) {
         REQUIRE(pos.startCheck(core::CheckType::Quick));
         REQUIRE(pos.addItem(u"coffee"_s));                                // $2.98
         const qint64 check = pos.checkInfo()[u"id"_s].toLongLong();

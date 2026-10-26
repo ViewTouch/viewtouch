@@ -1301,15 +1301,12 @@ void StressRunner::windDown()
 QVariantMap StressRunner::stats() const
 {
     const QMutexLocker lock(&mutex_);
-    int open = 0, guests = 0, tickets = 0;
+    int open = 0, guests = 0;
     for (const auto &[checkId, c] : shared_->open) {
         if (c.training)
             continue;
         ++open;
         guests += c.guests;
-        for (const core::OrderLine &l : c.lines)
-            if (l.sent && !l.voided && !l.isComment())
-                ++tickets;
     }
     qint64 sales = daySalesCents_;
     for (const core::Check &c : shared_->closedToday)

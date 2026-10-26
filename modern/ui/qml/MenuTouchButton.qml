@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls.Fusion
 
 // A Menu Builder button: a finger's size.
 PosButton {

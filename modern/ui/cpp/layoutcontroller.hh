@@ -314,7 +314,6 @@ signals:
     void itemAdded(const QString &item);
     // What was just added, for a moment over the page ("+ Caesar · Seat 2").
     void addedFlash(const QString &text, bool waiting);
-    void commandRequested(const QString &name, const QVariantMap &args);
 
 private:
     QVariantMap menuRows(vt::app::MenuImport read, const QDir &beside) const;

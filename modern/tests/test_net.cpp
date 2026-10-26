@@ -712,15 +712,18 @@ TEST_CASE("Updates: phones and tablets get the store's newer app by themselves w
         return t;
     };
 
-    // Someone logged in: not while they work.
+    // Someone logged in: not while they work. (Logged in with the setting
+    // off: connected and not logged in yet, it's nobody's for a moment.)
+    store.shared.settings.screensUpdate = false;
     auto busy = phone(u"Phone 1"_s);
     for (const char *d = "1111"; *d; ++d)
         busy->pinKey(QString(QChar(*d)));
     busy->invoke(u"login"_s);
     REQUIRE(waitFor([&] { return busy->loggedIn(); }));
-    CHECK(busy->updateInfo()[u"byItself"_s].toBool());   // it says so (no "the maintainer can")
+    store.shared.settings.screensUpdate = true;
     // Nobody on it: it comes by itself, and waits for someone to touch Install.
     auto idle = phone(u"Phone 2"_s, wifi.server.serverPort());
+    CHECK(idle->updateInfo()[u"byItself"_s].toBool());   // it says so (no "the maintainer can")
     REQUIRE(waitFor([&] { return idle->updateInfo().contains(u"ready"_s); }, 10000));
     QFile got(idle->updateInfo()[u"ready"_s].toString());
     REQUIRE(got.open(QIODevice::ReadOnly));

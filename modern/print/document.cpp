@@ -61,11 +61,6 @@ std::string takeChars(const std::string &s, std::size_t n)
     return s.substr(0, i);
 }
 
-std::string dropChars(const std::string &s, std::size_t n)
-{
-    return s.substr(takeChars(s, n).size());
-}
-
 // Word-wrap to `width` characters.
 std::vector<std::string> wrap(const std::string &s, std::size_t width)
 {

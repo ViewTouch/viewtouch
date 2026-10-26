@@ -16,11 +16,11 @@ Item {
     function time(ms) { return ms ? Qt.locale().toString(new Date(ms), "h:mm AP") : "" }
 
     component Dot: Rectangle {
-        property string state: "unknown"
+        property string status: "unknown"   // (not "state": an Item's own)
         implicitWidth: 22
         implicitHeight: 22
         radius: 11
-        color: state === "ok" ? "#2fbf71" : state === "failed" ? "#e04848" : "#7b8494"
+        color: status === "ok" ? "#2fbf71" : status === "failed" ? "#e04848" : "#7b8494"
     }
     component Heading: Label {
         font.pixelSize: 22
@@ -52,7 +52,7 @@ Item {
                 Heading { text: qsTr("This computer"); Layout.topMargin: 0 }
                 RowLayout {
                     spacing: 12
-                    Dot { state: "ok" }
+                    Dot { status: "ok" }
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
@@ -83,7 +83,7 @@ Item {
                 RowLayout {
                     visible: w.serving
                     spacing: 12
-                    Dot { objectName: "standbyDot"; state: w.standby ? "ok" : "failed" }
+                    Dot { objectName: "standbyDot"; status: w.standby ? "ok" : "failed" }
                     Label {
                         objectName: "standbyText"
                         Layout.fillWidth: true
@@ -117,7 +117,7 @@ Item {
                             anchors.leftMargin: 14
                             anchors.rightMargin: 14
                             spacing: 14
-                            Dot { state: "ok" }
+                            Dot { status: "ok" }
                             Label { text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
                             Label { text: modelData.address; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180 }
                             Label {
@@ -180,7 +180,7 @@ Item {
                             anchors.leftMargin: 14
                             anchors.rightMargin: 14
                             spacing: 14
-                            Dot { state: modelData.status }
+                            Dot { status: modelData.status }
                             Label { text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
                             Label { text: modelData.where || modelData.type; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180; elide: Text.ElideMiddle }
                             Label {
