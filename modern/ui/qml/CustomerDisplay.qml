@@ -345,14 +345,23 @@ Rectangle {
                             text: qsTr("%1 points · +%2 today").arg(d.loyalty.points ?? 0).arg(d.loyalty.earning ?? 0)
                             color: "#f5b940"
                             font.pixelSize: d.unit
+                            fontSizeMode: Text.HorizontalFit
+                            minimumPixelSize: d.unit * 0.6
                         }
                     }
                     Text {
-                        anchors.centerIn: parent
+                        objectName: "joinRewards"
+                        // Inside the button whatever its width: two lines, then smaller.
+                        anchors { fill: parent; margins: d.unit * 0.5 }
                         visible: (d.loyalty.member ?? "") === ""
                         text: qsTr("Earn rewards: touch to add your phone")
                         color: "white"
                         font.pixelSize: d.unit
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        fontSizeMode: Text.Fit
+                        minimumPixelSize: d.unit * 0.6
                     }
                     TapHandler {
                         enabled: (d.loyalty.member ?? "") === ""

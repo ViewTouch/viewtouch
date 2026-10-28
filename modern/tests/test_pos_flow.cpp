@@ -5250,6 +5250,15 @@ TEST_CASE("UI: a food truck's customer display: now serving, and who's ready whi
     REQUIRE(find(root, u"objectName"_s, u"readyStrip"_s));
     CHECK(find(root, u"text"_s, u"Ready: #1 Ana"_s));
     shot("m178-truck-ready-strip");
+    // The rewards button's words stay inside it (they ran past its edges at this width).
+    QQuickItem *join = find(root, u"objectName"_s, u"joinRewards"_s);
+    REQUIRE(join);
+    QQuickItem *button = join->parentItem();
+    const QRectF inButton = join->mapRectToItem(button, QRectF(0, 0, join->width(), join->height()));
+    CHECK(inButton.left() >= 0);
+    CHECK(inButton.right() <= button->width());
+    CHECK(join->property("contentWidth").toReal() <= join->width() + 0.5);
+    CHECK(join->property("contentHeight").toReal() <= join->height() + 0.5);
 
     // Picked up: off the strip.
     REQUIRE(s.pos.orderPickedUp(ana));
