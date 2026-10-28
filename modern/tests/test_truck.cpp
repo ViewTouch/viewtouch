@@ -5,6 +5,7 @@
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
+#include <QDeadlineTimer>
 #include <QSignalSpy>
 
 using namespace Qt::StringLiterals;
@@ -331,4 +332,293 @@ TEST_CASE("Setup guide: a food truck from the first page", "[truck]")
     REQUIRE(pos.loginWithPin(u"1234"_s));
     REQUIRE(pos.setupStore(u"Taco Wheels"_s, {}));   // the name only: still a truck
     CHECK(shared.settings.serviceMode == "foodTruck");
+}
+
+// --- more of a truck's day ----------------------------------------------------------
+
+namespace {
+
+struct TicketPrinter : app::PosPrinter {
+    std::vector<std::string> kitchen, receipts;
+    void printKitchen(const core::PosSettings &, const core::Check &c, const std::vector<core::OrderLine> &, bool) override
+    {
+        kitchen.push_back(c.label);
+    }
+    void printReceipt(const core::PosSettings &, const core::Check &c, const std::string &) override { receipts.push_back(c.label); }
+    void printReport(const core::PosSettings &, const core::Report &, const std::string &) override {}
+    void openDrawer(const core::PosSettings &, const std::string &) override {}
+};
+
+// Process events for a while (timers fire).
+void spin(int msec)
+{
+    QDeadlineTimer deadline(msec);
+    while (!deadline.hasExpired())
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+}
+
+} // namespace
+
+TEST_CASE("Food truck: order numbers go on after a restart, and start again at #1 the next day", "[truck]")
+{
+    test::RecordingSink sink;
+    app::PosShared shared(truckData(), &sink);
+    std::int64_t clock = 1'700'000'000'000;
+    shared.setClock([&clock] { return clock; });
+    app::PosService pos(&shared, u"Truck"_s);
+    sell(pos);
+    sell(pos);
+    CHECK(shared.closedToday.back().orderNumber == 2);
+
+    // The computer restarts: today's checks come back from the database.
+    app::PosData again = truckData();
+    for (const auto &[id, c] : sink.checks)
+        if (c.status == core::CheckStatus::Closed)
+            again.closedToday.push_back(*app::checkFromJson(app::toJson(c)));   // as stored
+    again.lastCheckId = shared.lastCheckId;
+    again.currentDay = shared.day;
+    app::PosShared restarted(again, nullptr);
+    restarted.setClock([&clock] { return clock; });
+    app::PosService after(&restarted, u"Truck"_s);
+    CHECK(after.serviceInfo()[u"counter"_s].toBool());
+    REQUIRE(after.addItem(u"soda"_s));
+    CHECK(after.checkInfo()[u"orderNumber"_s].toInt() == 3);
+    after.openDrawerSession();
+    REQUIRE(after.tender(u"cash"_s));
+    REQUIRE(after.closeCheck());
+
+    // End of Day (a manager steps in), then tomorrow's first order is #1.
+    REQUIRE(after.loginWithPin(u"1234"_s));
+    after.entryKey(u"0"_s);                      // counted (short: it's a test)
+    REQUIRE(after.countDrawer());
+    clock += 3'600'000;
+    REQUIRE(after.endOfDay());
+    after.logout();
+    CHECK(after.userName() == u"Counter"_s);
+    REQUIRE(after.addItem(u"soda"_s));
+    CHECK(after.checkInfo()[u"orderNumber"_s].toInt() == 1);
+    CHECK(after.checkInfo()[u"label"_s].toString() == u"#1"_s);
+}
+
+TEST_CASE("Food truck: kitchen tickets and receipts say #1 Maria", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    TicketPrinter printer;
+    app::PosService pos(&shared, u"Truck"_s);
+    pos.setPrinter(&printer);
+    REQUIRE(pos.addItem(u"caesar"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+    REQUIRE(pos.sendOrder());
+    REQUIRE(printer.kitchen.size() == 1);
+    CHECK(printer.kitchen.back() == "#1 Maria");
+    REQUIRE(pos.printReceipt());
+    REQUIRE(printer.receipts.size() == 1);
+    CHECK(printer.receipts.back() == "#1 Maria");
+}
+
+TEST_CASE("Food truck: practice orders get no number and never reach the Orders list", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // a manager steps in to turn practice on
+    REQUIRE(pos.setTraining(true));
+    pos.logout();
+    REQUIRE(pos.serviceInfo()[u"counter"_s].toBool());
+    REQUIRE(pos.addItem(u"caesar"_s));
+    CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 0);
+    CHECK_FALSE(pos.setPager(3));
+    REQUIRE(pos.sendOrder());
+    CHECK(pos.truckOrders().isEmpty());
+}
+
+TEST_CASE("Food truck: an order still being rung in isn't on the Orders list", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    REQUIRE(pos.addItem(u"caesar"_s));
+    CHECK(pos.truckOrders().isEmpty());          // nothing sent, not paid
+    REQUIRE(pos.sendOrder());
+    REQUIRE(pos.truckOrders().size() == 1);
+    CHECK_FALSE(pos.truckOrders().first().toMap()[u"paid"_s].toBool());
+    CHECK(pos.truckOrders().first().toMap()[u"items"_s].toString() == u"Caesar"_s);
+}
+
+TEST_CASE("Food truck: two screens share the day's numbers and the pagers", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService window(&shared, u"Window"_s);
+    app::PosService second(&shared, u"Second"_s);
+    REQUIRE(window.addItem(u"soda"_s));
+    REQUIRE(second.addItem(u"soda"_s));
+    CHECK(window.checkInfo()[u"orderNumber"_s].toInt() == 1);
+    CHECK(second.checkInfo()[u"orderNumber"_s].toInt() == 2);
+    REQUIRE(window.setPager(5));
+    CHECK_FALSE(second.setPager(5));             // still out with #1
+    REQUIRE(second.setPager(6));
+    // Each screen sees every waiting order.
+    REQUIRE(window.sendOrder());
+    REQUIRE(second.sendOrder());
+    CHECK(window.truckOrders().size() == 2);
+    CHECK(second.truckOrders().size() == 2);
+}
+
+TEST_CASE("Food truck: the kitchen calls an order only when every station is done", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    app::PosService kitchen(&shared, u"Kitchen"_s);
+    QSignalSpy notices(&pos, &app::PosService::notice);
+    REQUIRE(pos.addItem(u"caesar"_s));   // the kitchen's
+    REQUIRE(pos.addItem(u"soda"_s));     // the bar's
+    REQUIRE(pos.setPager(8));
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    REQUIRE(pos.sendOrder());
+    const qint64 sentAt = pos.kitchenTickets().first().toMap()[u"sentAt"_s].toLongLong();
+    const auto called = [&] {
+        for (const QList<QVariant> &n : notices)
+            if (n.first().toString() == u"#1 is ready: buzz pager 8"_s)
+                return true;
+        return false;
+    };
+    REQUIRE(kitchen.bumpTicket(id, sentAt, u"kitchen"_s));
+    CHECK_FALSE(called());
+    CHECK_FALSE(pos.truckOrders().first().toMap()[u"ready"_s].toBool());
+    REQUIRE(kitchen.bumpTicket(id, sentAt, u"bar"_s));
+    CHECK(called());
+    CHECK(pos.truckOrders().first().toMap()[u"ready"_s].toBool());
+}
+
+TEST_CASE("Food truck: pager rules", "[truck]")
+{
+    // Not on a restaurant's checks.
+    {
+        app::PosShared shared(test::seedPosData(), nullptr);
+        app::PosService pos(&shared, u"Front"_s);
+        REQUIRE(pos.loginWithPin(u"2222"_s));
+        REQUIRE(pos.addItem(u"soda"_s));
+        CHECK_FALSE(pos.setPager(4));
+        CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 0);
+        CHECK(pos.checkInfo()[u"label"_s].toString().startsWith(u"Quick"_s));
+    }
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    CHECK_FALSE(pos.setPager(4));                // no order yet
+    REQUIRE(pos.addItem(u"soda"_s));
+    CHECK_FALSE(pos.setPager(-1));
+    REQUIRE(pos.setPager(4));
+    REQUIRE(pos.setPager(0));                    // 0: none, after all
+    CHECK(pos.checkInfo()[u"pager"_s].toInt() == 0);
+    REQUIRE(pos.setPager(4));
+    pos.openDrawerSession();
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());                   // paid, waiting with pager 4
+    REQUIRE(pos.addItem(u"soda"_s));
+    CHECK_FALSE(pos.setPager(4));
+    CHECK_FALSE(pos.orderPickedUp(999999));      // no such order
+    REQUIRE(pos.orderPickedUp(shared.closedToday.back().id));
+    CHECK_FALSE(pos.orderPickedUp(shared.closedToday.back().id));   // already
+    REQUIRE(pos.setPager(4));                    // back for the next guest
+}
+
+TEST_CASE("Food truck: the maintainer's code doesn't become who's working", "[truck]")
+{
+    app::PosShared shared(truckData(true), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    REQUIRE(test::loginMaintainer(pos));
+    CHECK(pos.serviceInfo()[u"person"_s].toString().isEmpty());
+    CHECK_FALSE(pos.serviceInfo()[u"counter"_s].toBool());
+    pos.logout();
+    CHECK_FALSE(pos.loggedIn());                 // still asking who's working
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK(pos.serviceInfo()[u"person"_s].toString() == u"Sam"_s);
+}
+
+TEST_CASE("Food truck: idle never logs the counter out; someone who stepped in goes back to it", "[truck][ui]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosData d = truckData();
+    d.settings.autoLogoutMinutes = 1;
+    app::PosShared shared(d, nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+    c.setIdleTimeoutForTesting(50);
+    REQUIRE(pos.addItem(u"soda"_s));
+    spin(250);
+    CHECK(pos.userName() == u"Counter"_s);
+    CHECK(pos.hasCheck());                       // the order in progress stays
+
+    REQUIRE(pos.loginWithPin(u"1234"_s));        // a manager steps in, then walks away
+    c.setIdleTimeoutForTesting(50);
+    spin(250);
+    CHECK(pos.userName() == u"Counter"_s);
+    CHECK(pos.hasCheck());
+    CHECK(c.pageId() == u"index-lunch"_s);
+}
+
+TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    const auto rule = [&](const char *page, const char *zone) {
+        const layout::Page *p = l->page(QString::fromLatin1(page));
+        REQUIRE(p);
+        const layout::Zone *z = p->zone(QString::fromLatin1(zone));
+        REQUIRE(z);
+        return z->extra.value(u"showWhen").toObject();
+    };
+    const QJsonObject tables = rule("order-template", "flow-tables"), orders = rule("order-template", "flow-orders"),
+                      logOut = rule("order-template", "flow-logout"), back = rule("login", "back-to-order"),
+                      switchPerson = rule("login", "switch-person");
+
+    // A restaurant: Tables, no truck or retail buttons; logging in goes to the floor.
+    {
+        app::PosShared shared(test::seedPosData(), nullptr);
+        app::PosService pos(&shared, u"Front"_s);
+        LayoutController c(*l);
+        c.setMealPeriod(u"lunch"_s);
+        c.setPos(&pos);
+        CHECK(c.pageId() == u"login"_s);
+        REQUIRE(pos.loginWithPin(u"1111"_s));
+        CHECK(c.pageId() == u"tables"_s);
+        CHECK(c.ruleShows(tables));
+        CHECK_FALSE(c.ruleShows(orders));
+        CHECK_FALSE(c.ruleShows(logOut));
+        CHECK_FALSE(c.ruleShows(back));
+        CHECK_FALSE(c.ruleShows(switchPerson));
+    }
+    // Retail: a login still, then the menu; Log Out where Tables were.
+    {
+        app::PosData d = test::seedPosData();
+        d.settings.serviceMode = "retail";
+        app::PosShared shared(d, nullptr);
+        app::PosService pos(&shared, u"Shop"_s);
+        CHECK_FALSE(pos.loggedIn());
+        LayoutController c(*l);
+        c.setMealPeriod(u"lunch"_s);
+        c.setPos(&pos);
+        CHECK(c.pageId() == u"login"_s);
+        REQUIRE(pos.loginWithPin(u"2222"_s));
+        CHECK(c.pageId() == u"index-lunch"_s);
+        CHECK_FALSE(c.ruleShows(tables));
+        CHECK_FALSE(c.ruleShows(orders));
+        CHECK(c.ruleShows(logOut));
+        c.activate(u"flow-logout"_s);
+        CHECK_FALSE(pos.loggedIn());
+        CHECK(c.pageId() == u"login"_s);
+    }
+    // A truck: Orders; on the PIN page, Back to Ordering and Switch Person.
+    {
+        app::PosShared shared(truckData(), nullptr);
+        app::PosService pos(&shared, u"Truck"_s);
+        LayoutController c(*l);
+        c.setPos(&pos);
+        CHECK_FALSE(c.ruleShows(tables));
+        CHECK(c.ruleShows(orders));
+        CHECK_FALSE(c.ruleShows(logOut));
+        CHECK(c.ruleShows(back));
+        CHECK(c.ruleShows(switchPerson));
+    }
 }

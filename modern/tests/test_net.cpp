@@ -1461,3 +1461,52 @@ TEST_CASE("Store style: the hub switches the pages' theme and tells every screen
     s.style = "modern";
     CHECK(app::settingsFromJson(app::toJson(s)).style == "modern");
 }
+
+TEST_CASE("Remote terminal: a food truck screen opens as the counter; a manager steps in and back out", "[net][remote][truck]")
+{
+    Store store;
+    store.shared.settings.serviceMode = "foodTruck";
+    Screen truck(store.terminal(u"Truck"_s));
+    REQUIRE(waitFor([&] { return truck.remote->loggedIn(); }));
+    truck.settle();
+    CHECK(truck.remote->userName() == u"Counter"_s);
+    CHECK(waitFor([&] { return truck.c.pageId() == u"index-lunch"_s; }));
+
+    // An order: numbered, named, a pager; sent.
+    truck.remote->invoke(u"addItem"_s, {u"caesar"_s});
+    truck.settle();
+    REQUIRE(waitFor([&] { return truck.remote->checkInfo()[u"orderNumber"_s].toInt() == 1; }));
+    truck.remote->setCustomer({{u"name"_s, u"Maria"_s}});
+    truck.remote->setPager(12);
+    truck.tap(u"flow-send"_s);
+    REQUIRE(waitFor([&] { return truck.remote->truckOrders().size() == 1; }));
+    const QVariantMap order = truck.remote->truckOrders().first().toMap();
+    CHECK(order[u"label"_s].toString() == u"#1 Maria"_s);
+    CHECK(order[u"pager"_s].toInt() == 12);
+
+    // Orders -> Manager asks for a PIN; a manager's opens it.
+    truck.tap(u"flow-orders"_s);
+    CHECK(truck.c.pageId() == u"truck-orders"_s);
+    truck.tap(u"manager"_s);
+    REQUIRE(waitFor([&] { return truck.c.pageId() == u"login"_s; }));
+    truck.pin("1234");
+    REQUIRE(waitFor([&] { return truck.c.pageId() == u"manager"_s; }));
+    CHECK(truck.remote->userName() == u"Morgan (Manager)"_s);
+
+    // Log Out: the counter again, Maria's order still open, the menu.
+    truck.remote->invoke(u"logout"_s, {});
+    REQUIRE(waitFor([&] { return truck.remote->userName() == u"Counter"_s; }));
+    CHECK(waitFor([&] { return truck.c.pageId() == u"index-lunch"_s; }));
+    CHECK(truck.remote->checkInfo()[u"label"_s].toString() == u"#1 Maria"_s);
+
+    // Ready from the screen: called, its pager named.
+    QSignalSpy notices(truck.remote.get(), &net::RemoteSession::notice);
+    truck.remote->orderReady(truck.remote->checkInfo()[u"id"_s].toLongLong());
+    CHECK(waitFor([&] {
+        for (const QList<QVariant> &n : notices)
+            if (n.first().toString() == u"#1 Maria is ready: buzz pager 12"_s)
+                return true;
+        return false;
+    }));
+    CHECK(waitFor([&] { return truck.remote->truckOrders().first().toMap()[u"ready"_s].toBool(); }));
+}
