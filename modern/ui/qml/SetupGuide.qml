@@ -181,7 +181,7 @@ Rectangle {
                             delegate: PosButton {
                                 required property var modelData
                                 objectName: "setupServe-" + modelData[0]
-                                implicitWidth: 240
+                                implicitWidth: 340
                                 implicitHeight: 76
                                 font.pixelSize: 17
                                 text: modelData[1] + "\n" + modelData[2]

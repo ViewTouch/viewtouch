@@ -164,13 +164,8 @@ void PosService::callOrder(Check &c)
     emit s_->checksChanged();
     const QString label = qs(c.label);
     QString said = tr("%1 is ready").arg(label);
-    if (c.pager > 0) {
-        const bool buzzes = !s_->settings.pagerUrl.empty() && s_->sendPage;
-        if (buzzes)
-            s_->sendPage(c.pager);
-        said = buzzes ? tr("%1 is ready: pager %2 buzzed").arg(label).arg(c.pager)
-                      : tr("%1 is ready: buzz pager %2").arg(label).arg(c.pager);
-    }
+    if (c.pager > 0)   // keyed in on the pager system's transmitter
+        said = tr("%1 is ready: buzz pager %2").arg(label).arg(c.pager);
     emit s_->orderReady(said);
     if (!counterMode())
         emit notice(said);   // said here too (the kitchen's screen, a restaurant's)
@@ -183,7 +178,7 @@ bool PosService::orderReady(qint64 checkId)
     Check *c = truckOrder(s_, checkId);
     if (!c || c->pickedUpAt)
         return fail(tr("That order isn't waiting."));
-    callOrder(*c);   // again: buzzes the pager again
+    callOrder(*c);   // again: said again
     return true;
 }
 

@@ -5125,6 +5125,108 @@ TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
     }
 }
 
+TEST_CASE("Manual: a food truck", "[.manual]")
+{
+    const auto clean = [](Screen &s) {
+        QTest::qWait(200);
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        QTest::qWait(450);
+    };
+    const auto truck = [](Screen &s) {
+        s.pos.shared()->settings.storeName = "Taco Wheels";
+        s.pos.shared()->settings.serviceMode = "foodTruck";
+        emit s.pos.shared()->adminChanged();   // the counter, on the menu: nobody logs in
+        REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    };
+    const auto choose = [](Screen &s) {
+        if (!s.pos.choosingInfo()[u"active"_s].toBool())
+            return;
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    };
+    // An order rung in, a pager handed out, paid (it goes to the kitchen).
+    const auto sell = [&](Screen &s, const char *name, int pager, std::initializer_list<const char *> items) {
+        for (const char *item : items) {
+            REQUIRE(s.pos.addItem(QString::fromLatin1(item)));
+            choose(s);
+        }
+        if (*name)
+            REQUIRE(s.pos.setCustomer({{u"name"_s, QString::fromLatin1(name)}}));
+        if (pager)
+            REQUIRE(s.pos.setPager(pager));
+        const qint64 id = s.pos.checkInfo()[u"id"_s].toLongLong();
+        s.pos.openDrawerSession();
+        REQUIRE(s.pos.tender(u"cash"_s));
+        REQUIRE(s.pos.closeCheck());
+        return id;
+    };
+    {
+        Screen s;
+        truck(s);
+        const qint64 first = sell(s, "Ana", 4, {"classic-burger", "soda"});
+        sell(s, "", 9, {"caesar"});
+        // The next guest's order on the screen: their name and pager on the check.
+        REQUIRE(s.pos.addItem(u"bacon-burger"_s));
+        choose(s);
+        REQUIRE(s.pos.addItem(u"soda"_s));
+        REQUIRE(s.pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+        REQUIRE(s.pos.setPager(12));
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m170-truck-order");
+        // The pager's number, typed on the check.
+        if (QQuickItem *key = Screen::findKey(s.window->contentItem(), u"Pager 12"_s)) {
+            s.tapItem(key);
+            QTest::qWait(250);
+            s.shot("m171-truck-pager");
+            QTest::keyClick(s.window, Qt::Key_Escape);
+            QTest::qWait(100);
+        }
+        s.pos.sendOrder();
+        s.pos.releaseCheck();
+        // Orders: Ana's is made; Ready says which pager to buzz.
+        REQUIRE(s.c.jumpTo(u"truck-orders"_s));
+        clean(s);
+        REQUIRE(s.pos.orderReady(first));
+        QTest::qWait(400);
+        s.shot("m172-truck-ready");
+        clean(s);
+        s.shot("m173-truck-orders");
+        // A manager's PIN for the Manager screens; Store Settings -> How you serve.
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+        REQUIRE(s.c.jumpTo(u"admin-store"_s));
+        QTest::qWait(150);
+        if (QQuickItem *section = Screen::findBy(s.window->contentItem(), "objectName", u"settingsSection-service"_s))
+            s.tapItem(section);
+        clean(s);
+        s.shot("m174-truck-settings");
+        // The setup guide's first question.
+        s.pos.shared()->settings.setupDone = false;
+        s.c.openSetup();
+        QTest::qWait(200);
+        if (QQuickItem *next = Screen::findBy(s.window->contentItem(), "text", u"Next ›"_s))
+            s.tapItem(next);
+        clean(s);
+        s.shot("m175-setup-serve");
+        s.c.closeSetup();
+        s.pos.shared()->settings.setupDone = true;
+    }
+    {
+        Screen s(false, 540, 1080, u"phone"_s);
+        truck(s);
+        REQUIRE(s.pos.addItem(u"classic-burger"_s));
+        choose(s);
+        REQUIRE(s.pos.setCustomer({{u"name"_s, u"Lee"_s}}));
+        REQUIRE(s.pos.setPager(7));
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m176-truck-phone");
+    }
+}
+
 TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")
 {
     Screen s(false, 540, 1080, u"phone"_s);

@@ -56,6 +56,7 @@
 <!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
+<li><b>Food trucks and retail:</b> Store Settings → <b>How you serve</b>. A food truck opens straight to ordering and paying with nobody logged in, numbers each order (#27 Maria), keeps the number of the pager handed to the guest, and lists the orders to call on <b>Orders</b>; a manager's PIN opens the Manager screens. Retail keeps logins and starts on the menu (chapter 11).</li>
 <li><b>Classic or Modern:</b> Store Settings → Screens → <b>Style</b> gives every screen a second look: flat buttons with thin borders, calm colors and a modern font, the menu's categories in a column, Pay with <b>Exact</b>, <b>$20</b>… <b>$100</b> cash buttons, your open checks beside the tables, and on phones a short check that opens over the menu. Switch back to Classic any time (chapter 13).</li>
 <li><b>Phones and tablets update by themselves</b> from the store's computer while nobody is logged in on them; the next person to use one touches <b>Install</b> (chapter 11: Taxes, payment types, printers and terminals).</li>
 <li><b>On a phone:</b> smaller buttons so more of the menu and the check fit, the categories in one row to swipe, pages that fill the whole screen, messages from other screens in a strip above the page, every key on the check a finger tall, and a phone that stays connected when its screen goes off (chapter 1).</li>
@@ -875,22 +876,48 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 </tr></table>
 
 <h2>How you serve: restaurant, food truck or retail</h2>
-<p>The setup guide asks first (<b>How do you serve?</b>), and Store Settings → <b>How you serve</b> sets it any time. It sets how every screen works. Manager → Terminals → the screen → <b>How this screen serves</b> changes it for one screen, for example a restaurant's food truck. A change applies at once, with no restart.</p>
+<p>The setup guide asks first (<b>How do you serve?</b>), and Store Settings → <b>How you serve</b> changes it any time. It sets how every screen works. Manager → Terminals → the screen → <b>How this screen serves</b> changes it for one screen, for example a restaurant's food truck. A change applies at once, with no restart.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m175-setup-serve.png" width="280" height="158"><br><small>The setup guide asks</small></td>
+<td><img src="shots/m174-truck-settings.png" width="280" height="158"><br><small>Store Settings → How you serve</small></td>
+</tr></table>
 <ul>
 <li><b>Restaurant</b> (to start): staff log in, and the floor plan comes first.</li>
-<li><b>Food truck</b>: nobody logs in. The screen opens on the menu, as the built-in <b>Counter</b>, ready to ring up and take payment. After a sale is paid, it is ready for the next one. Idle time doesn't log it out, and an order in progress stays where it is.
-<ul>
-<li><b>One computer is enough:</b> the main register is the store's computer and the truck's register. A kitchen screen is optional: set one up as a kitchen screen and it stays on the kitchen display.</li>
-<li><b>Order numbers:</b> every order is called by a number, from <b>#1</b> each business day. Touch <b>+ Name</b> on the check to add a name: the order becomes <i>#27 Maria</i> on the screen, the kitchen screen, the tickets and the receipt. With <b>Food truck: orders need a name</b>, Send and Pay wait for a name.</li>
-<li><b>Guest pagers</b> (the buzzers handed to the guest): touch <b>+ Pager</b> on the check and type the pager's number. One pager can't be on two waiting orders.</li>
-<li><b>Orders</b> (on the order screen, where restaurants have Tables) lists what's been sent and not picked up yet, oldest first: <i>#27 Maria · Pager 12</i>, what's in it, how long, and <i>NOT PAID</i> if it isn't. Touch <b>Ready</b> to call it: the truck's screens say <i>#27 Maria is ready: buzz pager 12</i>. <b>Buzz Again</b> calls it again; <b>Picked Up</b> takes it off and the pager is free for the next guest. With a kitchen screen, bumping the last of an order calls it too.</li>
-<li><b>A pager transmitter on the network:</b> Store Settings → How you serve → <b>Guest pagers: the transmitter's web address</b>, with <code>{pager}</code> where the number goes (for example <code>http://192.168.1.50/page?n={pager}</code>; the transmitter's manual gives its address). Ready then buzzes the pager by itself (<i>pager 12 buzzed</i>). Left empty, or if the transmitter doesn't answer, the screen says which pager to buzz, and you key it in on the transmitter's keypad.</li>
-<li><b>The Manager screens:</b> touch <b>Orders</b> → <b>Manager</b> and enter a manager's PIN. Reports, End of Day and every manager page work as usual. <b>Log Out</b> goes back to the counter with the order in progress still open. Voids of sent items and discounts still ask for a manager's approval. Opening the drawer without a sale doesn't, but it is recorded (Exceptions report) as the Counter's.</li>
-<li><b>Who's working</b> (optional): with <b>Food truck: ask who's working</b> on, the screen asks for a PIN once when it starts and clocks that person in. Their sales and tips are theirs until someone touches <b>Switch Person</b> (on the PIN screen) or they log out. Off, sales are the Counter's.</li>
-</ul></li>
+<li><b>Food truck</b>: nobody logs in (below).</li>
 <li><b>Retail</b>: staff still log in, so each sale is the cashier's. After login they start on the menu instead of the floor plan, and the order screen has <b>Log Out</b> where restaurants have Tables.</li>
 </ul>
 <p>A button can show only for one way of serving: in edit mode, its <b>Show only when → How the store serves</b>.</p>
+
+<h2>A food truck</h2>
+<p class="shot"><img src="shots/m170-truck-order.png" width="560" height="315"></p>
+<p class="caption">The order screen as the truck opens it: no login, order #3 for Maria with pager 12, and Orders where restaurants have Tables.</p>
+<ul>
+<li><b>No login:</b> the screen opens on the menu as the built-in <b>Counter</b>, ready to ring up and take payment. After a sale is paid, it is ready for the next one. Idle time doesn't log it out, and an order in progress stays where it is.</li>
+<li><b>One computer is enough:</b> the main register is the store's computer and the truck's register. A kitchen screen is optional: set one up as a kitchen screen and it stays on the kitchen display.</li>
+<li><b>Order numbers:</b> every order is called by a number, from <b>#1</b> each business day. Touch <b>+ Name</b> on the check to add a name: the order becomes <i>#27 Maria</i> on the screen, the kitchen screen, the tickets and the receipt. With <b>Food truck: orders need a name</b> (Store Settings → How you serve), Send and Pay wait for a name.</li>
+<li><b>Pagers</b> (the buzzers handed to the guest): touch <b>+ Pager</b> on the check and type the number on the pager you hand them. One pager can't be on two waiting orders.</li>
+</ul>
+<p class="shot"><img src="shots/m171-truck-pager.png" width="480" height="270"></p>
+<p class="caption">+ Pager: the number on the pager handed to the guest.</p>
+
+<h3>Orders: calling the guest</h3>
+<p class="shot"><img src="shots/m172-truck-ready.png" width="560" height="315"></p>
+<p><b>Orders</b> (bottom left of the order screen) lists what's been sent to the kitchen and not picked up yet, oldest first: <i>#2 · Pager 9</i>, what's in it, how long, and <i>NOT PAID</i> if it isn't.</p>
+<ul>
+<li><b>Ready</b> calls it: the truck's screens say <i>#1 Ana is ready: buzz pager 4</i>. Key that number in on your pager system's transmitter to buzz the guest. The card turns green.</li>
+<li><b>Call Again</b> says it again, for a guest who didn't come.</li>
+<li><b>Picked Up</b> takes it off the list, and the pager is free for the next guest.</li>
+<li>With a kitchen screen, bumping the last of an order calls it by itself.</li>
+</ul>
+
+<h3>The Manager screens</h3>
+<p>From the order screen: touch <b>Orders</b>, then <b>Manager</b> (bottom right), and enter a manager's PIN. Reports, End of Day, Store Settings and every manager page work as usual. <b>Log Out</b> goes back to the counter, with the order in progress still open.</p>
+<ul>
+<li>Voids of sent items and discounts still ask for a manager's approval. Opening the drawer without a sale doesn't, but it is recorded (Exceptions report) as the Counter's.</li>
+<li><b>Who's working</b> (optional): with <b>Food truck: ask who's working</b> on, the screen asks for a PIN once when it starts and clocks that person in. Their sales and tips are theirs until someone touches <b>Switch Person</b> (on the PIN screen) or they log out. Off, sales are the Counter's.</li>
+</ul>
+<p class="shot"><img src="shots/m176-truck-phone.png" width="200" height="400"></p>
+<p class="caption">On a phone or a small tablet: Orders at the top right.</p>
 
 <h2>Taxes, payment types, printers and terminals</h2>
 <table cellpadding="4"><tr>

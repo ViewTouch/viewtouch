@@ -286,8 +286,6 @@ public:
     QString imageFile(const QString &ref);
     // Texts a guest (set up by main when a texting service is configured).
     std::function<void(const QString &phone, const QString &message)> sendText;
-    // Buzzes a guest pager on the transmitter (PosSettings::pagerUrl); unset: by hand.
-    std::function<void(int pager)> sendPage;
     // Stripe, on the store's computer (net/stripe_api.cpp, set by main): a
     // card reader's connection token, and refunds. Each answers once,
     // with an error text when it didn't work.
@@ -1055,8 +1053,8 @@ public:
     // Who's working changes: the next PIN is theirs.
     bool switchCounterPerson();
     // Guest pagers and the window: the pager handed out with the open order
-    // (0: none); an order made (Ready: called, its pager buzzed; again:
-    // buzzed again) and picked up (off the list).
+    // (0: none); an order made (Ready: called, the screens say which pager
+    // to buzz; again: called again) and picked up (off the list).
     bool setPager(int pager);
     bool orderReady(qint64 checkId);
     bool orderPickedUp(qint64 checkId);
@@ -1349,7 +1347,7 @@ private:
     std::string counterUser_;
     QVariantMap serviceShown_;   // serviceInfo() as last told
     int nextOrderNumber() const;
-    void callOrder(core::Check &c);   // ready: the screens say so, the pager buzzes
+    void callOrder(core::Check &c);   // ready: the screens say so (and which pager to buzz)
     QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees

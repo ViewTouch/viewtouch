@@ -1069,7 +1069,7 @@ QJsonObject toJson(const PosSettings &s)
                  a.append(qs(c));
              return a;
          }()},
-        {u"serviceMode"_s, qs(s.serviceMode)}, {u"truckAskStaff"_s, s.truckAskStaff}, {u"truckNeedsName"_s, s.truckNeedsName}, {u"pagerUrl"_s, qs(s.pagerUrl)},
+        {u"serviceMode"_s, qs(s.serviceMode)}, {u"truckAskStaff"_s, s.truckAskStaff}, {u"truckNeedsName"_s, s.truckNeedsName},
         {u"kioskSendNow"_s, s.kioskSendNow}, {u"kioskIdleSeconds"_s, s.kioskIdleSeconds}, {u"kioskSlip"_s, s.kioskSlip},
         {u"kioskLook"_s, QJsonObject{{u"background"_s, qs(s.kioskLook.background)}, {u"card"_s, qs(s.kioskLook.card)},
                                      {u"go"_s, qs(s.kioskLook.go)}, {u"text"_s, qs(s.kioskLook.text)},
@@ -1356,7 +1356,6 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.serviceMode = ss(o.value(u"serviceMode").toString());
     s.truckAskStaff = o.value(u"truckAskStaff").toBool(false);
     s.truckNeedsName = o.value(u"truckNeedsName").toBool(false);
-    s.pagerUrl = ss(o.value(u"pagerUrl").toString());
     s.kioskSendNow = o.value(u"kioskSendNow").toBool(false);
     s.kioskSlip = o.value(u"kioskSlip").toBool(true);
     s.kioskIdleSeconds = std::clamp(o.value(u"kioskIdleSeconds").toInt(90), 30, 600);

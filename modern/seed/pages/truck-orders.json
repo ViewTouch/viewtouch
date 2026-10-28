@@ -21,7 +21,7 @@
       },
       "shape": "rect",
       "behavior": "none",
-      "label": "Orders: Ready calls the guest (and buzzes their pager), Picked Up takes it off"
+      "label": "Orders: Ready calls the guest (and says which pager to buzz), Picked Up takes it off"
     },
     {
       "id": "orders",

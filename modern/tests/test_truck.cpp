@@ -265,8 +265,6 @@ TEST_CASE("Food truck: its kitchen screen stays on the kitchen", "[truck][ui]")
 TEST_CASE("Food truck: pagers, Ready and Picked Up at the window", "[truck]")
 {
     app::PosShared shared(truckData(), nullptr);
-    std::vector<int> buzzed;
-    shared.sendPage = [&](int pager) { buzzed.push_back(pager); };
     app::PosService pos(&shared, u"Truck"_s);
     QSignalSpy notices(&pos, &app::PosService::notice);
     const auto said = [&] {
@@ -301,39 +299,20 @@ TEST_CASE("Food truck: pagers, Ready and Picked Up at the window", "[truck]")
     CHECK(orders[0].toMap()[u"paid"_s].toBool());
     CHECK_FALSE(orders[1].toMap()[u"paid"_s].toBool());
 
-    // By hand (no transmitter set): the screen says which pager to buzz.
+    // Ready: the screens say which pager to buzz on the pager system (again: again).
     said();
     REQUIRE(pos.orderReady(first));
     CHECK(said().contains(u"#1 Maria is ready: buzz pager 12"_s));
-    CHECK(buzzed.empty());
     orders = pos.truckOrders();
     CHECK(orders.last().toMap()[u"ready"_s].toBool());   // called ones after those being made
-
-    // A transmitter on the network: Ready buzzes it (again: again).
-    shared.settings.pagerUrl = "http://192.168.1.50/page?n={pager}";
     REQUIRE(pos.orderReady(first));
-    CHECK(buzzed == std::vector<int>{12});
-    CHECK(said().contains(u"#1 Maria is ready: pager 12 buzzed"_s));
+    CHECK(said().contains(u"#1 Maria is ready: buzz pager 12"_s));
 
     // Picked up: off the list, and pager 12 is free again.
     REQUIRE(pos.orderPickedUp(first));
     CHECK(pos.truckOrders().size() == 1);
     CHECK_FALSE(pos.orderReady(first));
     CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 2);   // still on #2
-}
-
-TEST_CASE("Food truck: the transmitter's address is checked", "[truck]")
-{
-    app::PosShared shared(test::seedPosData(), nullptr);
-    app::PosService pos(&shared, u"Front"_s);
-    REQUIRE(pos.loginWithPin(u"1234"_s));
-    QVariantMap store = pos.adminRecords(u"store"_s).first().toMap();
-    store[u"pagerUrl"_s] = u"192.168.1.50/page"_s;   // no http://, no {pager}
-    CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
-    store[u"pagerUrl"_s] = u"http://192.168.1.50/page?n={pager}"_s;
-    REQUIRE(pos.adminSave(u"store"_s, 0, store));
-    CHECK(shared.settings.pagerUrl == "http://192.168.1.50/page?n={pager}");
-    CHECK(app::settingsFromJson(app::toJson(shared.settings)).pagerUrl == shared.settings.pagerUrl);
 }
 
 TEST_CASE("Setup guide: a food truck from the first page", "[truck]")

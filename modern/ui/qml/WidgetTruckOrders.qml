@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls.Fusion
 
 // A food truck's window: the orders sent and not yet picked up, a card each
-// (#27 Maria, pager 12, what's in it, how long). Ready calls it (and buzzes
-// its pager), again to buzz again; Picked Up takes it off. Without a kitchen
+// (#27 Maria, pager 12, what's in it, how long). Ready calls it (the screens
+// say which pager to buzz), again to call again; Picked Up takes it off. Without a kitchen
 // screen this is where orders are called; with one, bumping calls them too.
 Item {
     id: w
@@ -108,7 +108,7 @@ Item {
                     width: (parent.width - 12) / 2
                     height: 64 * grid.big
                     fontScale: 0.4
-                    text: card.modelData.ready ? (card.modelData.pager > 0 ? qsTr("Buzz Again") : qsTr("Call Again")) : qsTr("Ready")
+                    text: card.modelData.ready ? qsTr("Call Again") : qsTr("Ready")
                     accent: !card.modelData.ready
                     onClicked: w.pos.orderReady(card.modelData.id)
                 }

@@ -359,10 +359,6 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                      "until someone touches Switch Person. Off: sales are the Counter's, and nobody logs in.")),
             field(u"truckNeedsName"_s, tr("Food truck: orders need a name"), u"bool"_s,
                   tr("Every order is called by its number (#1, #2... from 1 each day). On: a name too, before Send or Pay.")),
-            field(u"pagerUrl"_s, tr("Guest pagers: the transmitter's web address"), u"string"_s,
-                  tr("For a pager transmitter on the network: its address with {pager} where the pager's number goes, "
-                     "e.g. http://192.168.1.50/page?n={pager}. Ready then buzzes the guest's pager by itself. "
-                     "Empty: the screen says which pager to buzz, and staff key it in on the transmitter.")),
             with(field(u"language"_s, tr("Language"), u"enum"_s,
                        tr("For screens nobody is logged in to, the customer display, receipts and tickets. "
                           "Each person can have their own (Employees).")),
