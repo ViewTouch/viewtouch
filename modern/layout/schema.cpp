@@ -318,6 +318,9 @@ QJsonArray zoneFields(const QString &kind)
                     options({{"", "Any time"}, {"breakfast", "Breakfast"}, {"lunch", "Lunch"}, {"dinner", "Dinner"}})));
     out.append(with(field(u"showWhen.screen"_s, u"Screen"_s, u"enum"_s, when), u"options"_s,
                     options({{"", "Any"}, {"standard", "Standard screens"}, {"phone", "Phones"}})));
+    out.append(with(field(u"showWhen.service"_s, u"How the store serves"_s, u"enum"_s, when), u"options"_s,
+                    options({{"", "Any"}, {"restaurant", "Restaurant"}, {"foodTruck", "Food truck"}, {"retail", "Retail"},
+                             {"restaurant,retail", "Restaurant or retail"}, {"foodTruck,retail", "Food truck or retail"}})));
 
     // How phones lay it out when its page has no phone version of its own.
     const QString phones = u"On phones"_s;
@@ -499,7 +502,7 @@ QJsonArray actionTypes()
                             {"closeCheck", "Close check"}, {"removePayment", "Undo payment"},
                             {"noSale", "Open drawer (no sale)"}, {"openDrawerSession", "Start drawer (bank)"},
                             {"countDrawer", "Count drawer"}, {"endOfDay", "End of day"},
-                            {"login", "Log in"}, {"logout", "Log out"}, {"clockIn", "Clock in"},
+                            {"login", "Log in"}, {"logout", "Log out"}, {"switchCounterPerson", "Food truck: switch who's working"}, {"clockIn", "Clock in"},
                             {"clockOut", "Clock out"}, {"startCheck", "Start table check"},
                             {"startQuick", "Start quick check"}, {"startTakeout", "Start takeout"},
                             {"releaseCheck", "Put check away"}, {"newTableCheck", "Another check at this table"},

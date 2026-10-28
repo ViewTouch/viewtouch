@@ -217,6 +217,11 @@ class PosSession : public QObject {
     Q_PROPERTY(QString tipsOwed READ tipsOwed NOTIFY dayChanged)
     // This terminal's Screen layout setting: "phone", "standard" or "" (automatic).
     Q_PROPERTY(QString screenMode READ screenMode NOTIFY adminChanged)
+    // How this screen serves: {mode ("restaurant", "foodTruck", "retail"),
+    // counter (a food truck running as its counter now), steppedIn (someone
+    // else's PIN on a food truck: back to the counter at Log Out), askStaff,
+    // person (who's working, by name), needsName}.
+    Q_PROPERTY(QVariantMap service READ serviceInfo NOTIFY sessionChanged)
     // This terminal's own look (Manager -> Terminals); empty: the store's.
     Q_PROPERTY(QString terminalLook READ terminalLook NOTIFY adminChanged)
     // This terminal's on-screen keyboard: "on", "off" or "" (automatic).
@@ -385,6 +390,7 @@ public:
     virtual QVariantList mealPeriods() const = 0;
     virtual QVariantMap pairingInfo() const = 0;
     virtual QString screenMode() const = 0;
+    virtual QVariantMap serviceInfo() const = 0;
     virtual QString terminalLook() const = 0;
     virtual QString terminalKeyboard() const = 0;
     virtual QString terminalStartCategory() const = 0;

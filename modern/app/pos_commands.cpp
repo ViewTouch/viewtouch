@@ -30,6 +30,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"login"_s, [](PosService &p, const QVariantList &) { return QVariant(p.login()); }},
         {u"loginWithPin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.loginWithPin(a.value(0).toString())); }},
         {u"logout"_s, [](PosService &p, const QVariantList &) { p.logout(); return QVariant(true); }},
+        {u"switchCounterPerson"_s, [](PosService &p, const QVariantList &) { return QVariant(p.switchCounterPerson()); }},
         {u"clockIn"_s, [](PosService &p, const QVariantList &) { return QVariant(p.clockIn()); }},
         {u"searchChecks"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.searchChecks(a.value(0).toString(), a.value(1, 365).toInt(), a.value(2, 0).toInt())); }},
         {u"selectFoundCheck"_s, [](PosService &p, const QVariantList &a) { p.selectFoundCheck(a.value(0).toLongLong()); return QVariant(true); }},

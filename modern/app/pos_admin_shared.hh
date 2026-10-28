@@ -134,6 +134,7 @@ inline QVariantList storeSections(const QVariantList &fields)
     };
     const Section sections[] = {
         {"store", PosService::tr("The store"), {"storeName", "language", "currencySymbol", "displayLogo"}},
+        {"service", PosService::tr("How you serve"), {"serviceMode", "truckAskStaff", "truckNeedsName"}},
         {"receipts", PosService::tr("Receipts"), {"receiptHeader", "receiptFooter", "receiptLogo", "receiptFreeChoices"}},
         {"startPages", PosService::tr("Start pages"),
          {"startPage.server", "startPage.bartender", "startPage.cashier", "startPage.host", "startPage.manager"}},

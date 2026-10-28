@@ -194,6 +194,7 @@ Item {
         if (r.checkType && (!open || p.check.type !== r.checkType)) return false
         if (r.mealPeriod && (!controller || controller.mealPeriod !== r.mealPeriod)) return false
         if (r.screen && (!controller || shownScreen !== r.screen)) return false
+        if (r.service && !r.service.split(",").includes((p && p.service && p.service.mode) || "restaurant")) return false
         return true
     }
     // Widgets with a working implementation (Widget<Kind>.qml); the rest

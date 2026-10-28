@@ -43,7 +43,55 @@
           "mode": "replace",
           "role": "tables"
         }
-      ]
+      ],
+      "showWhen": {
+        "service": "restaurant"
+      }
+    },
+    {
+      "id": "flow-manager",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 980,
+        "w": 202,
+        "h": 84
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "manager"
+        }
+      ],
+      "showWhen": {
+        "service": "foodTruck"
+      }
+    },
+    {
+      "id": "flow-logout",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 980,
+        "w": 202,
+        "h": 84
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ],
+      "showWhen": {
+        "service": "retail"
+      }
     },
     {
       "id": "flow-no",
@@ -497,6 +545,18 @@
         "y": 980,
         "w": 232,
         "h": 84
+      },
+      "flow-manager": {
+        "x": 16,
+        "y": 16,
+        "w": 176,
+        "h": 72
+      },
+      "flow-logout": {
+        "x": 16,
+        "y": 16,
+        "w": 176,
+        "h": 72
       }
     }
   }

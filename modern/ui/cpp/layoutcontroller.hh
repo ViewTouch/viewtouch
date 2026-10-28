@@ -257,6 +257,9 @@ public:
     // Where the screen rests with nobody logged in: the login page, or the
     // Time Clock on a terminal set to it.
     QString loginPage() const;
+    // A food truck's screen running as its counter, or someone stepped in there.
+    bool atCounter() const;
+    bool steppedIn() const;
     void restAtLoginPage();
     // Switch pages without remembering the current one (editor page list).
     Q_INVOKABLE bool showPage(const QString &pageId);
@@ -378,6 +381,9 @@ private:
     QVariantMap widgetState_;
     bool setupOpen_ = false;
     QString afterLogin_;
+    // A food truck's counter asked for a page it may not open (Manager): the
+    // login page asks for a PIN, and that page opens once someone steps in.
+    QString afterStepIn_;
     QSet<QString> installedFonts_;   // by content hash
     bool asleep_ = false;
     int sleepOverrideMs_ = 0;

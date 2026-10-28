@@ -239,26 +239,29 @@ Item {
         }
         // Phone orders: who it's for, right on the check. Touch to type it in
         // (no page of its own); a delivery's address too. Missing: in amber.
+        // A food truck's order (called by its number): the name only.
         Row {
             id: who
             readonly property var customer: w.check.customer ?? ({})
             readonly property bool delivery: w.check.type === "delivery"
-            visible: w.controls && w.pos && w.pos.hasCheck && (delivery || w.check.type === "takeout") && !w.folded
+            readonly property bool truck: (w.check.orderNumber ?? 0) > 0
+            visible: w.controls && w.pos && w.pos.hasCheck && (delivery || w.check.type === "takeout" || truck) && !w.folded
             Layout.fillWidth: true
             Layout.preferredHeight: w.unit * 1.9 * Math.min(sheet.big, 1.5)
             spacing: w.unit * 0.25
             // Name, phone, (address,) and when it's wanted.
-            readonly property int keys: delivery ? 4 : 3
+            readonly property int keys: truck ? 1 : delivery ? 4 : 3
             readonly property real keyW: (width - spacing * (keys - 1)) / keys
             Repeater {
-                model: who.delivery ? ["name", "phone", "address"] : ["name", "phone"]
+                model: who.truck ? ["name"] : who.delivery ? ["name", "phone", "address"] : ["name", "phone"]
                 delegate: WidgetKey {
                     required property string modelData
                     objectName: "who-" + modelData
                     width: who.keyW; height: who.height
                     fontScale: 0.42
                     readonly property string value: who.customer[modelData] ?? ""
-                    readonly property bool needed: value === "" && (modelData === "name" || (modelData === "address" && who.delivery))
+                    readonly property bool needed: value === "" && ((modelData === "name" && (!who.truck || (w.pos.service?.needsName ?? false)))
+                                                                    || (modelData === "address" && who.delivery))
                     text: value !== "" ? value
                         : modelData === "name" ? qsTr("+ Name") : modelData === "phone" ? qsTr("+ Phone") : qsTr("+ Address")
                     baseColor: needed ? "#a86a12" : (keySt.keyFill ?? Ui.key)
@@ -267,6 +270,7 @@ Item {
             }
             WidgetKey {
                 objectName: "who-later"
+                visible: !who.truck
                 width: who.keyW; height: who.height
                 fontScale: 0.42
                 text: w.check.due ? w.check.due : qsTr("Ready Later…")

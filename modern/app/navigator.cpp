@@ -59,27 +59,7 @@ bool Navigator::jump(Mode mode, const QString &target)
         enter(home_);
         break;
     case Mode::Index: {
-        QString idx = lastIndex_;
-        if (idx.isEmpty()) {
-            for (const layout::Page &p : layout_->pages) {
-                if (p.kind == u"index" && !mealPeriod_.isEmpty() && p.mealPeriod == mealPeriod_) {
-                    idx = p.id;
-                    break;
-                }
-            }
-        }
-        if (idx.isEmpty()) {   // no page for this period: an all-day one, else the first
-            for (const layout::Page &p : layout_->pages) {
-                if (p.kind == u"index" && p.mealPeriod == u"all") {
-                    idx = p.id;
-                    break;
-                }
-            }
-        }
-        if (idx.isEmpty()) {
-            if (const layout::Page *p = layout_->firstPageOfKind(u"index"_s))
-                idx = p->id;
-        }
+        const QString idx = indexPage();
         if (idx.isEmpty())
             return false;
         enter(idx);
@@ -87,6 +67,23 @@ bool Navigator::jump(Mode mode, const QString &target)
     }
     }
     return current_ != before;
+}
+
+QString Navigator::indexPage() const
+{
+    if (!lastIndex_.isEmpty())
+        return lastIndex_;
+    for (const layout::Page &p : layout_->pages) {
+        if (p.kind == u"index" && !mealPeriod_.isEmpty() && p.mealPeriod == mealPeriod_)
+            return p.id;
+    }
+    // No page for this period: an all-day one, else the first.
+    for (const layout::Page &p : layout_->pages) {
+        if (p.kind == u"index" && p.mealPeriod == u"all")
+            return p.id;
+    }
+    const layout::Page *p = layout_->firstPageOfKind(u"index"_s);
+    return p ? p->id : QString();
 }
 
 bool Navigator::startSequence(const QStringList &pages)

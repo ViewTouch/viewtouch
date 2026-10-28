@@ -110,6 +110,9 @@ struct PastDay {
 // The built-in user a self-order kiosk takes orders as (role "kiosk": it
 // may only order). Not one of the staff: it can't log in with a PIN.
 const core::Employee &kioskEmployee();
+// The built-in user a food truck screen takes orders and payments as when
+// nobody says who's working (role "cashier"). Not one of the staff either.
+const core::Employee &counterEmployee();
 // The maintainer, logged in with the store's maintainer code: not on the
 // staff list, so nobody in the store can remove or demote them.
 const core::Employee &maintainerEmployee();
@@ -434,6 +437,7 @@ signals:
     void staffChanged();
     void customersChanged();   // customers, gift cards, house accounts
     void networkChanged();     // a screen or the standby came or went; a printer worked or failed
+    void orderReady(const QString &label);   // a food truck's order is made: call it ("#27 Maria")
 
 private:
     std::function<std::int64_t()> now_;
@@ -974,6 +978,7 @@ public:
     QString terminalLook() const override;
     QString terminalKeyboard() const override;
     QString terminalStartCategory() const override;
+    QVariantMap serviceInfo() const override;
 
     // --- pairing devices (manager) -------------------------------------------------
     // Start a pairing: a 10-character code, good for 10 minutes and one device.
@@ -1032,6 +1037,21 @@ public:
     void kioskCancel();
     QVariantMap selfOrderInfo() const override;
     QVariantMap kioskMenu() const override;
+
+    // How this screen serves: "restaurant", "foodTruck" or "retail" (the
+    // terminal's setting, else the store's).
+    QString serviceMode() const;
+    // A food truck screen: nobody logs in. It runs as the counter (the
+    // built-in Counter, or whoever said they're working: Store Settings ->
+    // ask who's working), straight to ordering and paying. Someone's PIN
+    // steps in (a manager, for the Manager screens), and logging out goes
+    // back to the counter, the order in progress still open.
+    bool counterMode() const { return serviceMode() == u"foodTruck" && !selfOrder_; }
+    // The setting changed, or the screen started: sign the counter in (or
+    // out, when it isn't a food truck any more).
+    void applyServiceMode();
+    // Who's working changes: the next PIN is theirs.
+    bool switchCounterPerson();
     // A picture the store uses (a menu item's photo, the display logo or a
     // slide), base64, for screens on other computers; empty for anything else.
     QString storeImage(const QString &path) const;
@@ -1315,6 +1335,12 @@ private:
     std::optional<Approved> approved_;
     bool trainingOn_ = false;
     bool selfOrder_ = false;
+    // Food truck: who this screen runs as between orders (the Counter, or
+    // the person working); empty: not yet known (nobody, or asking).
+    std::string counterUser_;
+    QVariantMap serviceShown_;   // serviceInfo() as last told
+    int nextOrderNumber() const;
+    QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees
     bool closePractice(core::Check &c);   // a manager switched this screen to practice

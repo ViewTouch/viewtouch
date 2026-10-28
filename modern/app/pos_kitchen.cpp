@@ -207,6 +207,11 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
     if (s_->sink)
         s_->sink->saveCheck(*c);
     emit s_->checksChanged();
+    // A food truck's order, all made: the window calls it.
+    if (c->orderNumber > 0 && std::ranges::none_of(c->lines, [](const OrderLine &l) {
+            return l.sent && !l.voided && !l.isComment() && l.forKitchen() && !l.made;
+        }))
+        emit s_->orderReady(qs(c->label));
     return true;
 }
 

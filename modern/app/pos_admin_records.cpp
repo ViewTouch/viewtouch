@@ -101,7 +101,8 @@ QVariantList PosService::adminRecords(const QString &panel)
                     l << u"%1 %2"_s.arg(QLatin1StringView(role)).arg(it->second);
             return l.join(u'\n');
         }();
-        add({{u"storeName"_s, qs(s_->settings.storeName)}, {u"language"_s, qs(s_->settings.language)}, {u"currencySymbol"_s, qs(s_->settings.currencySymbol)},
+        add({{u"storeName"_s, qs(s_->settings.storeName)}, {u"serviceMode"_s, qs(s_->settings.serviceMode)},
+             {u"truckAskStaff"_s, s_->settings.truckAskStaff}, {u"truckNeedsName"_s, s_->settings.truckNeedsName}, {u"language"_s, qs(s_->settings.language)}, {u"currencySymbol"_s, qs(s_->settings.currencySymbol)},
              {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"receiptFooter"_s, qs(s_->settings.receiptFooter)},
              {u"receiptFreeChoices"_s, s_->settings.receiptFreeChoices},
              {u"soldOutBackNextDay"_s, s_->settings.soldOutBackNextDay},
@@ -288,7 +289,7 @@ QVariantList PosService::adminRecords(const QString &panel)
         for (const TerminalConfig &t : list) {
             const PrinterConfig *p = s_->settings.printer(t.receiptPrinter);
             add({{u"name"_s, qs(t.name)}, {u"receiptPrinter"_s, qs(t.receiptPrinter)}, {u"drawer"_s, qs(t.drawer)},
-                 {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
+                 {u"screen"_s, qs(t.screen)}, {u"service"_s, qs(t.service)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                  {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
                  {u"startPage"_s, qs(t.startPage)},
@@ -324,7 +325,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
                 {u"staffMeal"_s, false}};
     if (panel == u"terminals")
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
-                {u"screen"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
+                {u"screen"_s, QString()}, {u"service"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
                 {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()}, {u"startPage"_s, QString()},
                 {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}, {u"colorSafe"_s, false}};
     if (panel == u"mealPeriods")

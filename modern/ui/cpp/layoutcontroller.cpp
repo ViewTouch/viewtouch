@@ -217,8 +217,9 @@ void LayoutController::screenOn()
 
 void LayoutController::idleTimeout()
 {
-    // Not while a page is being edited (the editor guards its own changes).
-    if (!pos_ || !pos_->loggedIn() || editing())
+    // Not while a page is being edited (the editor guards its own changes),
+    // nor a food truck's counter (nobody to log out: the order stays).
+    if (!pos_ || !pos_->loggedIn() || editing() || atCounter())
         return;
     pos_->invoke(u"logout"_s, {});
     setStatus(tr("Logged out after no use"));
@@ -346,6 +347,9 @@ void LayoutController::setPos(PosSession *pos)
     restartSleep();
     restAtLoginPage();   // a Time Clock terminal starts on its page
     updateTerminalLook();
+    if (atCounter() && pos_->loggedIn())
+        onLoggedInChanged(true);   // a food truck starts at its menu, nobody to log in
+                                   // (main's --page kitchen comes after, for its kitchen screen)
 }
 
 void LayoutController::call(const QString &method, const QVariantList &args,
@@ -381,6 +385,16 @@ void LayoutController::restAtLoginPage()
     nav_.reset(want);
     refresh();
     emit pageChanged();
+}
+
+bool LayoutController::atCounter() const
+{
+    return pos_ && pos_->serviceInfo().value(u"counter"_s).toBool();
+}
+
+bool LayoutController::steppedIn() const
+{
+    return pos_ && pos_->serviceInfo().value(u"steppedIn"_s).toBool();
 }
 
 QString LayoutController::loginPage() const
@@ -420,6 +434,13 @@ QString LayoutController::rolePage(const QString &role) const
 void LayoutController::onLoggedInChanged(bool loggedIn)
 {
     restartIdle();
+    // A food truck's kitchen, bar or expo screen (a page nobody logs in to):
+    // the counter signing in there leaves it where it is.
+    if (const vt::layout::Page *here = currentPage(); loggedIn && atCounter() && !editing() && here
+        && here->permission == u"public" && here->role != u"login") {
+        refresh();
+        return;
+    }
     // A new store: the setup guide, for the first manager in, until it's finished.
     if (!loggedIn)
         closeSetup();
@@ -433,6 +454,11 @@ void LayoutController::onLoggedInChanged(bool loggedIn)
     if (const QString start = pos_ ? pos_->userPrefs().value(u"startPage"_s).toString() : QString();
         loggedIn && !start.isEmpty() && activeLayout().page(start))
         tables = start;
+    // A food truck or a shop: no tables, home is the menu (someone stepped
+    // in at a truck too: Log Out comes back to it).
+    const bool menuFirst = loggedIn && (atCounter() || steppedIn() || pos_->serviceInfo().value(u"mode"_s) == u"retail"_s);
+    if (menuFirst && !nav_.indexPage().isEmpty())
+        tables = nav_.indexPage();
     const QString home = loggedIn && !tables.isEmpty() ? tables : login;
     nav_.reset(home);
     if (editing_ && editor_)
@@ -442,6 +468,9 @@ void LayoutController::onLoggedInChanged(bool loggedIn)
     // Back to the check they had open (Switch User): its order screen.
     if (loggedIn && pos_ && pos_->hasCheck() && !editing())
         navigate(Navigator::Mode::Index, {});
+    // Stepped in at a food truck for a page the counter may not open: there now.
+    if (const QString page = std::exchange(afterStepIn_, QString()); loggedIn && steppedIn() && !page.isEmpty() && !editing())
+        navigate(Navigator::Mode::Push, page);
     // Opened for one thing (--after-login): there, once.
     if (loggedIn && !afterLogin_.isEmpty() && !editing()) {
         const QString page = std::exchange(afterLogin_, QString());
@@ -466,6 +495,16 @@ bool LayoutController::mayOpen(const QString &pageId)
         return false;
     }
     if (!p->permission.isEmpty() && !pos_->can(p->permission)) {
+        // A food truck's counter: someone's PIN (a manager's) opens it.
+        if (const QString login = rolePage(u"login"_s); atCounter() && !login.isEmpty() && nav_.current() != login) {
+            afterStepIn_ = pageId;
+            if (nav_.jump(Navigator::Mode::Push, login)) {
+                refresh();
+                emit pageChanged();
+            }
+            setStatus(tr("Enter a manager's PIN for %1.").arg(p->name));
+            return false;
+        }
         setStatus(tr("%1 cannot open %2.").arg(pos_->userName(), p->name));
         return false;
     }
@@ -1378,6 +1417,11 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     const QString screen = rule.value(u"screen").toString();
     if (!screen.isEmpty() && screen != formFactor())
         return false;
+    // How the screen serves ("restaurant", "foodTruck", "retail"; several: commas between).
+    const QString service = rule.value(u"service").toString();
+    const QString mode = pos_ ? pos_->serviceInfo().value(u"mode"_s).toString() : QString();
+    if (!service.isEmpty() && !service.split(u',').contains(mode.isEmpty() ? u"restaurant"_s : mode))
+        return false;
     // The store's style (Store Settings -> Screens -> Style): a button only one style has.
     const QString style = rule.value(u"style").toString();
     return style.isEmpty() || style == vt::layout::Layout::styleOf(activeLayout().theme);
@@ -1934,6 +1978,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
     // Commands that are POS operations: name -> (operation, arguments).
     static const QHash<QString, std::pair<QString, QVariantList>> operations = {
         {u"login"_s, {u"login"_s, {}}}, {u"logout"_s, {u"logout"_s, {}}},
+        {u"switchCounterPerson"_s, {u"switchCounterPerson"_s, {}}},
         {u"clockIn"_s, {u"clockIn"_s, {}}}, {u"clockOut"_s, {u"clockOut"_s, {}}},
         {u"startCheck"_s, {u"startCheck"_s, {u"dineIn"_s}}}, {u"startQuick"_s, {u"startCheck"_s, {u"quick"_s}}},
         {u"startTakeout"_s, {u"startCheck"_s, {u"takeout"_s}}},

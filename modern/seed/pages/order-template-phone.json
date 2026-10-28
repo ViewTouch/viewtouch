@@ -88,6 +88,32 @@
       }
     },
     {
+      "id": "flow-manager",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-logout",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
       "id": "order-list",
       "shared": true,
       "rect": {

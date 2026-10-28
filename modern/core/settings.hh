@@ -93,6 +93,9 @@ struct TerminalConfig {
     // "counter:tmr_..." (a Stripe reader beside it, run from the store's
     // computer), "simulated" (approves after a moment: for practice), or none.
     std::string cardReader;
+    // How this screen serves: "restaurant", "foodTruck", "retail", or empty =
+    // the store's (PosSettings::serviceMode): a restaurant's truck.
+    std::string service;
 
     bool operator==(const TerminalConfig &) const = default;
 };
@@ -144,6 +147,16 @@ inline CashMode cashModeFromString(const std::string &s)
 struct PosSettings {
     std::string storeName = "ViewTouch";
     bool setupDone = false;   // the setup guide was finished (it opens for managers until then)
+    // How the store serves (each terminal can say otherwise): "restaurant"
+    // (empty: tables, logins), "foodTruck" (no login: straight to ordering
+    // and paying; a manager's PIN for the Manager screens) or "retail"
+    // (logins, the items first: no tables, no kitchen).
+    std::string serviceMode;
+    // Food truck: ask who's working when the screen starts (their sales and
+    // tips, their clock-in); off: sales are the Counter's. And whether an
+    // order needs a name before Send or Pay (it's called by its number too).
+    bool truckAskStaff = false;
+    bool truckNeedsName = false;
     std::string currencySymbol = "$";
     // Colors the store mixed itself (custom colors), the newest first.
     std::vector<std::string> customColors;

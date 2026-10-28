@@ -80,7 +80,7 @@ Group groupOf(const QString &key)
         {u"loggedIn"_s, Group::Session}, {u"userName"_s, Group::Session}, {u"userRole"_s, Group::Session},
         {u"permissions"_s, Group::Session}, {u"clockedIn"_s, Group::Session}, {u"clockedInSince"_s, Group::Session},
         {u"storeName"_s, Group::Admin}, {u"currencySymbol"_s, Group::Admin}, {u"customColors"_s, Group::Admin}, {u"priceChanges"_s, Group::Admin}, {u"adminRevision"_s, Group::Admin},
-        {u"mealPeriods"_s, Group::Admin}, {u"pairing"_s, Group::Admin}, {u"screenMode"_s, Group::Admin}, {u"terminalLook"_s, Group::Admin}, {u"terminalKeyboard"_s, Group::Admin}, {u"terminalStartCategory"_s, Group::Admin}, {u"cardReader"_s, Group::Admin}, {u"readerToken"_s, Group::Session}, {u"counterCharge"_s, Group::Session}, {u"receiptOffer"_s, Group::Session},
+        {u"mealPeriods"_s, Group::Admin}, {u"pairing"_s, Group::Admin}, {u"screenMode"_s, Group::Admin}, {u"service"_s, Group::Session}, {u"terminalLook"_s, Group::Admin}, {u"terminalKeyboard"_s, Group::Admin}, {u"terminalStartCategory"_s, Group::Admin}, {u"cardReader"_s, Group::Admin}, {u"readerToken"_s, Group::Session}, {u"counterCharge"_s, Group::Session}, {u"receiptOffer"_s, Group::Session},
         {u"closedChecks"_s, Group::Day}, {u"staff"_s, Group::Session}, {u"checkHistory"_s, Group::Check},
         {u"choosing"_s, Group::Check}, {u"weighing"_s, Group::Check}, {u"setup"_s, Group::Admin}, {u"onBreakSince"_s, Group::Session},
         {u"customers"_s, Group::Check}, {u"customer"_s, Group::Check}, {u"giftCard"_s, Group::Check}, {u"waitlist"_s, Group::Day}, {u"customerPrompt"_s, Group::Check},
@@ -511,6 +511,7 @@ void RemoteSession::want(const QString &key, bool on)
 void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
 {
     const bool wasLoggedIn = loggedIn();
+    const QString wasUser = userName();
     QSet<Group> changed;
     if (replaceAll) {
         state_.clear();
@@ -549,7 +550,9 @@ void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
         ++queryRevision_;
         emit queriesChanged();
     }
-    if (loggedIn() != wasLoggedIn)
+    // Someone else now, still logged in (a manager stepping in at a food
+    // truck, and back to its counter): as the service says it too.
+    if (loggedIn() != wasLoggedIn || (loggedIn() && userName() != wasUser))
         emit loggedInChanged(loggedIn());
 }
 
