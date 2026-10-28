@@ -48,6 +48,7 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastDeliveryId(data.lastDeliveryId)
     , images(std::move(data.images))
     , lastCheckId(data.lastCheckId)
+    , firstOrderNumber(data.firstOrderNumber)
     , lastPunchId(data.lastPunchId)
     , sink(sink)
     , lastDayId(data.lastDayId)
@@ -1322,6 +1323,8 @@ bool PosService::addItem(const QString &idOrName)
         return true;
     } else {
         MenuItem priced = *item;   // the price for this meal period (dinner, happy hour...) and order type
+        if (serviceMode() == u"retail")
+            priced.kitchenHide = true;   // a shop: nothing for a kitchen
         priced.price = extra(item->priceFor(currentMealPeriod(), c.type == CheckType::Takeout, c.type == CheckType::Delivery));
         if (item->eventAt > 0)   // the ticket says when
             priced.name += " (" + ss(i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(item->eventAt),

@@ -5180,6 +5180,128 @@ TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad f
     CHECK(s.pos.checkInfo()[u"pager"_s].toInt() == 12);
 }
 
+TEST_CASE("UI: a food truck's customer display: now serving, and who's ready while the next guest orders", "[flow][ui][display][truck]")
+{
+    Session s;
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"pos"_s, QVariant::fromValue(static_cast<app::PosSession *>(&s.pos))}});
+    engine.loadFromModule("ViewTouch", "CustomerDisplayWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    window->resize(1280, 720);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    const QByteArray dir = qgetenv("VTM_SHOTS");
+    const auto shot = [&](const char *name) {
+        QTest::qWait(80);
+        if (!dir.isEmpty())
+            window->grabWindow().save(QString::fromLocal8Bit(dir) + u'/' + QString::fromLatin1(name) + u".png"_s);
+    };
+    std::function<QQuickItem *(QQuickItem *, const QString &, const QString &)> find =
+        [&](QQuickItem *root, const QString &property, const QString &value) -> QQuickItem * {
+        for (QQuickItem *i : root->childItems()) {
+            if (!i->isVisible())
+                continue;
+            if (i->property(property.toUtf8().constData()).toString() == value)
+                return i;
+            if (QQuickItem *hit = find(i, property, value))
+                return hit;
+        }
+        return nullptr;
+    };
+    QQuickItem *root = window->contentItem();
+    QTest::qWait(60);
+    CHECK_FALSE(find(root, u"objectName"_s, u"nowServing"_s));   // nothing waiting: the usual pictures
+
+    // Two orders sent and paid; Ana's ready.
+    const auto sell = [&](const char *name) {
+        REQUIRE(s.pos.addItem(u"caesar"_s));
+        REQUIRE(s.pos.setCustomer({{u"name"_s, QString::fromLatin1(name)}}));
+        const qint64 id = s.pos.checkInfo()[u"id"_s].toLongLong();
+        s.pos.openDrawerSession();
+        REQUIRE(s.pos.tender(u"cash"_s));
+        REQUIRE(s.pos.closeCheck());
+        return id;
+    };
+    const qint64 ana = sell("Ana");
+    sell("Lee");
+    REQUIRE(s.pos.orderReady(ana));
+    // The thank-you shows for a while after paying; the board is under it. Past it:
+    std::function<void(QQuickItem *)> thanked = [&](QQuickItem *item) {
+        if (item->property("thanking").isValid())
+            item->setProperty("thanking", false);
+        for (QQuickItem *child : item->childItems())
+            thanked(child);
+    };
+    thanked(root);
+    QTest::qWait(80);
+    REQUIRE(find(root, u"objectName"_s, u"nowServing"_s));
+    CHECK(find(root, u"text"_s, u"#1 Ana"_s));   // ready
+    CHECK(find(root, u"text"_s, u"#2 Lee"_s));   // preparing
+    shot("m177-truck-now-serving");
+
+    // The next guest orders: their order on the screen, the ready ones in a strip.
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    QTest::qWait(80);
+    CHECK_FALSE(find(root, u"objectName"_s, u"nowServing"_s));
+    REQUIRE(find(root, u"objectName"_s, u"readyStrip"_s));
+    CHECK(find(root, u"text"_s, u"Ready: #1 Ana"_s));
+    shot("m178-truck-ready-strip");
+
+    // Picked up: off the strip.
+    REQUIRE(s.pos.orderPickedUp(ana));
+    QTest::qWait(80);
+    CHECK_FALSE(find(root, u"objectName"_s, u"readyStrip"_s));
+}
+
+TEST_CASE("UI: retail: nothing goes to the kitchen; a scan rings it in from any page", "[flow][ui][truck]")
+{
+    Session s;
+    s.pos.shared()->settings.serviceMode = "retail";
+    emit s.pos.shared()->adminChanged();
+    CHECK_FALSE(s.pos.loggedIn());               // a shop keeps logins
+    REQUIRE(s.pos.loginWithPin(u"2222"_s));
+    CHECK(s.c.pageId() == u"index-lunch"_s);     // the menu first
+
+    // A kitchen item, scanned by its number: rung in, never sent to a kitchen.
+    s.c.scanned(u"101"_s);                       // Classic Burger
+    if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    }
+    REQUIRE(s.pos.lines().size() == 1);
+    CHECK(s.pos.lines().first().toMap()[u"name"_s].toString() == u"Classic Burger"_s);
+
+    // On the Pay screen, the customer adds one more: scanned there, back to the sale.
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    s.c.scanned(u"101"_s);
+    CHECK(s.c.pageId() != u"settle"_s);
+    CHECK(s.pos.lines().size() == 2);
+    if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    }
+    s.pos.openDrawerSession();
+    REQUIRE(s.pos.tender(u"cash"_s));
+    REQUIRE(s.pos.closeCheck());
+    CHECK(s.pos.kitchenTickets().isEmpty());
+    CHECK(s.pos.shared()->closedToday.back().serverName == "Casey");
+
+    // A restaurant's screen: a scan on the Pay screen only says where to ring it in.
+    s.pos.shared()->settings.serviceMode.clear();
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    s.c.scanned(u"101"_s);
+    CHECK(s.c.pageId() == u"settle"_s);
+}
+
 TEST_CASE("Manual: a food truck", "[.manual]")
 {
     const auto clean = [](Screen &s) {

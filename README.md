@@ -108,6 +108,10 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
 <td><img src="modern/docs/screenshots/food-truck-orders.jpg" alt="A food truck's orders, ready to call"><br><sub><b>Calling orders.</b> Ready says whose order it is and which pager to buzz; Picked Up frees the pager. A manager's PIN opens the Manager screens.</sub></td>
 </tr>
 <tr>
+<td><img src="modern/docs/screenshots/food-truck-now-serving.jpg" alt="Now serving on the customer display"><br><sub><b>Now serving.</b> The customer display shows guests what's ready and what's being made.</sub></td>
+<td><img src="modern/docs/screenshots/food-truck-setup.jpg" alt="How do you serve? in the setup guide"><br><sub><b>Restaurant, food truck or retail.</b> The setup guide asks; Store Settings changes it any time, for the store or one screen.</sub></td>
+</tr>
+<tr>
 <td><img src="modern/docs/screenshots/manager.jpg" alt="Manager"><br><sub><b>Manager.</b> Menu, staff, schedule, inventory, promotions, reports and End of Day.</sub></td>
 <td><img src="modern/docs/screenshots/page-editor.jpg" alt="Page editor"><br><sub><b>Design your own screens.</b> Move, resize and restyle any button, with undo.</sub></td>
 </tr>
@@ -144,8 +148,10 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
   - **Food trucks:** no login, the screen opens on the menu and is ready for the next order after each payment. One computer is enough (a kitchen screen is optional);
   - orders are numbered from #1 each day, with the guest's name and the number of the pager handed to them;
   - **Orders** lists what's being made and waiting: **Ready** says "#27 Maria is ready: buzz pager 12", **Picked Up** frees the pager;
-  - a manager's PIN opens the Manager screens, and sales can be the Counter's or, optionally, whoever is working.
-  - **Retail:** staff log in and start on the menu instead of the floor plan.
+  - a manager's PIN opens the Manager screens, and sales can be the Counter's or, optionally, whoever is working;
+  - the customer display shows **Now serving**: what's ready and what's being made;
+  - a second screen cut off from the main computer keeps selling, with its own order numbers.
+  - **Retail:** staff log in and start on the menu; a barcode scanned on any screen rings the item in, and nothing goes to a kitchen.
 - **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
 - **Kitchen:** kitchen, bar and expo touchscreens with ticket times and printers. **Rush Radar** says each station's next half hour ("Grill backs up to 27 min at 7:42") from what's on the line, the tables just seated and the store's usual nights.
 - **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime by your state's rules, tip-outs and tip pools, inventory with recipes and automatic 86, and CSV and PDF export.

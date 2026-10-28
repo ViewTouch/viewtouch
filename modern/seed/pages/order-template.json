@@ -235,7 +235,10 @@
           "fill": "#1f8a4c"
         }
       },
-      "hotkey": "s"
+      "hotkey": "s",
+      "showWhen": {
+        "service": "restaurant,foodTruck"
+      }
     },
     {
       "id": "flow-pay",

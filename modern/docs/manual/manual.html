@@ -884,7 +884,11 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <ul>
 <li><b>Restaurant</b> (to start): staff log in, and the floor plan comes first.</li>
 <li><b>Food truck</b>: nobody logs in (below).</li>
-<li><b>Retail</b>: staff still log in, so each sale is the cashier's. After login they start on the menu instead of the floor plan, and the order screen has <b>Log Out</b> where restaurants have Tables.</li>
+<li><b>Retail</b>: staff still log in, so each sale is the cashier's. After login they start on the menu instead of the floor plan, and the order screen has <b>Log Out</b> where restaurants have Tables.
+<ul>
+<li><b>Scan from anywhere:</b> a barcode scanned on any screen (even Pay, for the item the customer remembers at the last moment) rings the item in and goes back to the sale. An empty check says <i>Scan or touch an item to start a sale.</i></li>
+<li><b>No kitchen:</b> nothing a shop sells goes to a kitchen printer or a kitchen screen, and there's no Send: <b>Pay</b> finishes the sale.</li>
+</ul></li>
 </ul>
 <p>A button can show only for one way of serving: in edit mode, its <b>Show only when → How the store serves</b>.</p>
 
@@ -910,6 +914,16 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <li><b>Picked Up</b> takes it off the list, and the pager is free for the next guest.</li>
 <li>With a kitchen screen, bumping the last of an order calls it by itself.</li>
 </ul>
+
+<h3>Now serving, on the customer display</h3>
+<table cellpadding="4"><tr>
+<td><img src="shots/m177-truck-now-serving.png" width="280" height="158"><br><small>Between guests: Ready and Preparing</small></td>
+<td><img src="shots/m178-truck-ready-strip.png" width="280" height="158"><br><small>While the next guest orders</small></td>
+</tr></table>
+<p>The customer display (a second screen facing the guests, chapter 6) shows <b>Ready</b> and <b>Preparing</b> between guests: <i>#1 Ana</i> in green once it's called, <i>#2 Lee</i> while it's made. While the next guest orders, their order fills the screen and a green strip says who is ready. Picked-up orders leave it. Pagers' numbers aren't shown, only order numbers and names. With nothing waiting, it shows the store's pictures and messages as usual.</p>
+
+<h3>When a second screen loses the main computer</h3>
+<p>A truck with a second screen (a tablet at the window, say) keeps selling if the cable or Wi-Fi to the main computer is lost: it goes on as the Counter, with names, pagers and cash. Its orders are numbered from 100 above the store's (<i>#103</i>), so they never match the main computer's, which keeps counting. When it's back, its orders reach the main computer with their numbers, names and pagers, and show on Orders. (A truck with one computer has nothing to lose: the register is the store's computer.)</p>
 
 <h3>The Manager screens</h3>
 <p>From the order screen: touch <b>Orders</b>, then <b>Manager</b> (bottom right), and enter a manager's PIN. Reports, End of Day, Store Settings and every manager page work as usual. <b>Log Out</b> goes back to the counter, with the order in progress still open.</p>

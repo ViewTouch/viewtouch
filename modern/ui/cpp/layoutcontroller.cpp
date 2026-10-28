@@ -1713,10 +1713,15 @@ void LayoutController::scanned(const QString &code)
         const QVariantMap m = v.toMap();
         if (m.value(u"number"_s).toString() != c && !m.value(u"barcodes"_s).toString().split(u", "_s).contains(c))
             continue;
-        if (ordering)
+        if (ordering) {
             orderItem(m.value(u"id"_s).toString());
-        else
+        } else if (pos_->serviceInfo().value(u"mode"_s) == u"retail"_s) {
+            // A shop scans from anywhere (the Pay screen, the next customer's): back to the sale, rung in.
+            navigate(Navigator::Mode::Index);
+            orderItem(m.value(u"id"_s).toString());
+        } else {
             setStatus(tr("%1: ring it in on the order screen.").arg(m.value(u"name"_s).toString()));
+        }
         return;
     }
     call(u"scanCode"_s, {c}, [this](const QVariant &kind) {

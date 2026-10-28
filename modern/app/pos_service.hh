@@ -136,6 +136,8 @@ struct PosData {
     std::int64_t lastDeliveryId = 0;
     std::map<std::string, QByteArray> images;     // the store's pictures, by name
     std::int64_t lastCheckId = 0;
+    // A screen working offline: its food truck orders start here (the store's own go on below).
+    int firstOrderNumber = 0;
     std::int64_t lastPunchId = 0;
     std::optional<core::BusinessDay> currentDay;  // none: the service opens one
     std::int64_t lastDayId = 0;
@@ -303,6 +305,7 @@ public:
     core::CustomerRecord *customer(const std::string &id);
     core::GiftCard *giftCard(const std::string &number);
     std::int64_t lastCheckId = 0;
+    int firstOrderNumber = 0;   // PosData::firstOrderNumber
     std::int64_t lastPunchId = 0;
     PosSink *sink = nullptr;
     PosPrinter *printer = nullptr;

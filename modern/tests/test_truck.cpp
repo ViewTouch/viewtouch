@@ -622,3 +622,41 @@ TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
         CHECK(c.ruleShows(switchPerson));
     }
 }
+
+TEST_CASE("Food truck: a whole day with the store's cash setting as shipped, to End of Day", "[truck]")
+{
+    app::PosData d = truckData();
+    d.settings.cashMode = app::settingsFromJson(test::readSeed("pos/settings.json").object()).cashMode;
+    test::RecordingSink sink;
+    app::PosShared shared(d, &sink);
+    std::int64_t clock = 1'700'000'000'000;
+    shared.setClock([&clock] { return clock; });
+    app::PosService pos(&shared, u"Truck"_s);
+
+    // Cash and card sales by the counter, no drawer opened by hand first.
+    for (const char *how : {"cash", "credit", "cash"}) {
+        REQUIRE(pos.addItem(u"soda"_s));
+        INFO(how << ": " << pos.drawerInfo()[u"text"_s].toString().toStdString());
+        REQUIRE(pos.tender(QString::fromLatin1(how)));
+        REQUIRE(pos.closeCheck());
+    }
+    CHECK(shared.closedToday.size() == 3);
+
+    // A manager steps in for End of Day: what's in the way is something they can do.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QVariantMap day = pos.dayInfo();
+    INFO(day[u"blockers"_s].toStringList().join(u" | "_s).toStdString());
+    for (const QVariant &b : pos.drawerInfo()[u"others"_s].toList())
+        UNSCOPED_INFO(QJsonDocument::fromVariant(b).toJson(QJsonDocument::Compact).toStdString());
+    if (!day[u"ready"_s].toBool()) {
+        // The Counter's cash: counted and checked out like anyone's.
+        for (const QVariant &b : pos.drawerInfo()[u"others"_s].toList()) {
+            pos.entryKey(u"0"_s);
+            REQUIRE(pos.countDrawerById(b.toMap()[u"id"_s].toLongLong()));
+        }
+    }
+    clock += 3'600'000;
+    REQUIRE(pos.endOfDay());
+    pos.logout();
+    CHECK(pos.userName() == u"Counter"_s);
+}

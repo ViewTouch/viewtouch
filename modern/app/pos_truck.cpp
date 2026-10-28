@@ -99,7 +99,7 @@ int PosService::nextOrderNumber() const
         last = std::max(last, c.orderNumber);
     for (const Check &c : s_->closedToday)
         last = std::max(last, c.orderNumber);
-    return last + 1;
+    return std::max(last + 1, s_->firstOrderNumber);
 }
 
 QString PosService::orderLabel(const Check &c) const

@@ -125,7 +125,8 @@ Item {
                 onClicked: w.whole ? (w.whole = false) : w.openWhole()
             }
             Text {
-                visible: !w.folded
+                // (A food truck's order is called by its own number, in the label: not this one too.)
+                visible: !w.folded && !((w.check.orderNumber ?? 0) > 0)
                 text: qsTr("#%1").arg(w.check.id ?? "")
                 color: Ui.muted
                 font.family: w.face
@@ -756,6 +757,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: w.pos && w.pos.hasCheck ? qsTr("Touch menu items to add them.")
+                                             : (w.pos?.service?.mode ?? "") === "retail" ? qsTr("Scan or touch an item to start a sale.")
                                              : qsTr("No check open.\nTouch an item to start a quick check.")
                 color: Ui.muted
                 font.family: w.face

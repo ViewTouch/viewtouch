@@ -57,7 +57,7 @@ bool offlineAllowed(const QString &method)
 {
     static const QSet<QString> methods = {
         u"pinKey"_s, u"entryKey"_s, u"adjustGuests"_s, u"textKey"_s, u"clearEntry"_s, u"login"_s, u"loginWithPin"_s,
-        u"logout"_s, u"selectTable"_s, u"startCheck"_s, u"openCheck"_s, u"openTab"_s, u"releaseCheck"_s,
+        u"logout"_s, u"setCustomer"_s, u"setPager"_s, u"selectTable"_s, u"startCheck"_s, u"openCheck"_s, u"openTab"_s, u"releaseCheck"_s,
         u"newTableCheck"_s, u"splitBySeat"_s, u"printTableChecks"_s, u"combineTableChecks"_s, u"addItem"_s,
         u"storeImage"_s, u"setQualifier"_s, u"selectLine"_s, u"selectPayment"_s, u"setCheckFilter"_s,
         u"voidItem"_s, u"setLineQuantity"_s, u"lineMore"_s, u"lineLess"_s, u"anotherRound"_s, u"customDiscount"_s,
