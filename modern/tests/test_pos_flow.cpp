@@ -5125,6 +5125,61 @@ TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
     }
 }
 
+TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad for the pager", "[flow][ui][truck]")
+{
+    Screen s(true);   // a touch screen: no keyboard, no mouse
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    QTest::qWait(150);
+    auto *keys = s.window->findChild<QObject *>(u"touchKeys"_s);
+    REQUIRE(keys);
+    const auto keyboard = [&] { return qvariant_cast<QObject *>(keys->property("contentItem")); };
+    CHECK_FALSE(keys->property("visible").toBool());
+
+    // + Name: the letters.
+    QQuickItem *name = Screen::findKey(s.window->contentItem(), u"+ Name"_s);
+    REQUIRE(name);
+    s.tapItem(name);
+    QTest::qWait(200);
+    REQUIRE(keys->property("visible").toBool());
+    CHECK_FALSE(keyboard()->property("numeric").toBool());
+    s.shot("truck-name-keyboard");
+    for (const char *k : {"m", "a", "r", "i", "a"}) {   // capitals for the first letter
+        auto *board = qobject_cast<QQuickItem *>(keyboard());
+        QQuickItem *key = Screen::findBy(board, "text", QString::fromLatin1(k));
+        if (!key)
+            key = Screen::findBy(board, "text", QString::fromLatin1(k).toUpper());
+        REQUIRE(key);
+        s.tapItem(key);
+    }
+    if (QQuickItem *save = Screen::findKey(s.window->contentItem(), u"Save"_s))
+        s.tapItem(save);
+    QTest::qWait(150);
+    CHECK(s.pos.checkInfo()[u"customer"_s].toMap()[u"name"_s].toString() == u"Maria"_s);
+    CHECK(s.pos.checkInfo()[u"label"_s].toString() == u"#1 Maria"_s);
+
+    // + Pager: a number pad, typed by touch.
+    QQuickItem *pager = Screen::findKey(s.window->contentItem(), u"+ Pager"_s);
+    REQUIRE(pager);
+    s.tapItem(pager);
+    QTest::qWait(200);
+    REQUIRE(keys->property("visible").toBool());
+    CHECK(keyboard()->property("numeric").toBool());
+    s.shot("truck-pager-numpad");
+    for (const char *k : {"1", "2"}) {
+        QQuickItem *key = Screen::findBy(qobject_cast<QQuickItem *>(keyboard()), "text", QString::fromLatin1(k));
+        REQUIRE(key);
+        s.tapItem(key);
+    }
+    QQuickItem *save = Screen::findKey(s.window->contentItem(), u"Save"_s);
+    REQUIRE(save);
+    s.tapItem(save);
+    QTest::qWait(150);
+    CHECK(s.pos.checkInfo()[u"pager"_s].toInt() == 12);
+}
+
 TEST_CASE("Manual: a food truck", "[.manual]")
 {
     const auto clean = [](Screen &s) {

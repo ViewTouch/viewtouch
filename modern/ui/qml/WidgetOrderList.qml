@@ -886,7 +886,7 @@ Item {
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9 * sheet.big
                 inputMethodHints: sheet.mode === "phone" ? Qt.ImhDialableCharactersOnly : sheet.mode === "pager" ? Qt.ImhDigitsOnly : Qt.ImhNone
-                placeholderText: sheet.mode === "name" ? qsTr("Name") : sheet.mode === "phone" ? qsTr("Phone") : sheet.mode === "pager" ? "12"
+                placeholderText: sheet.mode === "name" ? qsTr("Name") : sheet.mode === "phone" ? qsTr("Phone") : sheet.mode === "pager" ? qsTr("Number on the pager")
                                                                        : qsTr("Street, apartment, city")
                 onTextEdited: if (sheet.mode !== "address" && sheet.mode !== "pager" && text.trim().length >= 3) w.pos.findCustomers(text.trim())
                 onAccepted: sheet.saveWho()
