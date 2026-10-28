@@ -24,7 +24,7 @@ app::PosData truckData(bool askStaff = false)
 }
 
 // Rung in and paid in cash, as the counter does it all day.
-std::int64_t sell(app::PosService &pos, const QString &item = u"water"_s)
+std::int64_t sell(app::PosService &pos, const QString &item = u"soda"_s)
 {
     REQUIRE(pos.addItem(item));
     const std::int64_t id = pos.checkInfo()[u"id"_s].toLongLong();
@@ -50,7 +50,7 @@ TEST_CASE("Food truck: no login, the Counter takes orders and payments", "[truck
     CHECK_FALSE(pos.can(u"manager"_s));
 
     // An item rung in starts the order: called by its number, from 1.
-    REQUIRE(pos.addItem(u"water"_s));
+    REQUIRE(pos.addItem(u"soda"_s));
     CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 1);
     CHECK(pos.checkInfo()[u"label"_s].toString() == u"#1"_s);
     REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
@@ -78,7 +78,7 @@ TEST_CASE("Food truck: a name before Send or Pay, when the store says so", "[tru
     app::PosShared shared(d, nullptr);
     app::PosService pos(&shared, u"Truck"_s);
 
-    REQUIRE(pos.addItem(u"water"_s));
+    REQUIRE(pos.addItem(u"soda"_s));
     CHECK(pos.checkInfo()[u"needsWho"_s].toBool());
     CHECK_FALSE(pos.sendOrder());
     pos.openDrawerSession();
@@ -118,7 +118,7 @@ TEST_CASE("Food truck: a manager's PIN steps in; Log Out goes back to the counte
     app::PosShared shared(truckData(), nullptr);
     app::PosService pos(&shared, u"Truck"_s);
 
-    REQUIRE(pos.addItem(u"water"_s));
+    REQUIRE(pos.addItem(u"soda"_s));
     const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
 
     REQUIRE(pos.loginWithPin(u"1234"_s));
@@ -188,17 +188,24 @@ TEST_CASE("Food truck: switched on and off in Store Settings, or for one screen"
     CHECK_FALSE(truck.loggedIn());
 
     // One screen only (a restaurant's truck).
-    QVariantMap t = front.adminRecords(u"terminals"_s).first().toMap();
-    REQUIRE(t[u"name"_s].toString() == u"Truck"_s);
+    const QVariantList terminals = front.adminRecords(u"terminals"_s);
+    int at = -1;
+    for (int i = 0; i < terminals.size(); ++i)
+        if (terminals[i].toMap()[u"name"_s] == u"Truck"_s)
+            at = i;
+    REQUIRE(at >= 0);
+    QVariantMap t = terminals[at].toMap();
     t[u"service"_s] = u"foodTruck"_s;
-    REQUIRE(front.adminSave(u"terminals"_s, 0, t));
+    REQUIRE(front.adminSave(u"terminals"_s, at, t));
     CHECK(truck.serviceMode() == u"foodTruck"_s);
     CHECK(truck.userName() == u"Counter"_s);
     CHECK(front.serviceMode() == u"restaurant"_s);
 
     // Kept with the settings.
     const core::PosSettings again = app::settingsFromJson(app::toJson(shared.settings));
-    CHECK(again.terminals.front().service == "foodTruck");
+    CHECK(std::ranges::any_of(again.terminals, [](const core::TerminalConfig &x) {
+        return x.name == "Truck" && x.service == "foodTruck";
+    }));
     CHECK(again.serviceMode.empty());
 }
 
@@ -214,10 +221,12 @@ TEST_CASE("Food truck screens: the menu first, Manager asks for a PIN", "[truck]
 
     CHECK(c.pageId() == u"index-lunch"_s);   // no login page
 
-    // The order screen's Manager button (where restaurants have Tables).
+    // The order screen's Orders button (where restaurants have Tables), and Manager there.
     REQUIRE(c.ruleShows(QJsonObject{{u"service"_s, u"foodTruck"_s}}));
     CHECK_FALSE(c.ruleShows(QJsonObject{{u"service"_s, u"restaurant,retail"_s}}));
-    c.activate(u"flow-manager"_s);
+    c.activate(u"flow-orders"_s);
+    CHECK(c.pageId() == u"truck-orders"_s);
+    c.activate(u"manager"_s);
     CHECK(c.pageId() == u"login"_s);
     for (const QChar d : u"1234"_s)
         pos.pinKey(QString(d));
@@ -229,7 +238,7 @@ TEST_CASE("Food truck screens: the menu first, Manager asks for a PIN", "[truck]
     CHECK(c.pageId() == u"index-lunch"_s);
 
     // A sale paid: the menu again, for the next one.
-    REQUIRE(pos.addItem(u"water"_s));
+    REQUIRE(pos.addItem(u"soda"_s));
     pos.openDrawerSession();
     REQUIRE(pos.tender(u"cash"_s));
     REQUIRE(pos.closeCheck());
@@ -251,4 +260,96 @@ TEST_CASE("Food truck: its kitchen screen stays on the kitchen", "[truck][ui]")
     emit shared.adminChanged();
     REQUIRE(pos.serviceInfo()[u"counter"_s].toBool());
     CHECK(c.pageId() == u"kitchen"_s);
+}
+
+TEST_CASE("Food truck: pagers, Ready and Picked Up at the window", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    std::vector<int> buzzed;
+    shared.sendPage = [&](int pager) { buzzed.push_back(pager); };
+    app::PosService pos(&shared, u"Truck"_s);
+    QSignalSpy notices(&pos, &app::PosService::notice);
+    const auto said = [&] {
+        QStringList out;
+        for (const QList<QVariant> &n : notices)
+            out << n.first().toString();
+        notices.clear();
+        return out;
+    };
+
+    // #1 Maria with pager 12, paid: waiting at the window.
+    REQUIRE(pos.addItem(u"caesar"_s));
+    CHECK_FALSE(pos.setPager(1000));
+    REQUIRE(pos.setPager(12));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+    const qint64 first = pos.checkInfo()[u"id"_s].toLongLong();
+    CHECK(pos.checkInfo()[u"pager"_s].toInt() == 12);
+    pos.openDrawerSession();
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+
+    // The next order can't have pager 12 while Maria has it.
+    REQUIRE(pos.addItem(u"soda"_s));
+    CHECK_FALSE(pos.setPager(12));
+    REQUIRE(pos.setPager(7));
+    REQUIRE(pos.sendOrder());   // not paid yet: on the list too
+
+    QVariantList orders = pos.truckOrders();
+    REQUIRE(orders.size() == 2);
+    CHECK(orders[0].toMap()[u"label"_s].toString() == u"#1 Maria"_s);
+    CHECK(orders[0].toMap()[u"pager"_s].toInt() == 12);
+    CHECK(orders[0].toMap()[u"paid"_s].toBool());
+    CHECK_FALSE(orders[1].toMap()[u"paid"_s].toBool());
+
+    // By hand (no transmitter set): the screen says which pager to buzz.
+    said();
+    REQUIRE(pos.orderReady(first));
+    CHECK(said().contains(u"#1 Maria is ready: buzz pager 12"_s));
+    CHECK(buzzed.empty());
+    orders = pos.truckOrders();
+    CHECK(orders.last().toMap()[u"ready"_s].toBool());   // called ones after those being made
+
+    // A transmitter on the network: Ready buzzes it (again: again).
+    shared.settings.pagerUrl = "http://192.168.1.50/page?n={pager}";
+    REQUIRE(pos.orderReady(first));
+    CHECK(buzzed == std::vector<int>{12});
+    CHECK(said().contains(u"#1 Maria is ready: pager 12 buzzed"_s));
+
+    // Picked up: off the list, and pager 12 is free again.
+    REQUIRE(pos.orderPickedUp(first));
+    CHECK(pos.truckOrders().size() == 1);
+    CHECK_FALSE(pos.orderReady(first));
+    CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 2);   // still on #2
+}
+
+TEST_CASE("Food truck: the transmitter's address is checked", "[truck]")
+{
+    app::PosShared shared(test::seedPosData(), nullptr);
+    app::PosService pos(&shared, u"Front"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QVariantMap store = pos.adminRecords(u"store"_s).first().toMap();
+    store[u"pagerUrl"_s] = u"192.168.1.50/page"_s;   // no http://, no {pager}
+    CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
+    store[u"pagerUrl"_s] = u"http://192.168.1.50/page?n={pager}"_s;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK(shared.settings.pagerUrl == "http://192.168.1.50/page?n={pager}");
+    CHECK(app::settingsFromJson(app::toJson(shared.settings)).pagerUrl == shared.settings.pagerUrl);
+}
+
+TEST_CASE("Setup guide: a food truck from the first page", "[truck]")
+{
+    app::PosData d = test::seedPosData();
+    d.settings.setupDone = false;
+    app::PosShared shared(d, nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK(pos.setupInfo()[u"serviceMode"_s].toString().isEmpty());
+    REQUIRE(pos.setupStore(u"Taco Wheels"_s, {}, u"foodTruck"_s));
+    CHECK(shared.settings.serviceMode == "foodTruck");
+    CHECK(pos.userName() == u"Morgan (Manager)"_s);   // the manager setting it up stays
+    pos.logout();
+    CHECK(pos.userName() == u"Counter"_s);           // then the counter, nobody to log in
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.setupStore(u"Taco Wheels"_s, {}));   // the name only: still a truck
+    CHECK(shared.settings.serviceMode == "foodTruck");
 }

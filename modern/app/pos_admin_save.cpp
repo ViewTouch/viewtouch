@@ -315,6 +315,13 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.truckAskStaff = record.value(u"truckAskStaff"_s).toBool();
         if (record.contains(u"truckNeedsName"_s))
             s_->settings.truckNeedsName = record.value(u"truckNeedsName"_s).toBool();
+        if (record.contains(u"pagerUrl"_s)) {
+            const QString url = record.value(u"pagerUrl"_s).toString().trimmed();
+            if (!url.isEmpty() && (!url.contains(u"{pager}"_s)
+                                   || !(url.startsWith(u"http://"_s, Qt::CaseInsensitive) || url.startsWith(u"https://"_s, Qt::CaseInsensitive))))
+                return fail(tr("Write the pager transmitter's address like http://192.168.1.50/page?n={pager}, or leave it empty."));
+            s_->settings.pagerUrl = ss(url);
+        }
         s_->settings.currencySymbol = ss(record.value(u"currencySymbol"_s).toString());
         s_->settings.receiptHeader = ss(record.value(u"receiptHeader"_s).toString());
         s_->settings.receiptFooter = ss(record.value(u"receiptFooter"_s).toString());

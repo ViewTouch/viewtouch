@@ -222,6 +222,9 @@ class PosSession : public QObject {
     // else's PIN on a food truck: back to the counter at Log Out), askStaff,
     // person (who's working, by name), needsName}.
     Q_PROPERTY(QVariantMap service READ serviceInfo NOTIFY sessionChanged)
+    // A food truck's orders sent and not yet picked up, oldest first: [{id,
+    // number, name, label, pager, minutes, ready, paid}].
+    Q_PROPERTY(QVariantList truckOrders READ truckOrders NOTIFY openChecksChanged)
     // This terminal's own look (Manager -> Terminals); empty: the store's.
     Q_PROPERTY(QString terminalLook READ terminalLook NOTIFY adminChanged)
     // This terminal's on-screen keyboard: "on", "off" or "" (automatic).
@@ -391,6 +394,7 @@ public:
     virtual QVariantMap pairingInfo() const = 0;
     virtual QString screenMode() const = 0;
     virtual QVariantMap serviceInfo() const = 0;
+    virtual QVariantList truckOrders() const = 0;
     virtual QString terminalLook() const = 0;
     virtual QString terminalKeyboard() const = 0;
     virtual QString terminalStartCategory() const = 0;
@@ -462,6 +466,9 @@ public:
     }
     Q_INVOKABLE void recallTicket() { invoke(QStringLiteral("recallTicket")); }
     Q_INVOKABLE void setCustomer(const QVariantMap &customer) { invoke(QStringLiteral("setCustomer"), {customer}); }
+    Q_INVOKABLE void setPager(int pager) { invoke(QStringLiteral("setPager"), {pager}); }
+    Q_INVOKABLE void orderReady(qint64 checkId) { invoke(QStringLiteral("orderReady"), {checkId}); }
+    Q_INVOKABLE void orderPickedUp(qint64 checkId) { invoke(QStringLiteral("orderPickedUp"), {checkId}); }
     Q_INVOKABLE void setSeat(int seat) { invoke(QStringLiteral("setSeat"), {seat}); }
     // Another check at this table (a guest paying on their own), made current.
     // How many of a line (0: the selected one); − / + (a sent line: + is a new line); Again.
@@ -568,7 +575,10 @@ public:
     Q_INVOKABLE void setDueAt(double at) { invoke(QStringLiteral("setDueAt"), {qint64(at)}); }
     Q_INVOKABLE void setKitchenStation(const QString &id) { invoke(QStringLiteral("setKitchenStation"), {id}); }
     // The setup guide's steps.
-    Q_INVOKABLE void setupStore(const QString &name, const QString &lines) { invoke(QStringLiteral("setupStore"), {name, lines}); }
+    Q_INVOKABLE void setupStore(const QString &name, const QString &lines, const QString &serviceMode = QString())
+    {
+        invoke(QStringLiteral("setupStore"), {name, lines, serviceMode});
+    }
     Q_INVOKABLE void setupLogo(const QString &ref, bool onReceipts) { invoke(QStringLiteral("setupLogo"), {ref, onReceipts}); }
     Q_INVOKABLE void setupTaxes(double food, double alcohol) { invoke(QStringLiteral("setupTaxes"), {food, alcohol}); }
     Q_INVOKABLE void setupTaxArea(const QString &zip) { invoke(QStringLiteral("setupTaxArea"), {zip}); }

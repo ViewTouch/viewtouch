@@ -71,6 +71,49 @@ TEST_CASE("Every seed page renders cleanly, running and editing", "[ui][pages]")
     CHECK(g_warnings == QStringList{});
 }
 
+TEST_CASE("A food truck's screens render cleanly with orders waiting", "[ui][pages][truck]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    test::RecordingSink sink;
+    app::PosData data = test::seedPosData();
+    data.settings.serviceMode = "foodTruck";
+    app::PosService pos(std::move(data), &sink);
+    LayoutController c(std::move(*layout));
+    c.setPos(&pos);
+    REQUIRE(pos.serviceInfo()[u"counter"_s].toBool());
+
+    // One order called, one being made with its name and pager on the check.
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.setPager(4));
+    REQUIRE(pos.sendOrder());
+    const qint64 first = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.releaseCheck();
+    REQUIRE(pos.orderReady(first));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+    REQUIRE(pos.setPager(12));
+    REQUIRE(pos.sendOrder());
+
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                 {u"width"_s, 1600}, {u"height"_s, 900}});
+    g_warnings.clear();
+    const QtMessageHandler previous = qInstallMessageHandler(collect);
+    engine.loadFromModule("ViewTouch", "Main");
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(50);   // the order screen, the check's + Name and + Pager
+    REQUIRE(c.showPage(u"truck-orders"_s));
+    QTest::qWait(50);
+    CHECK(pos.truckOrders().size() == 2);
+    c.setFormFactorOverride(u"phone"_s);
+    QTest::qWait(50);
+    qInstallMessageHandler(previous);
+    CHECK(g_warnings == QStringList{});
+}
+
 namespace {
 
 int countVisible(QQuickItem *root, const char *classPrefix)

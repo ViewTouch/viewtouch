@@ -24,6 +24,7 @@ Rectangle {
     property string foodTax: ""
     property string alcoholTax: ""
     property string zip: ""
+    property string serviceMode: "restaurant"
     property string chosenLook: ""
     property var addedItems: []
     Component.onCompleted: {
@@ -34,6 +35,7 @@ Rectangle {
         foodTax = String(info.foodTax ?? "")
         alcoholTax = String(info.alcoholTax ?? "")
         zip = info.zip ?? ""
+        serviceMode = info.serviceMode || "restaurant"
     }
     // The rates found for the ZIP code: into the fields (still changeable).
     Connections {
@@ -50,7 +52,7 @@ Rectangle {
     function next() {
         // Each step keeps what it set before moving on.
         switch (current) {
-        case "store": pos.setupStore(storeName, receiptLines); break
+        case "store": pos.setupStore(storeName, receiptLines, serviceMode); break
         case "logo": if (logoRef !== "") pos.setupLogo(logoRef, receiptLogo); break
         case "taxes": pos.setupTaxes(Number(foodTax) || 0, Number(alcoholTax) || 0); break
         case "done":
@@ -166,6 +168,27 @@ Rectangle {
                         font.pixelSize: 18
                         text: g.receiptLines
                         onTextChanged: g.receiptLines = text
+                    }
+                    // How it serves: a food truck opens straight to ordering, nobody logs in.
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Repeater {
+                            model: [["restaurant", qsTr("Restaurant"), qsTr("Tables, staff log in")],
+                                    ["foodTruck", qsTr("Food truck"), qsTr("No login: straight to ordering and paying")],
+                                    ["retail", qsTr("Retail"), qsTr("Staff log in, the items first")]]
+                            delegate: PosButton {
+                                required property var modelData
+                                objectName: "setupServe-" + modelData[0]
+                                implicitWidth: 240
+                                implicitHeight: 76
+                                font.pixelSize: 17
+                                text: modelData[1] + "\n" + modelData[2]
+                                highlighted: g.serviceMode === modelData[0]
+                                onClicked: g.serviceMode = modelData[0]
+                            }
+                        }
                     }
                     Item { Layout.fillHeight: true }
                 }

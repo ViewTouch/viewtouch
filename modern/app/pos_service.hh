@@ -286,6 +286,8 @@ public:
     QString imageFile(const QString &ref);
     // Texts a guest (set up by main when a texting service is configured).
     std::function<void(const QString &phone, const QString &message)> sendText;
+    // Buzzes a guest pager on the transmitter (PosSettings::pagerUrl); unset: by hand.
+    std::function<void(int pager)> sendPage;
     // Stripe, on the store's computer (net/stripe_api.cpp, set by main): a
     // card reader's connection token, and refunds. Each answers once,
     // with an error text when it didn't work.
@@ -437,7 +439,7 @@ signals:
     void staffChanged();
     void customersChanged();   // customers, gift cards, house accounts
     void networkChanged();     // a screen or the standby came or went; a printer worked or failed
-    void orderReady(const QString &label);   // a food truck's order is made: call it ("#27 Maria")
+    void orderReady(const QString &said);   // a food truck's order is made: "#27 Maria is ready: buzz pager 12"
 
 private:
     std::function<std::int64_t()> now_;
@@ -883,7 +885,7 @@ public:
     QVariantMap weighingInfo() const override;
     // The setup guide (managers): what's set so far, and each step.
     QVariantMap setupInfo() const override;
-    bool setupStore(const QString &name, const QString &receiptLines);
+    bool setupStore(const QString &name, const QString &receiptLines, const QString &serviceMode = QString());
     bool setupLogo(const QString &ref, bool onReceipts);
     bool setupTaxes(double foodPercent, double alcoholPercent);
     // The store's ZIP code: its state and the rates there (the next step can change them).
@@ -1052,6 +1054,13 @@ public:
     void applyServiceMode();
     // Who's working changes: the next PIN is theirs.
     bool switchCounterPerson();
+    // Guest pagers and the window: the pager handed out with the open order
+    // (0: none); an order made (Ready: called, its pager buzzed; again:
+    // buzzed again) and picked up (off the list).
+    bool setPager(int pager);
+    bool orderReady(qint64 checkId);
+    bool orderPickedUp(qint64 checkId);
+    QVariantList truckOrders() const override;
     // A picture the store uses (a menu item's photo, the display logo or a
     // slide), base64, for screens on other computers; empty for anything else.
     QString storeImage(const QString &path) const;
@@ -1340,6 +1349,7 @@ private:
     std::string counterUser_;
     QVariantMap serviceShown_;   // serviceInfo() as last told
     int nextOrderNumber() const;
+    void callOrder(core::Check &c);   // ready: the screens say so, the pager buzzes
     QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees

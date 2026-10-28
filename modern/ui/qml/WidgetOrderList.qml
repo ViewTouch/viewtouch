@@ -250,20 +250,22 @@ Item {
             Layout.preferredHeight: w.unit * 1.9 * Math.min(sheet.big, 1.5)
             spacing: w.unit * 0.25
             // Name, phone, (address,) and when it's wanted.
-            readonly property int keys: truck ? 1 : delivery ? 4 : 3
+            readonly property int keys: truck ? 2 : delivery ? 4 : 3
             readonly property real keyW: (width - spacing * (keys - 1)) / keys
             Repeater {
-                model: who.truck ? ["name"] : who.delivery ? ["name", "phone", "address"] : ["name", "phone"]
+                model: who.truck ? ["name", "pager"] : who.delivery ? ["name", "phone", "address"] : ["name", "phone"]
                 delegate: WidgetKey {
                     required property string modelData
                     objectName: "who-" + modelData
                     width: who.keyW; height: who.height
                     fontScale: 0.42
-                    readonly property string value: who.customer[modelData] ?? ""
+                    readonly property string value: modelData === "pager" ? ((w.check.pager ?? 0) > 0 ? qsTr("Pager %1").arg(w.check.pager) : "")
+                                                                          : who.customer[modelData] ?? ""
                     readonly property bool needed: value === "" && ((modelData === "name" && (!who.truck || (w.pos.service?.needsName ?? false)))
                                                                     || (modelData === "address" && who.delivery))
                     text: value !== "" ? value
-                        : modelData === "name" ? qsTr("+ Name") : modelData === "phone" ? qsTr("+ Phone") : qsTr("+ Address")
+                        : modelData === "name" ? qsTr("+ Name") : modelData === "phone" ? qsTr("+ Phone")
+                        : modelData === "pager" ? qsTr("+ Pager") : qsTr("+ Address")
                     baseColor: needed ? "#a86a12" : (keySt.keyFill ?? Ui.key)
                     onClicked: sheet.ask(modelData)
                 }
@@ -830,14 +832,20 @@ Item {
             w.pos.splitLine(checkId, all)
         }
         // Who the order is for: "name" | "phone" | "address".
-        readonly property bool asking: mode === "name" || mode === "phone" || mode === "address"
+        readonly property bool asking: mode === "name" || mode === "phone" || mode === "address" || mode === "pager"
         function ask(field) {
             mode = field
-            whoField.text = (w.check.customer ?? {})[field] ?? ""
+            whoField.text = field === "pager" ? ((w.check.pager ?? 0) > 0 ? String(w.check.pager) : "")
+                                              : (w.check.customer ?? {})[field] ?? ""
             whoField.selectAll()
             whoField.forceActiveFocus()
         }
         function saveWho() {
+            if (mode === "pager") {   // a food truck's: the guest's pager, by its number
+                mode = ""
+                w.pos.setPager(parseInt(whoField.text, 10) || 0)
+                return
+            }
             const c = Object.assign({}, w.check.customer ?? {})
             c[mode] = whoField.text
             mode = ""
@@ -859,6 +867,7 @@ Item {
                 text: sheet.mode === "name" ? qsTr("Name for the order")
                     : sheet.mode === "phone" ? qsTr("Their phone number")
                     : sheet.mode === "address" ? qsTr("Where to deliver it")
+                    : sheet.mode === "pager" ? qsTr("The pager's number (0: none)")
                     : sheet.mode === "move" ? qsTr("Move %1 to…").arg(w.pos.lines.find(l => l.selected)?.name ?? "")
                     : sheet.mode === "fire" ? qsTr("Fire course %1").arg(w.nextCourse)
                     : (w.check.label ?? "")
@@ -876,14 +885,14 @@ Item {
                 height: sheet.key
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9 * sheet.big
-                inputMethodHints: sheet.mode === "phone" ? Qt.ImhDialableCharactersOnly : Qt.ImhNone
-                placeholderText: sheet.mode === "name" ? qsTr("Name") : sheet.mode === "phone" ? qsTr("Phone")
+                inputMethodHints: sheet.mode === "phone" ? Qt.ImhDialableCharactersOnly : sheet.mode === "pager" ? Qt.ImhDigitsOnly : Qt.ImhNone
+                placeholderText: sheet.mode === "name" ? qsTr("Name") : sheet.mode === "phone" ? qsTr("Phone") : sheet.mode === "pager" ? "12"
                                                                        : qsTr("Street, apartment, city")
-                onTextEdited: if (sheet.mode !== "address" && text.trim().length >= 3) w.pos.findCustomers(text.trim())
+                onTextEdited: if (sheet.mode !== "address" && sheet.mode !== "pager" && text.trim().length >= 3) w.pos.findCustomers(text.trim())
                 onAccepted: sheet.saveWho()
             }
             Repeater {
-                model: sheet.asking && sheet.mode !== "address" && whoField.text.trim().length >= 3
+                model: sheet.asking && sheet.mode !== "address" && sheet.mode !== "pager" && whoField.text.trim().length >= 3
                        ? (w.pos.customers ?? []).slice(0, 3) : []
                 delegate: WidgetKey {
                     required property var modelData

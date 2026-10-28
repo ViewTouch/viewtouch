@@ -193,9 +193,9 @@ void PosService::connectShared()
 {
     // A food truck's screen runs as its counter: now, and when the settings change.
     connect(s_, &PosShared::adminChanged, this, &PosService::applyServiceMode);
-    connect(s_, &PosShared::orderReady, this, [this](const QString &label) {
+    connect(s_, &PosShared::orderReady, this, [this](const QString &said) {
         if (counterMode())
-            emit notice(tr("%1 is ready").arg(label));
+            emit notice(said);
     });
     applyServiceMode();
     // Price changes set for later: put on the menu when they're due.
@@ -2107,6 +2107,7 @@ QVariantMap PosService::checkInfo() const
         {u"needsWho"_s, !missingWho(*c).isEmpty()},
         {u"driver"_s, qs(c->driverName)},
         {u"orderNumber"_s, c->orderNumber},   // a food truck's order: called by it
+        {u"pager"_s, c->pager},
     };
 }
 

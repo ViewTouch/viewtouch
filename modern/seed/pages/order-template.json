@@ -49,7 +49,7 @@
       }
     },
     {
-      "id": "flow-manager",
+      "id": "flow-orders",
       "kind": "button",
       "rect": {
         "x": 16,
@@ -59,12 +59,12 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Manager",
+      "label": "Orders",
       "actions": [
         {
           "type": "jump",
           "mode": "push",
-          "role": "manager"
+          "page": "truck-orders"
         }
       ],
       "showWhen": {
@@ -546,13 +546,13 @@
         "w": 232,
         "h": 84
       },
-      "flow-manager": {
+      "flow-logout": {
         "x": 16,
         "y": 16,
         "w": 176,
         "h": 72
       },
-      "flow-logout": {
+      "flow-orders": {
         "x": 16,
         "y": 16,
         "w": 176,

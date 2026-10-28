@@ -1281,6 +1281,25 @@ int runStore(const Args &cli, const Options &o)
         postText(phone, message, QDateTime::currentMSecsSinceEpoch());
     };
 
+    // Guest pagers: the transmitter on the store's network buzzes one (a GET
+    // to its address with the pager's number in it). Failing, the screen
+    // says so: staff key it in on the transmitter instead.
+    shared->sendPage = [shared, &texting, &pos](int pager) {
+        const QString number = QString::number(pager);
+        const QUrl url(QString::fromStdString(shared->settings.pagerUrl).replace(u"{pager}"_s, number));
+        if (!url.isValid() || (url.scheme() != u"http" && url.scheme() != u"https"))
+            return;
+        QNetworkRequest request(url);
+        request.setTransferTimeout(5000);
+        QNetworkReply *reply = texting.get(request);
+        QObject::connect(reply, &QNetworkReply::finished, &pos, [reply, number, &pos] {
+            reply->deleteLater();
+            if (reply->error() != QNetworkReply::NoError)
+                say(pos, QCoreApplication::translate("main", "Pager %1 didn't buzz (%2): key it in on the transmitter.")
+                             .arg(number, reply->errorString()));
+        });
+    };
+
     // Factory reset from the Manager page: back up now, then leave; main
     // deletes the database once it is closed and starts again.
     if (havePosStore) {

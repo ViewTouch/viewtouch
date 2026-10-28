@@ -108,4 +108,139 @@ QString PosService::orderLabel(const Check &c) const
     return name.isEmpty() ? u"#%1"_s.arg(c.orderNumber) : u"#%1 %2"_s.arg(c.orderNumber).arg(name);
 }
 
+// --- the window: pagers, Ready, picked up ------------------------------------------
+
+namespace {
+
+Check *truckOrder(PosShared *s, std::int64_t id)
+{
+    if (auto it = s->open.find(id); it != s->open.end())
+        return it->second.orderNumber > 0 ? &it->second : nullptr;
+    for (Check &c : s->closedToday)
+        if (c.id == id)
+            return c.orderNumber > 0 ? &c : nullptr;
+    return nullptr;
+}
+
+// Waiting at the window: sent to the kitchen (or paid), not picked up yet.
+bool waiting(const Check &c)
+{
+    return c.orderNumber > 0 && !c.training && !c.pickedUpAt
+           && (c.status == CheckStatus::Closed || c.status == CheckStatus::Open)
+           && (c.status == CheckStatus::Closed || std::ranges::any_of(c.lines, [](const OrderLine &l) { return l.sent && !l.voided; }));
+}
+
+} // namespace
+
+bool PosService::setPager(int pager)
+{
+    if (!require(perm::Order, tr("Handing out a pager")))
+        return false;
+    Check *c = current();
+    if (!c || c->orderNumber == 0)
+        return fail(tr("Pagers go with a food truck's orders."));
+    if (pager < 0 || pager > 999)
+        return fail(tr("Pagers are numbered 1 to 999."));
+    if (pager > 0) {
+        const auto out = [&](const Check &o) { return o.id != c->id && o.pager == pager && !o.pickedUpAt && !o.training; };
+        for (const auto &[id, o] : s_->open)
+            if (out(o))
+                return fail(tr("Pager %1 is still out with %2.").arg(pager).arg(qs(o.label)));
+        for (const Check &o : s_->closedToday)
+            if (out(o))
+                return fail(tr("Pager %1 is still out with %2.").arg(pager).arg(qs(o.label)));
+    }
+    c->pager = pager;
+    changed(*c);
+    return true;
+}
+
+void PosService::callOrder(Check &c)
+{
+    if (!c.readyAt)
+        c.readyAt = now();
+    if (s_->sink)
+        s_->sink->saveCheck(c);
+    emit s_->checksChanged();
+    const QString label = qs(c.label);
+    QString said = tr("%1 is ready").arg(label);
+    if (c.pager > 0) {
+        const bool buzzes = !s_->settings.pagerUrl.empty() && s_->sendPage;
+        if (buzzes)
+            s_->sendPage(c.pager);
+        said = buzzes ? tr("%1 is ready: pager %2 buzzed").arg(label).arg(c.pager)
+                      : tr("%1 is ready: buzz pager %2").arg(label).arg(c.pager);
+    }
+    emit s_->orderReady(said);
+    if (!counterMode())
+        emit notice(said);   // said here too (the kitchen's screen, a restaurant's)
+}
+
+bool PosService::orderReady(qint64 checkId)
+{
+    if (!require(perm::Order, tr("Calling an order")))
+        return false;
+    Check *c = truckOrder(s_, checkId);
+    if (!c || c->pickedUpAt)
+        return fail(tr("That order isn't waiting."));
+    callOrder(*c);   // again: buzzes the pager again
+    return true;
+}
+
+bool PosService::orderPickedUp(qint64 checkId)
+{
+    if (!require(perm::Order, tr("Handing out an order")))
+        return false;
+    Check *c = truckOrder(s_, checkId);
+    if (!c || c->pickedUpAt)
+        return fail(tr("That order isn't waiting."));
+    c->pickedUpAt = now();
+    if (!c->readyAt)
+        c->readyAt = c->pickedUpAt;
+    if (s_->sink)
+        s_->sink->saveCheck(*c);
+    emit s_->checksChanged();
+    emit notice(c->pager > 0 ? tr("%1 picked up: pager %2 is back").arg(qs(c->label)).arg(c->pager)
+                             : tr("%1 picked up").arg(qs(c->label)));
+    return true;
+}
+
+QVariantList PosService::truckOrders() const
+{
+    std::vector<const Check *> list;
+    for (const auto &[id, c] : s_->open)
+        if (waiting(c))
+            list.push_back(&c);
+    for (const Check &c : s_->closedToday)
+        if (waiting(c))
+            list.push_back(&c);
+    // Still being made first (oldest on top), then those called, waiting for their guest.
+    const auto sentAt = [](const Check *c) {
+        std::int64_t first = 0;
+        for (const OrderLine &l : c->lines)
+            if (l.sent && !l.voided && (!first || l.sentAt < first))
+                first = l.sentAt;
+        return first ? first : c->closedAt ? c->closedAt : c->openedAt;
+    };
+    std::ranges::sort(list, [&](const Check *a, const Check *b) {
+        if ((a->readyAt != 0) != (b->readyAt != 0))
+            return a->readyAt == 0;
+        return sentAt(a) != sentAt(b) ? sentAt(a) < sentAt(b) : a->orderNumber < b->orderNumber;
+    });
+    QVariantList out;
+    const std::int64_t t = now();
+    for (const Check *c : list) {
+        QStringList items;
+        for (const OrderLine &l : c->lines)
+            if (!l.voided && !l.isComment())
+                items << (l.quantity > 1 ? u"%1 %2"_s.arg(l.quantity).arg(qs(l.name)) : qs(l.name));
+        out.append(QVariantMap{{u"id"_s, qint64(c->id)}, {u"number"_s, c->orderNumber},
+                               {u"name"_s, qs(c->customer.name)}, {u"label"_s, qs(c->label)}, {u"pager"_s, c->pager},
+                               {u"items"_s, items.join(u", "_s)},
+                               {u"minutes"_s, int((t - sentAt(c)) / 60'000)}, {u"ready"_s, c->readyAt != 0},
+                               {u"paid"_s, c->status == CheckStatus::Closed}});
+    }
+    return out;
+}
+
 } // namespace vt::app

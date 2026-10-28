@@ -157,6 +157,10 @@ struct PosSettings {
     // order needs a name before Send or Pay (it's called by its number too).
     bool truckAskStaff = false;
     bool truckNeedsName = false;
+    // Guest pagers: the transmitter's web address, {pager} where the pager's
+    // number goes (http://192.168.1.50/page?n={pager}); empty: staff page
+    // by hand on the transmitter's keypad (the screen says which).
+    std::string pagerUrl;
     std::string currencySymbol = "$";
     // Colors the store mixed itself (custom colors), the newest first.
     std::vector<std::string> customColors;
