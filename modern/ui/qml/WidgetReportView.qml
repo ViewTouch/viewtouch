@@ -238,11 +238,17 @@ Item {
             Item { Layout.fillWidth: true }
         }
 
-        RowLayout {
+        // A phone: ◀ the day ▶ on one row, Print / CSV / PDF on the next (side by
+        // side there was no room left for the day's name).
+        GridLayout {
+            id: dayBar
+            readonly property real rowH: Math.max(w.unit * 2.4, w.zone ? w.zone.touch(46) : 0)
+            readonly property bool stacked: w.narrow && w.period === "day" && !w.forecasting
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(w.unit * 2.4, w.zone ? w.zone.touch(46) : 0)
             Layout.fillHeight: false
-            spacing: w.unit * 0.3
+            columns: stacked ? 3 : 99
+            columnSpacing: w.unit * 0.3
+            rowSpacing: w.unit * 0.3
             Text {
                 visible: w.period !== "day" || w.forecasting
                 Layout.fillWidth: true
@@ -252,12 +258,14 @@ Item {
                 color: w.ink
                 font.family: w.face
                 font.pixelSize: w.unit
+                fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
             }
             WidgetKey {
                 visible: w.period === "day" && !w.forecasting
                 Layout.preferredWidth: w.unit * 3
-                Layout.fillHeight: true
+                Layout.preferredHeight: dayBar.rowH
                 text: "◀"
                 baseColor: w.dayIndex < w.days.length - 1 ? Ui.key : "#23282f"
                 onClicked: if (w.dayIndex < w.days.length - 1) w.dayIndex++
@@ -270,12 +278,14 @@ Item {
                 color: w.ink
                 font.family: w.face
                 font.pixelSize: w.unit
+                fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
             }
             WidgetKey {
                 visible: w.period === "day" && !w.forecasting
                 Layout.preferredWidth: w.unit * 3
-                Layout.fillHeight: true
+                Layout.preferredHeight: dayBar.rowH
                 text: "▶"
                 baseColor: w.dayIndex > 0 ? Ui.key : "#23282f"
                 onClicked: if (w.dayIndex > 0) w.dayIndex--
@@ -283,21 +293,24 @@ Item {
             WidgetKey {
                 visible: w.period === "day" || w.forecasting
                 Layout.preferredWidth: w.unit * 5
-                Layout.fillHeight: true
+                Layout.fillWidth: dayBar.stacked
+                Layout.preferredHeight: dayBar.rowH
                 text: qsTr("Print")
                 fontScale: 0.36
                 onClicked: w.pos.printReport(w.reportId, w.day.id)
             }
             WidgetKey {
                 Layout.preferredWidth: w.unit * 4
-                Layout.fillHeight: true
+                Layout.fillWidth: dayBar.stacked
+                Layout.preferredHeight: dayBar.rowH
                 text: "CSV"
                 fontScale: 0.36
                 onClicked: w.zone.controller.exportReport(w.report, "csv")
             }
             WidgetKey {
                 Layout.preferredWidth: w.unit * 4
-                Layout.fillHeight: true
+                Layout.fillWidth: dayBar.stacked
+                Layout.preferredHeight: dayBar.rowH
                 text: "PDF"
                 fontScale: 0.36
                 onClicked: w.zone.controller.exportReport(w.report, "pdf")

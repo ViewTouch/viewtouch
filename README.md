@@ -11,7 +11,7 @@
 [![Linux · Raspberry Pi · Android](https://img.shields.io/badge/runs%20on-Linux%20%C2%B7%20Raspberry%20Pi%20%C2%B7%20Android-555)](#get-started)
 [![Discord](https://img.shields.io/badge/chat-Discord-5865f2)](https://discord.com/invite/ySmH2U2Mzb)
 
-**[Download](https://github.com/ViewTouch/viewtouch/releases/latest)** · **[User manual (PDF)](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · **[Developer README](modern/README.md)** · **[Website](http://www.viewtouch.com)**
+**[Download](https://github.com/ViewTouch/viewtouch/releases/latest)** · **[User manual (PDF)](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.10/ViewTouch-User-Manual.pdf)** · **[Developer README](modern/README.md)** · **[Website](http://www.viewtouch.com)**
 
 *ViewTouch is a registered trademark in the USA*
 
@@ -173,7 +173,7 @@ sudo vtmodern-setup server      # keeps the data, no screen (back office)
 sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a code from Manager → Terminals)
 ```
 
-Screens start full screen at boot, with no way out for staff. Printers, backups, the standby server, the self-order kiosk, food trucks and everything else are in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)**. How it's built is in the **[developer README](modern/README.md)**.
+Screens start full screen at boot, with no way out for staff. Printers, backups, the standby server, the self-order kiosk, food trucks and everything else are in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.10/ViewTouch-User-Manual.pdf)**. How it's built is in the **[developer README](modern/README.md)**.
 
 **Card payments.** ViewTouch can take cards through Stripe card readers, but this is optional and off to start. It hasn't been tried yet on a real Stripe reader. Until it has, take cards on your processor's own terminal and ring them up in ViewTouch as Credit Card. Card numbers then never touch ViewTouch.
 

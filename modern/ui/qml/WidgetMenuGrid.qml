@@ -286,6 +286,9 @@ Item {
                                     font.family: railKey.keySt.keyFont ?? w.face
                                     font.pixelSize: railList.keyH * 0.36
                                     font.bold: true
+                                    // "Platos de desayuno" on a small screen: smaller before "…" (one line: the rows stay even)
+                                    fontSizeMode: Text.HorizontalFit
+                                    minimumPixelSize: Math.round(font.pixelSize * 0.55)
                                     elide: Text.ElideRight
                                 }
                             }

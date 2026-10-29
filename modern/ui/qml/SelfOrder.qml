@@ -529,7 +529,8 @@ Rectangle {
             }
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: Math.min(parent.width, k.u * 24)
+                // As wide as its words ("Touchez pour commander"), within the screen.
+                Layout.preferredWidth: Math.min(parent.width, Math.max(k.u * 24, welcomeWords.implicitWidth + k.u * 4))
                 Layout.preferredHeight: k.u * 5.5
                 radius: height / 2
                 color: k.accent
@@ -540,12 +541,17 @@ Rectangle {
                     NumberAnimation { from: 1.05; to: 1; duration: 900; easing.type: Easing.InOutQuad }
                 }
                 Text {
+                    id: welcomeWords
                     font.family: k.face
                     anchors.centerIn: parent
+                    width: Math.min(implicitWidth, parent.width - k.u * 2)
+                    horizontalAlignment: Text.AlignHCenter
                     text: k.lookSet.welcome || qsTr("Touch to Order")
                     color: k.textOn(k.accent)
                     font.pixelSize: k.u * 2
                     font.bold: true
+                    fontSizeMode: Text.HorizontalFit
+                    minimumPixelSize: Math.round(k.u * 1.2)
                 }
             }
         }

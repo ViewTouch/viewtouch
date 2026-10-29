@@ -61,6 +61,8 @@ Item {
                         font.family: w.face
                         font.pixelSize: 34 * grid.big
                         font.bold: true
+                        fontSizeMode: Text.HorizontalFit   // a long name: smaller before "…"
+                        minimumPixelSize: Math.round(font.pixelSize * 0.6)
                         elide: Text.ElideRight
                     }
                     Rectangle {

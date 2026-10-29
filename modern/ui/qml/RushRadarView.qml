@@ -84,6 +84,8 @@ Item {
                     color: r.muted
                     font.family: r.face
                     font.pixelSize: r.unit * 0.75
+                    fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                    minimumPixelSize: Math.round(font.pixelSize * 0.7)
                     elide: Text.ElideRight
                 }
                 // The next half hour: a bar every 5 minutes, as tall as the wait.

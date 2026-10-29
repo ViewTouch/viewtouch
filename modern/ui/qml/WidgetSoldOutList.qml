@@ -49,6 +49,8 @@ Item {
                     font.family: w.face
                     font.pixelSize: 24 * grid.big
                     font.bold: true
+                    fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                    minimumPixelSize: Math.round(font.pixelSize * 0.7)
                     elide: Text.ElideRight
                 }
                 Text {
@@ -58,6 +60,8 @@ Item {
                     color: cell.modelData.available ? Ui.muted : "#ffd0d0"
                     font.family: w.face
                     font.pixelSize: 18 * grid.big
+                    fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                    minimumPixelSize: Math.round(font.pixelSize * 0.7)
                     elide: Text.ElideRight
                 }
             }
