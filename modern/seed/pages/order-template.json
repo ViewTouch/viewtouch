@@ -241,6 +241,30 @@
       }
     },
     {
+      "id": "flow-manager",
+      "kind": "button",
+      "rect": {
+        "x": 1486,
+        "y": 980,
+        "w": 202,
+        "h": 84
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "manager"
+        }
+      ],
+      "showWhen": {
+        "service": "retail",
+        "login": "manager"
+      }
+    },
+    {
       "id": "flow-pay",
       "kind": "button",
       "rect": {
@@ -560,6 +584,12 @@
         "y": 16,
         "w": 176,
         "h": 72
+      },
+      "flow-manager": {
+        "x": 1440,
+        "y": 980,
+        "w": 216,
+        "h": 84
       }
     }
   }

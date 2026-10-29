@@ -194,6 +194,16 @@
       }
     },
     {
+      "id": "flow-manager",
+      "shared": true,
+      "rect": {
+        "x": 370,
+        "y": 2134,
+        "w": 338,
+        "h": 130
+      }
+    },
+    {
       "id": "flow-pay",
       "shared": true,
       "rect": {

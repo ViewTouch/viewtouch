@@ -325,7 +325,7 @@ QString Layout::fingerprint(const Page &page)
 
 const QStringList &Layout::newStarterButtons()
 {
-    static const QStringList buttons = {u"check-options#tax-exempt"_s};
+    static const QStringList buttons = {u"check-options#tax-exempt"_s, u"order-template#flow-manager"_s};
     return buttons;
 }
 
@@ -335,10 +335,22 @@ namespace {
 // that's free; else into its column of buttons (the same x and width) after
 // the one above it in the starter, the column's buttons made shorter to fit
 // in the same space (no shorter than a finger: 64 units).
+// Shown only where a store serves another way (retail's buttons, a
+// restaurant's): never on the same screen, so in the same spot is fine.
+bool otherService(const Zone &a, const Zone &b)
+{
+    const auto modes = [](const Zone &z) {
+        const QString s = z.extra.value(u"showWhen").toObject().value(u"service").toString();
+        return s.isEmpty() ? QStringList{} : s.split(u',');
+    };
+    const QStringList ma = modes(a), mb = modes(b);
+    return !ma.isEmpty() && !mb.isEmpty() && std::ranges::none_of(ma, [&](const QString &m) { return mb.contains(m); });
+}
+
 bool placeNewButton(Page &mine, const Page &fresh, Zone zone)
 {
     const auto free = [&](const QRect &r) {
-        return std::ranges::none_of(mine.zones, [&](const Zone &z) { return z.rect.intersects(r); });
+        return std::ranges::none_of(mine.zones, [&](const Zone &z) { return z.rect.intersects(r) && !otherService(z, zone); });
     };
     if (free(zone.rect)) {
         mine.zones.append(zone);

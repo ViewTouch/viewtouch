@@ -571,7 +571,7 @@ TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
     };
     const QJsonObject tables = rule("order-template", "flow-tables"), orders = rule("order-template", "flow-orders"),
                       logOut = rule("order-template", "flow-logout"), back = rule("login", "back-to-order"),
-                      switchPerson = rule("login", "switch-person");
+                      switchPerson = rule("login", "switch-person"), manager = rule("order-template", "flow-manager");
 
     // A restaurant: Tables, no truck or retail buttons; logging in goes to the floor.
     {
@@ -586,6 +586,7 @@ TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
         CHECK(c.ruleShows(tables));
         CHECK_FALSE(c.ruleShows(orders));
         CHECK_FALSE(c.ruleShows(logOut));
+        CHECK_FALSE(c.ruleShows(manager));
         CHECK_FALSE(c.ruleShows(back));
         CHECK_FALSE(c.ruleShows(switchPerson));
     }
@@ -605,9 +606,16 @@ TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
         CHECK_FALSE(c.ruleShows(tables));
         CHECK_FALSE(c.ruleShows(orders));
         CHECK(c.ruleShows(logOut));
+        CHECK_FALSE(c.ruleShows(manager));   // a cashier: no way into the manager's pages
         c.activate(u"flow-logout"_s);
         CHECK_FALSE(pos.loggedIn());
         CHECK(c.pageId() == u"login"_s);
+        // A manager: Manager on the order page, to the manager's pages (and back to restaurant from there).
+        REQUIRE(pos.loginWithPin(u"1234"_s));
+        CHECK(c.pageId() == u"index-lunch"_s);
+        CHECK(c.ruleShows(manager));
+        c.activate(u"flow-manager"_s);
+        CHECK(c.pageId() == u"manager"_s);
     }
     // A truck: Orders; on the PIN page, Back to Ordering and Switch Person.
     {
