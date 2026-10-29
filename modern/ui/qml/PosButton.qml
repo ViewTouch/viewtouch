@@ -18,7 +18,9 @@ Button {
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         fontSizeMode: Text.HorizontalFit
+        // (A font sized in points shrinks by minimumPointSize: without it, it didn't.)
         minimumPixelSize: Math.max(9, b.font.pixelSize * 0.6)
+        minimumPointSize: Math.max(7, b.font.pointSize * 0.6)
     }
     background: Rectangle {
         implicitWidth: 64

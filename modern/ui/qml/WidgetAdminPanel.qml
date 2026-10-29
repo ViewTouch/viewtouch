@@ -215,13 +215,17 @@ Item {
             id: pairBar
             visible: w.panel === "terminals"
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
-            height: visible ? 64 : 0
+            // A phone: the two buttons one above the other ("Emparejar computadora de respaldo" fits).
+            readonly property bool stacked: w.narrow && !(w.pos && w.pos.pairing.active)
+            height: visible ? (stacked ? 112 : 64) : 0
             radius: 8
             color: w.pos && w.pos.pairing.active ? "#173a26" : Ui.panel
-            RowLayout {
+            GridLayout {
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 12
+                columns: pairBar.stacked ? 1 : 99
+                rowSpacing: 8
+                columnSpacing: 12
                 // Not on a phone: beside the two buttons it wrapped a word a line
                 // and ran over the list (the buttons say what they do).
                 Label {
@@ -254,8 +258,10 @@ Item {
                           + qsTr("works once, until %1").arg(w.pos ? (w.pos.pairing.until ?? "") : "")
                     opacity: 0.8
                 }
+                // On a phone the two are stacked, each the whole width.
                 PosButton {
                     Layout.minimumHeight: w.narrow ? 36 : 0
+                    Layout.fillWidth: w.narrow
                     text: w.pos && w.pos.pairing.active ? qsTr("Stop") : qsTr("Pair a Device")
                     highlighted: !(w.pos && w.pos.pairing.active)
                     onClicked: w.pos.pairing.active ? w.pos.stopPairing() : w.pos.startPairing(false)
@@ -264,6 +270,7 @@ Item {
                 PosButton {
                     visible: !(w.pos && w.pos.pairing.active)
                     Layout.minimumHeight: w.narrow ? 36 : 0
+                    Layout.fillWidth: w.narrow
                     text: qsTr("Pair a Standby Computer")
                     onClicked: w.pos.startPairing(true)
                 }
@@ -529,11 +536,14 @@ Item {
                     }
                 }
 
-                RowLayout {
+                // A row of buttons that wraps on a small screen (Printers has five:
+                // in a row they pushed the form past the screen's edge).
+                Flow {
                     // Not on About (nothing there to change), unless changes elsewhere wait.
                     visible: w.index !== -2 && !(w.sectioned && w.query === "" && w.sectionShown === "about" && !w.dirty)
                     Layout.fillWidth: true
                     Layout.fillHeight: false
+                    spacing: 6
                     PosButton {
                         objectName: "adminSave"
                         text: w.changes > 0 ? qsTr("Save %n change(s)", "", w.changes) : qsTr("Save")
@@ -561,7 +571,6 @@ Item {
                         text: qsTr("Test Print + Open Drawer")
                         onClicked: w.pos.testPrinter(w.draft.id, true)
                     }
-                    Item { Layout.fillWidth: true }
                     PosButton {
                         visible: !w.single && w.index >= 0
                         palette.button: w.armDelete ? "#a42828" : Ui.key   // red once it's armed

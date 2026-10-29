@@ -101,6 +101,8 @@ Item {
                 font.pixelSize: w.unit * 1.2
                 font.bold: true
                 Layout.fillWidth: true
+                fontSizeMode: Text.HorizontalFit   // "#1 Alexandria" on a narrow check: smaller before "…"
+                minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
             }
             // The drinks sent last, again (tabs and tables).
@@ -585,6 +587,9 @@ Item {
                             font.pixelSize: w.unit
                             font.italic: row.modelData.comment
                             font.strikeout: row.modelData.voided
+                            // A narrow check (a 7" screen): the name on two lines before "…" (a phone keeps one).
+                            wrapMode: Text.Wrap
+                            maximumLineCount: w.tapH > 0 ? 1 : 2
                             elide: Text.ElideRight
                         }
                         // Choices for an unsent item: amber while a required one is missing.

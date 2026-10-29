@@ -312,6 +312,8 @@ Flickable {
                                         horizontalAlignment: Text.AlignHCenter
                                         wrapMode: Text.WordWrap
                                         maximumLineCount: 2
+                                        fontSizeMode: Text.Fit   // one long word (Cheeseburger): smaller before "…"
+                                        minimumPixelSize: Math.round(font.pixelSize * 0.7)
                                         elide: Text.ElideRight
                                         text: cell.isGap ? "" : qsTranslate("Page", cell.modelData.name)
                                         color: cell.itemColor && !mb.markOnly ? StoreColors.ink(cell.itemColor) : (card.st.keyTextColor ?? "white")

@@ -324,3 +324,380 @@ TEST_CASE("Logging out closes the editor", "[pages][security]")
     CHECK(c.pageId() == u"login"_s);
     CHECK(c.statusText().contains(u"Edit mode closed"_s));
 }
+
+// --- an audit of every page's words (hidden: run with "[.audit]") ------------------------------
+//
+// VTM_AUDIT=<file> QT_QPA_PLATFORM=offscreen build/tests/vtm_tests "[.audit]"
+// Every page at several screen sizes, in Classic and Modern, in English and
+// the longer languages: words past their button's edge, cut short with "…",
+// or off the screen. One line each, with where it was seen.
+
+#include "app/i18n.hh"
+
+#include <QFile>
+#include <QJsonDocument>
+#include <map>
+#include <set>
+
+namespace {
+
+struct Finding {
+    QString kind;   // "outside", "cut", "offscreen"
+    QString page;
+    QString text;
+};
+
+bool isText(const QQuickItem *i)
+{
+    return QByteArray(i->metaObject()->className()).startsWith("QQuickText")
+           && !QByteArray(i->metaObject()->className()).startsWith("QQuickTextInput")
+           && !QByteArray(i->metaObject()->className()).startsWith("QQuickTextEdit");
+}
+
+bool scrolls(const QQuickItem *i)
+{
+    for (const QQuickItem *p = i->parentItem(); p; p = p->parentItem()) {
+        const QByteArray c = p->metaObject()->className();
+        if (c.contains("Flickable") || c.contains("ListView") || c.contains("GridView") || c.contains("PathView"))
+            return true;
+    }
+    return false;
+}
+
+qreal opacityOf(const QQuickItem *i)
+{
+    qreal o = 1;
+    for (; i; i = i->parentItem())
+        o *= i->opacity();
+    return o;
+}
+
+// The box a text belongs in: the nearest filled or bordered rectangle (a button, a card).
+const QQuickItem *boxOf(const QQuickItem *t)
+{
+    for (const QQuickItem *p = t->parentItem(); p; p = p->parentItem()) {
+        if (p->width() <= 0 || p->height() <= 0)
+            continue;
+        if (QByteArray(p->metaObject()->className()).startsWith("QQuickRectangle")) {
+            const QColor fill = p->property("color").value<QColor>();
+            const QObject *border = qvariant_cast<QObject *>(p->property("border"));
+            const bool edged = border && border->property("width").toReal() > 0;
+            if (fill.alpha() > 0 || edged)
+                return p;
+        }
+        if (QByteArray(p->metaObject()->className()).contains("Window"))
+            return nullptr;
+    }
+    return nullptr;
+}
+
+void auditTexts(QQuickItem *root, QQuickWindow *window, const QString &page, std::vector<Finding> &out)
+{
+    for (QQuickItem *i : root->childItems()) {
+        if (!i->isVisible() || opacityOf(i) < 0.05)
+            continue;
+        if (isText(i) && !i->property("text").toString().trimmed().isEmpty() && i->width() > 0 && i->height() > 0) {
+            const QString text = i->property("text").toString().simplified().left(80);
+            const qreal cw = i->property("contentWidth").toReal(), ch = i->property("contentHeight").toReal();
+            if (i->property("truncated").toBool()) {
+                out.push_back({u"cut"_s, page, text});
+            } else {
+                // Where the words are painted (the text box, moved by its alignment).
+                const int h = i->property("horizontalAlignment").toInt(), v = i->property("verticalAlignment").toInt();
+                const qreal x = h == Qt::AlignHCenter ? (i->width() - cw) / 2 : h == Qt::AlignRight ? i->width() - cw : 0;
+                const qreal y = v == Qt::AlignVCenter ? (i->height() - ch) / 2 : v == Qt::AlignBottom ? i->height() - ch : 0;
+                const QRectF painted = i->mapRectToScene(QRectF(x, y, cw, ch)).adjusted(1, 1, -1, -1);
+                if (const QQuickItem *box = boxOf(i)) {
+                    const QRectF edge = box->mapRectToScene(QRectF(0, 0, box->width(), box->height())).adjusted(-2, -2, 2, 2);
+                    // In a scrolled list only sideways (rows go past the bottom while scrolling).
+                    const bool sideways = painted.left() < edge.left() || painted.right() > edge.right();
+                    const bool upright = painted.top() < edge.top() || painted.bottom() > edge.bottom();
+                    if (sideways || (upright && !scrolls(i)))
+                        out.push_back({u"outside"_s, page, text});
+                }
+                if (!scrolls(i) && (painted.left() < -2 || painted.right() > window->width() + 2))
+                    out.push_back({u"offscreen"_s, page, text});
+            }
+        }
+        auditTexts(i, window, page, out);
+    }
+}
+
+} // namespace
+
+TEST_CASE("Audit: words inside their buttons on every page, size, style and language", "[.audit]")
+{
+    const QByteArray reportFile = qgetenv("VTM_AUDIT");
+    struct Setup { int w, h; const char *form; };
+    const Setup sizes[] = {{1600, 900, "standard"}, {1280, 800, "standard"}, {1024, 600, "standard"},
+                           {800, 480, "standard"}, {540, 1080, "phone"}};
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    i18n::install();
+
+    // finding -> where (style, size, language)
+    std::map<std::tuple<QString, QString, QString>, std::set<QString>> found;
+    g_warnings.clear();
+    for (const char *style : {"classic", "modern"}) {
+        for (const Setup &size : sizes) {
+            for (const char *lang : {"en", "es", "fr", "pt"}) {
+                auto layout = vt::test::loadTestLayout();
+                REQUIRE(layout);
+                if (QByteArray(style) == "modern")
+                    REQUIRE(layout->useStyle(u"modern"_s, modernTheme));
+                QStringList pageIds;
+                for (const auto &p : layout->pages)
+                    if (p.kind != u"template" && p.kind != u"library" && p.variantOf.isEmpty())
+                        pageIds << p.id;
+                test::RecordingSink sink;
+                app::PosService pos(test::seedPosData(), &sink);
+                LayoutController c(std::move(*layout));
+                c.setFormFactorOverride(QString::fromLatin1(size.form));
+                c.setMealPeriod(u"lunch"_s);
+                c.setPos(&pos);
+                REQUIRE(pos.loginWithPin(u"1234"_s));
+                pos.addItem(u"classic-burger"_s);
+                pos.addItem(u"caesar"_s);
+                pos.addItem(u"soda"_s);
+                i18n::setLanguage(QString::fromLatin1(lang));
+
+                QQmlApplicationEngine engine;
+                engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                             {u"width"_s, size.w}, {u"height"_s, size.h}});
+                const QtMessageHandler previous = qInstallMessageHandler(collect);
+                engine.loadFromModule("ViewTouch", "Main");
+                auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+                REQUIRE(window);
+                REQUIRE(QTest::qWaitForWindowExposed(window));
+                engine.retranslate();
+                const QString where = u"%1 %2x%3 %4"_s.arg(QLatin1StringView(style)).arg(size.w).arg(size.h).arg(QLatin1StringView(lang));
+                for (const QString &id : pageIds) {
+                    if (!c.showPage(id))
+                        continue;
+                    QTest::qWait(30);
+                    std::vector<Finding> out;
+                    auditTexts(window->contentItem(), window, id, out);
+                    bool fresh = false;
+                    for (const Finding &x : out) {
+                        auto &seen = found[{x.kind, x.page, x.text}];
+                        fresh = fresh || seen.empty();
+                        seen.insert(where);
+                    }
+                    // VTM_AUDIT_SHOTS=<dir>: a picture of each page the first time it shows something
+                    // (and of the pages in VTM_AUDIT_PAGES, "reports,admin-terminals", always).
+                    if (qEnvironmentVariable("VTM_AUDIT_PAGES").split(u',').contains(id))
+                        fresh = true;
+                    if (const QByteArray shots = qgetenv("VTM_AUDIT_SHOTS"); fresh && !shots.isEmpty())
+                        window->grabWindow().save(QString::fromLocal8Bit(shots) + u'/' + id + u' ' + where + u".png"_s);
+                }
+                qInstallMessageHandler(previous);
+            }
+        }
+    }
+    i18n::setLanguage(u"en"_s);
+
+    QStringList lines;
+    for (const QString &warning : QSet<QString>(g_warnings.begin(), g_warnings.end()))
+        lines << u"warning\t\t"_s + warning.left(200);
+    for (const auto &[key, wheres] : found) {
+        const auto &[kind, page, text] = key;
+        QStringList w(wheres.begin(), wheres.end());
+        lines << u"%1\t%2\t%3\t%4 setups: %5"_s.arg(kind, page, text).arg(w.size()).arg(w.mid(0, 4).join(u", "_s));
+    }
+    lines.sort();
+    if (!reportFile.isEmpty()) {
+        QFile out(QString::fromLocal8Bit(reportFile));
+        REQUIRE(out.open(QIODevice::WriteOnly | QIODevice::Text));
+        out.write(lines.join(u'\n').toUtf8());
+    }
+    UNSCOPED_INFO(lines.size() << " findings");
+    CHECK(true);
+}
+
+TEST_CASE("Audit: dialogs, forms, the setup guide, the kiosk and the customer display", "[.audit]")
+{
+    const QByteArray reportFile = qgetenv("VTM_AUDIT_DIALOGS");
+    struct Setup { int w, h; const char *form; };
+    const Setup sizes[] = {{1600, 900, "standard"}, {1024, 600, "standard"}, {800, 480, "standard"}, {540, 1080, "phone"}};
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    i18n::install();
+    const std::function<QQuickItem *(QQuickItem *, const QString &)> named = [&](QQuickItem *r, const QString &name) -> QQuickItem * {
+        for (QQuickItem *i : r->childItems()) {
+            if (i->isVisible() && i->objectName() == name) return i;
+            if (QQuickItem *h = named(i, name)) return h;
+        }
+        return nullptr;
+    };
+    const std::function<QQuickItem *(QQuickItem *, const char *)> having = [&](QQuickItem *r, const char *property) -> QQuickItem * {
+        for (QQuickItem *i : r->childItems()) {
+            if (i->property(property).isValid()) return i;
+            if (QQuickItem *h = having(i, property)) return h;
+        }
+        return nullptr;
+    };
+
+    std::map<std::tuple<QString, QString, QString>, std::set<QString>> found;
+    g_warnings.clear();
+    for (const char *style : {"classic", "modern"}) {
+        for (const Setup &size : sizes) {
+            for (const char *lang : {"en", "es", "fr", "pt"}) {
+                const QString where = u"%1 %2x%3 %4"_s.arg(QLatin1StringView(style)).arg(size.w).arg(size.h).arg(QLatin1StringView(lang));
+                std::set<QString> shot;
+                const auto look = [&](QQuickWindow *window, const QString &what) {
+                    QTest::qWait(40);
+                    std::vector<Finding> out;
+                    auditTexts(window->contentItem(), window, what, out);
+                    bool fresh = false;
+                    for (const Finding &x : out) {
+                        auto &seen = found[{x.kind, x.page, x.text}];
+                        fresh = fresh || seen.empty();
+                        seen.insert(where);
+                    }
+                    if (qEnvironmentVariable("VTM_AUDIT_PAGES").split(u',').contains(what))
+                        fresh = true;
+                    if (const QByteArray shots = qgetenv("VTM_AUDIT_SHOTS"); fresh && !shots.isEmpty())
+                        window->grabWindow().save(QString::fromLocal8Bit(shots) + u'/' + what + u' ' + where + u".png"_s);
+                };
+                auto layout = vt::test::loadTestLayout();
+                REQUIRE(layout);
+                if (QByteArray(style) == "modern")
+                    REQUIRE(layout->useStyle(u"modern"_s, modernTheme));
+                QStringList adminPages;
+                for (const auto &p : layout->pages)
+                    if (p.variantOf.isEmpty() && std::ranges::any_of(p.zones, [](const layout::Zone &z) { return z.kind == u"adminPanel"; }))
+                        adminPages << p.id;
+                test::RecordingSink sink;
+                app::PosData data = test::seedPosData();
+                data.settings.setupDone = false;
+                app::PosService pos(std::move(data), &sink);
+                LayoutController c(std::move(*layout));
+                c.setFormFactorOverride(QString::fromLatin1(size.form));
+                c.setMealPeriod(u"lunch"_s);
+                c.setPos(&pos);
+                i18n::setLanguage(QString::fromLatin1(lang));
+                QQmlApplicationEngine engine;
+                engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                             {u"width"_s, size.w}, {u"height"_s, size.h}});
+                const QtMessageHandler previous = qInstallMessageHandler(collect);
+                engine.loadFromModule("ViewTouch", "Main");
+                auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+                REQUIRE(window);
+                REQUIRE(QTest::qWaitForWindowExposed(window));
+                engine.retranslate();
+
+                // The setup guide, each step (a manager's first login opens it).
+                REQUIRE(pos.loginWithPin(u"1234"_s));
+                QTest::qWait(60);
+                if (QQuickItem *guide = having(window->contentItem(), "steps")) {
+                    const int steps = guide->property("steps").toList().size();
+                    for (int i = 0; i < steps; ++i) {
+                        guide->setProperty("step", i);
+                        look(window, u"setup-guide-"_s + guide->property("steps").toList().value(i).toString());
+                    }
+                }
+                c.closeSetup();
+                pos.shared()->settings.setupDone = true;
+
+                // Each Manager list's first record, opened.
+                for (const QString &id : adminPages) {
+                    if (!c.showPage(id))
+                        continue;
+                    QTest::qWait(40);
+                    QQuickItem *list = named(window->contentItem(), u"adminList"_s);
+                    if (!list)
+                        continue;
+                    QQuickItem *row = nullptr;
+                    QMetaObject::invokeMethod(list, "itemAtIndex", Q_RETURN_ARG(QQuickItem *, row), Q_ARG(int, 0));
+                    if (!row)
+                        continue;
+                    QTest::mouseClick(window, Qt::LeftButton, {}, row->mapToScene(QPointF(row->width() / 2, row->height() / 2)).toPoint());
+                    look(window, u"form-"_s + id);
+                }
+
+                // Manager approval: a server voids a sent item.
+                pos.logout();
+                REQUIRE(pos.loginWithPin(u"1111"_s));
+                REQUIRE(c.showPage(u"index-lunch"_s));
+                pos.addItem(u"caesar"_s);
+                pos.sendOrder();
+                pos.voidItem();
+                look(window, u"approval"_s);
+                pos.cancelApproval();
+                pos.releaseCheck();
+
+                // A food truck: the order screen with a name and a pager, and Orders.
+                pos.logout();
+                pos.shared()->settings.serviceMode = "foodTruck";
+                emit pos.shared()->adminChanged();
+                pos.addItem(u"caesar"_s);
+                pos.setCustomer({{u"name"_s, u"Alexandria"_s}});
+                pos.setPager(12);
+                pos.sendOrder();
+                look(window, u"truck-order"_s);
+                pos.releaseCheck();
+                REQUIRE(c.showPage(u"truck-orders"_s));
+                look(window, u"truck-orders"_s);
+                pos.shared()->settings.serviceMode.clear();
+                emit pos.shared()->adminChanged();
+
+                // The self-order kiosk: welcome, the menu, the order, the number.
+                REQUIRE(pos.loginWithPin(u"1234"_s));
+                pos.enableSelfOrder();
+                QTest::qWait(60);
+                look(window, u"kiosk-welcome"_s);
+                pos.kioskStart(false);
+                pos.kioskAdd(u"caesar"_s);
+                pos.kioskAdd(u"soda"_s);
+                look(window, u"kiosk-menu"_s);
+                pos.kioskFinish({{u"name"_s, u"Alexandria"_s}});
+                look(window, u"kiosk-number"_s);
+                qInstallMessageHandler(previous);
+
+                // The customer display: between guests, an order, the tip, thank you.
+                {
+                    app::PosService guest(test::seedPosData(), nullptr);
+                    REQUIRE(guest.loginWithPin(u"2222"_s));
+                    QQmlApplicationEngine display;
+                    display.setInitialProperties({{u"pos"_s, QVariant::fromValue(static_cast<app::PosSession *>(&guest))}});
+                    display.loadFromModule("ViewTouch", "CustomerDisplayWindow");
+                    auto *dw = qobject_cast<QQuickWindow *>(display.rootObjects().value(0));
+                    REQUIRE(dw);
+                    dw->resize(size.w, size.h);
+                    REQUIRE(QTest::qWaitForWindowExposed(dw));
+                    display.retranslate();
+                    look(dw, u"display-idle"_s);
+                    guest.addItem(u"classic-burger"_s);
+                    guest.addItem(u"caesar"_s);
+                    look(dw, u"display-order"_s);
+                    guest.askForTip();
+                    look(dw, u"display-tip"_s);
+                    guest.openDrawerSession();
+                    guest.tender(u"cash"_s);
+                    guest.closeCheck();
+                    look(dw, u"display-thanks"_s);
+                }
+            }
+        }
+    }
+    i18n::setLanguage(u"en"_s);
+
+    QStringList lines;
+    for (const QString &warning : QSet<QString>(g_warnings.begin(), g_warnings.end()))
+        lines << u"warning\t\t"_s + warning.left(200);
+    for (const auto &[key, wheres] : found) {
+        const auto &[kind, page, text] = key;
+        QStringList w(wheres.begin(), wheres.end());
+        lines << u"%1\t%2\t%3\t%4 setups: %5"_s.arg(kind, page, text).arg(w.size()).arg(w.mid(0, 4).join(u", "_s));
+    }
+    lines.sort();
+    if (!reportFile.isEmpty()) {
+        QFile out(QString::fromLocal8Bit(reportFile));
+        REQUIRE(out.open(QIODevice::WriteOnly | QIODevice::Text));
+        out.write(lines.join(u'\n').toUtf8());
+    }
+    UNSCOPED_INFO(lines.size() << " findings");
+    CHECK(true);
+}

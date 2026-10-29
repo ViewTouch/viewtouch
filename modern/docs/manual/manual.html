@@ -26,7 +26,7 @@
 <div class="cover">
 <h1 class="first">ViewTouch</h1>
 <p style="font-size:18pt; color:#555">User Manual</p>
-<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.9 · October 2026</p>
+<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.10 · October 2026</p>
 <p class="shot"><img src="shots/m02-tables.png" width="520" height="292"></p>
 </div>
 
@@ -54,9 +54,26 @@
 </ol>
 
 <!-- ======================================================================= -->
+<h1>What's new in 0.10</h1>
+<ul>
+<li><b>Restaurant, food truck or retail:</b> the setup guide asks first; Store Settings → <b>How you serve</b> changes it any time, for the store or one screen (chapter 11).</li>
+<li><b>Food trucks:</b> nobody logs in: the screen opens on the menu, ready to ring up and take payment, and is ready again after each sale. One computer is enough; a kitchen screen is optional.
+<ul>
+<li>Each order is called by a number from #1 each day, and a name: <i>#27 Maria</i> on the screen, the kitchen screen, tickets and receipts.</li>
+<li><b>+ Pager</b> keeps the number of the pager handed to the guest. <b>Orders</b> lists what's being made and what's waiting: <b>Ready</b> says <i>#27 Maria is ready: buzz pager 12</i>, <b>Picked Up</b> frees the pager.</li>
+<li>Orders → <b>Manager</b> and a manager's PIN open the Manager screens; Log Out comes back to the counter.</li>
+<li>Optionally the screen asks who's working, for their sales and tips.</li>
+<li>The customer display shows <b>Now serving</b>: Ready and Preparing.</li>
+<li>A second screen that loses the main computer keeps selling, with order numbers of its own.</li>
+</ul></li>
+<li><b>Retail:</b> staff log in and start on the menu; a barcode scanned on any screen rings the item in; nothing goes to a kitchen.</li>
+<li><b>Words that fit, on every screen:</b> every page, form, the kiosk, the setup guide and the customer display were checked at five screen sizes (down to a 7" 800×480 touch screen and phones), in Classic and Modern, in English, Spanish, French and Portuguese. What didn't fit is fixed: buttons that ran off a phone's screen (Terminals), a Printers form wider than the screen, the kiosk's welcome button in French, report dates on phones, item names on a small screen's check (now on two lines), and labels now shrink a little before they're shortened with "…".</li>
+<li><b>Every screen by touch:</b> names, pagers and PINs come with the on-screen keyboard or number pad; nothing needs a keyboard or a mouse.</li>
+</ul>
+
+<!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
-<li><b>Food trucks and retail:</b> Store Settings → <b>How you serve</b>. A food truck opens straight to ordering and paying with nobody logged in, numbers each order (#27 Maria), keeps the number of the pager handed to the guest, and lists the orders to call on <b>Orders</b>; a manager's PIN opens the Manager screens. Retail keeps logins and starts on the menu (chapter 11).</li>
 <li><b>Classic or Modern:</b> Store Settings → Screens → <b>Style</b> gives every screen a second look: flat buttons with thin borders, calm colors and a modern font, the menu's categories in a column, Pay with <b>Exact</b>, <b>$20</b>… <b>$100</b> cash buttons, your open checks beside the tables, and on phones a short check that opens over the menu. Switch back to Classic any time (chapter 13).</li>
 <li><b>Phones and tablets update by themselves</b> from the store's computer while nobody is logged in on them; the next person to use one touches <b>Install</b> (chapter 11: Taxes, payment types, printers and terminals).</li>
 <li><b>On a phone:</b> smaller buttons so more of the menu and the check fit, the categories in one row to swipe, pages that fill the whole screen, messages from other screens in a strip above the page, every key on the check a finger tall, and a phone that stays connected when its screen goes off (chapter 1).</li>
@@ -866,7 +883,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <li><b>The store's state</b> (Staff hours): pick yours and its labor and gift card laws are set: daily overtime and double time (California: past 8 and 12 hours), California's seventh day in a row, when a meal break is due (California: by the 5th hour; the person is reminded at login half an hour before, Store Check shows who's late, and Reports → Labor lists late or missed meals, where California owes an hour's pay), a paid 10-minute rest break every 4 hours worked (California, Colorado, Kentucky, Minnesota, Nevada, Oregon and Washington; the person is reminded at login), and gift card balances to cash out. Breaks under 20 minutes always count as time worked (federal law). Federal overtime (past 40 hours a week) applies everywhere. Each can still be changed; these are the usual rules for restaurant staff, so check special cases with your accountant.</li>
 <li><b>Screens</b>: <b>Style</b> (Classic or Modern, chapter 13); <b>Dim the screen after</b>; <b>Log out idle screens after</b>; <b>Handhelds: ask for the PIN after the screen was off</b>; <b>Phones and tablets get updates by themselves</b> (Updating the tablets, below); <b>Mark tables seated longer than</b> (minutes: the table shows it on the floor plan).</li>
 <li><b>Fees on receipts</b>: an automatic gratuity says what it is and who gets it (<i>For 6+ guests; goes to the server.</i>), and the delivery fee says whether it goes to the driver (<b>The delivery fee goes to the driver</b>, off to start: <i>Store's fee, not the driver's tip.</i>). Put these charges on your menu too.</li>
-<li><b>About</b> (the last section): the version the store runs (with its build number), this screen's own version (a tablet can lag behind until it updates), the store's computer, where its data is kept and how big it is, the last backup, <b>Updates on this store</b> (each version it has run and when it arrived) and <b>Recent changes</b> (what the latest versions changed), and the license. The version's last number is the build: it goes up by itself with every new build (0.9.1283, 0.9.1284…).</li>
+<li><b>About</b> (the last section): the version the store runs (with its build number), this screen's own version (a tablet can lag behind until it updates), the store's computer, where its data is kept and how big it is, the last backup, <b>Updates on this store</b> (each version it has run and when it arrived) and <b>Recent changes</b> (what the latest versions changed), and the license. The version's last number is the build: it goes up by itself with every new build (0.10.1500, 0.10.1501…).</li>
 <li>What you change is marked <b>changed</b>, its section says how many, and the button says <b>Save 2 changes</b>. Nothing is kept until you touch it; <b>Undo changes</b> puts everything back. Leave the page without saving and your changes are still there when you come back.</li>
 </ul>
 <table cellpadding="4"><tr>

@@ -343,6 +343,8 @@ Item {
                 font.family: w.face
                 font.pixelSize: header.stacked ? (w.zone ? w.zone.touch(20) : 22) : Math.max(20, Math.min(40, w.width / 32))
                 font.bold: true
+                fontSizeMode: Text.HorizontalFit   // smaller before "…"
+                minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
             }
             WidgetKey {
