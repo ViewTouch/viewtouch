@@ -364,6 +364,30 @@ TEST_CASE("Starter update: a new starter button joins a page the store edited", 
     CHECK_FALSE(later.page(u"check-options"_s)->zone(u"tax-exempt"_s));
 }
 
+TEST_CASE("Starter update: retail's Manager button joins an order page the store edited", "[layout][starter]")
+{
+    const auto starter = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
+    REQUIRE(starter);
+    // The store's order page as it was before the button (and edited here).
+    Page old = *starter->page(u"order-template"_s);
+    old.zones.removeIf([](const Zone &z) { return z.id == u"flow-manager"_s; });
+    const QHash<QString, QString> installed{{u"order-template"_s, Layout::fingerprint(old)}};
+    for (Zone &z : old.zones)
+        if (z.id == u"flow-pay"_s)
+            z.label = u"Checkout"_s;   // edited here
+    Layout saved;
+    saved.pages = {old};
+    // Even a store from before buttons were tracked gets it.
+    const auto update = saved.updateFromStarter(*starter, {u"order-template"_s}, installed);
+    CHECK(update.buttonsAdded == QStringList{u"order-template#flow-manager"_s});
+    const Page &p = *saved.page(u"order-template"_s);
+    const Zone *manager = p.zone(u"flow-manager"_s);
+    REQUIRE(manager);
+    // Where Send is (retail has no Send): the two never show on the same screen.
+    CHECK(manager->rect == p.zone(u"flow-send"_s)->rect);
+    CHECK(p.zone(u"flow-pay"_s)->label == u"Checkout"_s);
+}
+
 TEST_CASE("Store style: Modern and back to Classic, the store's own theme changes kept in each", "[layout][style]")
 {
     auto l = Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
