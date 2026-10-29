@@ -48,6 +48,7 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastDeliveryId(data.lastDeliveryId)
     , images(std::move(data.images))
     , lastCheckId(data.lastCheckId)
+    , firstOrderNumber(data.firstOrderNumber)
     , lastPunchId(data.lastPunchId)
     , sink(sink)
     , lastDayId(data.lastDayId)
@@ -104,6 +105,8 @@ const Employee *PosShared::employee(const std::string &id) const
         return nullptr;
     if (id == kioskEmployee().id)
         return &kioskEmployee();
+    if (id == counterEmployee().id)
+        return &counterEmployee();
     if (id == maintainerEmployee().id)
         return &maintainerEmployee();
     for (const Employee &e : employees) {
@@ -132,6 +135,8 @@ const Employee &maintainerEmployee()
 
 QString PosService::nameOf(const Employee &e) const
 {
+    if (e.id == counterEmployee().id)
+        return tr("Counter");
     return e.id == maintainerEmployee().id ? tr("Maintainer") : qs(e.name);
 }
 
@@ -187,6 +192,13 @@ PosService::~PosService()
 
 void PosService::connectShared()
 {
+    // A food truck's screen runs as its counter: now, and when the settings change.
+    connect(s_, &PosShared::adminChanged, this, &PosService::applyServiceMode);
+    connect(s_, &PosShared::orderReady, this, [this](const QString &said) {
+        if (counterMode())
+            emit notice(said);
+    });
+    applyServiceMode();
     // Price changes set for later: put on the menu when they're due.
     priceClock_.setInterval(20'000);
     connect(&priceClock_, &QTimer::timeout, this, &PosService::applyDuePriceChanges);
@@ -785,6 +797,20 @@ bool PosService::loginWithPin(const QString &pin)
     if (!e)
         return fail(pinRefused(tr("That PIN is not recognized.")));
     userId_ = e->id;
+    if (counterMode()) {
+        if (counterUser_.empty() && s_->settings.truckAskStaff && e->id != maintainerEmployee().id) {
+            // Who's working: the truck's sales and tips are theirs until they switch.
+            counterUser_ = e->id;
+            if (const std::vector<Job> jobs = e->jobs(); !openPunch(e->id) && jobs.size() == 1 && scheduleCheck(*e).isEmpty())
+                punchIn(*e, jobs.front());
+        } else if (!counterUser_.empty() && e->id != counterUser_) {
+            // Stepping in (a manager, for the Manager screens): the order in
+            // progress stays open; Log Out goes back to the counter.
+            emit sessionChanged();
+            emit loggedInChanged(true);
+            return true;
+        }
+    }
     // A meal break the state requires, coming up (or late).
     if (const int due = s_->settings.mealBreakAfterHours; due > 0)
         for (const TimePunch &p : s_->punches)
@@ -822,6 +848,19 @@ void PosService::logout()
     }
     if (!user())
         return;
+    if (counterMode() && !counterUser_.empty() && userId_ != counterUser_) {
+        // Back to the counter from stepping in: the order in progress is still here.
+        userId_ = counterUser_;
+        pin_.clear();
+        approval_.clear();
+        approved_.reset();
+        clearEntry();
+        emit sessionChanged();
+        emit loggedInChanged(true);
+        return;
+    }
+    if (counterMode() && userId_ == counterEmployee().id && counterUser_ == userId_)
+        return;   // the Counter is always here (a manager's PIN steps in)
     // Their check, to pick up again when they're back (Switch User).
     const std::int64_t mine = currentId_;
     releaseCheck();
@@ -838,8 +877,12 @@ void PosService::logout()
     clearEntry();
     qualifier_ = Qualifier::None;
     emit qualifierChanged();
+    if (counterMode())
+        counterUser_.clear();   // who was working left: the next PIN says who works now
     emit sessionChanged();
     emit loggedInChanged(false);
+    if (counterMode())
+        applyServiceMode();     // nobody asked: the Counter again
 }
 
 TimePunch *PosService::openPunch(const std::string &employeeId)
@@ -1091,6 +1134,10 @@ bool PosService::startCheck(CheckType type)
         break;
     case CheckType::Quick:
         c.label = ss(tr("Quick %1").arg(c.id));
+        if (counterMode() && !c.training) {   // a food truck's: called by its number (and a name)
+            c.orderNumber = nextOrderNumber();
+            c.label = ss(orderLabel(c));
+        }
         break;
     case CheckType::Delivery:
         c.label = ss(tr("Delivery %1").arg(c.id));
@@ -1276,6 +1323,8 @@ bool PosService::addItem(const QString &idOrName)
         return true;
     } else {
         MenuItem priced = *item;   // the price for this meal period (dinner, happy hour...) and order type
+        if (serviceMode() == u"retail")
+            priced.kitchenHide = true;   // a shop: nothing for a kitchen
         priced.price = extra(item->priceFor(currentMealPeriod(), c.type == CheckType::Takeout, c.type == CheckType::Delivery));
         if (item->eventAt > 0)   // the ticket says when
             priced.name += " (" + ss(i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(item->eventAt),
@@ -2060,6 +2109,8 @@ QVariantMap PosService::checkInfo() const
         {u"promised"_s, c->promisedAt ? timeOfDay(c->promisedAt) : QString()},
         {u"needsWho"_s, !missingWho(*c).isEmpty()},
         {u"driver"_s, qs(c->driverName)},
+        {u"orderNumber"_s, c->orderNumber},   // a food truck's order: called by it
+        {u"pager"_s, c->pager},
     };
 }
 
@@ -2364,6 +2415,8 @@ bool PosService::setCustomer(const QVariantMap &customer)
         return fail(tr("No check is open."));
     c->customer = {ss(customer.value(u"name"_s).toString().trimmed()), ss(customer.value(u"phone"_s).toString().trimmed()),
                    ss(customer.value(u"address"_s).toString().trimmed()), ss(customer.value(u"note"_s).toString().trimmed())};
+    if (c->orderNumber > 0)   // a food truck's order: called by its number and the name
+        c->label = ss(orderLabel(*c));
     emit notice(tr("Customer saved"));
     changed(*c);
     return true;

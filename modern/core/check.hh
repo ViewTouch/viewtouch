@@ -304,6 +304,14 @@ struct Check {
     std::vector<std::string> coupons;     // promotions whose code was entered on it (their ids)
     CardHold hold;                        // a tab's card, held
     bool kiosk = false;               // a guest ordered it on the self-order kiosk
+    // Food truck: the number it's called by, counted from 1 each business day (0: none).
+    int orderNumber = 0;
+    // Food truck: the pager handed to the guest (0: none), when the order was
+    // called (made: the kitchen bumped it, or Ready at the window), and when
+    // it was picked up (off the Orders list).
+    int pager = 0;
+    std::int64_t readyAt = 0;
+    std::int64_t pickedUpAt = 0;
     // Taken on a screen while it couldn't reach the store's computer: its
     // id there, so it's taken in once (empty: made here).
     std::string offlineId;

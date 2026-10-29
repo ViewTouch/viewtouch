@@ -194,6 +194,7 @@ Item {
         if (r.checkType && (!open || p.check.type !== r.checkType)) return false
         if (r.mealPeriod && (!controller || controller.mealPeriod !== r.mealPeriod)) return false
         if (r.screen && (!controller || shownScreen !== r.screen)) return false
+        if (r.service && !r.service.split(",").includes((p && p.service && p.service.mode) || "restaurant")) return false
         return true
     }
     // Widgets with a working implementation (Widget<Kind>.qml); the rest
@@ -202,7 +203,7 @@ Item {
         "soldOutList", "orderList", "loginPad", "guestCount", "numPad",
         "paymentPanel", "checkList", "keyboard", "clock", "logoutPanel", "statusBar",
         "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "kitchenDisplay", "customerInfo",
-        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor", "floorPlan", "tableKey"]
+        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor", "floorPlan", "tableKey", "truckOrders"]
     readonly property bool hasWidget: isWidget && builtWidgets.includes(kind)
     readonly property bool interactive: zoneEnabled && behavior !== "passthrough"
                                         && (kind === "button" || kind === "image")

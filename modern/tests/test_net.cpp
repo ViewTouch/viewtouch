@@ -1461,3 +1461,114 @@ TEST_CASE("Store style: the hub switches the pages' theme and tells every screen
     s.style = "modern";
     CHECK(app::settingsFromJson(app::toJson(s)).style == "modern");
 }
+
+TEST_CASE("Remote terminal: a food truck screen opens as the counter; a manager steps in and back out", "[net][remote][truck]")
+{
+    Store store;
+    store.shared.settings.serviceMode = "foodTruck";
+    Screen truck(store.terminal(u"Truck"_s));
+    REQUIRE(waitFor([&] { return truck.remote->loggedIn(); }));
+    truck.settle();
+    CHECK(truck.remote->userName() == u"Counter"_s);
+    CHECK(waitFor([&] { return truck.c.pageId() == u"index-lunch"_s; }));
+
+    // An order: numbered, named, a pager; sent.
+    truck.remote->invoke(u"addItem"_s, {u"caesar"_s});
+    truck.settle();
+    REQUIRE(waitFor([&] { return truck.remote->checkInfo()[u"orderNumber"_s].toInt() == 1; }));
+    truck.remote->setCustomer({{u"name"_s, u"Maria"_s}});
+    truck.remote->setPager(12);
+    truck.tap(u"flow-send"_s);
+    REQUIRE(waitFor([&] { return truck.remote->truckOrders().size() == 1; }));
+    const QVariantMap order = truck.remote->truckOrders().first().toMap();
+    CHECK(order[u"label"_s].toString() == u"#1 Maria"_s);
+    CHECK(order[u"pager"_s].toInt() == 12);
+
+    // Orders -> Manager asks for a PIN; a manager's opens it.
+    truck.tap(u"flow-orders"_s);
+    CHECK(truck.c.pageId() == u"truck-orders"_s);
+    truck.tap(u"manager"_s);
+    REQUIRE(waitFor([&] { return truck.c.pageId() == u"login"_s; }));
+    truck.pin("1234");
+    REQUIRE(waitFor([&] { return truck.c.pageId() == u"manager"_s; }));
+    CHECK(truck.remote->userName() == u"Morgan (Manager)"_s);
+
+    // Log Out: the counter again, Maria's order still open, the menu.
+    truck.remote->invoke(u"logout"_s, {});
+    REQUIRE(waitFor([&] { return truck.remote->userName() == u"Counter"_s; }));
+    CHECK(waitFor([&] { return truck.c.pageId() == u"index-lunch"_s; }));
+    CHECK(truck.remote->checkInfo()[u"label"_s].toString() == u"#1 Maria"_s);
+
+    // Ready from the screen: called, its pager named.
+    QSignalSpy notices(truck.remote.get(), &net::RemoteSession::notice);
+    truck.remote->orderReady(truck.remote->checkInfo()[u"id"_s].toLongLong());
+    CHECK(waitFor([&] {
+        for (const QList<QVariant> &n : notices)
+            if (n.first().toString() == u"#1 Maria is ready: buzz pager 12"_s)
+                return true;
+        return false;
+    }));
+    CHECK(waitFor([&] { return truck.remote->truckOrders().first().toMap()[u"ready"_s].toBool(); }));
+}
+
+TEST_CASE("Working offline: a food truck's second screen keeps selling as the counter; its numbers don't clash", "[net][remote][offline][truck]")
+{
+    OfflineSide t;
+    t.store.shared.settings.serviceMode = "foodTruck";
+    t.store.shared.settings.cashMode = core::CashMode::ServerBank;
+    // The window (the store's computer) has sold #1 and #2 already.
+    PosService window(&t.store.shared, u"Window"_s);
+    REQUIRE(window.serviceInfo()[u"counter"_s].toBool());
+    for (int i = 0; i < 2; ++i) {
+        REQUIRE(window.addItem(u"soda"_s));
+        REQUIRE(window.tender(u"cash"_s));
+        REQUIRE(window.closeCheck());
+    }
+    t.connect();
+    REQUIRE(waitFor([&] { return t.h->remote->loggedIn(); }));
+    CHECK(t.h->remote->userName() == u"Counter"_s);
+
+    // The cable comes out: the second screen works on its own, still as the counter.
+    t.wifi.cut = true;
+    REQUIRE(waitFor([&] { return !t.h->remote->online(); }, 4000));
+    t.h->remote->workOffline();
+    REQUIRE(t.h->remote->offlineMode());
+    REQUIRE(waitFor([&] { return t.h->remote->loggedIn(); }));
+    CHECK(t.h->remote->userName() == u"Counter"_s);
+    t.h->c.orderItem(u"soda"_s);
+    t.h->settle();
+    REQUIRE(t.h->remote->hasCheck());
+    const int offlineNumber = t.h->remote->checkInfo()[u"orderNumber"_s].toInt();
+    CHECK(offlineNumber > 2);
+    t.h->remote->invoke(u"setCustomer"_s, {QVariantMap{{u"name"_s, u"Ana"_s}}});
+    t.h->remote->invoke(u"setPager"_s, {4});
+    t.h->remote->invoke(u"tender"_s, {u"cash"_s});
+    t.h->remote->invoke(u"closeCheck"_s);
+    t.h->settle();
+    CHECK_FALSE(t.h->remote->hasCheck());
+
+    // Meanwhile the window goes on: its next number isn't the one given offline.
+    REQUIRE(window.addItem(u"soda"_s));
+    const int windowNumber = window.checkInfo()[u"orderNumber"_s].toInt();
+    CHECK(windowNumber == 3);
+    CHECK(windowNumber != offlineNumber);
+    window.releaseCheck();
+
+    // Back: Ana's order reaches the store with her number, her name and her pager, on the Orders list.
+    t.wifi.cut = false;
+    REQUIRE(waitFor([&] { return t.h->remote->online(); }, 8000));
+    REQUIRE(waitFor([&] { return !t.h->remote->offlineMode(); }, 8000));
+    REQUIRE(waitFor([&] { return t.h->remote->offlinePending() == 0; }));
+    const core::Check *closed = t.takenIn(true);
+    REQUIRE(closed);
+    CHECK(closed->orderNumber == offlineNumber);
+    CHECK(closed->label == "#" + std::to_string(offlineNumber) + " Ana");
+    CHECK(closed->pager == 4);
+    CHECK(closed->serverName == "Counter");
+    bool listed = false;
+    for (const QVariant &o : window.truckOrders())
+        listed = listed || o.toMap()[u"number"_s].toInt() == offlineNumber;
+    CHECK(listed);
+    // And the second screen is the counter again, on the store's computer.
+    CHECK(waitFor([&] { return t.h->remote->userName() == u"Counter"_s; }));
+}

@@ -221,7 +221,7 @@ QStringList widgetKinds()
             u"soldOutList"_s, u"orderList"_s, u"loginPad"_s, u"guestCount"_s, u"checkList"_s,
             u"paymentPanel"_s, u"numPad"_s, u"keyboard"_s, u"splitCheck"_s, u"drawerPanel"_s,
             u"reportView"_s, u"endOfDay"_s, u"logoutPanel"_s, u"clock"_s, u"statusBar"_s,
-            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"stockCount"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s, u"tableKey"_s};
+            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"stockCount"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s, u"tableKey"_s, u"truckOrders"_s};
 }
 
 QStringList allKinds()
@@ -318,6 +318,9 @@ QJsonArray zoneFields(const QString &kind)
                     options({{"", "Any time"}, {"breakfast", "Breakfast"}, {"lunch", "Lunch"}, {"dinner", "Dinner"}})));
     out.append(with(field(u"showWhen.screen"_s, u"Screen"_s, u"enum"_s, when), u"options"_s,
                     options({{"", "Any"}, {"standard", "Standard screens"}, {"phone", "Phones"}})));
+    out.append(with(field(u"showWhen.service"_s, u"How the store serves"_s, u"enum"_s, when), u"options"_s,
+                    options({{"", "Any"}, {"restaurant", "Restaurant"}, {"foodTruck", "Food truck"}, {"retail", "Retail"},
+                             {"restaurant,retail", "Restaurant or retail"}, {"foodTruck,retail", "Food truck or retail"}})));
 
     // How phones lay it out when its page has no phone version of its own.
     const QString phones = u"On phones"_s;
@@ -499,7 +502,7 @@ QJsonArray actionTypes()
                             {"closeCheck", "Close check"}, {"removePayment", "Undo payment"},
                             {"noSale", "Open drawer (no sale)"}, {"openDrawerSession", "Start drawer (bank)"},
                             {"countDrawer", "Count drawer"}, {"endOfDay", "End of day"},
-                            {"login", "Log in"}, {"logout", "Log out"}, {"clockIn", "Clock in"},
+                            {"login", "Log in"}, {"logout", "Log out"}, {"switchCounterPerson", "Food truck: switch who's working"}, {"clockIn", "Clock in"},
                             {"clockOut", "Clock out"}, {"startCheck", "Start table check"},
                             {"startQuick", "Start quick check"}, {"startTakeout", "Start takeout"},
                             {"releaseCheck", "Put check away"}, {"newTableCheck", "Another check at this table"},

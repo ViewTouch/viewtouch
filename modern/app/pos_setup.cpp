@@ -39,7 +39,7 @@ QVariantMap PosService::setupInfo() const
             {u"receiptLogo"_s, s_->settings.receiptLogo}, {u"foodTax"_s, pct(s_->settings.tax.foodPpm)},
             {u"alcoholTax"_s, pct(s_->settings.tax.alcoholPpm)}, {u"families"_s, families}, {u"items"_s, items},
             {u"zip"_s, qs(s_->settings.storeZip)}, {u"taxArea"_s, s_->settings.storeZip.empty() ? QString() : taxAreaText(taxHere())},
-            {u"staff"_s, staff}, {u"samples"_s, samples}};
+            {u"staff"_s, staff}, {u"samples"_s, samples}, {u"serviceMode"_s, qs(s_->settings.serviceMode)}};
 }
 
 namespace {
@@ -52,14 +52,17 @@ QVariantMap withChanges(QVariantMap record, const QVariantMap &changes)
 }
 } // namespace
 
-bool PosService::setupStore(const QString &name, const QString &receiptLines)
+bool PosService::setupStore(const QString &name, const QString &receiptLines, const QString &serviceMode)
 {
     if (!require(perm::Manager, tr("Setting up the store")))
         return false;
     if (name.trimmed().isEmpty())
         return fail(tr("Type the store's name."));
     const QVariantMap store = adminRecords(u"store"_s).value(0).toMap();
-    return adminSave(u"store"_s, 0, withChanges(store, {{u"storeName"_s, name.trimmed()}, {u"receiptHeader"_s, receiptLines}}));
+    QVariantMap changes{{u"storeName"_s, name.trimmed()}, {u"receiptHeader"_s, receiptLines}};
+    if (!serviceMode.isEmpty())   // "restaurant", "foodTruck" or "retail"
+        changes.insert(u"serviceMode"_s, serviceMode);
+    return adminSave(u"store"_s, 0, withChanges(store, changes));
 }
 
 bool PosService::setupLogo(const QString &ref, bool onReceipts)

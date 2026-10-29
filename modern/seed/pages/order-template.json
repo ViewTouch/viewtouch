@@ -43,7 +43,55 @@
           "mode": "replace",
           "role": "tables"
         }
-      ]
+      ],
+      "showWhen": {
+        "service": "restaurant"
+      }
+    },
+    {
+      "id": "flow-orders",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 980,
+        "w": 202,
+        "h": 84
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Orders",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "truck-orders"
+        }
+      ],
+      "showWhen": {
+        "service": "foodTruck"
+      }
+    },
+    {
+      "id": "flow-logout",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 980,
+        "w": 202,
+        "h": 84
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ],
+      "showWhen": {
+        "service": "retail"
+      }
     },
     {
       "id": "flow-no",
@@ -187,7 +235,10 @@
           "fill": "#1f8a4c"
         }
       },
-      "hotkey": "s"
+      "hotkey": "s",
+      "showWhen": {
+        "service": "restaurant,foodTruck"
+      }
     },
     {
       "id": "flow-pay",
@@ -497,6 +548,18 @@
         "y": 980,
         "w": 232,
         "h": 84
+      },
+      "flow-logout": {
+        "x": 16,
+        "y": 16,
+        "w": 176,
+        "h": 72
+      },
+      "flow-orders": {
+        "x": 16,
+        "y": 16,
+        "w": 176,
+        "h": 72
       }
     }
   }

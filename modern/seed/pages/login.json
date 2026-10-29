@@ -171,6 +171,66 @@
           "fill": "#1f6f73"
         }
       }
+    },
+    {
+      "id": "back-to-order",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 620,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Back to Ordering",
+      "actions": [
+        {
+          "type": "command",
+          "name": "clearEntry"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      },
+      "showWhen": {
+        "login": "loggedIn",
+        "service": "foodTruck"
+      }
+    },
+    {
+      "id": "switch-person",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 750,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Switch Person",
+      "actions": [
+        {
+          "type": "command",
+          "name": "switchCounterPerson"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      },
+      "showWhen": {
+        "login": "loggedIn",
+        "service": "foodTruck"
+      }
     }
   ],
   "styleRects": {
@@ -228,6 +288,18 @@
         "y": 952,
         "w": 332,
         "h": 100
+      },
+      "back-to-order": {
+        "x": 80,
+        "y": 820,
+        "w": 520,
+        "h": 110
+      },
+      "switch-person": {
+        "x": 640,
+        "y": 620,
+        "w": 440,
+        "h": 110
       }
     }
   }

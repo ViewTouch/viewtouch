@@ -210,6 +210,12 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (!QStringList{QString(), u"standard"_s, u"phone"_s, u"selfOrder"_s, u"timeClock"_s}.contains(screen))
             return fail(tr("Choose the terminal's screen layout."));
         t.screen = ss(screen);
+        if (record.contains(u"service"_s)) {
+            const QString service = record.value(u"service"_s).toString();
+            if (!QStringList{QString(), u"restaurant"_s, u"foodTruck"_s, u"retail"_s}.contains(service))
+                return fail(tr("Choose how the screen serves."));
+            t.service = ss(service);
+        }
         t.look = ss(record.value(u"look"_s).toString().left(40));
         const QString keyboard = record.value(u"keyboard"_s).toString();
         if (!QStringList{QString(), u"on"_s, u"off"_s}.contains(keyboard))
@@ -299,6 +305,16 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (name.isEmpty())
             return fail(tr("The store needs a name."));
         s_->settings.storeName = ss(name);
+        if (record.contains(u"serviceMode"_s)) {
+            const QString mode = record.value(u"serviceMode"_s).toString();
+            if (!QStringList{QString(), u"restaurant"_s, u"foodTruck"_s, u"retail"_s}.contains(mode))
+                return fail(tr("Choose how the store serves."));
+            s_->settings.serviceMode = mode == u"restaurant" ? std::string() : ss(mode);
+        }
+        if (record.contains(u"truckAskStaff"_s))
+            s_->settings.truckAskStaff = record.value(u"truckAskStaff"_s).toBool();
+        if (record.contains(u"truckNeedsName"_s))
+            s_->settings.truckNeedsName = record.value(u"truckNeedsName"_s).toBool();
         s_->settings.currencySymbol = ss(record.value(u"currencySymbol"_s).toString());
         s_->settings.receiptHeader = ss(record.value(u"receiptHeader"_s).toString());
         s_->settings.receiptFooter = ss(record.value(u"receiptFooter"_s).toString());

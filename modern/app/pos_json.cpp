@@ -185,7 +185,7 @@ QJsonObject toJson(const Check &c)
             return QJsonValue(QJsonObject{{u"reference"_s, qs(c.hold.reference)}, {u"processor"_s, qs(c.hold.processor)},
                                           {u"brand"_s, qs(c.hold.cardBrand)}, {u"last4"_s, qs(c.hold.last4)},
                                           {u"amount"_s, qint64(c.hold.amount.cents())}, {u"at"_s, qint64(c.hold.at)}});
-        }()}, {u"kiosk"_s, c.kiosk}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
+        }()}, {u"kiosk"_s, c.kiosk}, {u"orderNumber"_s, c.orderNumber}, {u"pager"_s, c.pager}, {u"readyAt"_s, qint64(c.readyAt)}, {u"pickedUpAt"_s, qint64(c.pickedUpAt)}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
         {u"promisedAt"_s, qint64(c.promisedAt)},
         {u"refunds"_s, [&] {
              QJsonArray a;
@@ -294,6 +294,10 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.cashTip = Money::fromCents(i64(o.value(u"cashTipCents")));
     c.rush = o.value(u"rush").toBool();
     c.kiosk = o.value(u"kiosk").toBool();
+    c.orderNumber = o.value(u"orderNumber").toInt();
+    c.pager = o.value(u"pager").toInt();
+    c.readyAt = o.value(u"readyAt").toInteger();
+    c.pickedUpAt = o.value(u"pickedUpAt").toInteger();
     c.offlineId = ss(o.value(u"offlineId").toString());
     c.dueAt = o.value(u"dueAt").toInteger(0);
     c.fireAt = o.value(u"fireAt").toInteger(0);
@@ -956,7 +960,7 @@ QJsonObject toJson(const PosSettings &s)
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                                      {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}, {u"startPage"_s, qs(t.startPage)},
                                      {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize},
-                                     {u"colorSafe"_s, t.colorSafe}});
+                                     {u"colorSafe"_s, t.colorSafe}, {u"service"_s, qs(t.service)}});
     QJsonArray printers;
     for (const PrinterConfig &p : s.printers)
         printers.append(toJson(p));
@@ -1065,6 +1069,7 @@ QJsonObject toJson(const PosSettings &s)
                  a.append(qs(c));
              return a;
          }()},
+        {u"serviceMode"_s, qs(s.serviceMode)}, {u"truckAskStaff"_s, s.truckAskStaff}, {u"truckNeedsName"_s, s.truckNeedsName},
         {u"kioskSendNow"_s, s.kioskSendNow}, {u"kioskIdleSeconds"_s, s.kioskIdleSeconds}, {u"kioskSlip"_s, s.kioskSlip},
         {u"kioskLook"_s, QJsonObject{{u"background"_s, qs(s.kioskLook.background)}, {u"card"_s, qs(s.kioskLook.card)},
                                      {u"go"_s, qs(s.kioskLook.go)}, {u"text"_s, qs(s.kioskLook.text)},
@@ -1271,6 +1276,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.labelPrinter = ss(t.value(u"labelPrinter").toString());
         c.textSize = t.value(u"textSize").toInt();
         c.colorSafe = t.value(u"colorSafe").toBool();
+        c.service = ss(t.value(u"service").toString());
         s.terminals.push_back(std::move(c));
     }
     s.cashMode = cashModeFromString(ss(o.value(u"cashMode").toString()));
@@ -1347,6 +1353,9 @@ PosSettings settingsFromJson(const QJsonObject &o)
         for (const QJsonValue &v : o.value(u"expenseCategories").toArray())
             s.expenseCategories.push_back(ss(v.toString()));
     }
+    s.serviceMode = ss(o.value(u"serviceMode").toString());
+    s.truckAskStaff = o.value(u"truckAskStaff").toBool(false);
+    s.truckNeedsName = o.value(u"truckNeedsName").toBool(false);
     s.kioskSendNow = o.value(u"kioskSendNow").toBool(false);
     s.kioskSlip = o.value(u"kioskSlip").toBool(true);
     s.kioskIdleSeconds = std::clamp(o.value(u"kioskIdleSeconds").toInt(90), 30, 600);

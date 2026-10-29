@@ -19,7 +19,7 @@
 
 ---
 
-ViewTouch has been built from the ground up in **C++23 and Qt 6**. It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today: floor plans, handhelds at the table, a kitchen display, a self-order kiosk, reports and a standby computer. It runs **entirely on site**, on Linux PCs, touch screens, Raspberry Pi and Android tablets and phones. There are no monthly fees, and your data stays in the store.
+ViewTouch has been built from the ground up in **C++23 and Qt 6**. It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today: floor plans, handhelds at the table, a kitchen display, a self-order kiosk, reports and a standby computer. It also runs **food trucks** (no login, straight to ordering and paying) and **retail** counters. It runs **entirely on site**, on Linux PCs, touch screens, Raspberry Pi and Android tablets and phones. There are no monthly fees, and your data stays in the store.
 
 <table>
 <tr>
@@ -67,7 +67,7 @@ git clone https://github.com/ViewTouch/viewtouch.git
 cd viewtouch
 cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build modern/build
-ctest --test-dir modern/build -j4      # optional: about 640 tests
+ctest --test-dir modern/build -j4      # optional: about 650 tests
 
 ./modern/build/vtmodern --windowed     # a demo café opens
 ./modern/build/vtmodern --demo-data    # optional, once: two months of sales to look at
@@ -104,6 +104,14 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
 <td><img src="modern/docs/screenshots/customer-display.jpg" alt="Customer display"><br><sub><b>Customer display.</b> The guest sees the order, picks a tip and earns rewards.</sub></td>
 </tr>
 <tr>
+<td><img src="modern/docs/screenshots/food-truck.jpg" alt="A food truck's order screen"><br><sub><b>Food trucks.</b> No login: straight to ordering and paying. Each order gets a number, the guest's name and the pager handed to them.</sub></td>
+<td><img src="modern/docs/screenshots/food-truck-orders.jpg" alt="A food truck's orders, ready to call"><br><sub><b>Calling orders.</b> Ready says whose order it is and which pager to buzz; Picked Up frees the pager. A manager's PIN opens the Manager screens.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/screenshots/food-truck-now-serving.jpg" alt="Now serving on the customer display"><br><sub><b>Now serving.</b> The customer display shows guests what's ready and what's being made.</sub></td>
+<td><img src="modern/docs/screenshots/food-truck-setup.jpg" alt="How do you serve? in the setup guide"><br><sub><b>Restaurant, food truck or retail.</b> The setup guide asks; Store Settings changes it any time, for the store or one screen.</sub></td>
+</tr>
+<tr>
 <td><img src="modern/docs/screenshots/manager.jpg" alt="Manager"><br><sub><b>Manager.</b> Menu, staff, schedule, inventory, promotions, reports and End of Day.</sub></td>
 <td><img src="modern/docs/screenshots/page-editor.jpg" alt="Page editor"><br><sub><b>Design your own screens.</b> Move, resize and restyle any button, with undo.</sub></td>
 </tr>
@@ -120,6 +128,7 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
 <td align="center"><img src="modern/docs/screenshots/modern-phone.jpg" alt="Modern on a phone" width="180"><br><sub>Modern on a phone: a short<br>check, the menu with the room.</sub></td>
 <td align="center"><img src="modern/docs/screenshots/handheld-tables.jpg" alt="Tables as a list on a phone" width="180"><br><sub>Your tables first, with<br>what hasn't been sent.</sub></td>
 <td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
+<td align="center"><img src="modern/docs/screenshots/food-truck-phone.jpg" alt="A food truck on a phone" width="180"><br><sub>A food truck on a phone or<br>small tablet: #1 Lee, pager 7.</sub></td>
 </tr></table>
 
 ## What it does
@@ -135,6 +144,14 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
   - cash, gift cards, house accounts, discounts, party gratuity, and tips asked on the customer display;
   - server banks or a drawer per screen;
   - Stripe card readers (optional; see below), with a credit card surcharge that debit cards never pay, or a cash discount with both prices shown.
+- **Restaurant, food truck or retail:** chosen in the setup guide or Store Settings → **How you serve**, for the whole store or one screen.
+  - **Food trucks:** no login, the screen opens on the menu and is ready for the next order after each payment. One computer is enough (a kitchen screen is optional);
+  - orders are numbered from #1 each day, with the guest's name and the number of the pager handed to them;
+  - **Orders** lists what's being made and waiting: **Ready** says "#27 Maria is ready: buzz pager 12", **Picked Up** frees the pager;
+  - a manager's PIN opens the Manager screens, and sales can be the Counter's or, optionally, whoever is working;
+  - the customer display shows **Now serving**: what's ready and what's being made;
+  - a second screen cut off from the main computer keeps selling, with its own order numbers.
+  - **Retail:** staff log in and start on the menu; a barcode scanned on any screen rings the item in, and nothing goes to a kitchen.
 - **Guests:** a customer display, a self-order kiosk, customer records, loyalty points and rewards, promotions such as happy hour, and a waitlist and reservations with "your table is ready" texts.
 - **Kitchen:** kitchen, bar and expo touchscreens with ticket times and printers. **Rush Radar** says each station's next half hour ("Grill backs up to 27 min at 7:42") from what's on the line, the tables just seated and the store's usual nights.
 - **Back office:** reports by day or any range against last year (sales, items, labor, tips, kitchen times, food cost, audit), schedule and overtime by your state's rules, tip-outs and tip pools, inventory with recipes and automatic 86, and CSV and PDF export.
@@ -156,7 +173,7 @@ sudo vtmodern-setup server      # keeps the data, no screen (back office)
 sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a code from Manager → Terminals)
 ```
 
-Screens start full screen at boot, with no way out for staff. Printers, backups, the standby server, the self-order kiosk and everything else are in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)**. How it's built is in the **[developer README](modern/README.md)**.
+Screens start full screen at boot, with no way out for staff. Printers, backups, the standby server, the self-order kiosk, food trucks and everything else are in the **[user manual](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)**. How it's built is in the **[developer README](modern/README.md)**.
 
 **Card payments.** ViewTouch can take cards through Stripe card readers, but this is optional and off to start. It hasn't been tried yet on a real Stripe reader. Until it has, take cards on your processor's own terminal and ring them up in ViewTouch as Credit Card. Card numbers then never touch ViewTouch.
 

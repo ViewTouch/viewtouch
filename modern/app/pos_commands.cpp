@@ -30,6 +30,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"login"_s, [](PosService &p, const QVariantList &) { return QVariant(p.login()); }},
         {u"loginWithPin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.loginWithPin(a.value(0).toString())); }},
         {u"logout"_s, [](PosService &p, const QVariantList &) { p.logout(); return QVariant(true); }},
+        {u"switchCounterPerson"_s, [](PosService &p, const QVariantList &) { return QVariant(p.switchCounterPerson()); }},
         {u"clockIn"_s, [](PosService &p, const QVariantList &) { return QVariant(p.clockIn()); }},
         {u"searchChecks"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.searchChecks(a.value(0).toString(), a.value(1, 365).toInt(), a.value(2, 0).toInt())); }},
         {u"selectFoundCheck"_s, [](PosService &p, const QVariantList &a) { p.selectFoundCheck(a.value(0).toLongLong()); return QVariant(true); }},
@@ -120,7 +121,8 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
              return QVariant(p.addStoreImage(a.value(0).toString(), a.value(1).toString())); }},
         {u"removeStoreImage"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeStoreImage(a.value(0).toString())); }},
         {u"setupStore"_s, [](PosService &p, const QVariantList &a) {
-             return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString())); }},
+             return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString(),
+                                          a.size() > 2 ? a.value(2).toString() : QString())); }},
         {u"setupLogo"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupLogo(a.value(0).toString(), a.value(1).toBool())); }},
         {u"setupTaxArea"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setupTaxArea(a.value(0).toString())); }},
@@ -143,6 +145,9 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"printReceipt"_s, [](PosService &p, const QVariantList &) { return QVariant(p.printReceipt()); }},
         {u"noSale"_s, [](PosService &p, const QVariantList &) { return QVariant(p.noSale()); }},
         {u"setCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setCustomer(a.value(0).toMap())); }},
+        {u"setPager"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setPager(a.value(0).toInt())); }},
+        {u"orderReady"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.orderReady(a.value(0).toLongLong())); }},
+        {u"orderPickedUp"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.orderPickedUp(a.value(0).toLongLong())); }},
         {u"splitLine"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.splitLine(a.value(0).toLongLong(), a.value(1).toBool())); }},
         {u"shareLine"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.shareLine(a.value(0).toInt())); }},
         {u"splitEvenly"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.splitEvenly(a.value(0).toInt())); }},

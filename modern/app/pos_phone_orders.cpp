@@ -148,6 +148,8 @@ bool PosService::nameRequired() const
 
 QString PosService::missingWho(const Check &c) const
 {
+    if (c.orderNumber > 0 && !c.training && s_->settings.truckNeedsName && c.customer.name.empty())
+        return tr("Who is it for? Add their name (+ Name on the check) to call the order.");
     if (!phoneOrder(c) || c.training || !nameRequired())
         return {};
     if (c.customer.name.empty())

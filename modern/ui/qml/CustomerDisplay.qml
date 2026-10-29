@@ -21,6 +21,11 @@ Rectangle {
     // Pictures by ref ("store:logo.png", a path...): this screen's copy.
     function img(ref) { return pos ? (pos.imageRevision < 0 ? undefined : pos.imageUrl(ref)) : ref }
     readonly property string logo: !prompt.logo ? "" : img(prompt.logo)
+    // A food truck: the orders being made and those ready, called by number and name.
+    readonly property bool truck: pos !== null && (pos.service?.mode ?? "") === "foodTruck"
+    readonly property var truckOrders: truck ? (pos.truckOrders ?? []) : []
+    readonly property var readyOrders: truckOrders.filter(o => o.ready)
+    readonly property var makingOrders: truckOrders.filter(o => !o.ready)
 
     color: "#0f1318"
 
@@ -64,21 +69,85 @@ Rectangle {
         Text {
             anchors { right: parent.right; rightMargin: d.unit; verticalCenter: parent.verticalCenter }
             visible: d.hasCheck
-            text: (d.prompt.label ?? "") + (d.prompt.checkId ? "  ·  #" + d.prompt.checkId : "")
+            // A food truck's label is its order number already (#27 Maria).
+            text: (d.prompt.label ?? "") + (d.prompt.checkId && !(d.prompt.label ?? "").startsWith("#") ? "  ·  #" + d.prompt.checkId : "")
             color: "white"
             font.pixelSize: d.unit * 1.2
         }
     }
 
+    // A food truck, while the next guest orders: whose order is ready.
+    Rectangle {
+        id: readyStrip
+        objectName: "readyStrip"
+        anchors { left: parent.left; right: parent.right; top: header.bottom }
+        visible: d.truck && d.hasCheck && d.readyOrders.length > 0
+        height: visible ? d.unit * 2.2 : 0
+        color: "#1f5f3a"
+        Text {
+            anchors { fill: parent; leftMargin: d.unit; rightMargin: d.unit }
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            text: qsTr("Ready: %1").arg(d.readyOrders.map(o => o.label).join("  ·  "))
+            color: "white"
+            font.pixelSize: d.unit * 1.1
+            font.bold: true
+        }
+    }
+
     Item {
         id: body
-        anchors { left: parent.left; right: parent.right; top: header.bottom; bottom: parent.bottom }
+        anchors { left: parent.left; right: parent.right; top: readyStrip.bottom; bottom: parent.bottom }
+
+        // --- a food truck between guests: now serving ---
+        RowLayout {
+            id: board
+            objectName: "nowServing"
+            anchors.fill: parent
+            anchors.margins: d.unit
+            visible: d.truck && !d.hasCheck && !d.thanking && d.truckOrders.length > 0
+            spacing: d.unit
+            Repeater {
+                model: [[qsTr("Ready"), d.readyOrders, "#3fbf74"], [qsTr("Preparing"), d.makingOrders, "#c7cedb"]]
+                delegate: ColumnLayout {
+                    id: column
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                    spacing: d.unit * 0.5
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: column.modelData[0]
+                        color: column.modelData[2]
+                        font.pixelSize: d.unit * 2
+                        font.bold: true
+                    }
+                    Rectangle { Layout.fillWidth: true; height: 3; color: column.modelData[2]; opacity: 0.6 }
+                    Repeater {
+                        model: column.modelData[1]
+                        delegate: Text {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            text: modelData.label
+                            color: column.modelData[2]
+                            font.pixelSize: d.unit * (column.modelData[1] === d.readyOrders ? 2.4 : 1.6)
+                            font.bold: column.modelData[1] === d.readyOrders
+                        }
+                    }
+                    Item { Layout.fillHeight: true }
+                }
+            }
+        }
 
         // --- between guests: messages and pictures in turn ---
         Item {
             id: idle
             anchors.fill: parent
-            visible: !d.hasCheck && !d.thanking
+            visible: !d.hasCheck && !d.thanking && !board.visible
             readonly property var slides: d.prompt.slides ?? []
             property int index: 0
             Timer {
@@ -276,14 +345,23 @@ Rectangle {
                             text: qsTr("%1 points · +%2 today").arg(d.loyalty.points ?? 0).arg(d.loyalty.earning ?? 0)
                             color: "#f5b940"
                             font.pixelSize: d.unit
+                            fontSizeMode: Text.HorizontalFit
+                            minimumPixelSize: d.unit * 0.6
                         }
                     }
                     Text {
-                        anchors.centerIn: parent
+                        objectName: "joinRewards"
+                        // Inside the button whatever its width: two lines, then smaller.
+                        anchors { fill: parent; margins: d.unit * 0.5 }
                         visible: (d.loyalty.member ?? "") === ""
                         text: qsTr("Earn rewards: touch to add your phone")
                         color: "white"
                         font.pixelSize: d.unit
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        fontSizeMode: Text.Fit
+                        minimumPixelSize: d.unit * 0.6
                     }
                     TapHandler {
                         enabled: (d.loyalty.member ?? "") === ""

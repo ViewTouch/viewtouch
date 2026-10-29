@@ -353,6 +353,16 @@ A screen where guests order on their own, then pay at the counter.
 - **Staff:** nothing on the kiosk leads to staff screens. A manager holds the top-left corner for 3 seconds and types their PIN to end kiosk mode.
 - Card payments at the kiosk will come with card readers (M8).
 
+## Restaurant, food truck or retail
+
+Store Settings → *How you serve* (`PosSettings::serviceMode`), or one screen's Manager → Terminals → *How this screen serves* (`TerminalConfig::service`); the setup guide asks on its first page. Code: `app/pos_truck.cpp`.
+- **Food truck:** nobody logs in. The session runs as the built-in *Counter* (role cashier: orders and payments, never a manager's), and the screen starts on the menu; after a payment, the menu again. Idle and Log Out don't sign the Counter out. A page it may not open (Manager) goes to the login page for a PIN and opens once someone steps in; their Log Out goes back to the Counter with the order still open. *Ask who's working* makes the first PIN the counter's person (clocked in, credited) until **Switch Person**.
+- **Orders:** quick checks on a truck are numbered from 1 each business day (`Check::orderNumber`, label "#27 Maria" once named) and carry the guest's pager (`Check::pager`, + Pager on the check; one waiting order a pager). The **Orders** page (`truckOrders` widget) lists those sent and not picked up: **Ready** (`readyAt`) tells every truck screen "#27 Maria is ready: buzz pager 12", **Picked Up** (`pickedUpAt`) takes it off. A kitchen screen bumping the last of an order calls it too. Pagers are buzzed by hand on the pager system's transmitter.
+- **Retail:** logins stay; the menu comes first instead of the floor plan, and the order screen has Log Out where restaurants have Tables. Lines rung in are `kitchenHide` (no tickets, no kitchen screen) and Send is hidden: Pay finishes the sale. A scan on any page rings the item in and goes back to the sale (`LayoutController::scanned`).
+- **Now serving:** on a truck, the customer display shows Ready and Preparing between guests, and a Ready strip while the next guest orders (`CustomerDisplay.qml`, from `truckOrders`).
+- **Offline:** a screen's offline kit carries `firstOrderNumber`, a hundred on from the store's last order for each screen, so orders taken offline never share a number with the store's. `setCustomer` and `setPager` work offline; taken in, the order keeps its number, name and pager.
+- Buttons can show for one way only: `showWhen.service` (`restaurant`, `foodTruck`, `retail`, or several with commas).
+
 ## Languages
 
 The screens come in English and Spanish (Español).

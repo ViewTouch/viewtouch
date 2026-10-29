@@ -87,7 +87,15 @@ QJsonObject PosService::offlineKitOwn() const
     }
     if (place >= qint64(s_->settings.terminals.size()))
         place = 0;
-    return {{u"terminal"_s, terminal_}, {u"firstCheckId"_s, qint64(s_->lastCheckId + 1 + 100 * place)}};
+    // A food truck's orders too, a hundred on from the store's (which keeps
+    // counting meanwhile): #3 next at the store, #103 on the first screen cut off.
+    int lastOrder = 0;
+    for (const auto &[id, c] : s_->open)
+        lastOrder = std::max(lastOrder, c.orderNumber);
+    for (const Check &c : s_->closedToday)
+        lastOrder = std::max(lastOrder, c.orderNumber);
+    return {{u"terminal"_s, terminal_}, {u"firstCheckId"_s, qint64(s_->lastCheckId + 1 + 100 * place)},
+            {u"firstOrderNumber"_s, lastOrder + 1 + 100 * int(place + 1)}};
 }
 
 std::optional<PosData> offlineData(const QJsonObject &kit)
@@ -110,6 +118,7 @@ std::optional<PosData> offlineData(const QJsonObject &kit)
     d.lastDayId = d.currentDay->id;
     // New checks take the numbers set aside for this screen.
     d.lastCheckId = std::max(kit.value(u"lastCheckId").toInteger(), kit.value(u"firstCheckId").toInteger() - 1);
+    d.firstOrderNumber = kit.value(u"firstOrderNumber").toInt();
     d.lastDrawerId = kit.value(u"lastDrawerId").toInteger();
     d.lastPunchId = kit.value(u"lastPunchId").toInteger();
     return d;

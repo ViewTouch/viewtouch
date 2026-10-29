@@ -110,6 +110,9 @@ struct PastDay {
 // The built-in user a self-order kiosk takes orders as (role "kiosk": it
 // may only order). Not one of the staff: it can't log in with a PIN.
 const core::Employee &kioskEmployee();
+// The built-in user a food truck screen takes orders and payments as when
+// nobody says who's working (role "cashier"). Not one of the staff either.
+const core::Employee &counterEmployee();
 // The maintainer, logged in with the store's maintainer code: not on the
 // staff list, so nobody in the store can remove or demote them.
 const core::Employee &maintainerEmployee();
@@ -133,6 +136,8 @@ struct PosData {
     std::int64_t lastDeliveryId = 0;
     std::map<std::string, QByteArray> images;     // the store's pictures, by name
     std::int64_t lastCheckId = 0;
+    // A screen working offline: its food truck orders start here (the store's own go on below).
+    int firstOrderNumber = 0;
     std::int64_t lastPunchId = 0;
     std::optional<core::BusinessDay> currentDay;  // none: the service opens one
     std::int64_t lastDayId = 0;
@@ -300,6 +305,7 @@ public:
     core::CustomerRecord *customer(const std::string &id);
     core::GiftCard *giftCard(const std::string &number);
     std::int64_t lastCheckId = 0;
+    int firstOrderNumber = 0;   // PosData::firstOrderNumber
     std::int64_t lastPunchId = 0;
     PosSink *sink = nullptr;
     PosPrinter *printer = nullptr;
@@ -434,6 +440,7 @@ signals:
     void staffChanged();
     void customersChanged();   // customers, gift cards, house accounts
     void networkChanged();     // a screen or the standby came or went; a printer worked or failed
+    void orderReady(const QString &said);   // a food truck's order is made: "#27 Maria is ready: buzz pager 12"
 
 private:
     std::function<std::int64_t()> now_;
@@ -879,7 +886,7 @@ public:
     QVariantMap weighingInfo() const override;
     // The setup guide (managers): what's set so far, and each step.
     QVariantMap setupInfo() const override;
-    bool setupStore(const QString &name, const QString &receiptLines);
+    bool setupStore(const QString &name, const QString &receiptLines, const QString &serviceMode = QString());
     bool setupLogo(const QString &ref, bool onReceipts);
     bool setupTaxes(double foodPercent, double alcoholPercent);
     // The store's ZIP code: its state and the rates there (the next step can change them).
@@ -974,6 +981,7 @@ public:
     QString terminalLook() const override;
     QString terminalKeyboard() const override;
     QString terminalStartCategory() const override;
+    QVariantMap serviceInfo() const override;
 
     // --- pairing devices (manager) -------------------------------------------------
     // Start a pairing: a 10-character code, good for 10 minutes and one device.
@@ -1032,6 +1040,28 @@ public:
     void kioskCancel();
     QVariantMap selfOrderInfo() const override;
     QVariantMap kioskMenu() const override;
+
+    // How this screen serves: "restaurant", "foodTruck" or "retail" (the
+    // terminal's setting, else the store's).
+    QString serviceMode() const;
+    // A food truck screen: nobody logs in. It runs as the counter (the
+    // built-in Counter, or whoever said they're working: Store Settings ->
+    // ask who's working), straight to ordering and paying. Someone's PIN
+    // steps in (a manager, for the Manager screens), and logging out goes
+    // back to the counter, the order in progress still open.
+    bool counterMode() const { return serviceMode() == u"foodTruck" && !selfOrder_; }
+    // The setting changed, or the screen started: sign the counter in (or
+    // out, when it isn't a food truck any more).
+    void applyServiceMode();
+    // Who's working changes: the next PIN is theirs.
+    bool switchCounterPerson();
+    // Guest pagers and the window: the pager handed out with the open order
+    // (0: none); an order made (Ready: called, the screens say which pager
+    // to buzz; again: called again) and picked up (off the list).
+    bool setPager(int pager);
+    bool orderReady(qint64 checkId);
+    bool orderPickedUp(qint64 checkId);
+    QVariantList truckOrders() const override;
     // A picture the store uses (a menu item's photo, the display logo or a
     // slide), base64, for screens on other computers; empty for anything else.
     QString storeImage(const QString &path) const;
@@ -1315,6 +1345,13 @@ private:
     std::optional<Approved> approved_;
     bool trainingOn_ = false;
     bool selfOrder_ = false;
+    // Food truck: who this screen runs as between orders (the Counter, or
+    // the person working); empty: not yet known (nobody, or asking).
+    std::string counterUser_;
+    QVariantMap serviceShown_;   // serviceInfo() as last told
+    int nextOrderNumber() const;
+    void callOrder(core::Check &c);   // ready: the screens say so (and which pager to buzz)
+    QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees
     bool closePractice(core::Check &c);   // a manager switched this screen to practice

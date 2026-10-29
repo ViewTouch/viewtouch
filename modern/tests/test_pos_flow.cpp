@@ -5125,6 +5125,294 @@ TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
     }
 }
 
+TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad for the pager", "[flow][ui][truck]")
+{
+    Screen s(true);   // a touch screen: no keyboard, no mouse
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    QTest::qWait(150);
+    auto *keys = s.window->findChild<QObject *>(u"touchKeys"_s);
+    REQUIRE(keys);
+    const auto keyboard = [&] { return qvariant_cast<QObject *>(keys->property("contentItem")); };
+    CHECK_FALSE(keys->property("visible").toBool());
+
+    // + Name: the letters.
+    QQuickItem *name = Screen::findKey(s.window->contentItem(), u"+ Name"_s);
+    REQUIRE(name);
+    s.tapItem(name);
+    QTest::qWait(200);
+    REQUIRE(keys->property("visible").toBool());
+    CHECK_FALSE(keyboard()->property("numeric").toBool());
+    s.shot("truck-name-keyboard");
+    for (const char *k : {"m", "a", "r", "i", "a"}) {   // capitals for the first letter
+        auto *board = qobject_cast<QQuickItem *>(keyboard());
+        QQuickItem *key = Screen::findBy(board, "text", QString::fromLatin1(k));
+        if (!key)
+            key = Screen::findBy(board, "text", QString::fromLatin1(k).toUpper());
+        REQUIRE(key);
+        s.tapItem(key);
+    }
+    if (QQuickItem *save = Screen::findKey(s.window->contentItem(), u"Save"_s))
+        s.tapItem(save);
+    QTest::qWait(150);
+    CHECK(s.pos.checkInfo()[u"customer"_s].toMap()[u"name"_s].toString() == u"Maria"_s);
+    CHECK(s.pos.checkInfo()[u"label"_s].toString() == u"#1 Maria"_s);
+
+    // + Pager: a number pad, typed by touch.
+    QQuickItem *pager = Screen::findKey(s.window->contentItem(), u"+ Pager"_s);
+    REQUIRE(pager);
+    s.tapItem(pager);
+    QTest::qWait(200);
+    REQUIRE(keys->property("visible").toBool());
+    CHECK(keyboard()->property("numeric").toBool());
+    s.shot("truck-pager-numpad");
+    for (const char *k : {"1", "2"}) {
+        QQuickItem *key = Screen::findBy(qobject_cast<QQuickItem *>(keyboard()), "text", QString::fromLatin1(k));
+        REQUIRE(key);
+        s.tapItem(key);
+    }
+    QQuickItem *save = Screen::findKey(s.window->contentItem(), u"Save"_s);
+    REQUIRE(save);
+    s.tapItem(save);
+    QTest::qWait(150);
+    CHECK(s.pos.checkInfo()[u"pager"_s].toInt() == 12);
+}
+
+TEST_CASE("UI: a food truck's customer display: now serving, and who's ready while the next guest orders", "[flow][ui][display][truck]")
+{
+    Session s;
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"pos"_s, QVariant::fromValue(static_cast<app::PosSession *>(&s.pos))}});
+    engine.loadFromModule("ViewTouch", "CustomerDisplayWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    window->resize(1280, 720);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    const QByteArray dir = qgetenv("VTM_SHOTS");
+    const auto shot = [&](const char *name) {
+        QTest::qWait(80);
+        if (!dir.isEmpty())
+            window->grabWindow().save(QString::fromLocal8Bit(dir) + u'/' + QString::fromLatin1(name) + u".png"_s);
+    };
+    std::function<QQuickItem *(QQuickItem *, const QString &, const QString &)> find =
+        [&](QQuickItem *root, const QString &property, const QString &value) -> QQuickItem * {
+        for (QQuickItem *i : root->childItems()) {
+            if (!i->isVisible())
+                continue;
+            if (i->property(property.toUtf8().constData()).toString() == value)
+                return i;
+            if (QQuickItem *hit = find(i, property, value))
+                return hit;
+        }
+        return nullptr;
+    };
+    QQuickItem *root = window->contentItem();
+    QTest::qWait(60);
+    CHECK_FALSE(find(root, u"objectName"_s, u"nowServing"_s));   // nothing waiting: the usual pictures
+
+    // Two orders sent and paid; Ana's ready.
+    const auto sell = [&](const char *name) {
+        REQUIRE(s.pos.addItem(u"caesar"_s));
+        REQUIRE(s.pos.setCustomer({{u"name"_s, QString::fromLatin1(name)}}));
+        const qint64 id = s.pos.checkInfo()[u"id"_s].toLongLong();
+        s.pos.openDrawerSession();
+        REQUIRE(s.pos.tender(u"cash"_s));
+        REQUIRE(s.pos.closeCheck());
+        return id;
+    };
+    const qint64 ana = sell("Ana");
+    sell("Lee");
+    REQUIRE(s.pos.orderReady(ana));
+    // The thank-you shows for a while after paying; the board is under it. Past it:
+    std::function<void(QQuickItem *)> thanked = [&](QQuickItem *item) {
+        if (item->property("thanking").isValid())
+            item->setProperty("thanking", false);
+        for (QQuickItem *child : item->childItems())
+            thanked(child);
+    };
+    thanked(root);
+    QTest::qWait(80);
+    REQUIRE(find(root, u"objectName"_s, u"nowServing"_s));
+    CHECK(find(root, u"text"_s, u"#1 Ana"_s));   // ready
+    CHECK(find(root, u"text"_s, u"#2 Lee"_s));   // preparing
+    shot("m177-truck-now-serving");
+
+    // The next guest orders: their order on the screen, the ready ones in a strip.
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    QTest::qWait(80);
+    CHECK_FALSE(find(root, u"objectName"_s, u"nowServing"_s));
+    REQUIRE(find(root, u"objectName"_s, u"readyStrip"_s));
+    CHECK(find(root, u"text"_s, u"Ready: #1 Ana"_s));
+    shot("m178-truck-ready-strip");
+    // The rewards button's words stay inside it (they ran past its edges at this width).
+    QQuickItem *join = find(root, u"objectName"_s, u"joinRewards"_s);
+    REQUIRE(join);
+    QQuickItem *button = join->parentItem();
+    const QRectF inButton = join->mapRectToItem(button, QRectF(0, 0, join->width(), join->height()));
+    CHECK(inButton.left() >= 0);
+    CHECK(inButton.right() <= button->width());
+    CHECK(join->property("contentWidth").toReal() <= join->width() + 0.5);
+    CHECK(join->property("contentHeight").toReal() <= join->height() + 0.5);
+
+    // Picked up: off the strip.
+    REQUIRE(s.pos.orderPickedUp(ana));
+    QTest::qWait(80);
+    CHECK_FALSE(find(root, u"objectName"_s, u"readyStrip"_s));
+}
+
+TEST_CASE("UI: retail: nothing goes to the kitchen; a scan rings it in from any page", "[flow][ui][truck]")
+{
+    Session s;
+    s.pos.shared()->settings.serviceMode = "retail";
+    emit s.pos.shared()->adminChanged();
+    CHECK_FALSE(s.pos.loggedIn());               // a shop keeps logins
+    REQUIRE(s.pos.loginWithPin(u"2222"_s));
+    CHECK(s.c.pageId() == u"index-lunch"_s);     // the menu first
+
+    // A kitchen item, scanned by its number: rung in, never sent to a kitchen.
+    s.c.scanned(u"101"_s);                       // Classic Burger
+    if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    }
+    REQUIRE(s.pos.lines().size() == 1);
+    CHECK(s.pos.lines().first().toMap()[u"name"_s].toString() == u"Classic Burger"_s);
+
+    // On the Pay screen, the customer adds one more: scanned there, back to the sale.
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    s.c.scanned(u"101"_s);
+    CHECK(s.c.pageId() != u"settle"_s);
+    CHECK(s.pos.lines().size() == 2);
+    if (s.pos.choosingInfo()[u"active"_s].toBool()) {
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    }
+    s.pos.openDrawerSession();
+    REQUIRE(s.pos.tender(u"cash"_s));
+    REQUIRE(s.pos.closeCheck());
+    CHECK(s.pos.kitchenTickets().isEmpty());
+    CHECK(s.pos.shared()->closedToday.back().serverName == "Casey");
+
+    // A restaurant's screen: a scan on the Pay screen only says where to ring it in.
+    s.pos.shared()->settings.serviceMode.clear();
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    s.c.scanned(u"101"_s);
+    CHECK(s.c.pageId() == u"settle"_s);
+}
+
+TEST_CASE("Manual: a food truck", "[.manual]")
+{
+    const auto clean = [](Screen &s) {
+        QTest::qWait(200);
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        QTest::qWait(450);
+    };
+    const auto truck = [](Screen &s) {
+        s.pos.shared()->settings.storeName = "Taco Wheels";
+        s.pos.shared()->settings.serviceMode = "foodTruck";
+        emit s.pos.shared()->adminChanged();   // the counter, on the menu: nobody logs in
+        REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
+    };
+    const auto choose = [](Screen &s) {
+        if (!s.pos.choosingInfo()[u"active"_s].toBool())
+            return;
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            if (!g.toMap()[u"done"_s].toBool())
+                s.pos.chooseOption(g.toMap()[u"id"_s].toString(), 0);
+        s.pos.finishChoosing();
+    };
+    // An order rung in, a pager handed out, paid (it goes to the kitchen).
+    const auto sell = [&](Screen &s, const char *name, int pager, std::initializer_list<const char *> items) {
+        for (const char *item : items) {
+            REQUIRE(s.pos.addItem(QString::fromLatin1(item)));
+            choose(s);
+        }
+        if (*name)
+            REQUIRE(s.pos.setCustomer({{u"name"_s, QString::fromLatin1(name)}}));
+        if (pager)
+            REQUIRE(s.pos.setPager(pager));
+        const qint64 id = s.pos.checkInfo()[u"id"_s].toLongLong();
+        s.pos.openDrawerSession();
+        REQUIRE(s.pos.tender(u"cash"_s));
+        REQUIRE(s.pos.closeCheck());
+        return id;
+    };
+    {
+        Screen s;
+        truck(s);
+        const qint64 first = sell(s, "Ana", 4, {"classic-burger", "soda"});
+        sell(s, "", 9, {"caesar"});
+        // The next guest's order on the screen: their name and pager on the check.
+        REQUIRE(s.pos.addItem(u"bacon-burger"_s));
+        choose(s);
+        REQUIRE(s.pos.addItem(u"soda"_s));
+        REQUIRE(s.pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+        REQUIRE(s.pos.setPager(12));
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m170-truck-order");
+        // The pager's number, typed on the check.
+        if (QQuickItem *key = Screen::findKey(s.window->contentItem(), u"Pager 12"_s)) {
+            s.tapItem(key);
+            QTest::qWait(250);
+            s.shot("m171-truck-pager");
+            QTest::keyClick(s.window, Qt::Key_Escape);
+            QTest::qWait(100);
+        }
+        s.pos.sendOrder();
+        s.pos.releaseCheck();
+        // Orders: Ana's is made; Ready says which pager to buzz.
+        REQUIRE(s.c.jumpTo(u"truck-orders"_s));
+        clean(s);
+        REQUIRE(s.pos.orderReady(first));
+        QTest::qWait(400);
+        s.shot("m172-truck-ready");
+        clean(s);
+        s.shot("m173-truck-orders");
+        // A manager's PIN for the Manager screens; Store Settings -> How you serve.
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+        REQUIRE(s.c.jumpTo(u"admin-store"_s));
+        QTest::qWait(150);
+        if (QQuickItem *section = Screen::findBy(s.window->contentItem(), "objectName", u"settingsSection-service"_s))
+            s.tapItem(section);
+        clean(s);
+        s.shot("m174-truck-settings");
+        // The setup guide's first question.
+        s.pos.shared()->settings.setupDone = false;
+        s.c.openSetup();
+        QTest::qWait(200);
+        if (QQuickItem *next = Screen::findBy(s.window->contentItem(), "text", u"Next ›"_s))
+            s.tapItem(next);
+        clean(s);
+        s.shot("m175-setup-serve");
+        s.c.closeSetup();
+        s.pos.shared()->settings.setupDone = true;
+    }
+    {
+        Screen s(false, 540, 1080, u"phone"_s);
+        truck(s);
+        REQUIRE(s.pos.addItem(u"classic-burger"_s));
+        choose(s);
+        REQUIRE(s.pos.setCustomer({{u"name"_s, u"Lee"_s}}));
+        REQUIRE(s.pos.setPager(7));
+        REQUIRE(s.c.openCategory(u"burgers"_s));
+        clean(s);
+        s.shot("m176-truck-phone");
+    }
+}
+
 TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")
 {
     Screen s(false, 540, 1080, u"phone"_s);

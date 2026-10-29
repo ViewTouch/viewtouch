@@ -35,6 +35,9 @@ public:
     QString current() const { return current_; }
     QString home() const { return home_; }
     QString lastIndex() const { return lastIndex_; }
+    // The menu page "index" opens now: the last one shown, else the meal
+    // period's, else an all-day one, else the first ("": none).
+    QString indexPage() const;
 
     // Meal period used by `index` when no index page has been visited yet;
     // the index page with this mealPeriod is preferred over the first one.

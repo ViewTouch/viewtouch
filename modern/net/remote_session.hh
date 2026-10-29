@@ -126,6 +126,8 @@ public:
     QVariantList mealPeriods() const override { return v(u"mealPeriods").toList(); }
     QVariantMap pairingInfo() const override { return v(u"pairing").toMap(); }
     QString screenMode() const override { return v(u"screenMode").toString(); }
+    QVariantMap serviceInfo() const override { return v(u"service").toMap(); }
+    QVariantList truckOrders() const override { return v(u"truckOrders").toList(); }
     QString terminalLook() const override { return v(u"terminalLook").toString(); }
     QString terminalKeyboard() const override { return v(u"terminalKeyboard").toString(); }
     QString terminalStartCategory() const override { return v(u"terminalStartCategory").toString(); }
