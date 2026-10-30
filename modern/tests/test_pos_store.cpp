@@ -283,6 +283,33 @@ TEST_CASE("A version 1 POS database is migrated in place", "[posstore]")
     CHECK(data->lastDayId == 0);   // no days yet: the service opens day 1
 }
 
+TEST_CASE("A database stopped halfway through adding cash tips still opens", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    {
+        PosStore store(path);
+        REQUIRE(store.open());
+    }
+    {
+        // The column is there but the version says it isn't: what a stop
+        // between the two steps left behind before they were one transaction.
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, u"half"_s);
+        db.setDatabaseName(path);
+        REQUIRE(db.open());
+        QSqlQuery q(db);
+        REQUIRE(q.exec(u"UPDATE meta SET value = '12' WHERE key = 'pos_schema_version'"_s));
+        db.close();
+    }
+    QSqlDatabase::removeDatabase(u"half"_s);
+
+    PosStore store(path);
+    QString error;
+    const bool opened = store.open(&error);
+    INFO(error.toStdString());
+    CHECK(opened);
+}
+
 TEST_CASE("A shift keeps the job worked and its pay in the database", "[posstore][pay]")
 {
     QTemporaryDir dir;

@@ -236,9 +236,26 @@ bool PosStore::open(QString *error)
             return false;
     }
     if (version < 13) {   // cash tips told at clock out (-1: not told)
-        if (!run(q, u"ALTER TABLE time_punches ADD COLUMN cash_tips INTEGER NOT NULL DEFAULT -1"_s, error)
-            || !run(q, u"UPDATE meta SET value = '13' WHERE key = 'pos_schema_version'"_s, error))
+        // One transaction, so a stop halfway can't leave the column added and
+        // the version not (every start after would fail on the column). A
+        // database already left that way by an older ViewTouch has the
+        // column: only the version moves.
+        bool haveColumn = false;
+        if (q.exec(u"PRAGMA table_info(time_punches)"_s))
+            while (q.next())
+                haveColumn = haveColumn || q.value(1).toString() == u"cash_tips"_s;
+        if (!db.transaction()) {
+            if (error)
+                *error = db.lastError().text();
             return false;
+        }
+        const bool ok =
+            (haveColumn || run(q, u"ALTER TABLE time_punches ADD COLUMN cash_tips INTEGER NOT NULL DEFAULT -1"_s, error))
+            && run(q, u"UPDATE meta SET value = '13' WHERE key = 'pos_schema_version'"_s, error);
+        if (!ok || !db.commit()) {
+            db.rollback();
+            return false;
+        }
     }
     if (version < 14) {   // who changed what on the manager screens (the Changes report)
         if (!run(q, u"CREATE TABLE IF NOT EXISTS changes (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, "
