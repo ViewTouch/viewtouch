@@ -79,19 +79,19 @@ bool offlineAllowed(const QString &method)
 }
 
 // Which change signal each state key belongs to.
-enum class Group { Session, Admin, Entry, Qualifier, Check, OpenChecks, Kitchen, Drawer, Day, None };
+enum class Group { Session, Admin, Menu, Entry, Qualifier, Check, OpenChecks, Kitchen, Drawer, Day, None };
 
 Group groupOf(const QString &key)
 {
     static const QHash<QString, Group> groups = {
         {u"loggedIn"_s, Group::Session}, {u"userName"_s, Group::Session}, {u"userRole"_s, Group::Session},
         {u"permissions"_s, Group::Session}, {u"clockedIn"_s, Group::Session}, {u"clockedInSince"_s, Group::Session},
-        {u"storeName"_s, Group::Admin}, {u"currencySymbol"_s, Group::Admin}, {u"customColors"_s, Group::Admin}, {u"priceChanges"_s, Group::Admin}, {u"adminRevision"_s, Group::Admin},
+        {u"storeName"_s, Group::Admin}, {u"currencySymbol"_s, Group::Admin}, {u"customColors"_s, Group::Admin}, {u"priceChanges"_s, Group::Admin}, {u"adminRevision"_s, Group::Menu},
         {u"mealPeriods"_s, Group::Admin}, {u"pairing"_s, Group::Admin}, {u"screenMode"_s, Group::Admin}, {u"service"_s, Group::Session}, {u"truckOrders"_s, Group::OpenChecks}, {u"terminalLook"_s, Group::Admin}, {u"terminalKeyboard"_s, Group::Admin}, {u"terminalStartCategory"_s, Group::Admin}, {u"cardReader"_s, Group::Admin}, {u"readerToken"_s, Group::Session}, {u"counterCharge"_s, Group::Session}, {u"receiptOffer"_s, Group::Session},
         {u"closedChecks"_s, Group::Day}, {u"staff"_s, Group::Session}, {u"checkHistory"_s, Group::Check},
         {u"choosing"_s, Group::Check}, {u"weighing"_s, Group::Check}, {u"setup"_s, Group::Admin}, {u"onBreakSince"_s, Group::Session},
         {u"customers"_s, Group::Check}, {u"customer"_s, Group::Check}, {u"giftCard"_s, Group::Check}, {u"waitlist"_s, Group::Day}, {u"customerPrompt"_s, Group::Check},
-        {u"schedule"_s, Group::Session}, {u"nextShift"_s, Group::Session}, {u"rangeReport"_s, Group::Session}, {u"expoTickets"_s, Group::Kitchen}, {u"approval"_s, Group::Session}, {u"training"_s, Group::Session}, {u"autoLogoutMinutes"_s, Group::Admin}, {u"phoneLockSeconds"_s, Group::Admin}, {u"screenSaverMinutes"_s, Group::Admin}, {u"storeImages"_s, Group::Admin}, {u"storeLogo"_s, Group::Admin}, {u"kitchenStations"_s, Group::Admin}, {u"kitchenStation"_s, Group::Admin}, {u"messages"_s, Group::Day}, {u"handoff"_s, Group::Session}, {u"network"_s, Group::Day}, {u"printerAlerts"_s, Group::Day}, {u"language"_s, Group::Session}, {u"userPrefs"_s, Group::Session}, {u"storeLanguage"_s, Group::Admin}, {u"selfOrder"_s, Group::Check}, {u"kioskMenu"_s, Group::Admin}, {u"clockInJobs"_s, Group::Session}, {u"cashTipsAsk"_s, Group::Session}, {u"reasonAsk"_s, Group::Session}, {u"timeClock"_s, Group::Session}, {u"receiving"_s, Group::Admin}, {u"stockCounting"_s, Group::Admin}, {u"wasteLog"_s, Group::Admin}, {u"storeCheck"_s, Group::Day}, {u"prepLabels"_s, Group::Admin}, {u"checkSearch"_s, Group::Session}, {u"soldOut"_s, Group::Admin}, {u"menuItems"_s, Group::Admin}, {u"menuCategories"_s, Group::Admin}, {u"choiceGroups"_s, Group::Admin}, {u"menuTemplates"_s, Group::Admin}, {u"menuProblems"_s, Group::Admin}, {u"menuUndoText"_s, Group::Admin}, {u"cardAlerts"_s, Group::Admin},
+        {u"schedule"_s, Group::Session}, {u"nextShift"_s, Group::Session}, {u"rangeReport"_s, Group::Session}, {u"expoTickets"_s, Group::Kitchen}, {u"approval"_s, Group::Session}, {u"training"_s, Group::Session}, {u"autoLogoutMinutes"_s, Group::Admin}, {u"phoneLockSeconds"_s, Group::Admin}, {u"screenSaverMinutes"_s, Group::Admin}, {u"storeImages"_s, Group::Admin}, {u"storeLogo"_s, Group::Admin}, {u"kitchenStations"_s, Group::Admin}, {u"kitchenStation"_s, Group::Admin}, {u"messages"_s, Group::Day}, {u"handoff"_s, Group::Session}, {u"network"_s, Group::Day}, {u"printerAlerts"_s, Group::Day}, {u"language"_s, Group::Session}, {u"userPrefs"_s, Group::Session}, {u"storeLanguage"_s, Group::Admin}, {u"selfOrder"_s, Group::Check}, {u"kioskMenu"_s, Group::Menu}, {u"clockInJobs"_s, Group::Session}, {u"cashTipsAsk"_s, Group::Session}, {u"reasonAsk"_s, Group::Session}, {u"timeClock"_s, Group::Session}, {u"receiving"_s, Group::Admin}, {u"stockCounting"_s, Group::Admin}, {u"wasteLog"_s, Group::Admin}, {u"storeCheck"_s, Group::Day}, {u"prepLabels"_s, Group::Admin}, {u"checkSearch"_s, Group::Session}, {u"soldOut"_s, Group::Menu}, {u"menuItems"_s, Group::Menu}, {u"menuCategories"_s, Group::Menu}, {u"choiceGroups"_s, Group::Menu}, {u"menuTemplates"_s, Group::Menu}, {u"menuProblems"_s, Group::Menu}, {u"menuUndoText"_s, Group::Menu}, {u"cardAlerts"_s, Group::Admin},
         {u"pinLength"_s, Group::Entry}, {u"entry"_s, Group::Entry}, {u"entryAmount"_s, Group::Entry},
         {u"entryGuests"_s, Group::Entry}, {u"textEntry"_s, Group::Entry},
         {u"pendingQualifier"_s, Group::Qualifier},
@@ -554,14 +554,16 @@ void RemoteSession::applyState(const QJsonObject &set, bool replaceAll)
     bool invalidated = false;
     for (auto it = cache_.begin(); it != cache_.end(); ++it) {
         if ((salesMoved && it.key().startsWith(u"report|")) ||
-            (changed.contains(Group::Admin) && (it.key().startsWith(u"adminRecords|") || it.key().startsWith(u"adminFields|")))) {
+            ((changed.contains(Group::Admin) || changed.contains(Group::Menu))
+             && (it.key().startsWith(u"adminRecords|") || it.key().startsWith(u"adminFields|")))) {
             it->stale = true;
             invalidated = true;
         }
     }
 
     if (changed.contains(Group::Session)) emit sessionChanged();
-    if (changed.contains(Group::Admin)) emit adminChanged();
+    if (changed.contains(Group::Admin)) emit adminChanged();   // menuChanged too (PosSession)
+    else if (changed.contains(Group::Menu)) emit menuChanged();
     if (changed.contains(Group::Entry)) emit entryChanged();
     if (changed.contains(Group::Qualifier)) emit qualifierChanged();
     if (changed.contains(Group::Check)) emit checkChanged();

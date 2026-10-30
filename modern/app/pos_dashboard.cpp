@@ -8,6 +8,8 @@
 
 #include <QDateTime>
 #include <QLocale>
+#include <QPointer>
+#include <QThreadPool>
 
 #include <algorithm>
 #include <map>
@@ -48,17 +50,31 @@ QVariantMap PosService::dashboardNow() const
     // The same weekday last week, up to this time of day.
     const QDateTime nowDt = QDateTime::fromMSecsSinceEpoch(t);
     const QDateTime weekAgo = nowDt.addDays(-7);
-    if (s_->history && (lastWeekChecks_ < 0 || t - lastWeekAt_ > 5 * 60'000)) {
-        lastWeekNet_ = Money();
-        lastWeekChecks_ = 0;
-        for (const Check &c : s_->history(QDateTime(weekAgo.date().startOfDay()).toMSecsSinceEpoch(),
-                                          weekAgo.toMSecsSinceEpoch())) {
-            if (c.training)
-                continue;
-            lastWeekNet_ += c.totals(st.tax).netSales();
-            ++lastWeekChecks_;
-        }
+    if (s_->history && (lastWeekAt_ == 0 || t - lastWeekAt_ > 5 * 60'000)) {
+        // Read from the database on a worker thread (it was this screen's,
+        // every five minutes); shown when it's back.
         lastWeekAt_ = t;
+        QPointer<PosService> self(const_cast<PosService *>(this));
+        QThreadPool::globalInstance()->start([self, history = s_->history, rates = st.tax,
+                                              from = QDateTime(weekAgo.date().startOfDay()).toMSecsSinceEpoch(),
+                                              to = weekAgo.toMSecsSinceEpoch()] {
+            Money sum;
+            int count = 0;
+            for (const Check &c : history(from, to)) {
+                if (c.training)
+                    continue;
+                sum += c.totals(rates).netSales();
+                ++count;
+            }
+            if (PosService *pos = self.data())
+                QMetaObject::invokeMethod(pos, [self, sum, count] {
+                    if (!self)
+                        return;
+                    self->lastWeekNet_ = sum;
+                    self->lastWeekChecks_ = count;
+                    emit self->dayChanged();   // the dashboard again, with it
+                }, Qt::QueuedConnection);
+        });
     }
     QVariantMap sales{{u"net"_s, format(net)}, {u"checks"_s, checks}, {u"guests"_s, guests},
                       {u"average"_s, checks ? format(Money::fromCents(net.cents() / checks)) : format(Money())},

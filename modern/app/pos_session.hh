@@ -131,7 +131,7 @@ class PosSession : public QObject {
     // name, sent}}; and what guests can order: {families, items: [{id, name,
     // family, price, description, image, available, choices}]}.
     Q_PROPERTY(QVariantMap selfOrder READ selfOrderInfo NOTIFY checkChanged)
-    Q_PROPERTY(QVariantMap kioskMenu READ kioskMenu NOTIFY adminChanged)
+    Q_PROPERTY(QVariantMap kioskMenu READ kioskMenu NOTIFY menuChanged)
     // Clocking in with more than one job: {who, jobs: [{role, name}]}, else empty.
     Q_PROPERTY(QVariantMap clockInJobs READ clockInJobs NOTIFY sessionChanged)
     Q_PROPERTY(QVariantMap cashTipsAsk READ cashTipsAsk NOTIFY sessionChanged)
@@ -169,23 +169,23 @@ class PosSession : public QObject {
     // alcoholTax, families, items, staff: [{name, role, sample}], samples} (managers).
     Q_PROPERTY(QVariantMap setup READ setupInfo NOTIFY adminChanged)
     // Sold-out (86'd) items: their ids and lower-case names.
-    Q_PROPERTY(QStringList soldOut READ soldOut NOTIFY adminChanged)
+    Q_PROPERTY(QStringList soldOut READ soldOut NOTIFY menuChanged)
     // Dishes an ingredient is running low for: item id (and lowercase name) -> how many can still be made.
     Q_PROPERTY(QVariantMap stockLeft READ stockLeft NOTIFY dayChanged)
     // The menu for the 86 list [{id, name, family, price, modifier, available}].
-    Q_PROPERTY(QVariantList menuItems READ menuItems NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList menuItems READ menuItems NOTIFY menuChanged)
     // The menu's categories, in order: [{id, name, color, periods, count, now}]
     // (now: on the menu at this hour).
-    Q_PROPERTY(QVariantList menuCategories READ menuCategories NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList menuCategories READ menuCategories NOTIFY menuChanged)
     // Every choice group: [{id, name, min, max, rule, askHow, menuItems, own,
     // options: [{name, price, included, kitchenName, kitchenHide}], usedBy: [names]}].
-    Q_PROPERTY(QVariantList choiceGroups READ choiceGroups NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList choiceGroups READ choiceGroups NOTIFY menuChanged)
     // Starter menus by kind of place: [{id, name, description, categories, items}].
-    Q_PROPERTY(QVariantList menuTemplates READ menuTemplates NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList menuTemplates READ menuTemplates NOTIFY menuChanged)
     // The menu checked for what would trip up service (the Menu Builder).
-    Q_PROPERTY(QVariantList menuProblems READ menuProblems NOTIFY adminChanged)
+    Q_PROPERTY(QVariantList menuProblems READ menuProblems NOTIFY menuChanged)
     // The Menu Builder's last change, to undo ("" if none).
-    Q_PROPERTY(QString menuUndoText READ menuUndoText NOTIFY adminChanged)
+    Q_PROPERTY(QString menuUndoText READ menuUndoText NOTIFY menuChanged)
     // Cards taken offline that the bank declined once sent (managers): [{ref, checkId, text}].
     Q_PROPERTY(QVariantList cardAlerts READ cardAlerts NOTIFY adminChanged)
     // The current check's history [{time, who, what}].
@@ -204,7 +204,7 @@ class PosSession : public QObject {
     // Today's opening and closing checklists: {opening: [{task, done, by, at}], closing: [...]}.
     Q_PROPERTY(QVariantMap checklists READ checklists NOTIFY dayChanged)
     Q_PROPERTY(QVariantList days READ days NOTIFY dayChanged)
-    Q_PROPERTY(int adminRevision READ adminRevision NOTIFY adminChanged)
+    Q_PROPERTY(int adminRevision READ adminRevision NOTIFY menuChanged)
     // The store's pictures: [{name, ref ("store:logo.png"), hash, bytes, url}].
     Q_PROPERTY(QVariantList storeImages READ storeImages NOTIFY imagesChanged)
     // The store's logo as a picture ref ("store:logo.png"), or "".
@@ -717,6 +717,10 @@ signals:
     void drawerChanged();
     void dayChanged();
     void adminChanged();
+    // The menu only (an item sold out, moved, saved in the Menu Builder):
+    // the menu's properties, without every setting's. adminChanged brings
+    // it too.
+    void menuChanged();
     void imagesChanged();
     void queriesChanged();
     void onlineChanged();

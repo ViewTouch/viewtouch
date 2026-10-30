@@ -495,7 +495,11 @@ std::optional<app::PosData> PosStore::load(QStringList *errors) const
         }
     }
 
-    for (const TimePunch &p : punches()) {
+    // Only what's needed (open ones, and the last 8 days for weekly
+    // overtime), not every punch ever: a store's years of them slowed the start.
+    if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM time_punches"_s) && q.next())
+        data.lastPunchId = q.value(0).toLongLong();
+    for (const TimePunch &p : punches(dayStart - 8LL * 24 * 3'600'000)) {
         data.lastPunchId = std::max(data.lastPunchId, p.id);
         if (p.open() || p.clockIn >= dayStart)
             data.punches.push_back(p);
@@ -532,11 +536,17 @@ std::vector<Check> PosStore::checks(CheckStatus status) const
     return out;
 }
 
-std::vector<TimePunch> PosStore::punches() const
+std::vector<TimePunch> PosStore::punches(std::int64_t since) const
 {
     std::vector<TimePunch> out;
     QSqlQuery q(QSqlDatabase::database(connection_));
-    if (!q.exec(u"SELECT id, employee_id, clock_in, clock_out, breaks, job, rate, cash_tips FROM time_punches ORDER BY id"_s))
+    QString sql = u"SELECT id, employee_id, clock_in, clock_out, breaks, job, rate, cash_tips FROM time_punches"_s;
+    if (since >= 0)
+        sql += u" WHERE clock_out = 0 OR clock_in >= ?"_s;
+    q.prepare(sql + u" ORDER BY id"_s);
+    if (since >= 0)
+        q.addBindValue(qint64(since));
+    if (!q.exec())
         return out;
     while (q.next()) {
         TimePunch p{q.value(0).toLongLong(), q.value(1).toString().toStdString(), q.value(2).toLongLong(),

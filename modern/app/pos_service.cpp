@@ -69,10 +69,11 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
     // What goes to the kitchen and the expediter follows the menu and settings.
-    connect(this, &PosShared::adminChanged, this, [this] {
-        kitchenDone.clear();
-        expoDone.clear();
-    });
+    for (auto signal : {&PosShared::adminChanged, &PosShared::menuChanged})
+        connect(this, signal, this, [this] {
+            kitchenDone.clear();
+            expoDone.clear();
+        });
     for (Check &c : data.openChecks) {
         lastCheckId = std::max(lastCheckId, c.id);
         open.emplace(c.id, std::move(c));
@@ -235,6 +236,7 @@ void PosService::connectShared()
         emit checkChanged();         // tax changes re-total
         emit openChecksChanged();
     });
+    connect(s_, &PosShared::menuChanged, this, &PosSession::menuChanged);
     connect(s_, &PosShared::customersChanged, this, &PosSession::checkChanged);
     connect(s_, &PosShared::staffChanged, this, [this] {
         if (!userId_.empty() && !user()) {   // deactivated or removed elsewhere

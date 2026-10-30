@@ -135,7 +135,7 @@ PosService::MenuStep::~MenuStep()
     if (undo.size() > 20)
         undo.erase(undo.begin());
     ++pos_->s_->adminRevision;
-    emit pos_->s_->adminChanged();
+    emit pos_->s_->menuChanged();   // items, categories, choice groups: the menu's
 }
 
 QString PosService::menuUndoText() const
@@ -154,7 +154,7 @@ bool PosService::undoMenuChange()
         // Changed since, elsewhere (another screen, Manager -> Menu): not over that.
         undo.clear();
         ++s_->adminRevision;
-        emit s_->adminChanged();
+        emit s_->menuChanged();
         return fail(tr("The menu has changed since, so that can't be undone."));
     }
     PosShared::MenuUndo step = std::move(undo.back());
@@ -234,7 +234,7 @@ void PosService::menuChanged()
 {
     refreshSoldOut();
     ++s_->adminRevision;
-    emit s_->adminChanged();
+    emit s_->menuChanged();
 }
 
 // --- categories ----------------------------------------------------------------------

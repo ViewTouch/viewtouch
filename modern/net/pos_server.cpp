@@ -20,6 +20,8 @@
 #include <QLoggingCategory>
 #include <QSslPreSharedKeyAuthenticator>
 #include <QPointer>
+#include <QThreadPool>
+#include <QTimer>
 #include <QSet>
 #include <QSslSocket>
 #include <QLocale>
@@ -43,6 +45,8 @@ struct PosServer::Connection {
     std::unique_ptr<app::PosService> session;   // after hello
     bool standby = false;                       // the store's standby server (key "r:")
     bool synced = false;                        // ...has its copy, gets every change
+    bool copying = false;                       // ...its copy being made (on a worker thread)
+    QList<QJsonObject> heldOps;                 // changes saved meanwhile: sent after the copy
     qint64 since = 0;
     QVariantMap sent;                           // last state sent
     quint32 dirty = ~0u;                        // what may have changed since (StatePiece::bit)
@@ -391,7 +395,8 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     kitTick_.setInterval(5 * 60'000);
     connect(&kitTick_, &QTimer::timeout, this, sendKits);
     kitTick_.start();
-    for (auto signal : {&app::PosShared::adminChanged, &app::PosShared::drawerChanged, &app::PosShared::dayChanged})
+    for (auto signal : {&app::PosShared::adminChanged, &app::PosShared::menuChanged, &app::PosShared::drawerChanged,
+                        &app::PosShared::dayChanged})
         connect(shared_, signal, this, [this] {
             if (!kitSoon_.isActive())
                 kitSoon_.start();
@@ -503,18 +508,8 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
     }
 
     if (c->standby) {   // the store's standby: its copy, then every change
-        if (type == u"hello" && !c->synced && snapshot_) {
-            const QByteArray db = snapshot_();
-            constexpr qsizetype chunk = 1 << 20;
-            const int parts = int((db.size() + chunk - 1) / chunk);
-            for (int i = 0; i < parts; ++i)
-                c->channel->send({{u"t"_s, u"snap"_s}, {u"i"_s, i}, {u"n"_s, parts},
-                                  {u"data"_s, QString::fromLatin1(db.mid(i * chunk, chunk).toBase64())}});
-            c->channel->send({{u"t"_s, u"layout"_s}, {u"layout"_s, layouts_->layout().toJson()}});
-            c->synced = true;
-            qCInfo(lcServer) << "standby connected; sent the database," << db.size() << "bytes";
-            emit standbyChanged();
-        }
+        if (type == u"hello" && !c->synced && snapshot_)
+            startCopy(c);
         return;
     }
 
@@ -743,7 +738,8 @@ void PosServer::attach(Connection *c)
                         &app::PosSession::qualifierChanged, &app::PosSession::checkChanged,
                         &app::PosSession::openChecksChanged, &app::PosSession::kitchenChanged,
                         &app::PosSession::drawerChanged, &app::PosSession::dayChanged,
-                        &app::PosSession::adminChanged, &app::PosSession::imagesChanged}) {
+                        &app::PosSession::adminChanged, &app::PosSession::menuChanged,
+                        &app::PosSession::imagesChanged}) {
         const quint32 bit = bitOfSignal(QMetaMethod::fromSignal(signal));
         connect(s, signal, this, [this, c, bit] {
             c->dirty |= bit;
@@ -840,9 +836,68 @@ void PosServer::pair(Connection *c, const QJsonObject &m)
 
 void PosServer::replicate(const QJsonObject &op)
 {
-    for (auto &c : connections_)
+    for (auto &c : connections_) {
         if (c->standby && c->synced)
             c->channel->send(op);
+        else if (c->standby && c->copying)
+            c->heldOps.append(op);   // after its copy (replaying one already in it is harmless)
+    }
+}
+
+// The standby's copy of the database, made on a worker thread (a backup,
+// read and turned into text: seconds for a big store, the screen frozen
+// meanwhile when it was done here), then sent with what changed since.
+void PosServer::startCopy(Connection *c)
+{
+    if (c->copying)
+        return;
+    c->copying = true;
+    c->heldOps.clear();
+    QPointer<PosServer> self(this);
+    QPointer<QSslSocket> socket(c->socket);
+    QThreadPool::globalInstance()->start([self, socket, source = snapshot_] {
+        const QByteArray db = source();
+        constexpr qsizetype chunk = 1 << 20;
+        QStringList parts;
+        for (qsizetype at = 0; at < db.size(); at += chunk)
+            parts << QString::fromLatin1(db.mid(at, chunk).toBase64());
+        const qint64 bytes = db.size();
+        if (PosServer *server = self.data())
+            QMetaObject::invokeMethod(server, [self, socket, parts, bytes] {
+                if (self)
+                    self->copyReady(socket.data(), parts, bytes);
+            }, Qt::QueuedConnection);
+    });
+}
+
+void PosServer::copyReady(QSslSocket *socket, const QStringList &parts, qint64 bytes)
+{
+    const auto it = std::ranges::find_if(connections_, [&](const auto &c) { return socket && c->socket == socket; });
+    if (it == connections_.end() || !(*it)->standby)
+        return;   // gone meanwhile
+    Connection *c = it->get();
+    c->copying = false;
+    if (parts.isEmpty()) {
+        // Not a copy (the backup failed): not in sync; again in a while.
+        qCWarning(lcServer) << "could not copy the database for the standby; trying again in 30 s";
+        c->heldOps.clear();
+        QPointer<QSslSocket> again(socket);
+        QTimer::singleShot(30'000, this, [this, again] {
+            const auto c = std::ranges::find_if(connections_, [&](const auto &x) { return again && x->socket == again; });
+            if (c != connections_.end() && (*c)->standby && !(*c)->synced)
+                startCopy(c->get());
+        });
+        return;
+    }
+    for (int i = 0; i < int(parts.size()); ++i)
+        c->channel->send({{u"t"_s, u"snap"_s}, {u"i"_s, i}, {u"n"_s, int(parts.size())}, {u"data"_s, parts[i]}});
+    c->channel->send({{u"t"_s, u"layout"_s}, {u"layout"_s, layouts_->layout().toJson()}});
+    for (const QJsonObject &op : std::as_const(c->heldOps))
+        c->channel->send(op);
+    c->heldOps.clear();
+    c->synced = true;
+    qCInfo(lcServer) << "standby connected; sent the database," << bytes << "bytes";
+    emit standbyChanged();
 }
 
 int PosServer::standbyCount() const

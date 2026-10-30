@@ -439,6 +439,7 @@ signals:
     void dayChanged();
     void drawerChanged();
     void adminChanged();     // menu, settings, tenders, printers, taxes
+    void menuChanged();      // the menu only: its items (sold out, moved, saved)
     void staffChanged();
     void customersChanged();   // customers, gift cards, house accounts
     void networkChanged();     // a screen or the standby came or went; a printer worked or failed

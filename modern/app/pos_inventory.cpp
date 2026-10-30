@@ -158,7 +158,7 @@ void PosService::refreshSoldOut()
     if (!back.isEmpty())
         emit notice(tr("Back in stock: %1").arg(back.join(u", "_s)));
     ++s_->adminRevision;
-    emit s_->adminChanged();
+    emit s_->menuChanged();
 }
 
 Money PosService::recipeCost(const MenuItem &m) const

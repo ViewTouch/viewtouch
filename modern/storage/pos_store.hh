@@ -41,7 +41,8 @@ public:
     std::optional<app::PosData> load(QStringList *errors = nullptr) const;
 
     std::vector<core::Check> checks(core::CheckStatus status) const;
-    std::vector<core::TimePunch> punches() const;
+    // Every punch, or (since >= 0) the open ones and those clocked in since then.
+    std::vector<core::TimePunch> punches(std::int64_t since = -1) const;
 
 private:
     QString path_;

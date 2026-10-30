@@ -308,7 +308,7 @@ bool PosService::setAvailable(const QString &itemId, bool available)
             s_->sink->saveMenuItem(m, i);
         emit notice(available ? tr("%1 is back").arg(qs(m.name)) : tr("%1 is sold out (86)").arg(qs(m.name)));
         ++s_->adminRevision;
-        emit s_->adminChanged();
+        emit s_->menuChanged();
         return true;
     }
     return fail(tr("'%1' is not on the menu.").arg(itemId));
@@ -361,7 +361,7 @@ bool PosService::moveMenuItem(const QString &id, int by)
         s_->sink->saveMenuItem(menu[to], to);
     }
     ++s_->adminRevision;
-    emit s_->adminChanged();
+    emit s_->menuChanged();
     return true;
 }
 
@@ -402,7 +402,7 @@ bool PosService::setMenuItemColor(const QString &id, const QString &color)
         if (s_->sink)
             s_->sink->saveMenuItem(m, i);
         ++s_->adminRevision;
-        emit s_->adminChanged();
+        emit s_->menuChanged();
         return true;
     }
     return fail(tr("'%1' is not on the menu.").arg(id));

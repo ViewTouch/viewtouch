@@ -47,7 +47,8 @@ Item {
                   blue: "#1864ab", purple: "#7048e8" })[name] ?? "#1b1b1b"
     }
 
-    readonly property var tickets: {
+    // The tickets as they come: again whenever any check changes anywhere.
+    readonly property var incoming: {
         if (!pos) return []
         if (expo) return pos.expoTickets
         const out = []
@@ -59,6 +60,18 @@ Item {
         }
         return out
     }
+    // The tickets shown: replaced only when they really changed, so a check
+    // changing elsewhere (most of them) doesn't measure and rebuild every card.
+    property var tickets: []
+    property string ticketsKey: ""
+    onIncomingChanged: {
+        const key = JSON.stringify(incoming)
+        if (key === ticketsKey)
+            return
+        ticketsKey = key
+        tickets = incoming
+    }
+    Component.onCompleted: incomingChanged()
 
     Timer { id: disarmExpo; interval: 3000; onTriggered: w.armed = null }
 
@@ -301,8 +314,15 @@ Item {
                 }
             }
         }
+        // The same tickets in the same places (a relayout for the height, or
+        // nothing new): left as they are.
+        const key = w.ticketsKey + "|" + JSON.stringify(out.map(c => c.map(p => [p.part, p.parts, p.from, p.to])))
+        if (key === columnsKey && w.columns.length === out.length)
+            return
+        columnsKey = key
         w.columns = out
     }
+    property string columnsKey: ""
 
     ColumnLayout {
         anchors.fill: parent

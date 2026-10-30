@@ -7,6 +7,7 @@
 #include "qt_catch.hh"
 
 #include <QDateTime>
+#include <QSignalSpy>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -651,4 +652,23 @@ TEST_CASE("86'd during service: back after End of Day; marked sold out in the me
     CHECK_FALSE(available("cobb"));
     CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).soldOutBackNextDay == false);
     CHECK(app::settingsFromJson(QJsonObject()).soldOutBackNextDay);   // on unless turned off
+}
+
+TEST_CASE("Menu changes refresh the menu, not every manager screen", "[menu][signals]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QSignalSpy admin(&pos, &app::PosSession::adminChanged), menu(&pos, &app::PosSession::menuChanged);
+    REQUIRE(pos.setAvailable(u"cobb"_s, false));   // 86'd
+    CHECK(menu.size() >= 1);
+    CHECK(admin.isEmpty());
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"price"_s, u"13.00"_s}}));
+    CHECK(admin.isEmpty());
+    // A setting brings both: what the menu shows can depend on it.
+    menu.clear();
+    QVariantMap store = pos.adminRecords(u"store"_s).first().toMap();
+    store[u"storeName"_s] = u"Casa Ariel"_s;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK(admin.size() >= 1);
+    CHECK(menu.size() >= 1);
 }

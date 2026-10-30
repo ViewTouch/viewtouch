@@ -83,6 +83,9 @@ private:
     void dropRevoked();
     void onReadyRead(Connection *c);
     void handle(Connection *c, const QJsonObject &message);
+    // The standby's copy of the database: made off this thread, then sent.
+    void startCopy(Connection *c);
+    void copyReady(class QSslSocket *socket, const QStringList &parts, qint64 bytes);
     void drop(Connection *c);
     // Its session's changes go to that connection (and stop going there).
     void attach(Connection *c);

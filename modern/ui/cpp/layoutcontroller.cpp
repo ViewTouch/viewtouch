@@ -304,6 +304,8 @@ void LayoutController::setPos(PosSession *pos)
         connect(pos_, &PosSession::qualifierChanged, this, &LayoutController::refresh);
         // A store font's file arrived (a handheld fetches the store's files).
         connect(pos_, &PosSession::imagesChanged, this, &LayoutController::installStoreFonts);
+        // The menu alone (an item sold out): the buttons' sold-out marks.
+        connect(pos_, &PosSession::menuChanged, this, &LayoutController::refresh);
         connect(pos_, &PosSession::adminChanged, this, [this] {
             cardReader_.setKind(pos_->terminalCardReader());   // Manager -> Terminals: this screen's reader
             if (pos_->terminalLook() != lookedId_)

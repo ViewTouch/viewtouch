@@ -120,6 +120,7 @@ PosSession::PosSession(QObject *parent)
         ++checksRevision_;
     });
     connect(this, &PosSession::adminChanged, this, &PosSession::imagesChanged);
+    connect(this, &PosSession::adminChanged, this, &PosSession::menuChanged);   // settings can change the menu's look
 }
 
 QVariantMap PosSession::tableStatus(const QString &label) const

@@ -625,6 +625,18 @@ TEST_CASE("UI: the kitchen display with a rush ticket and the all-day counts", "
     s.shot("14-kitchen");
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"RUSH"_s));
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"All day"_s));
+
+    // A check changing with nothing new for the kitchen (a takeout rung up,
+    // not sent): the cards on the screen stay the very same, not rebuilt.
+    QQuickItem *card = Screen::findBy(s.window->contentItem(), "text", u"RUSH"_s);
+    REQUIRE(card);
+    const QPointer<QQuickItem> before(card);
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"coffee"_s);
+    QTest::qWait(100);
+    CHECK(before);   // not destroyed
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"RUSH"_s) == before.data());
+    s.pos.releaseCheck();
 }
 
 TEST_CASE("UI: the week's schedule; adding a shift by touch", "[flow][ui][schedule]")
@@ -2439,6 +2451,9 @@ TEST_CASE("UI: the manager's dashboard: today so far", "[flow][ui][dashboard]")
     s.pos.addItem(u"water"_s);
     s.pos.releaseCheck();
 
+    // Last week is read on a worker thread: there in a moment.
+    for (int i = 0; i < 100 && !s.pos.dashboard()[u"sales"_s].toMap().contains(u"change"_s); ++i)
+        QTest::qWait(20);
     const QVariantMap d = s.pos.dashboard();
     const QVariantMap sales = d[u"sales"_s].toMap();
     CHECK(sales[u"net"_s] == u"$12.50"_s);
