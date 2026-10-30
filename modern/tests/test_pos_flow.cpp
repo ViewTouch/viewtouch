@@ -8054,6 +8054,9 @@ TEST_CASE("Flow: an item's button added to a page built by hand, in its next fre
         pages << p.toMap()[u"id"_s].toString();
     CHECK(pages.contains(u"items-burgers"_s));      // a page of buttons placed by hand
     CHECK_FALSE(pages.contains(u"menu-all"_s));     // self-filling: no need
+    // Where a new burger's button goes by itself: with the other burgers.
+    CHECK(s.c.categoryPage(u"burgers"_s) == u"items-burgers"_s);
+    CHECK(s.c.categoryPage(u"no-such-category"_s).isEmpty());
     const bool added = s.c.addItemButton(u"items-burgers"_s, melt, u"Patty Melt"_s);
     INFO(s.c.statusText().toStdString());
     REQUIRE(added);

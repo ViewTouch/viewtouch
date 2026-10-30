@@ -36,6 +36,7 @@
 #include "storage/layout_store.hh"
 
 #include <QPointer>
+#include <QSet>
 
 #include <QDir>
 #include <QJsonArray>
@@ -1275,6 +1276,31 @@ QVariantList LayoutController::handBuiltPages(const QString &itemId) const
         out.append(QVariantMap{{u"id"_s, p.id}, {u"name"_s, p.name}, {u"has"_s, has}});
     }
     return out;
+}
+
+QString LayoutController::categoryPage(const QString &family) const
+{
+    if (!pos_ || family.isEmpty())
+        return {};
+    QSet<QString> theirs;
+    for (const QVariant &v : pos_->menuItems()) {
+        const QVariantMap m = v.toMap();
+        if (m.value(u"family"_s).toString() == family)
+            theirs.insert(m.value(u"id"_s).toString());
+    }
+    QString best;
+    int most = 0;
+    for (const QVariant &v : handBuiltPages({})) {
+        const vt::layout::Page *p = activeLayout().page(v.toMap().value(u"id"_s).toString());
+        if (!p)
+            continue;
+        const int n = int(std::ranges::count_if(p->zones, [&](const vt::layout::Zone &z) { return theirs.contains(orders(z)); }));
+        if (n > most) {
+            most = n;
+            best = p->id;
+        }
+    }
+    return best;
 }
 
 bool LayoutController::addItemButton(const QString &pageId, const QString &itemId, const QString &label)

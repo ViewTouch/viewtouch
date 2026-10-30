@@ -423,6 +423,14 @@ Item {
             waitingFor = ""
             categoryId = added.family
             editItem(added)
+            // Pages of buttons placed by hand don't fill themselves: its
+            // button goes on the page with its category's items.
+            const c = zone ? zone.controller : null
+            if (c && c.menuScreensHandBuilt && pos && pos.can("layout.edit")) {
+                const page = c.categoryPage(added.family)
+                if (page !== "")
+                    c.addItemButton(page, added.id, added.name)
+            }
         }
     }
     function saveItem() {

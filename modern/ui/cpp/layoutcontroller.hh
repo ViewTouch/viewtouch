@@ -238,6 +238,9 @@ public:
     // Pages of buttons placed by hand that an item's button can go on:
     // [{id, name, has}] (has: one for `itemId` is there already).
     Q_INVOKABLE QVariantList handBuiltPages(const QString &itemId) const;
+    // The hand-built page a category's items are on: the one with the most
+    // buttons for its items ("" when none has any). A new item's button goes there.
+    Q_INVOKABLE QString categoryPage(const QString &family) const;
     // A button for the item on that page, like its other item buttons, in
     // the next free place; saved like the page editor saves.
     Q_INVOKABLE bool addItemButton(const QString &pageId, const QString &itemId, const QString &label);
