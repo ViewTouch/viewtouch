@@ -612,6 +612,7 @@
  "A piece of it is on check #%1, at %2.": "其中一份在账单 #%1，于 %2。",
  "A piece of it was already paid for.": "其中一份已付款。",
  "A piece of it was voided.": "其中一份已作废。",
+ "A price change is between -99% and +1000%.": "价格调整须在 -99% 到 +1000% 之间。",
  "A printer (kitchen, bar) or a kitchen station id (grill, fryer). Empty: everything. The screen's Station button can pick another.": "打印机（kitchen、bar）或厨房工位 ID（grill、fryer）。空：全部。屏幕的“工位”按钮可选其他。",
  "A punch can't be in the future.": "打卡时间不能在未来。",
  "A restaurant's food truck, say. Store setting: %1.": "例如餐厅的餐车。店铺设置：%1。",
@@ -654,6 +655,7 @@
   "other": "添加 %n 个菜品"
  },
  "Add / Place Order color": "添加 / 下单 按钮颜色",
+ "Add / take off": "加 / 减",
  "Add Button": "添加按钮",
  "Add Category": "添加分类",
  "Add Choice Group": "添加选项组",
@@ -739,6 +741,7 @@
  "All %1": "全部 %1",
  "All Checks": "所有账单",
  "All Day": "全天汇总",
+ "All Items": "全部菜品",
  "All Settings…": "所有设置…",
  "All categories": "所有分类",
  "All caught up": "全部完成",
@@ -1117,6 +1120,7 @@
   "one": "修改 %n 个价格 %1",
   "other": "修改 %n 个价格 %1"
  },
+ "Change by %": "按 % 调整",
  "Change due: %1": "应找零：%1",
  "Change given": "找零",
  "Change prices": "修改价格",
@@ -2042,6 +2046,7 @@
  "License": "许可证",
  "Light": "少",
  "Light, Extra, On the side": "少、多、另放",
+ "Like 0.50, or -0.25 to take off": "例如 0.50，或 -0.25 表示减少",
  "Like 11:00 AM. Runs until the next period starts.": "例如 11:00 AM。持续到下一个餐段开始。",
  "Like 2026-10-06 09:00": "例如 2026-10-06 09:00",
  "Like 2026-10-06 17:30. Empty: still clocked in.": "例如 2026-10-06 17:30。空：仍在班。",
@@ -2050,7 +2055,9 @@
  "Like 2026-10-09 19:00. On the ticket and the receipt; it can't be sold after.": "例如 2026-10-09 19:00。印在门票和收据上；之后不能再卖。",
  "Like 2026-10-09 7:00 PM. On the ticket and the receipt; it can't be sold after.": "例如 2026-10-09 7:00 PM。印在小票和收据上；之后不能再售。",
  "Like 3:00 PM. From = Until: all day.": "例如 3:00 PM。开始 = 结束：全天。",
+ "Like 5, or -10 for 10% less": "例如 5，或 -10 表示降低 10%",
  "Like 8.25. Other tax rates and cash rounding: Manager -> Taxes.": "例如 8.25。其他税率和现金取整：经理 -> 税。",
+ "Like 9.50": "例如 9.50",
  "Like which item? Its choices, what's on it, allergens, kitchen, tax and color are copied here; then change anything.": "仿照哪个菜品？它的选项、配料、过敏原、厨房、税和颜色会复制过来；然后随意修改。",
  "Like…": "仿照…",
  "Limit $": "额度 $",
@@ -2272,6 +2279,7 @@
  "Next ›": "下一步 ›",
  "Next ↓": "下一个 ↓",
  "No": "否",
+ "No Number or Barcode": "无编号或条码",
  "No Receipt": "不要收据",
  "No Sale": "无销售开箱",
  "No Tip": "不加小费",
@@ -2321,6 +2329,7 @@
  "No item asks for it yet: choose it on an item's card.": "还没有菜品使用它：在菜品卡片上选择它。",
  "No item asks for it.": "没有菜品使用它。",
  "No item has number %1.": "没有编号为 %1 的菜品。",
+ "No items here.": "这里没有菜品。",
  "No label printer: set one up in Manager → Printers.": "没有标签打印机：请在 经理 → 打印机 中设置。",
  "No login: straight to ordering and paying": "无需登录：直接点单和收款",
  "No logo yet": "还没有标志",
@@ -2832,12 +2841,14 @@
  "Price": "价格",
  "Price change": "价格变动",
  "Price change canceled": "已取消价格变动",
+ "Price of %n item(s)": "%n 个菜品的价格",
  "Prices": "价格",
  "Prices by meal period": "分时段价格",
  "Prices by size": "按规格定价",
  "Prices cannot be negative.": "价格不能为负。",
  "Prices to look at": "需要查看的价格",
  "Prices…": "价格…",
+ "Price…": "价格…",
  "Print": "打印",
  "Print %n label(s)": {
   "one": "打印 %n 张标签",
@@ -3217,6 +3228,7 @@
  "Set the rates below to these": "将下方税率设为这些",
  "Set the store's Stripe key too: then the readers can take cards offline.": "同时设置门店的 Stripe 密钥：读卡器即可离线收卡。",
  "Set the store's Stripe secret key first (Store Settings).": "请先设置门店的 Stripe 密钥（门店设置）。",
+ "Set to": "设为",
  "Set up a card payment type first (Manager -> Payment Types).": "请先设置刷卡付款方式（经理 -> 付款方式）。",
  "Set up a label printer first (Manager → Printers; then Store Settings → Inventory).": "请先设置标签打印机（经理 → 打印机；然后 门店设置 → 库存）。",
  "Set up your store": "设置您的门店",
@@ -3527,6 +3539,7 @@
  "Tax exempt": "免税",
  "Tax exempt: %1": "免税：%1",
  "Tax exemption removed": "已取消免税",
+ "Tax for %n item(s)": "%n 个菜品的税",
  "Tax on the automatic gratuity": "自动服务费的税",
  "Tax rates": "税率",
  "Tax rates must be between 0 and 100%.": "税率必须在 0 到 100% 之间。",
@@ -3542,6 +3555,7 @@
  "Taxable room sales": "应税客房销售额",
  "Taxed again": "已恢复征税",
  "Taxes": "税",
+ "Tax…": "税…",
  "Tell %1 their table is ready": "告诉 %1 他们的桌子好了",
  "Tells the kitchen to make this check first.": "让厨房优先做这张账单。",
  "Tells the kitchen to start the next course.": "通知厨房开始下一道。",
@@ -3847,6 +3861,7 @@
  "They're Here": "他们到了",
  "They're not clocked in anymore.": "他们已不在班。",
  "They're on the schedule that day (%1 - %2): change it in the Schedule.": "他们那天有排班（%1 - %2）：请在排班中修改。",
+ "This Category": "此类别",
  "This Month": "本月",
  "This Week": "本周",
  "This Year": "今年",
@@ -3967,6 +3982,10 @@
  "Toggle on/off": "开/关切换",
  "Tomorrow": "明天",
  "Tomorrow %1": "明天 %1",
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "错误 PIN 次数过多。请在 %n 秒后重试。",
+  "other": "错误 PIN 次数过多。请在 %n 秒后重试。"
+ },
  "Too many wrong PINs: try again in %n second(s).": {
   "one": "错误 PIN 次数过多：请 %n 秒后再试。",
   "other": "错误 PIN 次数过多：请 %n 秒后再试。"
@@ -4519,6 +4538,7 @@
  "↶ Undo": "↶ 撤销",
  "≈%1 min": "约 %1 分钟",
  "▦ Plan": "▦ 平面图",
+ "▦ Tiles": "▦ 方块",
  "◀ Earlier": "◀ 更早",
  "● Not saved yet": "● 尚未保存",
  "★ Favorite": "★ 常用",
@@ -4552,8 +4572,5 @@
  "🔍 Find (name or category)": "🔍 查找（名称或类别）",
  "🔍 Find an item": "🔍 查找菜品",
  "🔍 Find an item (name or number)": "🔍 查找菜品（名称或编号）",
- "Too many wrong PINs. Try again in %n second(s).": {
-  "one": "错误 PIN 次数过多。请在 %n 秒后重试。",
-  "other": "错误 PIN 次数过多。请在 %n 秒后重试。"
- }
+ "🔍 Find an item (name, number or barcode)": "🔍 查找菜品（名称、编号或条码）"
 }

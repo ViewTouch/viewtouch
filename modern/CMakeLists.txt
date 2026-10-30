@@ -201,6 +201,7 @@ if(Qt6_FOUND)
             ui/qml/MenuBuilderCheck.qml
             ui/qml/MenuBuilderStarter.qml
             ui/qml/MenuBuilderSeveral.qml
+            ui/qml/MenuBuilderList.qml
             ui/qml/MenuBuilderPrices.qml
             ui/qml/MenuBuilderLike.qml
             ui/qml/MenuBuilderPrint.qml

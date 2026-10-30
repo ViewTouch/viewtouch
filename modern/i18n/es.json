@@ -602,6 +602,7 @@
  "A piece of it is on check #%1, at %2.": "Una parte está en la cuenta #%1, en %2.",
  "A piece of it was already paid for.": "Una parte ya fue pagada.",
  "A piece of it was voided.": "Una parte fue anulada.",
+ "A price change is between -99% and +1000%.": "Un cambio de precio va de -99% a +1000%.",
  "A printer (kitchen, bar) or a kitchen station id (grill, fryer). Empty: everything. The screen's Station button can pick another.": "Una impresora (cocina, bar) o el id de una estación (parrilla, freidora). Vacío: todo. El botón Estación de la pantalla puede elegir otra.",
  "A punch can't be in the future.": "Un registro no puede estar en el futuro.",
  "A restaurant's food truck, say. Store setting: %1.": "El food truck de un restaurante, por ejemplo. Ajuste de la tienda: %1.",
@@ -644,6 +645,7 @@
  "Add %1% gratuity": "Agregar %1% de propina",
  "Add %n item(s)": "Agregar %n artículo(s)",
  "Add / Place Order color": "Color de Agregar / Hacer pedido",
+ "Add / take off": "Sumar / restar",
  "Add Button": "Agregar botón",
  "Add Category": "Agregar categoría",
  "Add Choice Group": "Agregar grupo de opciones",
@@ -724,6 +726,7 @@
  "All %1": "Los %1",
  "All Checks": "Todas",
  "All Day": "Total del día",
+ "All Items": "Todos los artículos",
  "All Settings…": "Todos los ajustes…",
  "All categories": "Todas las categorías",
  "All caught up": "Todo al día",
@@ -1122,6 +1125,7 @@
   "one": "Cambiar %n precio %1",
   "other": "Cambiar %n precios %1"
  },
+ "Change by %": "Cambiar en %",
  "Change due: %1": "Cambio: %1",
  "Change given": "Cambio entregado",
  "Change prices": "Cambiar precios",
@@ -2079,6 +2083,7 @@
  "License": "Licencia",
  "Light": "Poco",
  "Light, Extra, On the side": "Poco, extra, aparte",
+ "Like 0.50, or -0.25 to take off": "Como 0.50, o -0.25 para restar",
  "Like 11:00 AM. Runs until the next period starts.": "Como 11:00 AM. Dura hasta que empieza el siguiente horario.",
  "Like 2026-10-06 09:00": "Como 2026-10-06 09:00",
  "Like 2026-10-06 17:30. Empty: still clocked in.": "Como 2026-10-06 17:30. Vacío: sigue con entrada marcada.",
@@ -2087,7 +2092,9 @@
  "Like 2026-10-09 19:00. On the ticket and the receipt; it can't be sold after.": "Como 2026-10-09 19:00. En el boleto y el recibo; no se puede vender después.",
  "Like 2026-10-09 7:00 PM. On the ticket and the receipt; it can't be sold after.": "Como 2026-10-09 7:00 PM. Sale en el ticket y el recibo; después ya no se vende.",
  "Like 3:00 PM. From = Until: all day.": "Como 3:00 PM. Desde = Hasta: todo el día.",
+ "Like 5, or -10 for 10% less": "Como 5, o -10 para un 10% menos",
  "Like 8.25. Other tax rates and cash rounding: Manager -> Taxes.": "Como 8.25. Otros impuestos y el redondeo en efectivo: Gerente -> Impuestos.",
+ "Like 9.50": "Como 9.50",
  "Like which item? Its choices, what's on it, allergens, kitchen, tax and color are copied here; then change anything.": "¿Como cuál artículo? Sus opciones, lo que lleva, alérgenos, cocina, impuesto y color se copian aquí; luego cambie lo que quiera.",
  "Like…": "Como…",
  "Limit $": "Límite $",
@@ -2311,6 +2318,7 @@
  "Next ›": "Siguiente ›",
  "Next ↓": "Siguiente ↓",
  "No": "No",
+ "No Number or Barcode": "Sin número ni código",
  "No Receipt": "Sin recibo",
  "No Sale": "Sin venta",
  "No Tip": "Sin propina",
@@ -2361,6 +2369,7 @@
  "No item asks for it yet: choose it on an item's card.": "Ningún artículo lo pide todavía: elíjalo en la ficha de un artículo.",
  "No item asks for it.": "Ningún artículo lo pide.",
  "No item has number %1.": "Ningún artículo tiene el número %1.",
+ "No items here.": "No hay artículos aquí.",
  "No label printer: set one up in Manager → Printers.": "No hay impresora de etiquetas: configure una en Gerente → Impresoras.",
  "No login: straight to ordering and paying": "Sin iniciar sesión: directo a pedir y cobrar",
  "No logo yet": "Aún no hay logo",
@@ -2882,12 +2891,17 @@
  "Price": "Precio",
  "Price change": "Cambio de precios",
  "Price change canceled": "Cambio de precios cancelado",
+ "Price of %n item(s)": {
+  "one": "Precio de %n artículo",
+  "other": "Precio de %n artículos"
+ },
  "Prices": "Precios",
  "Prices by meal period": "Precios por horario de comida",
  "Prices by size": "Precios por tamaño",
  "Prices cannot be negative.": "Los precios no pueden ser negativos.",
  "Prices to look at": "Precios para revisar",
  "Prices…": "Precios…",
+ "Price…": "Precio…",
  "Print": "Imprimir",
  "Print %n label(s)": {
   "one": "Imprimir %n etiqueta",
@@ -3273,6 +3287,7 @@
  "Set the rates below to these": "Poner estas tasas abajo",
  "Set the store's Stripe key too: then the readers can take cards offline.": "Ponga también la clave de Stripe de la tienda: así los lectores pueden aceptar tarjetas sin internet.",
  "Set the store's Stripe secret key first (Store Settings).": "Primero ponga la clave secreta de Stripe de la tienda (Ajustes de la tienda).",
+ "Set to": "Fijar en",
  "Set up a card payment type first (Manager -> Payment Types).": "Primero configure un tipo de pago con tarjeta (Gerente -> Tipos de pago).",
  "Set up a label printer first (Manager → Printers; then Store Settings → Inventory).": "Primero configure una impresora de etiquetas (Gerente → Impresoras; luego Ajustes de la tienda → Inventario).",
  "Set up your store": "Configure su tienda",
@@ -3592,6 +3607,10 @@
  "Tax exempt": "Exento de impuestos",
  "Tax exempt: %1": "Exento de impuestos: %1",
  "Tax exemption removed": "Exención de impuestos quitada",
+ "Tax for %n item(s)": {
+  "one": "Impuesto de %n artículo",
+  "other": "Impuesto de %n artículos"
+ },
  "Tax on the automatic gratuity": "Impuesto sobre la propina automática",
  "Tax rates": "Tasas de impuestos",
  "Tax rates must be between 0 and 100%.": "Las tasas de impuestos deben estar entre 0 y 100%.",
@@ -3607,6 +3626,7 @@
  "Taxable room sales": "Ventas de habitaciones gravables",
  "Taxed again": "Con impuestos de nuevo",
  "Taxes": "Impuestos",
+ "Tax…": "Impuesto…",
  "Tea": "Tea",
  "Tell %1 their table is ready": "Avísele a %1 que su mesa está lista",
  "Tells the kitchen to make this check first.": "Le dice a la cocina que haga esta cuenta primero.",
@@ -3929,6 +3949,7 @@
  "They're Here": "Ya llegaron",
  "They're not clocked in anymore.": "Ya no tiene entrada marcada.",
  "They're on the schedule that day (%1 - %2): change it in the Schedule.": "Está en el horario ese día (%1 - %2): cámbielo en el Horario.",
+ "This Category": "Esta categoría",
  "This Month": "Este mes",
  "This Week": "Esta semana",
  "This Year": "Este año",
@@ -4050,6 +4071,10 @@
  "Toggle on/off": "Encender / apagar",
  "Tomorrow": "Mañana",
  "Tomorrow %1": "Mañana %1",
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundo.",
+  "other": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundos."
+ },
  "Too many wrong PINs: try again in %n second(s).": {
   "one": "Demasiados PIN incorrectos: intente de nuevo en %n segundo.",
   "other": "Demasiados PIN incorrectos: intente de nuevo en %n segundos."
@@ -4611,6 +4636,7 @@
  "↶ Undo: %1": "↶ Deshacer: %1",
  "≈%1 min": "≈%1 min",
  "▦ Plan": "▦ Plano",
+ "▦ Tiles": "▦ Mosaico",
  "◀ Earlier": "◀ Antes",
  "● Not saved yet": "● Sin guardar",
  "★ Favorite": "★ Favorito",
@@ -4635,9 +4661,6 @@
  "🔍 Find (name or category)": "🔍 Buscar (nombre o categoría)",
  "🔍 Find an item": "🔍 Buscar un artículo",
  "🔍 Find an item (name or number)": "🔍 Buscar (nombre o número)",
- "🖨 Printed Menu…": "🖨 Menú impreso…",
- "Too many wrong PINs. Try again in %n second(s).": {
-  "one": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundo.",
-  "other": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundos."
- }
+ "🔍 Find an item (name, number or barcode)": "🔍 Buscar un artículo (nombre, número o código)",
+ "🖨 Printed Menu…": "🖨 Menú impreso…"
 }

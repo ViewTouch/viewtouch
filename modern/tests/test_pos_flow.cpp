@@ -1824,6 +1824,61 @@ TEST_CASE("UI: Menu Builder: an item's sizes", "[flow][ui][sizes]")
     CHECK_FALSE(shown(u"builderNotSaved"_s));
 }
 
+TEST_CASE("UI: Menu Builder: every item in a list, found by barcode, prices moved together", "[flow][ui][menubuilder][itemlist]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb Salad"_s}, {u"barcodes"_s, u"0712345678911"_s}}));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(60);
+    };
+    tap(u"builderListView"_s);
+    REQUIRE(by(u"builderList"_s));
+    // Every category's items, not only the one picked.
+    CHECK(by(u"builderListRow-classic-burger"_s));
+    CHECK(by(u"builderListRow-cobb"_s));
+
+    // Found by part of its barcode.
+    QQuickItem *search = by(u"builderSearch"_s);
+    REQUIRE(search);
+    search->setProperty("text", u"12345678"_s);
+    QMetaObject::invokeMethod(search, "textEdited");
+    QTest::qWait(60);
+    CHECK(by(u"builderListRow-cobb"_s));
+    CHECK_FALSE(by(u"builderListRow-classic-burger"_s));
+    s.shot("builder-list");
+
+    // Touched: its card.
+    tap(u"builderListRow-cobb"_s);
+    CHECK(by(u"builderCard"_s));
+
+    // Select both burgers, and 50 cents more on each.
+    search->setProperty("text", u"burger"_s);
+    QMetaObject::invokeMethod(search, "textEdited");
+    QTest::qWait(60);
+    const Money burger = s.pos.findItem(u"classic-burger"_s)->price, cheese = s.pos.findItem(u"cheeseburger"_s)->price;
+    tap(u"builderSelect"_s);
+    tap(u"builderListRow-classic-burger"_s);
+    tap(u"builderListRow-cheeseburger"_s);
+    tap(u"builderSelectPrice"_s);
+    tap(u"builderPriceHow-add"_s);
+    QQuickItem *amount = by(u"builderPriceAmount"_s);
+    REQUIRE(amount);
+    amount->setProperty("text", u"0.50"_s);
+    QTest::qWait(30);
+    tap(u"builderPriceApply"_s);
+    QTest::qWait(60);
+    CHECK(s.pos.findItem(u"classic-burger"_s)->price == burger + Money::fromCents(50));
+    CHECK(s.pos.findItem(u"cheeseburger"_s)->price == cheese + Money::fromCents(50));
+}
+
 TEST_CASE("UI: Menu Builder: a ready-made picture for an item, on the order screen", "[flow][ui][readypicture]")
 {
     Screen s(false, 1280, 800);

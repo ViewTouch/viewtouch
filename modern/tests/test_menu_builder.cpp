@@ -1069,6 +1069,35 @@ TEST_CASE("Menu Builder: text size for a category's items and for one item", "[m
     CHECK(pos.findItem(u"classic-burger"_s)->textSize == 0);
 }
 
+TEST_CASE("Menu Builder: several prices moved at once, by an amount or a share", "[menubuilder][several]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QStringList two{u"classic-burger"_s, u"cheeseburger"_s};
+    const Money burger = pos.findItem(u"classic-burger"_s)->price, cheese = pos.findItem(u"cheeseburger"_s)->price;
+
+    REQUIRE(pos.changeMenuItems(two, {{u"priceAdd"_s, 50}}));
+    CHECK(pos.findItem(u"classic-burger"_s)->price == burger + Money::fromCents(50));
+    CHECK(pos.findItem(u"cheeseburger"_s)->price == cheese + Money::fromCents(50));
+
+    REQUIRE(pos.changeMenuItems(two, {{u"pricePercent"_s, -1000}}));   // 10% less, each from its own
+    const Money b = burger + Money::fromCents(50);
+    CHECK(pos.findItem(u"classic-burger"_s)->price == b - b.percent(1000));
+
+    REQUIRE(pos.changeMenuItems(two, {{u"priceAdd"_s, -100000}}));   // never below zero
+    CHECK(pos.findItem(u"cheeseburger"_s)->price == Money());
+    CHECK_FALSE(pos.changeMenuItems(two, {{u"pricePercent"_s, -10000}}));
+
+    REQUIRE(pos.undoMenuChange());
+    REQUIRE(pos.undoMenuChange());
+    REQUIRE(pos.undoMenuChange());
+    CHECK(pos.findItem(u"classic-burger"_s)->price == burger);
+    // Tax for several at once.
+    REQUIRE(pos.changeMenuItems(two, {{u"taxClass"_s, u"alcohol"_s}}));
+    CHECK(pos.findItem(u"cheeseburger"_s)->taxClass == core::TaxClass::Alcohol);
+}
+
 TEST_CASE("Menu Builder: several items changed or removed at once, one Undo", "[menubuilder][several]")
 {
     test::RecordingSink sink;

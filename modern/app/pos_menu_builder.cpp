@@ -1450,7 +1450,11 @@ int PosService::importMenuFile(const QVariantMap &file)
 }
 
 // Several items at once (the Menu Builder's Select): the same change to
-// each ({family, buttonColor, available}), or removed; one Undo step.
+// each (any card field: family, buttonColor, available, taxClass, printer,
+// price...), or removed; one Undo step. Prices can also move by an amount
+// (priceAdd, in cents, may be negative) or a share (pricePercent, in basis
+// points: 500 = 5% more, -1000 = 10% less), each item from its own price,
+// rounded to the cent and never below zero.
 bool PosService::changeMenuItems(const QStringList &ids, const QVariantMap &changes)
 {
     if (!require(perm::Manager, tr("Changing the menu")))
@@ -1458,11 +1462,27 @@ bool PosService::changeMenuItems(const QStringList &ids, const QVariantMap &chan
     for (const QString &id : ids)
         if (!findItem(id))
             return fail(tr("'%1' is not on the menu.").arg(id));
+    const bool adding = changes.contains(u"priceAdd"_s), scaling = changes.contains(u"pricePercent"_s);
+    const qint64 add = changes.value(u"priceAdd"_s).toLongLong();
+    const qint64 bp = changes.value(u"pricePercent"_s).toLongLong();
+    if (scaling && (bp <= -10000 || bp > 100000))
+        return fail(tr("A price change is between -99% and +1000%."));
     const MenuStep step(this, tr("Change %n item(s)", "", int(ids.size())));
     for (const QString &id : ids) {
+        const MenuItem *was = findItem(id);
         QVariantMap card = changes;
+        card.remove(u"priceAdd"_s);
+        card.remove(u"pricePercent"_s);
+        if (adding || scaling) {
+            Money price = was->price;
+            if (scaling)
+                price += price.percent(bp);
+            if (adding)
+                price += Money::fromCents(add);
+            card.insert(u"price"_s, QString::number(std::max<qint64>(0, price.cents()) / 100.0, 'f', 2));
+        }
         card.insert(u"id"_s, id);
-        card.insert(u"name"_s, qs(findItem(id)->name));
+        card.insert(u"name"_s, qs(was->name));
         if (!saveMenuItemCard(card))
             return false;
     }
