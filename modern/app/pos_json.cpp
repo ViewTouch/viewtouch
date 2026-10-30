@@ -147,6 +147,14 @@ QJsonObject toJson(const Check &c)
             {u"processor"_s, qs(p.processor)}, {u"cardBrand"_s, qs(p.cardBrand)}, {u"last4"_s, qs(p.last4)},
             {u"offline"_s, qs(p.offline)}, {u"surcharge"_s, qint64(p.surcharge.cents())},
             {u"surchargeBp"_s, qint64(p.surchargeBp)}, {u"funding"_s, qs(p.funding)},
+            {u"classShares"_s, [&p] {
+                 if (p.classShares.empty())
+                     return QJsonValue();
+                 QJsonObject o;
+                 for (const auto &[cls, m] : p.classShares)
+                     o.insert(qs(toString(cls)), qint64(m.cents()));
+                 return QJsonValue(o);
+             }()},
         });
     }
     QJsonArray events;
@@ -284,6 +292,9 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         p.surcharge = money(po.value(u"surcharge"));
         p.surchargeBp = i64(po.value(u"surchargeBp"));
         p.funding = ss(po.value(u"funding").toString());
+        const QJsonObject shares = po.value(u"classShares").toObject();
+        for (auto it = shares.begin(); it != shares.end(); ++it)
+            p.classShares[taxClassFromString(ss(it.key()))] = money(it.value());
         c.payments.push_back(p);
     }
     c.nextLineId = std::max<std::int64_t>(i64(o.value(u"nextLineId")), 1);

@@ -562,8 +562,12 @@ Totals Check::totals(const TaxRates &now) const
             Money share;
             if (base.cents() > 0 && baseByClass.contains(cls))
                 share += percentOff.scaled(baseByClass.at(cls).cents(), base.cents());
-            if (discounted.cents() > 0)
+            if (!p.classShares.empty()) {   // off particular items: their classes
+                if (const auto it = p.classShares.find(cls); it != p.classShares.end())
+                    share += it->second;
+            } else if (discounted.cents() > 0) {
                 share += p.amount.scaled(amount.cents(), discounted.cents());
+            }
             discountShare[cls] += share;
         }
     }

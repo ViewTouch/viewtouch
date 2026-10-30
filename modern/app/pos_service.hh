@@ -1305,7 +1305,14 @@ private:
     void applyCloseEffects(core::Check &c);
     QString reopenBlocked(const core::Check &c) const;
     void undoCloseEffects(core::Check &c);
-    Money promotionAmount(const core::PosSettings::Promotion &p, const core::Check &c) const;
+    // What a promotion takes off a check, and how much of it off each tax
+    // class (where the items it covers are).
+    struct PromotionOff {
+        Money total;
+        std::map<core::TaxClass, Money> byClass;
+    };
+    PromotionOff promotionOff(const core::PosSettings::Promotion &p, const core::Check &c) const;
+    Money promotionAmount(const core::PosSettings::Promotion &p, const core::Check &c) const { return promotionOff(p, c).total; }
     void applyPromotions(core::Check &c);
     // A closed check's coupons count as used (by 1), or not anymore (-1: reopened).
     void countCouponUses(const core::Check &c, int by);

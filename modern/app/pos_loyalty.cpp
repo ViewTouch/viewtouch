@@ -58,10 +58,14 @@ QString dayText(const std::string &iso)
 
 // --- promotions --------------------------------------------------------------------------
 
-Money PosService::promotionAmount(const PosSettings::Promotion &p, const Check &c) const
+PosService::PromotionOff PosService::promotionOff(const PosSettings::Promotion &p, const Check &c) const
 {
-    // What the matching lines are worth, one unit at a time.
-    std::vector<Money> units;
+    // What the matching lines are worth, one unit at a time, with their tax class.
+    struct Unit {
+        Money worth;
+        TaxClass cls;
+    };
+    std::vector<Unit> units;
     for (const OrderLine &l : c.lines) {
         if (l.voided || l.isComment() || l.isGiftCard())
             continue;
@@ -71,30 +75,54 @@ Money PosService::promotionAmount(const PosSettings::Promotion &p, const Check &
         const bool item = std::ranges::find(p.items, l.itemId) != p.items.end();
         if (!everything && !family && !item)
             continue;
+        // "No discounts" on the item: not in an order-wide or category
+        // promotion (one naming the item itself still covers it).
+        if (l.noDiscount && !item)
+            continue;
         const int qty = std::max(1, l.quantity);
         for (int i = 0; i < qty; ++i)
-            units.push_back(Money::fromCents(l.total().cents() / qty));
+            units.push_back({Money::fromCents(l.total().cents() / qty), l.taxClass});
     }
-    Money off;
+    PromotionOff off;
     if (p.minimum.cents() > 0 && c.totals(s_->settings.tax).items < p.minimum)
         return off;
-    if (p.amount.cents() > 0 && p.buy <= 0) {   // a fixed amount, up to what it covers
+    if (p.amount.cents() > 0 && p.buy <= 0) {   // a fixed amount, up to what it covers, by what each is worth
         Money worth;
-        for (Money u : units)
-            worth += u;
-        return std::min(p.amount, worth);
+        for (const Unit &u : units)
+            worth += u.worth;
+        off.total = std::min(p.amount, worth);
+        if (worth.cents() <= 0)
+            return off;
+        std::map<TaxClass, Money> worthBy;
+        for (const Unit &u : units)
+            worthBy[u.cls] += u.worth;
+        Money given;
+        TaxClass largest = worthBy.begin()->first;
+        for (const auto &[cls, w] : worthBy) {
+            off.byClass[cls] = off.total.scaled(w.cents(), worth.cents());
+            given += off.byClass[cls];
+            if (w > worthBy[largest])
+                largest = cls;
+        }
+        off.byClass[largest] += off.total - given;   // rounding leftovers
+        return off;
     }
+    const auto take = [&](const Unit &u) {
+        const Money m = u.worth.percent(p.percentBp);
+        off.total += m;
+        off.byClass[u.cls] += m;
+    };
     if (p.buy <= 0) {
-        for (Money u : units)
-            off += u.percent(p.percentBp);
+        for (const Unit &u : units)
+            take(u);
         return off;
     }
     // Buy N get M: in every N + M, the cheapest M at percent off.
-    std::ranges::sort(units, std::greater<>());
+    std::ranges::sort(units, std::greater<>(), &Unit::worth);
     const int group = p.buy + std::max(1, p.get);
     for (int start = 0; start + group <= int(units.size()); start += group) {
         for (int k = start + p.buy; k < start + group; ++k)
-            off += units[k].percent(p.percentBp);
+            take(units[k]);
     }
     return off;
 }
@@ -103,7 +131,7 @@ void PosService::applyPromotions(Check &c)
 {
     if (c.status != CheckStatus::Open)
         return;
-    std::vector<std::pair<const PosSettings::Promotion *, Money>> wanted;
+    std::vector<std::pair<const PosSettings::Promotion *, PromotionOff>> wanted;
     for (const PosSettings::Promotion &p : s_->settings.promotions) {
         if (!runningAt(p, now()))
             continue;
@@ -111,17 +139,18 @@ void PosService::applyPromotions(Check &c)
         // it's used up meanwhile on another check).
         if (!p.code.empty() && std::ranges::find(c.coupons, p.id) == c.coupons.end())
             continue;
-        const Money off = promotionAmount(p, c);
-        if (off.cents() > 0)
-            wanted.emplace_back(&p, off);
+        PromotionOff off = promotionOff(p, c);
+        if (off.total.cents() > 0)
+            wanted.emplace_back(&p, std::move(off));
     }
     // Already as wanted: leave the payments (and their ids) alone.
-    std::vector<std::pair<std::string, Money>> have, want;
+    using Wanted = std::tuple<std::string, Money, std::map<TaxClass, Money>>;
+    std::vector<Wanted> have, want;
     for (const Payment &pay : c.payments)
         if (pay.reference.starts_with("promo:"))
-            have.emplace_back(pay.reference, pay.amount);
+            have.emplace_back(pay.reference, pay.amount, pay.classShares);
     for (const auto &[p, off] : wanted)
-        want.emplace_back("promo:" + p->id, off);
+        want.emplace_back("promo:" + p->id, off.total, off.byClass);
     if (have == want)
         return;
     std::erase_if(c.payments, [](const Payment &pay) { return pay.reference.starts_with("promo:"); });
@@ -131,7 +160,8 @@ void PosService::applyPromotions(Check &c)
         pay.tenderId = "promo";
         pay.tenderName = p->name;
         pay.kind = TenderKind::Discount;
-        pay.amount = off;
+        pay.amount = off.total;
+        pay.classShares = off.byClass;   // its tax off where its items are
         pay.reference = "promo:" + p->id;
         c.payments.push_back(pay);
     }

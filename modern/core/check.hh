@@ -140,6 +140,10 @@ struct Payment {
     std::string reference;        // GiftCard: the card number; HouseAccount: the customer id; staff meal: who ate;
                                   // a card through a reader: the processor's payment id (Stripe's pi_...)
     bool staffMeal = false;
+    // Discount, a fixed amount off particular items (a promotion: half off
+    // the drinks): what of it comes off each tax class, so the tax falls
+    // where the items are. Empty: spread over the check by sales.
+    std::map<TaxClass, Money> classShares;
     // A card taken on a reader: whose ("stripe", "simulated"), and which card.
     std::string processor;
     std::string cardBrand;        // "visa", "mastercard"...
