@@ -119,6 +119,30 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
 <td><img src="modern/docs/screenshots/spanish.jpg" alt="Spanish screens"><br><sub><b>Five languages.</b> English, Spanish, French, Portuguese and Chinese: each person's screens are in their own.</sub></td>
 <td><img src="modern/docs/screenshots/network.jpg" alt="Network"><br><sub><b>Keep running.</b> A standby computer takes over if the main one fails.</sub></td>
 </tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m180-reports-list.jpg" alt="Reports"><br><sub><b>Reports.</b> Every report in a list by kind; swipe across a report for the next one, and the days fold away as you read.</sub></td>
+<td><img src="modern/docs/manual/shots/m184-builder-list.jpg" alt="The whole menu in one list"><br><sub><b>The whole menu in one list.</b> Sort by any column, find by name, number or barcode, and change prices or tax for many items at once.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m186-builder-track-stock.jpg" alt="Track stock on an item"><br><sub><b>Track stock.</b> On hand, low at, cost and margin on the item itself: counted down as it sells, sold out at none.</sub></td>
+<td><img src="modern/docs/manual/shots/m187-unknown-code.jpg" alt="A barcode nothing has"><br><sub><b>Scan to add.</b> A barcode nothing has becomes a new item in two touches, for shops putting new stock on the shelf.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m155-rush-radar.jpg" alt="Rush Radar on the dashboard"><br><sub><b>Today at a glance.</b> Sales, labor and open checks, and Rush Radar: which kitchen station backs up in the next half hour, and what to do.</sub></td>
+<td><img src="modern/docs/manual/shots/m132-host-free.jpg" alt="Host stand"><br><sub><b>The host stand.</b> Every room on one screen: who is seated, which tables are free soon, the waitlist and reservations.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m135-forecast.jpg" alt="Forecast"><br><sub><b>Forecast.</b> Tomorrow from the same day in past weeks: guests, sales by hour, servers needed and what to order.</sub></td>
+<td><img src="modern/docs/manual/shots/m94-looks.jpg" alt="Ready-made looks"><br><sub><b>Your look.</b> Ready-made looks, your logo, colors and fonts, for every screen or each one on its own.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m147-home-screen.jpg" alt="The home screen"><br><sub><b>A computer only for ViewTouch.</b> The home screen: start ViewTouch, set up the store, Wi-Fi, updates, backups and remote help, by touch.</sub></td>
+<td><img src="modern/docs/manual/shots/m97-setup-welcome.jpg" alt="The setup guide"><br><sub><b>Your first day.</b> The setup guide asks for your name, logo, colors, taxes, first menu items and team, one step at a time.</sub></td>
+</tr>
+<tr>
+<td><img src="modern/docs/manual/shots/m146-chinese-order.jpg" alt="Taking an order in Chinese"><br><sub><b>Each person in their language.</b> Chinese at one register…</sub></td>
+<td><img src="modern/docs/manual/shots/m146-french-pay.jpg" alt="The Pay screen in French"><br><sub>…French at the next, the same store.</sub></td>
+</tr>
 </table>
 
 ### On phones and tablets
@@ -130,6 +154,473 @@ When you're ready for real, **Manager → Factory Reset → An empty store** sta
 <td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
 <td align="center"><img src="modern/docs/screenshots/food-truck-phone.jpg" alt="A food truck on a phone" width="180"><br><sub>A food truck on a phone or<br>small tablet: #1 Lee, pager 7.</sub></td>
 </tr></table>
+
+<table align="center"><tr>
+<td align="center"><img src="modern/docs/manual/shots/m182-reports-phone.jpg" alt="Reports on a phone" width="180"><br><sub>Reports on a phone: the<br>report fills the screen.</sub></td>
+<td align="center"><img src="modern/docs/manual/shots/m183-reports-phone-list.jpg" alt="The list of reports on a phone" width="180"><br><sub>Its name opens the list<br>of every report.</sub></td>
+<td align="center"><img src="modern/docs/manual/shots/m132-phone-floor.jpg" alt="Floor plan on a phone" width="180"><br><sub>The floor plan, tables where<br>they stand, on a phone.</sub></td>
+<td align="center"><img src="modern/docs/manual/shots/m149-phone-setup-guide.jpg" alt="Setup guide on a phone" width="180"><br><sub>Setting up the store<br>from a phone.</sub></td>
+</tr></table>
+
+### Every screen
+
+Every page of the starter store, from a store filled with two months of demo service. Touch one to see it full size; all of them are also in [ViewTouch-Screens.zip](https://github.com/ViewTouch/viewtouch/releases/download/modern-manual-0.10/ViewTouch-Screens.zip).
+
+<details>
+<summary><b>Classic</b> (74 screens)</summary>
+
+<table>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/floor-bar.jpg"><img src="modern/docs/manual/shots/pages/classic/floor-bar.jpg" alt="Bar" width="200"></a><br><sub>Bar</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/bar-display.jpg"><img src="modern/docs/manual/shots/pages/classic/bar-display.jpg" alt="Bar Display" width="200"></a><br><sub>Bar Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/tabs.jpg"><img src="modern/docs/manual/shots/pages/classic/tabs.jpg" alt="Bar Tabs" width="200"></a><br><sub>Bar Tabs</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/index-breakfast.jpg"><img src="modern/docs/manual/shots/pages/classic/index-breakfast.jpg" alt="Breakfast" width="200"></a><br><sub>Breakfast</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/library.jpg"><img src="modern/docs/manual/shots/pages/classic/library.jpg" alt="Button Library" width="200"></a><br><sub>Button Library</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-card-readers.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-card-readers.jpg" alt="Card Readers" width="200"></a><br><sub>Card Readers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/check-options.jpg"><img src="modern/docs/manual/shots/pages/classic/check-options.jpg" alt="Check Options" width="200"></a><br><sub>Check Options</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/checklists.jpg"><img src="modern/docs/manual/shots/pages/classic/checklists.jpg" alt="Checklists" width="200"></a><br><sub>Checklists</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/modifiers.jpg"><img src="modern/docs/manual/shots/pages/classic/modifiers.jpg" alt="Choose" width="200"></a><br><sub>Choose</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/closed-checks.jpg"><img src="modern/docs/manual/shots/pages/classic/closed-checks.jpg" alt="Closed Checks" width="200"></a><br><sub>Closed Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/stock-count.jpg"><img src="modern/docs/manual/shots/pages/classic/stock-count.jpg" alt="Count Stock" width="200"></a><br><sub>Count Stock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/customer.jpg"><img src="modern/docs/manual/shots/pages/classic/customer.jpg" alt="Customer" width="200"></a><br><sub>Customer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/customers.jpg"><img src="modern/docs/manual/shots/pages/classic/customers.jpg" alt="Customers" width="200"></a><br><sub>Customers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/dashboard.jpg"><img src="modern/docs/manual/shots/pages/classic/dashboard.jpg" alt="Dashboard" width="200"></a><br><sub>Dashboard</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/deliveries.jpg"><img src="modern/docs/manual/shots/pages/classic/deliveries.jpg" alt="Deliveries" width="200"></a><br><sub>Deliveries</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/floor-dining.jpg"><img src="modern/docs/manual/shots/pages/classic/floor-dining.jpg" alt="Dining Area" width="200"></a><br><sub>Dining Area</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/index-dinner.jpg"><img src="modern/docs/manual/shots/pages/classic/index-dinner.jpg" alt="Dinner" width="200"></a><br><sub>Dinner</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/drawer.jpg"><img src="modern/docs/manual/shots/pages/classic/drawer.jpg" alt="Drawer" width="200"></a><br><sub>Drawer</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/drawer-reason.jpg"><img src="modern/docs/manual/shots/pages/classic/drawer-reason.jpg" alt="Drawer Reason" width="200"></a><br><sub>Drawer Reason</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-employees.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-employees.jpg" alt="Employees" width="200"></a><br><sub>Employees</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/end-of-day.jpg"><img src="modern/docs/manual/shots/pages/classic/end-of-day.jpg" alt="End of Day" width="200"></a><br><sub>End of Day</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/expo.jpg"><img src="modern/docs/manual/shots/pages/classic/expo.jpg" alt="Expo Display" width="200"></a><br><sub>Expo Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/factory-reset.jpg"><img src="modern/docs/manual/shots/pages/classic/factory-reset.jpg" alt="Factory Reset" width="200"></a><br><sub>Factory Reset</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/find-check.jpg"><img src="modern/docs/manual/shots/pages/classic/find-check.jpg" alt="Find a Check" width="200"></a><br><sub>Find a Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/find-item.jpg"><img src="modern/docs/manual/shots/pages/classic/find-item.jpg" alt="Find an Item" width="200"></a><br><sub>Find an Item</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/gift-card.jpg"><img src="modern/docs/manual/shots/pages/classic/gift-card.jpg" alt="Gift Card" width="200"></a><br><sub>Gift Card</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/guest-count.jpg"><img src="modern/docs/manual/shots/pages/classic/guest-count.jpg" alt="Guest Count" width="200"></a><br><sub>Guest Count</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/host.jpg"><img src="modern/docs/manual/shots/pages/classic/host.jpg" alt="Host Stand" width="200"></a><br><sub>Host Stand</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-inventory.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-inventory.jpg" alt="Inventory" width="200"></a><br><sub>Inventory</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/kitchen.jpg"><img src="modern/docs/manual/shots/pages/classic/kitchen.jpg" alt="Kitchen Display" width="200"></a><br><sub>Kitchen Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/logout.jpg"><img src="modern/docs/manual/shots/pages/classic/logout.jpg" alt="Log Out" width="200"></a><br><sub>Log Out</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/waste-log.jpg"><img src="modern/docs/manual/shots/pages/classic/waste-log.jpg" alt="Log Waste" width="200"></a><br><sub>Log Waste</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/login.jpg"><img src="modern/docs/manual/shots/pages/classic/login.jpg" alt="Login" width="200"></a><br><sub>Login</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/index-lunch.jpg"><img src="modern/docs/manual/shots/pages/classic/index-lunch.jpg" alt="Lunch" width="200"></a><br><sub>Lunch</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/tables.jpg"><img src="modern/docs/manual/shots/pages/classic/tables.jpg" alt="Main floor" width="200"></a><br><sub>Main floor</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/manager.jpg"><img src="modern/docs/manual/shots/pages/classic/manager.jpg" alt="Manager" width="200"></a><br><sub>Manager</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-meal-periods.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-meal-periods.jpg" alt="Meal Periods" width="200"></a><br><sub>Meal Periods</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/menu-all.jpg"><img src="modern/docs/manual/shots/pages/classic/menu-all.jpg" alt="Menu" width="200"></a><br><sub>Menu</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/menu-builder.jpg"><img src="modern/docs/manual/shots/pages/classic/menu-builder.jpg" alt="Menu Builder" width="200"></a><br><sub>Menu Builder</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-menu.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-menu.jpg" alt="Menu Items" width="200"></a><br><sub>Menu Items</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/merge.jpg"><img src="modern/docs/manual/shots/pages/classic/merge.jpg" alt="Merge Checks" width="200"></a><br><sub>Merge Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-modifier-groups.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-modifier-groups.jpg" alt="Modifier Groups" width="200"></a><br><sub>Modifier Groups</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/move-table.jpg"><img src="modern/docs/manual/shots/pages/classic/move-table.jpg" alt="Move Check" width="200"></a><br><sub>Move Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/network.jpg"><img src="modern/docs/manual/shots/pages/classic/network.jpg" alt="Network" width="200"></a><br><sub>Network</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/new-tab.jpg"><img src="modern/docs/manual/shots/pages/classic/new-tab.jpg" alt="New Tab" width="200"></a><br><sub>New Tab</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/note.jpg"><img src="modern/docs/manual/shots/pages/classic/note.jpg" alt="Note" width="200"></a><br><sub>Note</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/check-list.jpg"><img src="modern/docs/manual/shots/pages/classic/check-list.jpg" alt="Open Checks" width="200"></a><br><sub>Open Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/order-template.jpg"><img src="modern/docs/manual/shots/pages/classic/order-template.jpg" alt="Order" width="200"></a><br><sub>Order</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/order-later.jpg"><img src="modern/docs/manual/shots/pages/classic/order-later.jpg" alt="Order for Later" width="200"></a><br><sub>Order for Later</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/truck-orders.jpg"><img src="modern/docs/manual/shots/pages/classic/truck-orders.jpg" alt="Orders (food truck)" width="200"></a><br><sub>Orders (food truck)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/floor-patio.jpg"><img src="modern/docs/manual/shots/pages/classic/floor-patio.jpg" alt="Patio" width="200"></a><br><sub>Patio</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/settle.jpg"><img src="modern/docs/manual/shots/pages/classic/settle.jpg" alt="Pay" width="200"></a><br><sub>Pay</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-tenders.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-tenders.jpg" alt="Payment Types" width="200"></a><br><sub>Payment Types</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/menu-popular.jpg"><img src="modern/docs/manual/shots/pages/classic/menu-popular.jpg" alt="Popular" width="200"></a><br><sub>Popular</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/prep-labels.jpg"><img src="modern/docs/manual/shots/pages/classic/prep-labels.jpg" alt="Prep Labels" width="200"></a><br><sub>Prep Labels</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-printers.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-printers.jpg" alt="Printers" width="200"></a><br><sub>Printers</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-promotions.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-promotions.jpg" alt="Promotions" width="200"></a><br><sub>Promotions</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/receive-delivery.jpg"><img src="modern/docs/manual/shots/pages/classic/receive-delivery.jpg" alt="Receive a Delivery" width="200"></a><br><sub>Receive a Delivery</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/reports.jpg"><img src="modern/docs/manual/shots/pages/classic/reports.jpg" alt="Reports" width="200"></a><br><sub>Reports</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-schedule.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-schedule.jpg" alt="Schedule" width="200"></a><br><sub>Schedule</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/seating.jpg"><img src="modern/docs/manual/shots/pages/classic/seating.jpg" alt="Seating" width="200"></a><br><sub>Seating</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/message.jpg"><img src="modern/docs/manual/shots/pages/classic/message.jpg" alt="Send a Message" width="200"></a><br><sub>Send a Message</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/sold-out.jpg"><img src="modern/docs/manual/shots/pages/classic/sold-out.jpg" alt="Sold Out (86)" width="200"></a><br><sub>Sold Out (86)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/split.jpg"><img src="modern/docs/manual/shots/pages/classic/split.jpg" alt="Split Check" width="200"></a><br><sub>Split Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/store-check.jpg"><img src="modern/docs/manual/shots/pages/classic/store-check.jpg" alt="Store Check" width="200"></a><br><sub>Store Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-store.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-store.jpg" alt="Store Settings" width="200"></a><br><sub>Store Settings</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-taxes.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-taxes.jpg" alt="Taxes" width="200"></a><br><sub>Taxes</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-terminals.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-terminals.jpg" alt="Terminals" width="200"></a><br><sub>Terminals</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/time-clock.jpg"><img src="modern/docs/manual/shots/pages/classic/time-clock.jpg" alt="Time Clock" width="200"></a><br><sub>Time Clock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-requests.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-requests.jpg" alt="Time Off & Swaps" width="200"></a><br><sub>Time Off & Swaps</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-punches.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-punches.jpg" alt="Time Punches" width="200"></a><br><sub>Time Punches</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/transfer.jpg"><img src="modern/docs/manual/shots/pages/classic/transfer.jpg" alt="Transfer Check" width="200"></a><br><sub>Transfer Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/admin-vendors.jpg"><img src="modern/docs/manual/shots/pages/classic/admin-vendors.jpg" alt="Vendors" width="200"></a><br><sub>Vendors</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/classic/weigh.jpg"><img src="modern/docs/manual/shots/pages/classic/weigh.jpg" alt="Weigh" width="200"></a><br><sub>Weigh</sub></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>Modern</b> (74 screens)</summary>
+
+<table>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/floor-bar.jpg"><img src="modern/docs/manual/shots/pages/modern/floor-bar.jpg" alt="Bar" width="200"></a><br><sub>Bar</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/bar-display.jpg"><img src="modern/docs/manual/shots/pages/modern/bar-display.jpg" alt="Bar Display" width="200"></a><br><sub>Bar Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/tabs.jpg"><img src="modern/docs/manual/shots/pages/modern/tabs.jpg" alt="Bar Tabs" width="200"></a><br><sub>Bar Tabs</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/index-breakfast.jpg"><img src="modern/docs/manual/shots/pages/modern/index-breakfast.jpg" alt="Breakfast" width="200"></a><br><sub>Breakfast</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/library.jpg"><img src="modern/docs/manual/shots/pages/modern/library.jpg" alt="Button Library" width="200"></a><br><sub>Button Library</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-card-readers.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-card-readers.jpg" alt="Card Readers" width="200"></a><br><sub>Card Readers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/check-options.jpg"><img src="modern/docs/manual/shots/pages/modern/check-options.jpg" alt="Check Options" width="200"></a><br><sub>Check Options</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/checklists.jpg"><img src="modern/docs/manual/shots/pages/modern/checklists.jpg" alt="Checklists" width="200"></a><br><sub>Checklists</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/modifiers.jpg"><img src="modern/docs/manual/shots/pages/modern/modifiers.jpg" alt="Choose" width="200"></a><br><sub>Choose</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/closed-checks.jpg"><img src="modern/docs/manual/shots/pages/modern/closed-checks.jpg" alt="Closed Checks" width="200"></a><br><sub>Closed Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/stock-count.jpg"><img src="modern/docs/manual/shots/pages/modern/stock-count.jpg" alt="Count Stock" width="200"></a><br><sub>Count Stock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/customer.jpg"><img src="modern/docs/manual/shots/pages/modern/customer.jpg" alt="Customer" width="200"></a><br><sub>Customer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/customers.jpg"><img src="modern/docs/manual/shots/pages/modern/customers.jpg" alt="Customers" width="200"></a><br><sub>Customers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/dashboard.jpg"><img src="modern/docs/manual/shots/pages/modern/dashboard.jpg" alt="Dashboard" width="200"></a><br><sub>Dashboard</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/deliveries.jpg"><img src="modern/docs/manual/shots/pages/modern/deliveries.jpg" alt="Deliveries" width="200"></a><br><sub>Deliveries</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/floor-dining.jpg"><img src="modern/docs/manual/shots/pages/modern/floor-dining.jpg" alt="Dining Area" width="200"></a><br><sub>Dining Area</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/index-dinner.jpg"><img src="modern/docs/manual/shots/pages/modern/index-dinner.jpg" alt="Dinner" width="200"></a><br><sub>Dinner</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/drawer.jpg"><img src="modern/docs/manual/shots/pages/modern/drawer.jpg" alt="Drawer" width="200"></a><br><sub>Drawer</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/drawer-reason.jpg"><img src="modern/docs/manual/shots/pages/modern/drawer-reason.jpg" alt="Drawer Reason" width="200"></a><br><sub>Drawer Reason</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-employees.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-employees.jpg" alt="Employees" width="200"></a><br><sub>Employees</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/end-of-day.jpg"><img src="modern/docs/manual/shots/pages/modern/end-of-day.jpg" alt="End of Day" width="200"></a><br><sub>End of Day</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/expo.jpg"><img src="modern/docs/manual/shots/pages/modern/expo.jpg" alt="Expo Display" width="200"></a><br><sub>Expo Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/factory-reset.jpg"><img src="modern/docs/manual/shots/pages/modern/factory-reset.jpg" alt="Factory Reset" width="200"></a><br><sub>Factory Reset</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/find-check.jpg"><img src="modern/docs/manual/shots/pages/modern/find-check.jpg" alt="Find a Check" width="200"></a><br><sub>Find a Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/find-item.jpg"><img src="modern/docs/manual/shots/pages/modern/find-item.jpg" alt="Find an Item" width="200"></a><br><sub>Find an Item</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/gift-card.jpg"><img src="modern/docs/manual/shots/pages/modern/gift-card.jpg" alt="Gift Card" width="200"></a><br><sub>Gift Card</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/guest-count.jpg"><img src="modern/docs/manual/shots/pages/modern/guest-count.jpg" alt="Guest Count" width="200"></a><br><sub>Guest Count</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/host.jpg"><img src="modern/docs/manual/shots/pages/modern/host.jpg" alt="Host Stand" width="200"></a><br><sub>Host Stand</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-inventory.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-inventory.jpg" alt="Inventory" width="200"></a><br><sub>Inventory</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/kitchen.jpg"><img src="modern/docs/manual/shots/pages/modern/kitchen.jpg" alt="Kitchen Display" width="200"></a><br><sub>Kitchen Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/logout.jpg"><img src="modern/docs/manual/shots/pages/modern/logout.jpg" alt="Log Out" width="200"></a><br><sub>Log Out</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/waste-log.jpg"><img src="modern/docs/manual/shots/pages/modern/waste-log.jpg" alt="Log Waste" width="200"></a><br><sub>Log Waste</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/login.jpg"><img src="modern/docs/manual/shots/pages/modern/login.jpg" alt="Login" width="200"></a><br><sub>Login</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/index-lunch.jpg"><img src="modern/docs/manual/shots/pages/modern/index-lunch.jpg" alt="Lunch" width="200"></a><br><sub>Lunch</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/tables.jpg"><img src="modern/docs/manual/shots/pages/modern/tables.jpg" alt="Main floor" width="200"></a><br><sub>Main floor</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/manager.jpg"><img src="modern/docs/manual/shots/pages/modern/manager.jpg" alt="Manager" width="200"></a><br><sub>Manager</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-meal-periods.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-meal-periods.jpg" alt="Meal Periods" width="200"></a><br><sub>Meal Periods</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/menu-all.jpg"><img src="modern/docs/manual/shots/pages/modern/menu-all.jpg" alt="Menu" width="200"></a><br><sub>Menu</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/menu-builder.jpg"><img src="modern/docs/manual/shots/pages/modern/menu-builder.jpg" alt="Menu Builder" width="200"></a><br><sub>Menu Builder</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-menu.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-menu.jpg" alt="Menu Items" width="200"></a><br><sub>Menu Items</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/merge.jpg"><img src="modern/docs/manual/shots/pages/modern/merge.jpg" alt="Merge Checks" width="200"></a><br><sub>Merge Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-modifier-groups.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-modifier-groups.jpg" alt="Modifier Groups" width="200"></a><br><sub>Modifier Groups</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/move-table.jpg"><img src="modern/docs/manual/shots/pages/modern/move-table.jpg" alt="Move Check" width="200"></a><br><sub>Move Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/network.jpg"><img src="modern/docs/manual/shots/pages/modern/network.jpg" alt="Network" width="200"></a><br><sub>Network</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/new-tab.jpg"><img src="modern/docs/manual/shots/pages/modern/new-tab.jpg" alt="New Tab" width="200"></a><br><sub>New Tab</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/note.jpg"><img src="modern/docs/manual/shots/pages/modern/note.jpg" alt="Note" width="200"></a><br><sub>Note</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/check-list.jpg"><img src="modern/docs/manual/shots/pages/modern/check-list.jpg" alt="Open Checks" width="200"></a><br><sub>Open Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/order-template.jpg"><img src="modern/docs/manual/shots/pages/modern/order-template.jpg" alt="Order" width="200"></a><br><sub>Order</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/order-later.jpg"><img src="modern/docs/manual/shots/pages/modern/order-later.jpg" alt="Order for Later" width="200"></a><br><sub>Order for Later</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/truck-orders.jpg"><img src="modern/docs/manual/shots/pages/modern/truck-orders.jpg" alt="Orders (food truck)" width="200"></a><br><sub>Orders (food truck)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/floor-patio.jpg"><img src="modern/docs/manual/shots/pages/modern/floor-patio.jpg" alt="Patio" width="200"></a><br><sub>Patio</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/settle.jpg"><img src="modern/docs/manual/shots/pages/modern/settle.jpg" alt="Pay" width="200"></a><br><sub>Pay</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-tenders.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-tenders.jpg" alt="Payment Types" width="200"></a><br><sub>Payment Types</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/menu-popular.jpg"><img src="modern/docs/manual/shots/pages/modern/menu-popular.jpg" alt="Popular" width="200"></a><br><sub>Popular</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/prep-labels.jpg"><img src="modern/docs/manual/shots/pages/modern/prep-labels.jpg" alt="Prep Labels" width="200"></a><br><sub>Prep Labels</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-printers.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-printers.jpg" alt="Printers" width="200"></a><br><sub>Printers</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-promotions.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-promotions.jpg" alt="Promotions" width="200"></a><br><sub>Promotions</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/receive-delivery.jpg"><img src="modern/docs/manual/shots/pages/modern/receive-delivery.jpg" alt="Receive a Delivery" width="200"></a><br><sub>Receive a Delivery</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/reports.jpg"><img src="modern/docs/manual/shots/pages/modern/reports.jpg" alt="Reports" width="200"></a><br><sub>Reports</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-schedule.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-schedule.jpg" alt="Schedule" width="200"></a><br><sub>Schedule</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/seating.jpg"><img src="modern/docs/manual/shots/pages/modern/seating.jpg" alt="Seating" width="200"></a><br><sub>Seating</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/message.jpg"><img src="modern/docs/manual/shots/pages/modern/message.jpg" alt="Send a Message" width="200"></a><br><sub>Send a Message</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/sold-out.jpg"><img src="modern/docs/manual/shots/pages/modern/sold-out.jpg" alt="Sold Out (86)" width="200"></a><br><sub>Sold Out (86)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/split.jpg"><img src="modern/docs/manual/shots/pages/modern/split.jpg" alt="Split Check" width="200"></a><br><sub>Split Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/store-check.jpg"><img src="modern/docs/manual/shots/pages/modern/store-check.jpg" alt="Store Check" width="200"></a><br><sub>Store Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-store.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-store.jpg" alt="Store Settings" width="200"></a><br><sub>Store Settings</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-taxes.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-taxes.jpg" alt="Taxes" width="200"></a><br><sub>Taxes</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-terminals.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-terminals.jpg" alt="Terminals" width="200"></a><br><sub>Terminals</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/time-clock.jpg"><img src="modern/docs/manual/shots/pages/modern/time-clock.jpg" alt="Time Clock" width="200"></a><br><sub>Time Clock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-requests.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-requests.jpg" alt="Time Off & Swaps" width="200"></a><br><sub>Time Off & Swaps</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-punches.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-punches.jpg" alt="Time Punches" width="200"></a><br><sub>Time Punches</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/transfer.jpg"><img src="modern/docs/manual/shots/pages/modern/transfer.jpg" alt="Transfer Check" width="200"></a><br><sub>Transfer Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/admin-vendors.jpg"><img src="modern/docs/manual/shots/pages/modern/admin-vendors.jpg" alt="Vendors" width="200"></a><br><sub>Vendors</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/modern/weigh.jpg"><img src="modern/docs/manual/shots/pages/modern/weigh.jpg" alt="Weigh" width="200"></a><br><sub>Weigh</sub></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>On a phone, Classic</b> (74 screens)</summary>
+
+<table>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/floor-bar.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/floor-bar.jpg" alt="Bar" width="120"></a><br><sub>Bar</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/bar-display.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/bar-display.jpg" alt="Bar Display" width="120"></a><br><sub>Bar Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/tabs.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/tabs.jpg" alt="Bar Tabs" width="120"></a><br><sub>Bar Tabs</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/index-breakfast.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/index-breakfast.jpg" alt="Breakfast" width="120"></a><br><sub>Breakfast</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/library.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/library.jpg" alt="Button Library" width="120"></a><br><sub>Button Library</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-card-readers.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-card-readers.jpg" alt="Card Readers" width="120"></a><br><sub>Card Readers</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/check-options.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/check-options.jpg" alt="Check Options" width="120"></a><br><sub>Check Options</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/checklists.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/checklists.jpg" alt="Checklists" width="120"></a><br><sub>Checklists</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/modifiers.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/modifiers.jpg" alt="Choose" width="120"></a><br><sub>Choose</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/closed-checks.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/closed-checks.jpg" alt="Closed Checks" width="120"></a><br><sub>Closed Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/stock-count.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/stock-count.jpg" alt="Count Stock" width="120"></a><br><sub>Count Stock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/customer.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/customer.jpg" alt="Customer" width="120"></a><br><sub>Customer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/customers.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/customers.jpg" alt="Customers" width="120"></a><br><sub>Customers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/dashboard.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/dashboard.jpg" alt="Dashboard" width="120"></a><br><sub>Dashboard</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/deliveries.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/deliveries.jpg" alt="Deliveries" width="120"></a><br><sub>Deliveries</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/floor-dining.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/floor-dining.jpg" alt="Dining Area" width="120"></a><br><sub>Dining Area</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/index-dinner.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/index-dinner.jpg" alt="Dinner" width="120"></a><br><sub>Dinner</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/drawer.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/drawer.jpg" alt="Drawer" width="120"></a><br><sub>Drawer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/drawer-reason.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/drawer-reason.jpg" alt="Drawer Reason" width="120"></a><br><sub>Drawer Reason</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-employees.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-employees.jpg" alt="Employees" width="120"></a><br><sub>Employees</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/end-of-day.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/end-of-day.jpg" alt="End of Day" width="120"></a><br><sub>End of Day</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/expo.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/expo.jpg" alt="Expo Display" width="120"></a><br><sub>Expo Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/factory-reset.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/factory-reset.jpg" alt="Factory Reset" width="120"></a><br><sub>Factory Reset</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/find-check.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/find-check.jpg" alt="Find a Check" width="120"></a><br><sub>Find a Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/find-item.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/find-item.jpg" alt="Find an Item" width="120"></a><br><sub>Find an Item</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/gift-card.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/gift-card.jpg" alt="Gift Card" width="120"></a><br><sub>Gift Card</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/guest-count.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/guest-count.jpg" alt="Guest Count" width="120"></a><br><sub>Guest Count</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/host.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/host.jpg" alt="Host Stand" width="120"></a><br><sub>Host Stand</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-inventory.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-inventory.jpg" alt="Inventory" width="120"></a><br><sub>Inventory</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/kitchen.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/kitchen.jpg" alt="Kitchen Display" width="120"></a><br><sub>Kitchen Display</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/logout.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/logout.jpg" alt="Log Out" width="120"></a><br><sub>Log Out</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/waste-log.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/waste-log.jpg" alt="Log Waste" width="120"></a><br><sub>Log Waste</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/login.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/login.jpg" alt="Login" width="120"></a><br><sub>Login</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/index-lunch.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/index-lunch.jpg" alt="Lunch" width="120"></a><br><sub>Lunch</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/tables.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/tables.jpg" alt="Main floor" width="120"></a><br><sub>Main floor</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/manager.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/manager.jpg" alt="Manager" width="120"></a><br><sub>Manager</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-meal-periods.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-meal-periods.jpg" alt="Meal Periods" width="120"></a><br><sub>Meal Periods</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/menu-all.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/menu-all.jpg" alt="Menu" width="120"></a><br><sub>Menu</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/menu-builder.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/menu-builder.jpg" alt="Menu Builder" width="120"></a><br><sub>Menu Builder</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-menu.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-menu.jpg" alt="Menu Items" width="120"></a><br><sub>Menu Items</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/merge.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/merge.jpg" alt="Merge Checks" width="120"></a><br><sub>Merge Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-modifier-groups.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-modifier-groups.jpg" alt="Modifier Groups" width="120"></a><br><sub>Modifier Groups</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/move-table.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/move-table.jpg" alt="Move Check" width="120"></a><br><sub>Move Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/network.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/network.jpg" alt="Network" width="120"></a><br><sub>Network</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/new-tab.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/new-tab.jpg" alt="New Tab" width="120"></a><br><sub>New Tab</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/note.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/note.jpg" alt="Note" width="120"></a><br><sub>Note</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/check-list.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/check-list.jpg" alt="Open Checks" width="120"></a><br><sub>Open Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/order-template.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/order-template.jpg" alt="Order" width="120"></a><br><sub>Order</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/order-later.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/order-later.jpg" alt="Order for Later" width="120"></a><br><sub>Order for Later</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/truck-orders.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/truck-orders.jpg" alt="Orders (food truck)" width="120"></a><br><sub>Orders (food truck)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/floor-patio.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/floor-patio.jpg" alt="Patio" width="120"></a><br><sub>Patio</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/settle.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/settle.jpg" alt="Pay" width="120"></a><br><sub>Pay</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-tenders.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-tenders.jpg" alt="Payment Types" width="120"></a><br><sub>Payment Types</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/menu-popular.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/menu-popular.jpg" alt="Popular" width="120"></a><br><sub>Popular</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/prep-labels.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/prep-labels.jpg" alt="Prep Labels" width="120"></a><br><sub>Prep Labels</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-printers.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-printers.jpg" alt="Printers" width="120"></a><br><sub>Printers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-promotions.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-promotions.jpg" alt="Promotions" width="120"></a><br><sub>Promotions</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/receive-delivery.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/receive-delivery.jpg" alt="Receive a Delivery" width="120"></a><br><sub>Receive a Delivery</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/reports.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/reports.jpg" alt="Reports" width="120"></a><br><sub>Reports</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-schedule.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-schedule.jpg" alt="Schedule" width="120"></a><br><sub>Schedule</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/seating.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/seating.jpg" alt="Seating" width="120"></a><br><sub>Seating</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/message.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/message.jpg" alt="Send a Message" width="120"></a><br><sub>Send a Message</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/sold-out.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/sold-out.jpg" alt="Sold Out (86)" width="120"></a><br><sub>Sold Out (86)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/split.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/split.jpg" alt="Split Check" width="120"></a><br><sub>Split Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/store-check.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/store-check.jpg" alt="Store Check" width="120"></a><br><sub>Store Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-store.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-store.jpg" alt="Store Settings" width="120"></a><br><sub>Store Settings</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-taxes.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-taxes.jpg" alt="Taxes" width="120"></a><br><sub>Taxes</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-terminals.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-terminals.jpg" alt="Terminals" width="120"></a><br><sub>Terminals</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/time-clock.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/time-clock.jpg" alt="Time Clock" width="120"></a><br><sub>Time Clock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-requests.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-requests.jpg" alt="Time Off & Swaps" width="120"></a><br><sub>Time Off & Swaps</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-punches.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-punches.jpg" alt="Time Punches" width="120"></a><br><sub>Time Punches</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/transfer.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/transfer.jpg" alt="Transfer Check" width="120"></a><br><sub>Transfer Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/admin-vendors.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/admin-vendors.jpg" alt="Vendors" width="120"></a><br><sub>Vendors</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-classic/weigh.jpg"><img src="modern/docs/manual/shots/pages/phone-classic/weigh.jpg" alt="Weigh" width="120"></a><br><sub>Weigh</sub></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>On a phone, Modern</b> (74 screens)</summary>
+
+<table>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/floor-bar.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/floor-bar.jpg" alt="Bar" width="120"></a><br><sub>Bar</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/bar-display.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/bar-display.jpg" alt="Bar Display" width="120"></a><br><sub>Bar Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/tabs.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/tabs.jpg" alt="Bar Tabs" width="120"></a><br><sub>Bar Tabs</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/index-breakfast.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/index-breakfast.jpg" alt="Breakfast" width="120"></a><br><sub>Breakfast</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/library.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/library.jpg" alt="Button Library" width="120"></a><br><sub>Button Library</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-card-readers.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-card-readers.jpg" alt="Card Readers" width="120"></a><br><sub>Card Readers</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/check-options.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/check-options.jpg" alt="Check Options" width="120"></a><br><sub>Check Options</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/checklists.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/checklists.jpg" alt="Checklists" width="120"></a><br><sub>Checklists</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/modifiers.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/modifiers.jpg" alt="Choose" width="120"></a><br><sub>Choose</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/closed-checks.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/closed-checks.jpg" alt="Closed Checks" width="120"></a><br><sub>Closed Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/stock-count.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/stock-count.jpg" alt="Count Stock" width="120"></a><br><sub>Count Stock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/customer.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/customer.jpg" alt="Customer" width="120"></a><br><sub>Customer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/customers.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/customers.jpg" alt="Customers" width="120"></a><br><sub>Customers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/dashboard.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/dashboard.jpg" alt="Dashboard" width="120"></a><br><sub>Dashboard</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/deliveries.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/deliveries.jpg" alt="Deliveries" width="120"></a><br><sub>Deliveries</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/floor-dining.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/floor-dining.jpg" alt="Dining Area" width="120"></a><br><sub>Dining Area</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/index-dinner.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/index-dinner.jpg" alt="Dinner" width="120"></a><br><sub>Dinner</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/drawer.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/drawer.jpg" alt="Drawer" width="120"></a><br><sub>Drawer</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/drawer-reason.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/drawer-reason.jpg" alt="Drawer Reason" width="120"></a><br><sub>Drawer Reason</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-employees.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-employees.jpg" alt="Employees" width="120"></a><br><sub>Employees</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/end-of-day.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/end-of-day.jpg" alt="End of Day" width="120"></a><br><sub>End of Day</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/expo.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/expo.jpg" alt="Expo Display" width="120"></a><br><sub>Expo Display</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/factory-reset.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/factory-reset.jpg" alt="Factory Reset" width="120"></a><br><sub>Factory Reset</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/find-check.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/find-check.jpg" alt="Find a Check" width="120"></a><br><sub>Find a Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/find-item.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/find-item.jpg" alt="Find an Item" width="120"></a><br><sub>Find an Item</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/gift-card.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/gift-card.jpg" alt="Gift Card" width="120"></a><br><sub>Gift Card</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/guest-count.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/guest-count.jpg" alt="Guest Count" width="120"></a><br><sub>Guest Count</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/host.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/host.jpg" alt="Host Stand" width="120"></a><br><sub>Host Stand</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-inventory.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-inventory.jpg" alt="Inventory" width="120"></a><br><sub>Inventory</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/kitchen.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/kitchen.jpg" alt="Kitchen Display" width="120"></a><br><sub>Kitchen Display</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/logout.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/logout.jpg" alt="Log Out" width="120"></a><br><sub>Log Out</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/waste-log.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/waste-log.jpg" alt="Log Waste" width="120"></a><br><sub>Log Waste</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/login.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/login.jpg" alt="Login" width="120"></a><br><sub>Login</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/index-lunch.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/index-lunch.jpg" alt="Lunch" width="120"></a><br><sub>Lunch</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/tables.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/tables.jpg" alt="Main floor" width="120"></a><br><sub>Main floor</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/manager.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/manager.jpg" alt="Manager" width="120"></a><br><sub>Manager</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-meal-periods.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-meal-periods.jpg" alt="Meal Periods" width="120"></a><br><sub>Meal Periods</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/menu-all.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/menu-all.jpg" alt="Menu" width="120"></a><br><sub>Menu</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/menu-builder.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/menu-builder.jpg" alt="Menu Builder" width="120"></a><br><sub>Menu Builder</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-menu.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-menu.jpg" alt="Menu Items" width="120"></a><br><sub>Menu Items</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/merge.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/merge.jpg" alt="Merge Checks" width="120"></a><br><sub>Merge Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-modifier-groups.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-modifier-groups.jpg" alt="Modifier Groups" width="120"></a><br><sub>Modifier Groups</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/move-table.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/move-table.jpg" alt="Move Check" width="120"></a><br><sub>Move Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/network.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/network.jpg" alt="Network" width="120"></a><br><sub>Network</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/new-tab.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/new-tab.jpg" alt="New Tab" width="120"></a><br><sub>New Tab</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/note.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/note.jpg" alt="Note" width="120"></a><br><sub>Note</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/check-list.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/check-list.jpg" alt="Open Checks" width="120"></a><br><sub>Open Checks</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/order-template.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/order-template.jpg" alt="Order" width="120"></a><br><sub>Order</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/order-later.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/order-later.jpg" alt="Order for Later" width="120"></a><br><sub>Order for Later</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/truck-orders.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/truck-orders.jpg" alt="Orders (food truck)" width="120"></a><br><sub>Orders (food truck)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/floor-patio.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/floor-patio.jpg" alt="Patio" width="120"></a><br><sub>Patio</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/settle.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/settle.jpg" alt="Pay" width="120"></a><br><sub>Pay</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-tenders.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-tenders.jpg" alt="Payment Types" width="120"></a><br><sub>Payment Types</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/menu-popular.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/menu-popular.jpg" alt="Popular" width="120"></a><br><sub>Popular</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/prep-labels.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/prep-labels.jpg" alt="Prep Labels" width="120"></a><br><sub>Prep Labels</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-printers.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-printers.jpg" alt="Printers" width="120"></a><br><sub>Printers</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-promotions.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-promotions.jpg" alt="Promotions" width="120"></a><br><sub>Promotions</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/receive-delivery.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/receive-delivery.jpg" alt="Receive a Delivery" width="120"></a><br><sub>Receive a Delivery</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/reports.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/reports.jpg" alt="Reports" width="120"></a><br><sub>Reports</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-schedule.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-schedule.jpg" alt="Schedule" width="120"></a><br><sub>Schedule</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/seating.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/seating.jpg" alt="Seating" width="120"></a><br><sub>Seating</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/message.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/message.jpg" alt="Send a Message" width="120"></a><br><sub>Send a Message</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/sold-out.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/sold-out.jpg" alt="Sold Out (86)" width="120"></a><br><sub>Sold Out (86)</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/split.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/split.jpg" alt="Split Check" width="120"></a><br><sub>Split Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/store-check.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/store-check.jpg" alt="Store Check" width="120"></a><br><sub>Store Check</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-store.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-store.jpg" alt="Store Settings" width="120"></a><br><sub>Store Settings</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-taxes.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-taxes.jpg" alt="Taxes" width="120"></a><br><sub>Taxes</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-terminals.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-terminals.jpg" alt="Terminals" width="120"></a><br><sub>Terminals</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/time-clock.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/time-clock.jpg" alt="Time Clock" width="120"></a><br><sub>Time Clock</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-requests.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-requests.jpg" alt="Time Off & Swaps" width="120"></a><br><sub>Time Off & Swaps</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-punches.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-punches.jpg" alt="Time Punches" width="120"></a><br><sub>Time Punches</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/transfer.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/transfer.jpg" alt="Transfer Check" width="120"></a><br><sub>Transfer Check</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/admin-vendors.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/admin-vendors.jpg" alt="Vendors" width="120"></a><br><sub>Vendors</sub></td>
+<td align="center"><a href="modern/docs/manual/shots/pages/phone-modern/weigh.jpg"><img src="modern/docs/manual/shots/pages/phone-modern/weigh.jpg" alt="Weigh" width="120"></a><br><sub>Weigh</sub></td>
+</tr>
+</table>
+
+</details>
 
 ## What it does
 
