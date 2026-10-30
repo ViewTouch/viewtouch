@@ -361,6 +361,51 @@ TEST_CASE("Station: the first-time setup keeps its answers while Wi-Fi is open",
     CHECK(name->property("text").toString() == u"Front-Counter"_s);
 }
 
+TEST_CASE("Station: every tile of the main register's home screen fits a 1280 x 800 screen", "[station][ui]")
+{
+    QTemporaryDir dir;
+    QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+    REQUIRE(f.open(QIODevice::WriteOnly));
+    f.write(R"({"role": "store", "name": "Main Register"})");
+    f.close();
+    StationController station(dir.path(), {}, false);
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, false},
+                                 {u"width"_s, 1280}, {u"height"_s, 800}});
+    engine.loadFromModule("ViewTouch", "StationWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(300);
+    // Inside what's shown: the page clips at its margins, before the window's edge.
+    auto *page = window->findChild<QQuickItem *>(u"stationPage"_s);
+    REQUIRE(page);
+    const QRectF shown = page->mapRectToScene(QRectF(0, 0, page->width(), page->height()));
+    CHECK(page->property("contentHeight").toDouble() <= page->height() + 1);   // nothing to scroll to
+    int tiles = 0;
+    std::function<void(QQuickItem *)> walk = [&](QQuickItem *it) {
+        // The Tile inline component (StationWindow_QMLTYPE_..._Tile... as its class).
+        if (it->isVisible() && QByteArray(it->metaObject()->className()).contains("Tile")) {
+            ++tiles;
+            const QRectF r = it->mapRectToScene(QRectF(0, 0, it->width(), it->height()));
+            INFO(it->property("label").toString().toStdString());
+            CHECK(r.bottom() <= shown.bottom() + 0.5);
+            CHECK(r.right() <= shown.right() + 0.5);
+            // Its icon, name and detail inside it.
+            for (QQuickItem *column : it->childItems()) {
+                if (!QByteArray(column->metaObject()->className()).contains("ColumnLayout"))
+                    continue;
+                CHECK(column->implicitHeight() <= it->height() + 0.5);
+            }
+        }
+        for (QQuickItem *c : it->childItems())
+            walk(c);
+    };
+    walk(window->contentItem());
+    CHECK(tiles >= 10);
+}
+
 // The manual's pictures of the home screen and the first-time setup
 // (hidden: run with "[manual]" and VTM_SHOTS).
 TEST_CASE("Manual: the home screen and the first-time setup", "[.manual]")

@@ -21,9 +21,12 @@ ApplicationWindow {
 
     readonly property real u: Math.max(10, Math.min(width / 64, height / 40))
     readonly property bool portrait: height > width
-    // Eight tiles to a row on a wide screen, four on a tall one.
-    readonly property real tileWidth: Math.max(root.u * 7.5,
+    // Eight tiles to a row on a wide screen, four on a tall one (at 1280 x 800
+    // eight fit only if a tile may be 6.5 units wide).
+    readonly property real tileWidth: Math.max(root.u * 6,
         (width - root.u * 2.8 - root.u * ((portrait ? 4 : 8) - 1)) / (portrait ? 4 : 8) - 0.5)
+    // Narrower tiles are a little shorter, so three rows fit the height.
+    readonly property real tileHeight: Math.min(root.u * 7.6, Math.max(root.u * 5.8, tileWidth * 0.88))
     // home | network | time | updates | help | reset | about | setup
     property string panel: station.role === "" ? "setup" : "home"
     // A newer ViewTouch found online (its version), to install.
@@ -139,20 +142,23 @@ ApplicationWindow {
         property bool locked: false
         signal tapped()
         implicitWidth: root.tileWidth
-        implicitHeight: root.u * 7.6
+        implicitHeight: root.tileHeight
         radius: root.u * 0.8
         color: tap.pressed ? Qt.darker(tint, 1.3) : tint
         border.width: 1
         border.color: Qt.lighter(tint, 1.3)
+        // A short tile (a small screen): a smaller icon and less space, so a
+        // name on two lines and its detail stay inside.
+        readonly property bool low: root.tileHeight < root.u * 7
         ColumnLayout {
             anchors.centerIn: parent
             width: parent.width - root.u
-            spacing: root.u * 0.4
+            spacing: root.u * (tile.low ? 0.15 : 0.4)
             StationIcon {
                 name: tile.icon
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: root.u * 2.7
-                Layout.preferredHeight: root.u * 2.7
+                Layout.preferredWidth: root.u * (tile.low ? 2.1 : 2.7)
+                Layout.preferredHeight: Layout.preferredWidth
             }
             Label {
                 text: tile.label
@@ -319,11 +325,16 @@ ApplicationWindow {
 
     Flickable {
         id: page
+        objectName: "stationPage"
         anchors { left: parent.left; right: parent.right; top: topBar.bottom; bottom: keyboard.visible ? keyboard.top : parent.bottom }
         anchors.margins: root.u * 1.4
         contentHeight: loader.item ? loader.item.implicitHeight : 0
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        // More than fits (a small screen): a bar says so, and drags it. Over
+        // the tiles' right edge rather than narrowing them (the tiles decide
+        // the height, which decides the bar).
+        ScrollBar.vertical: TouchScrollBar { id: pageBar }
         Loader {
             id: loader
             width: page.width
