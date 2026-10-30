@@ -119,7 +119,7 @@ struct Demo {
     }
 
     // One table or takeout, from sitting down to paying.
-    void serve(QDate day, const char *serverPin, std::int64_t start, bool breakfast)
+    void serve(QDate, const char *serverPin, std::int64_t start, bool breakfast)   // the day: its start says it
     {
         clock = start;
         as(serverPin);

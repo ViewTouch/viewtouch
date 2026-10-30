@@ -329,6 +329,26 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
+# Warnings on ViewTouch's own code: its libraries, the screens' C++ and
+# main.cpp (not Catch2, nor the C++ Qt makes from the QML). Not errors.
+# ---------------------------------------------------------------------------
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Brace-initializing only a struct's first fields ({Kind::Rule}) is how
+    # this code is written: not warned about.
+    set(VTM_WARNINGS -Wall -Wextra -Wno-missing-field-initializers)
+    foreach(target vtm_core vtm_layout vtm_editor vtm_pos vtm_print vtm_storage vtm_net)
+        if(TARGET ${target})
+            target_compile_options(${target} PRIVATE ${VTM_WARNINGS})
+        endif()
+    endforeach()
+    if(TARGET vtm_ui)
+        file(GLOB VTM_UI_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ui/cpp/*.cpp)
+        set_source_files_properties(${VTM_UI_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                                    PROPERTIES COMPILE_OPTIONS "${VTM_WARNINGS}")
+    endif()
+endif()
+
+# ---------------------------------------------------------------------------
 # Tests (Catch2 v3, vendored in external/catch2)
 # ---------------------------------------------------------------------------
 if(VTM_BUILD_TESTS)
