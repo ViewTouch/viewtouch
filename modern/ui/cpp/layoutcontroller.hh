@@ -229,6 +229,9 @@ public:
     // The whole menu as a file (Exports, or the folder set for them), for
     // Import... at another store.
     Q_INVOKABLE void exportMenu();
+    // Every item as a spreadsheet (.csv): changed there and brought back with
+    // Import… (Update prices). Returns the file ("" when it couldn't).
+    Q_INVOKABLE QString exportMenuSheet();
     // A ready-made picture for an item: the emoji drawn big into a PNG the
     // store keeps ("store:emoji-1f32e.png"); "" if it can't be.
     Q_INVOKABLE QString emojiPicture(const QString &emoji);

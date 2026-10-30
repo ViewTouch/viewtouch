@@ -1183,6 +1183,46 @@ QString LayoutController::emojiPicture(const QString &emoji)
     return ref;
 }
 
+QString LayoutController::exportMenuSheet()
+{
+    if (!pos_ || !pos_->can(QString::fromLatin1(vt::core::perm::Manager)))
+        return {};
+    // The headings Import… reads back.
+    const auto field = [](QString s) {
+        if (s.contains(u',') || s.contains(u'"') || s.contains(u'\n')) {
+            s.replace(u"\""_s, u"\"\""_s);
+            s = u'"' + s + u'"';
+        }
+        return s;
+    };
+    QStringList lines{u"Name,Category,Price,Cost,Tax,PLU,Barcode,On Hand,Low At,Sold Out"_s};
+    for (const QVariant &v : pos_->menuItems()) {
+        const QVariantMap i = v.toMap();
+        if (i.value(u"modifier"_s).toBool())
+            continue;
+        lines << QStringList{field(i.value(u"name"_s).toString()), field(i.value(u"familyName"_s).toString()),
+                             QString::number(i.value(u"priceValue"_s).toDouble(), 'f', 2), i.value(u"cost"_s).toString(),
+                             i.value(u"taxClass"_s).toString(), i.value(u"number"_s).toString(),
+                             field(i.value(u"barcodes"_s).toString()), i.value(u"stockOnHand"_s).toString(),
+                             i.value(u"stockLowAt"_s).toString(),
+                             i.value(u"availableSet"_s).toBool() ? QString() : u"Yes"_s}.join(u',');
+    }
+    const QString dir = exportDir_.isEmpty() ? QDir::home().filePath(u"ViewTouch Exports"_s) : exportDir_;
+    QString store = pos_->storeName();
+    store.replace(QRegularExpression(u"[\\/:*?\"<>|]"_s), u"-"_s);
+    const QString path = QDir(dir).filePath(u"Items - %1 - %2.csv"_s.arg(store.isEmpty() ? u"ViewTouch"_s : store,
+                                                                        QDate::currentDate().toString(Qt::ISODate)));
+    QSaveFile f(path);
+    // With a byte-order mark: Excel then reads the names' accents right.
+    if (!QDir().mkpath(dir) || !f.open(QIODevice::WriteOnly)
+        || f.write("\xEF\xBB\xBF" + lines.join(u"\r\n"_s).toUtf8() + "\r\n") < 0 || !f.commit()) {
+        setStatus(tr("Could not save the menu: %1").arg(f.errorString()));
+        return {};
+    }
+    setStatus(tr("Saved to %1").arg(path));
+    return path;
+}
+
 void LayoutController::exportMenu()
 {
     if (!pos_)

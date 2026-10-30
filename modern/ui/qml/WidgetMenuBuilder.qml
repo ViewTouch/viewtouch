@@ -808,8 +808,21 @@ Item {
                         Layout.preferredWidth: implicitWidth
                         text: qsTr("Export")
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("The whole menu as a file, for Import… at another store")
-                        onClicked: w.zone.controller.exportMenu()
+                        ToolTip.text: qsTr("The whole menu as a file, for Import… at another store, or as a spreadsheet")
+                        onClicked: exportMenuChoice.open()
+                        Menu {
+                            id: exportMenuChoice
+                            MenuItem {
+                                objectName: "builderExportFile"
+                                text: qsTr("For Another ViewTouch")
+                                onTriggered: w.zone.controller.exportMenu()
+                            }
+                            MenuItem {
+                                objectName: "builderExportSheet"
+                                text: qsTr("As a Spreadsheet (.csv)")
+                                onTriggered: w.zone.controller.exportMenuSheet()
+                            }
+                        }
                     }
                     TouchButton {
                         id: startersKey

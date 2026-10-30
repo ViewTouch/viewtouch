@@ -16,6 +16,7 @@
 #include <QTemporaryDir>
 #include <QFontMetricsF>
 #include "menuprint.hh"
+#include "app/menu_import.hh"
 #include "app/i18n.hh"
 #include "language.hh"
 #include "fake_stripe.hh"
@@ -5316,6 +5317,34 @@ TEST_CASE("UI: a food truck's customer display: now serving, and who's ready whi
     REQUIRE(s.pos.orderPickedUp(ana));
     QTest::qWait(80);
     CHECK_FALSE(find(root, u"objectName"_s, u"readyStrip"_s));
+}
+
+TEST_CASE("Flow: the items as a spreadsheet, read back by Import", "[flow][retail][import]")
+{
+    Session s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade, Fresh"_s}, {u"barcodes"_s, u"012345678905"_s},
+                                    {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"9"_s}, {u"cost"_s, u"0.80"_s}}));
+    QTemporaryDir dir;
+    s.c.setExportDirectory(dir.path());
+    const QString path = s.c.exportMenuSheet();
+    REQUIRE_FALSE(path.isEmpty());
+    QFile f(path);
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const QString text = QString::fromUtf8(f.readAll());
+    CHECK(text.contains(u"\"Lemonade, Fresh\""_s));   // a comma in a name, quoted
+
+    const auto read = app::readMenuCsv(text);
+    CHECK(read.problems.isEmpty());
+    const auto it = std::ranges::find_if(read.items, [](const auto &i) { return i.name == u"Lemonade, Fresh"_s; });
+    REQUIRE(it != read.items.end());
+    CHECK(it->price == double(s.pos.findItem(u"lemonade"_s)->price.cents()) / 100.0);   // the price, not the cost
+    CHECK(it->category == u"Drinks"_s);
+    // Every item there, none of the choices (modifiers).
+    int items = 0;
+    for (const QVariant &v : s.pos.menuItems())
+        items += v.toMap()[u"modifier"_s].toBool() ? 0 : 1;
+    CHECK(int(read.items.size()) == items);
 }
 
 TEST_CASE("UI: a code nothing has: a manager makes it a new item's barcode", "[flow][ui][retail][barcode]")
