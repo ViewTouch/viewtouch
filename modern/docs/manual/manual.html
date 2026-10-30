@@ -30,6 +30,8 @@
 <p class="shot"><img src="shots/m02-tables.png" width="520" height="292"></p>
 </div>
 
+<p style="font-size:10pt; color:#555">Pictures of every screen, in the Classic and the Modern look, on a standard screen and on a phone, are in <b>ViewTouch-Screens.zip</b> beside this manual (github.com/ViewTouch/viewtouch, release <i>modern-manual-0.10</i>).</p>
+
 <h1>Contents</h1>
 <ol>
 <li>Getting started</li>
@@ -69,6 +71,19 @@
 <li><b>Retail:</b> staff log in and start on the menu; a barcode scanned on any screen rings the item in; nothing goes to a kitchen.</li>
 <li><b>Words that fit, on every screen:</b> every page, form, the kiosk, the setup guide and the customer display were checked at five screen sizes (down to a 7" 800×480 touch screen and phones), in Classic and Modern, in English, Spanish, French and Portuguese. What didn't fit is fixed: buttons that ran off a phone's screen (Terminals), a Printers form wider than the screen, the kiosk's welcome button in French, report dates on phones, item names on a small screen's check (now on two lines), and labels now shrink a little before they're shortened with "…".</li>
 <li><b>Every screen by touch:</b> names, pagers and PINs come with the on-screen keyboard or number pad; nothing needs a keyboard or a mouse.</li>
+</ul>
+
+<!-- ======================================================================= -->
+<h1>What's new since 0.10</h1>
+<ul>
+<li><b>Reports with room for the report:</b> every report in a list at the right, by kind; the days in one row that folds away while you read; swipe across a report for the next one; wide reports slide sideways. On a phone, the report fills the screen and its name opens the list (chapter 12).</li>
+<li><b>The whole menu in one list:</b> Menu Builder → <b>☰ List</b>, sorted by any heading, narrowed to a category, what's sold out or what has no barcode. Find matches any part of a name, number, barcode, category or kitchen name (chapter 11).</li>
+<li><b>Several items at once:</b> Select → <b>Price…</b> (one price, or by an amount or a percent) and <b>Tax…</b>.</li>
+<li><b>Track stock</b> on an item's card: on hand, low at, cost and margin; counted down as it sells, sold out at none.</li>
+<li><b>Barcodes:</b> a code nothing has becomes a new item's (<b>Add an Item With It</b>); a UPC read with a 0 in front still rings in (chapter 2).</li>
+<li><b>Export as a spreadsheet</b> (.csv), and import it back to change prices. A sheet with both Cost and Price columns takes the price.</li>
+<li><b>Hand-built menu pages:</b> a new item's button goes on its category's page by itself.</li>
+<li><b>Sturdier:</b> a percent discount lowers the tax only on what it comes off; one change the database refuses no longer holds up the rest (it's kept beside the database, and a manager is told); a screen's offline sale sent again after End of Day isn't counted twice; numbers can be typed with a comma (18,5); terminals find a computer that comes back faster without knocking all day on one that's off; the standby waits after five wrong PINs.</li>
 </ul>
 
 <!-- ======================================================================= -->
@@ -422,6 +437,9 @@
 <li><b>A coupon</b> on the Pay screen (or any screen with a check open) to take it off the check.</li>
 <li><b>A gift card</b> to look it up: the Gift Card page opens with its balance.</li>
 </ul>
+<p>A UPC is found even when the scanner reads it with a 0 in front (as an EAN-13), or a spreadsheet dropped its first 0.</p>
+<p class="shot"><img src="shots/m187-unknown-code.png" width="480" height="300"></p>
+<p><b>A code nothing has</b>, scanned while a manager is logged in, asks <b>Add an Item With It</b> or <b>Not Now</b>. <b>Add an Item With It</b> opens the Menu Builder on a new item with that barcode: type its name and price and <b>Add to the Menu</b>. Handy for a shop putting new stock on the shelf.</p>
 <p>A scanner types faster than anyone, which is how ViewTouch tells it from someone typing. When a text field is open (the coupon or gift card number), the scan goes into it instead.</p>
 
 <h2>Find an item by typing</h2>
@@ -806,7 +824,10 @@
 <ul>
 <li><b>Categories</b> (left): <b>+ Category</b> adds one: its name, its color, which meals it's on (Breakfast, Lunch, Dinner, or All day), and what new items in it start with (which kitchen ticket, where it's made, its tax). Hold one and drag it to move it (or ▲ ▼); that's the order of the buttons on the order screens. <b>Edit Category</b> changes the one chosen.</li>
 <li><b>Items</b> (middle): the category's items as tiles. <b>+ Add Item</b>, or touch an item to change it. Hold an item and drag it to another place: the order screens follow.</li>
-<li><b>The item's card</b> (right): name, price, category, photo, sold out, on the kiosk or not. <b>What's on it</b>: type the ingredients it comes with, separated by commas (<i>lettuce, tomato, onion, mayo</i>); guests and staff can then have each No, Light, Extra or On the side. <b>Choices it asks for</b>: touch the choice groups it should ask for (Temperature, Side, Dressing…). <b>Add to the Menu</b> / <b>Save</b> are always at the bottom. <b>More…</b> opens every setting (kitchen name, prices by meal, takeout price, recipe…) in Manager → Menu.</li>
+<li><b>☰ List</b> (above the items): every item on the menu in one table instead: its name, category, price, tax and number or barcode. Touch a heading to sort by it (again for the other way). <b>All Items</b>, the category's name, <b>Sold Out</b> and <b>No Number or Barcode</b> narrow it. Touch a row to open its card. <b>▦ Tiles</b> goes back.</li>
+<li><b>🔍 Find</b> (top left) finds an item anywhere on the menu by any part of its name, its number, its barcode, its category or its kitchen name. With the List showing, the table shows what's found.</li>
+<li><b>The item's card</b> (right): name, price, category, photo, sold out, on the kiosk or not, and <b>Track stock</b> (below). <b>What's on it</b>: type the ingredients it comes with, separated by commas (<i>lettuce, tomato, onion, mayo</i>); guests and staff can then have each No, Light, Extra or On the side. <b>Choices it asks for</b>: touch the choice groups it should ask for (Temperature, Side, Dressing…). <b>Add to the Menu</b> / <b>Save</b> are always at the bottom. <b>More…</b> opens every setting (kitchen name, prices by meal, takeout price, recipe…) in Manager → Menu, on that item.</li>
+<li><b>Select…</b>: touch items (tiles or rows of the List, in any category; <b>All</b> chooses every one shown), then change them together: <b>Move to…</b> another category, <b>Color…</b>, <b>Price…</b>, <b>Tax…</b>, <b>Sold Out</b>, <b>For Sale</b> or <b>Remove…</b>. <b>Price…</b> sets one price for all of them, or moves each one's own price by an amount (<i>0.50</i>, or <i>-0.25</i> to take off) or a percent (<i>5</i>, or <i>-10</i> for 10% less); it shows a few before and after first. Each is one step for <b>↶ Undo</b>.</li>
 <li><b>Add Several…</b> (beside the category's name): type or paste a list, one per line or separated by commas, each with its price: <i>Carne Asada 3.50</i>, <i>Al Pastor $3.25</i>, <i>Lengua 4,25</i>. A line starting with a category's name and a colon puts what follows there, and makes the category if it's new: <i>Drinks: Horchata 2.75, Agua Fresca 2.50</i>. It shows what it will add before you touch <b>Add</b>.</li>
 <li><b>Import…</b> (under the categories): a menu from a spreadsheet, or from the POS you're leaving. Put the file on a USB stick or this computer, then choose it. An Excel workbook (<i>.xlsx</i>) opens as it is; from Google Sheets, download it as Excel or CSV. A first row with column names is read by name: <i>Name</i> or <i>Item</i>, <i>Price</i>, <i>Category</i> or <i>Section</i>, <i>Description</i>, <i>Ingredients</i> (Spanish names work too); without one, the columns are name, price, category. Prices like <i>$3.50</i> or <i>3,50</i> are fine. A <i>Photo</i> (or <i>Foto</i>) column names a picture file for each item, like <i>fish-tacos.jpg</i>: put the pictures in the same folder as the spreadsheet (on the USB stick too). Rows whose picture isn't there come in without one, and the preview says which. It shows what it will add, and which rows it leaves out and why, before <b>Import</b>. Untick a row to leave it out; <b>Find</b> narrows the list (by name or category), and <b>Tick these</b> / <b>Untick these</b> do every row shown. Rows without a category go in the one chosen at the top, or in a new one if you type a name there. When some rows are left, the preview stays open for the next category, with the ones just imported gone from the list. New categories are made, items already on the menu are skipped, or get the file's price if you turn that on. A barcode another item already has is left off, and the message after says which.</li>
 <li><b>Coming from Square, Clover or Toast:</b> export the menu there and import the file here, as it is.
@@ -816,7 +837,8 @@
 <li><b>Toast:</b> the menu file from Toast's data export (<i>MenuExport.json</i>). Each menu group becomes a category, a group inside it a heading (section), and the items come with their descriptions, PLUs and modifier groups. An item on two menus (Lunch, Dinner) comes in once. Toast's item list (<i>MenuItem_Export.csv</i>) works too, but it has only names and prices, no categories. File them a category at a time: <b>Untick these</b> (every row), find and tick the burritos, type or choose <i>Burritos</i> at the top, <b>Import</b>; then the next. Its modifier options are left out, because the list doesn't say which items they go with. Toast's other lists (<i>Menu_Export.csv</i>, <i>MenuGroup_Export.csv</i>, <i>MenuOption_Export.csv</i>) hold no items, and none of them says which items go in which group, so the POS tells you so and imports nothing from them.</li>
 </ul>
 A modifier group called <i>Size</i> (one required) becomes the item's sizes. Prices, choices and what's on each item are worth a look after: touch <b>Ready to go?</b> to see anything missing.</li>
-<li><b>Export</b>: the whole menu as one file (in <i>ViewTouch Exports</i>, or the folder set for exports): its categories, choice groups and items with every setting. At another store, <b>Import…</b> that file: what that store doesn't have by name is added, with its choices; nothing it has changes. Photos go along in the file; sales counts and stock recipes stay with each store.</li>
+<li><b>Export → For Another ViewTouch</b>: the whole menu as one file (in <i>ViewTouch Exports</i>, or the folder set for exports): its categories, choice groups and items with every setting. At another store, <b>Import…</b> that file: what that store doesn't have by name is added, with its choices; nothing it has changes. Photos go along in the file; sales counts and stock recipes stay with each store.</li>
+<li><b>Export → As a Spreadsheet (.csv)</b>: every item, a row each: name, category, price, cost, tax, number, barcodes, on hand, low at and sold out. Open it in Excel or Google Sheets to look prices over or change them, then <b>Import…</b> it with <i>Update prices</i> on to bring the new prices in. A sheet with both a <i>Cost</i> and a <i>Price</i> column takes the price as the price.</li>
 <li><b>Print…</b> (beside Import… and Export): the menu with today's prices as a PDF, to print or hand out (in <i>ViewTouch Exports</i>). Type a title and a line under it (address, hours), choose 1 or 2 columns, Letter or A4, with or without pictures and descriptions, and which categories. The first page shows as it will print. Sizes print with their prices; sections from the Menu Builder print as small headings. Make a new one after prices change.</li>
 <li><b>Starter…</b>: a Taqueria, Café, Burgers &amp; Bar or Pizza menu: its categories, choice groups (salsas, sizes, milks, how it's cooked…) and items with typical prices and what's on them, added to your menu; nothing already on it changes. Then change the prices and names to yours.</li>
 <li><b>Duplicate</b> (on an item's card) makes a copy right after it, with its choices and what's on it, named <i>Fish Tacos 2</i>: change its name and price and save.</li>
@@ -825,9 +847,16 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <li><b>↶ Undo</b> (top left, under the check) takes back the last change: a removed item, a moved category, an import or a starter menu as a whole; again for the one before (up to 20). If the menu was changed elsewhere since (another screen, Manager → Menu), it says so and doesn't undo over that change.</li>
 <li>Touching another item, category or choice group with changes not saved asks <b>Save</b>, <b>Don't Save</b> or <b>Keep Editing</b>. <b>+ New Choice Group…</b> on an item's card comes back to the item once the group is added, with it chosen (<b>‹ item</b> goes back without one). Prices can be typed 3.50, $3.50 or 3,50.</li>
 <li><b>Contains</b> (an item's card): its allergens (gluten, dairy, egg, peanut, tree nuts, soy, fish, shellfish, sesame).</li>
-<li><b>Also a button on</b> (an item's card, for stores with pages of buttons placed by hand, like a Happy Hour page): pick the page, <b>Add Button</b>. It goes in the page's next free place, sized and styled like its other item buttons.</li>
+<li><b>Also a button on</b> (an item's card, for stores with pages of buttons placed by hand, like a Happy Hour page): pick the page, <b>Add Button</b>. It goes in the page's next free place, sized and styled like its other item buttons. On a store whose menu pages are all placed by hand, a new item's button goes by itself on the page with its category's other items; removing an item removes its buttons.</li>
 <li>On a phone the Menu Builder shows one step at a time: categories, then items, then the card.</li>
 </ul>
+<table cellpadding="4"><tr>
+<td><img src="shots/m184-builder-list.png" width="270" height="169"><br><small>☰ List: every item, sorted by a heading</small></td>
+<td><img src="shots/m185-builder-price-several.png" width="270" height="169"><br><small>Select → Price…: 5% more on three burgers</small></td>
+</tr></table>
+<h3>Track stock</h3>
+<p class="shot"><img src="shots/m186-builder-track-stock.png" width="480" height="300"></p>
+<p>For something sold as it comes (a T-shirt, a bottle of wine, a bag of chips), turn on <b>Track stock</b> on its card and type how many there are (<b>On hand</b>), when to warn (<b>Low at</b>) and what one costs you (<b>Cost</b>; the card shows the margin it leaves). Each one sold counts it down, at the register or the kiosk, in a shop too (paid without being sent); a void puts it back. At <b>Low at</b> it says <i>Running low</i>, the order screen shows how many are left, and at none it's sold out by itself until there are more. It's in <b>Count Stock</b>, <b>Receive a Delivery</b> and the <b>Stock</b> and <b>Food Cost</b> reports like the kitchen's ingredients. Saving the card without touching <b>On hand</b> keeps what sold since the card was opened. Items made from ingredients keep their recipes in Manager → Menu (Inventory).</p>
 <p><b>A store set up before the menu screens filled themselves</b> sees a note at the top of the Menu Builder: its meal pages have category buttons placed by hand, so new items don't show up on them. <b>Switch to Self-Filling</b> replaces those buttons with the self-filling categories, where they were, and keeps everything else on the page; it opens the page editor to look them over, then <b>Save</b> (or <b>Undo</b>). Pages built by hand stay as pages of their own.</p>
 <p><b>★ Favorite</b> on an item's card puts it in the order screen's <b>★ Favorites</b>, the first tab, together with today's best sellers (12 in all). The item buttons size themselves: as many columns as fit the category's items without scrolling, as big as they can be.</p>
 <p>On the order screen, each meal's page shows its categories as buttons (<b>Breakfast</b>, <b>Lunch</b>, <b>Dinner</b> at the top); touching one shows its items, with a button for every category across the top. <b>Everything</b> shows the whole menu, <b>Popular</b> today's best sellers.</p>
@@ -1091,8 +1120,14 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 
 <!-- ======================================================================= -->
 <h1>12. Reports and End of Day</h1>
-<p class="shot"><img src="shots/m46-report-sales.png" width="560" height="315"></p>
-<p class="caption">Reports: the report along the top, the period below.</p>
+<p class="shot"><img src="shots/m180-reports-list.png" width="560" height="315"></p>
+<p class="caption">Reports: the days along the top, the report below, and every report in a list at the right.</p>
+<p>The reports are listed at the right by kind: <b>Sales</b>, <b>Staff</b>, <b>Money</b>, <b>Stock</b>, <b>Guests</b> and <b>Checks</b>; the list scrolls. Touch one to read it. To go through them one after another, <b>swipe across the report</b>: right to left for the next, left to right for the one before. Reading further down a long report folds the row of days away, for more of the report; scroll back up and it returns. A report wider than the screen slides sideways.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m182-reports-phone.png" width="180" height="380"><br><small>On a phone: the report fills the screen</small></td>
+<td><img src="shots/m183-reports-phone-list.png" width="180" height="380"><br><small>The report's name opens the list</small></td>
+</tr></table>
+<p>On a phone, the key at the top with the report's name (<b>Sales ▾</b>) opens the list over the report; pick one and it closes. Print, CSV and PDF are under <b>⋯</b>.</p>
 <table border="1" cellpadding="5" cellspacing="0" width="100%">
 <tr><th>Report</th><th>Shows</th></tr>
 <tr><td>Sales</td><td>The one for the books (printed at End of Day). Checks, guests, item sales, discounts and <b>net sales</b>; <b>Sales tax</b> for the tax return: taxable sales for each kind of tax, non-taxable sales and the tax; gratuity and <b>gift cards sold</b> (on their own line: money owed to the guest until it's spent, not a sale); payments by type, with how much of what was collected is cash and cards, gift cards (paid for before) and house accounts (to collect); card tips; refunds; averages and voids.</td></tr>
@@ -1115,8 +1150,8 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="shot"><img src="shots/m135-forecast.jpg" width="560" height="315"></p>
 <p class="caption">Forecast: Wednesday from the last four Wednesdays.</p>
 <h2>Periods and last year</h2>
-<p><b>Day</b> shows one business day (◀ ▶ for earlier days). <b>This Week</b>, <b>Last Week</b>, <b>This Month</b>, <b>Last Month</b>, <b>This Year</b> and <b>Dates…</b> cover a range. <b>vs Last Year</b> adds the same days a year before and the change.</p>
-<p class="shot"><img src="shots/m47-report-month-vs-last-year.png" width="560" height="315"></p>
+<p><b>Day</b> shows one business day (◀ ▶ for earlier days). <b>This Week</b>, <b>Last Week</b>, <b>This Month</b>, <b>Last Month</b>, <b>This Year</b>, <b>Last Year</b> and <b>Dates…</b> cover a range (slide the row to see them all). <b>vs Last Year</b> adds the same days a year before and the change. Some reports are one day at a time (Tips, Labor, Drawer, Deposit, Expenses, Purchases, Stock, Gift Cards, Drivers, Checklists, Changes): for them the ranges are dimmed, and picking one goes back to Day.</p>
+<p class="shot"><img src="shots/m181-reports-month.png" width="560" height="315"></p>
 <p class="caption">Items last month against the same month a year before.</p>
 <table cellpadding="4"><tr>
 <td><img src="shots/m48-report-labor.png" width="190" height="107"><br><small>Labor</small></td>

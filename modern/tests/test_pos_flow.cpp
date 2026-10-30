@@ -5178,6 +5178,187 @@ TEST_CASE("Manual: phones as they are now, and Classic or Modern", "[.manual]")
     }
 }
 
+// Every page of the starter store, in Classic and in Modern, on a standard
+// screen and on a phone: into pages/<look>/<page>.png under VTM_SHOTS (for
+// the screenshots that go with the manual).
+TEST_CASE("Manual: every page, in Classic and in Modern", "[.manual][.pages]")
+{
+    const QByteArray dir = qgetenv("VTM_SHOTS");
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    QStringList ids;
+    for (const QString &file : QDir(QStringLiteral(VTM_SEED_DIR "/pages")).entryList({u"*.json"_s}))
+        if (!file.endsWith(u"-phone.json"_s))
+            ids << file.chopped(5);
+    struct Look { const char *name; bool modern; int w, h; QString form; };
+    for (const Look &look : {Look{"classic", false, 1600, 900, {}}, Look{"modern", true, 1600, 900, {}},
+                             Look{"phone-classic", false, 540, 1140, u"phone"_s}, Look{"phone-modern", true, 540, 1140, u"phone"_s}}) {
+        Screen s(false, look.w, look.h, look.form);
+        // A lived-in store, a manager on, a table going.
+        s.c.setPos(nullptr);
+        REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+        s.pos.shared()->settings.notices.clear();
+        s.c.setPos(&s.pos);
+        if (look.modern) {
+            layout::Layout modern = seedLayout();
+            REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+            s.c.replaceLayout(modern);
+        }
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+        if (s.pos.selectTable(u"T3"_s) == app::PosService::TableNeedsGuests) {
+            s.pos.entryKey(u"3"_s);
+            REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        }
+        for (const char *item : {"cobb", "draft-beer", "caesar"})
+            s.pos.addItem(QString::fromLatin1(item));
+        if (s.pos.choosingInfo()[u"active"_s].toBool())
+            s.pos.finishChoosing();
+        const QString into = QString::fromLocal8Bit(dir) + u"/pages/"_s + QString::fromLatin1(look.name);
+        if (!dir.isEmpty())
+            QDir().mkpath(into);
+        int shown = 0;
+        for (const QString &id : ids) {
+            if (!s.c.jumpTo(id))
+                continue;
+            QTest::qWait(150);
+            if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+                toast->setProperty("opacity", 0);
+            QTest::qWait(300);
+            if (!dir.isEmpty())
+                s.window->grabWindow().save(into + u'/' + id + u".png"_s);
+            ++shown;
+        }
+        CHECK(shown > 50);
+    }
+}
+
+// Other languages, for the manual: an order in Chinese, the Pay screen in French.
+TEST_CASE("Manual: the screens in Chinese and in French", "[.manual]")
+{
+    for (const char *lang : {"zh", "fr"}) {
+        Screen s(false, 1600, 900);
+        vt::i18n::install();
+        vt::ui::followLanguage(&s.engine, &s.c);
+        for (core::Employee &e : s.pos.shared()->employees)
+            e.language = lang;
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
+        REQUIRE(s.pos.selectTable(u"T3"_s) == app::PosService::TableNeedsGuests);
+        s.pos.entryKey(u"2"_s);
+        REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+        for (const char *item : {"cobb", "draft-beer", "caesar"})
+            s.pos.addItem(QString::fromLatin1(item));
+        if (s.pos.choosingInfo()[u"active"_s].toBool())
+            s.pos.finishChoosing();
+        const bool chinese = std::string(lang) == "zh";
+        if (chinese)
+            REQUIRE(s.c.openCategory(u"burgers"_s));
+        else
+            s.c.jumpTo(u"settle"_s);
+        QTest::qWait(300);
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        QTest::qWait(450);
+        s.shot(chinese ? "m146-chinese-order" : "m146-french-pay");
+        s.pos.releaseCheck();
+        s.pos.logout();
+    }
+    vt::i18n::setLanguage(u"en"_s);
+}
+
+// What came after 0.10, for the manual.
+TEST_CASE("Manual: reports, the item list, stock and barcodes", "[.manual]")
+{
+    const auto clean = [](Screen &s) {
+        QTest::qWait(200);
+        if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+            toast->setProperty("opacity", 0);
+        QTest::qWait(450);
+    };
+    const auto lived = [](Screen &s) {
+        s.c.setPos(nullptr);
+        REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+        s.pos.shared()->settings.notices.clear();
+        s.c.setPos(&s.pos);
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    };
+    const auto by = [](Screen &s, const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    {
+        Screen s;
+        lived(s);
+        REQUIRE(s.c.jumpTo(u"reports"_s));
+        s.tapKey(u"Items"_s);
+        clean(s);
+        s.shot("m180-reports-list");
+        s.tapKey(u"This Month"_s);
+        s.tapKey(u"vs Last Year"_s);
+        for (int i = 0; i < 100 && s.pos.rangeReport()[u"loading"_s].toBool(); ++i)
+            QTest::qWait(20);
+        clean(s);
+        s.shot("m181-reports-month");
+    }
+    {
+        Screen s(false, 540, 1140, u"phone"_s);
+        lived(s);
+        REQUIRE(s.c.jumpTo(u"reports"_s));
+        clean(s);
+        s.shot("m182-reports-phone");
+        s.tapItem(by(s, u"reportPicker"_s));
+        clean(s);
+        s.shot("m183-reports-phone-list");
+    }
+    {
+        Screen s(false, 1280, 800);
+        lived(s);
+        REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"barcodes"_s, u"012345678905"_s},
+                                        {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"24"_s}, {u"stockLowAt"_s, u"6"_s},
+                                        {u"cost"_s, u"0.80"_s}}));
+        REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+        QTest::qWait(150);
+        s.tapItem(by(s, u"builderListView"_s));
+        clean(s);
+        s.shot("m184-builder-list");
+        s.tapItem(by(s, u"builderSelect"_s));
+        for (const char *id : {"classic-burger", "cheeseburger", "bacon-burger"})
+            if (QQuickItem *row = by(s, u"builderListRow-"_s + QString::fromLatin1(id)))
+                s.tapItem(row);
+        s.tapItem(by(s, u"builderSelectPrice"_s));
+        s.tapItem(by(s, u"builderPriceHow-percent"_s));
+        by(s, u"builderPriceAmount"_s)->setProperty("text", u"5"_s);
+        clean(s);
+        s.shot("m185-builder-price-several");
+        s.tapItem(Screen::findBy(s.window->contentItem(), "text", u"Cancel"_s));
+        QTest::qWait(500);   // closed, its dimming gone
+        s.tapItem(by(s, u"builderSelect"_s));   // Done
+        QTest::qWait(100);
+        REQUIRE(by(s, u"builderSelect"_s)->property("text").toString() != u"Done"_s);
+        QQuickItem *search = by(s, u"builderSearch"_s);
+        REQUIRE(search);
+        search->setProperty("text", u"lemonade"_s);
+        QMetaObject::invokeMethod(search, "textEdited");
+        QTest::qWait(100);
+        s.tapItem(by(s, u"builderListRow-lemonade"_s));
+        QTest::qWait(150);
+        // The card scrolled down to its stock.
+        QQuickItem *card = by(s, u"builderCard"_s), *track = by(s, u"builderStockTrack"_s);
+        REQUIRE(card);
+        REQUIRE(track);
+        const QQuickItem *content = qvariant_cast<QQuickItem *>(card->property("contentItem"));
+        const qreal y = track->mapToItem(content, QPointF(0, 0)).y();
+        card->setProperty("contentY", std::clamp(y - 140, 0.0, std::max(0.0, card->property("contentHeight").toDouble() - card->height())));
+        clean(s);
+        s.shot("m186-builder-track-stock");
+    }
+    {
+        Screen s(false, 1280, 800);
+        lived(s);
+        REQUIRE(s.c.jumpTo(u"index-lunch"_s));
+        s.c.scanned(u"4006381333931"_s);
+        clean(s);
+        s.shot("m187-unknown-code");
+    }
+}
+
 TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad for the pager", "[flow][ui][truck]")
 {
     Screen s(true);   // a touch screen: no keyboard, no mouse

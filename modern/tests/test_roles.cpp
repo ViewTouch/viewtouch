@@ -360,3 +360,43 @@ TEST_CASE("Station: the first-time setup keeps its answers while Wi-Fi is open",
     REQUIRE(name);
     CHECK(name->property("text").toString() == u"Front-Counter"_s);
 }
+
+// The manual's pictures of the home screen and the first-time setup
+// (hidden: run with "[manual]" and VTM_SHOTS).
+TEST_CASE("Manual: the home screen and the first-time setup", "[.manual]")
+{
+    const QByteArray shots = qgetenv("VTM_SHOTS");
+    const auto open = [](StationController &station, QQmlApplicationEngine &engine) {
+        engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, false},
+                                     {u"width"_s, 1280}, {u"height"_s, 800}});
+        engine.loadFromModule("ViewTouch", "StationWindow");
+        REQUIRE_FALSE(engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        REQUIRE(window);
+        REQUIRE(QTest::qWaitForWindowExposed(window));
+        QTest::qWait(400);
+        return window;
+    };
+    {
+        QTemporaryDir dir;
+        QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(R"({"role": "store", "name": "Main Register"})");
+        f.close();
+        StationController station(dir.path(), {}, false);
+        QQmlApplicationEngine engine;
+        QQuickWindow *window = open(station, engine);
+        CHECK(window->findChild<QQuickItem *>(u"tileMaintainer"_s));
+        if (!shots.isEmpty())
+            window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/m147-home-screen.png"_s);
+    }
+    {
+        QTemporaryDir dir;
+        StationController station(dir.path(), {}, false);   // a new computer
+        QQmlApplicationEngine engine;
+        QQuickWindow *window = open(station, engine);
+        CHECK(window->property("panel").toString() == u"setup"_s);
+        if (!shots.isEmpty())
+            window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/m148-first-setup.png"_s);
+    }
+}
