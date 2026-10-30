@@ -35,12 +35,14 @@ public:
     void send(const QJsonObject &message);
     // A message already in JSON (one line, no newline).
     void sendRaw(const QByteArray &json);
-    // Complete messages received so far. Sets `overflow` on a runaway line.
+    // Complete messages received so far. Sets `overflow` on a runaway line
+    // (over MaxMessageBytes); a caller that doesn't ask is cut off instead.
     QList<QJsonObject> receive(bool *overflow = nullptr);
 
 private:
     QTcpSocket *socket_;
     QByteArray buffer_;
+    qsizetype searched_ = 0;   // buffer_ has no newline before this
     bool lowDelay_ = false;
 };
 
