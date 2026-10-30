@@ -281,6 +281,18 @@ bool PosStore::open(QString *error)
             || !run(q, u"UPDATE meta SET value = '17' WHERE key = 'pos_schema_version'"_s, error))
             return false;
     }
+    // Indexes for what's looked up by time, so a store with years of data
+    // doesn't read whole tables. An older ViewTouch opens the database the
+    // same with them (a standby a version behind), so they aren't a version.
+    for (const char *sql : {"CREATE INDEX IF NOT EXISTS time_punches_in ON time_punches (clock_in)",
+                            "CREATE INDEX IF NOT EXISTS refunds_at ON refunds (at)",
+                            "CREATE INDEX IF NOT EXISTS shifts_start ON shifts (start)",
+                            "CREATE INDEX IF NOT EXISTS deliveries_at ON deliveries (at)",
+                            "CREATE INDEX IF NOT EXISTS problems_at ON problems (at)",
+                            "CREATE INDEX IF NOT EXISTS parties_day ON parties (day_key)",
+                            "CREATE INDEX IF NOT EXISTS parties_status ON parties (status)"})
+        if (!run(q, QString::fromLatin1(sql), error))
+            return false;
     return true;
 }
 
