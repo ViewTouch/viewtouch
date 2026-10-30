@@ -222,6 +222,10 @@ TEST_CASE("Admin: gratuity rules and terminal printers", "[m6][admin]")
     REQUIRE(pos.adminSave(u"store"_s, 0, store));
     CHECK(pos.settings().gratuityBp == 2000);
     CHECK(pos.settings().gratuityMinGuests == 8);
+    // Typed with a comma for the decimals, as much of the world writes it.
+    store[u"gratuityPercent"_s] = u"18,5"_s;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK(pos.settings().gratuityBp == 1850);
 
     QVariantMap t = pos.adminNewRecord(u"terminals"_s);
     t[u"name"_s] = u"Patio"_s;
