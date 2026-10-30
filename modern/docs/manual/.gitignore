@@ -1,3 +1,3 @@
-shots/
+shots/**/*.png
 *.pdf
 *.zip
