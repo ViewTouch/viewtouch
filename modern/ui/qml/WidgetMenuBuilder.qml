@@ -864,7 +864,8 @@ Item {
             // --- the category's items ---
             ColumnLayout {
                 visible: (!w.narrow || w.stage === "items") && w.mode === "menu"
-                Layout.preferredWidth: w.narrow ? -1 : w.listView ? 700 : 430
+                // The List wide while it's all there is; narrow again beside an open card.
+                Layout.preferredWidth: w.narrow ? -1 : w.listView && !w.editingItem && !w.editingCategory ? 700 : 430
                 Layout.fillWidth: w.narrow
                 Layout.fillHeight: true
                 spacing: 8

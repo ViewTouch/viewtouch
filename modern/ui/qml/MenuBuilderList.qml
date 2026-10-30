@@ -16,6 +16,8 @@ ColumnLayout {
     property string filter: ""       // "" | soldout | nocode
     property string sortBy: "name"   // name | category | price | tax | code
     property bool descending: false
+    // Narrow (beside an item's card): name, price and number only.
+    readonly property bool compact: width < 600
 
     function matches(i, t) {
         return i.name.toLowerCase().includes(t)
@@ -106,14 +108,15 @@ ColumnLayout {
             Repeater {
                 model: [
                     { id: "name", label: qsTr("Item"), fill: true },
-                    { id: "category", label: qsTr("Category"), w: 130 },
+                    { id: "category", label: qsTr("Category"), w: 130, wide: true },
                     { id: "price", label: qsTr("Price"), w: 80 },
-                    { id: "tax", label: qsTr("Tax"), w: 90 },
+                    { id: "tax", label: qsTr("Tax"), w: 90, wide: true },
                     { id: "code", label: qsTr("Number"), w: 110 },
                 ]
                 delegate: Label {
                     required property var modelData
                     objectName: "builderListSort-" + modelData.id
+                    visible: !list.compact || !modelData.wide
                     Layout.fillWidth: !!modelData.fill
                     Layout.preferredWidth: modelData.w ?? -1
                     Layout.fillHeight: true
@@ -167,6 +170,7 @@ ColumnLayout {
                     elide: Text.ElideRight
                 }
                 RowLayout {
+                    visible: !list.compact
                     Layout.preferredWidth: 130
                     spacing: 6
                     Rectangle { width: 10; height: 28; radius: 3; color: row.cat ? row.cat.color || "#4a5260" : "#4a5260" }
@@ -187,6 +191,7 @@ ColumnLayout {
                     elide: Text.ElideLeft
                 }
                 Label {
+                    visible: !list.compact
                     Layout.preferredWidth: 90
                     text: list.taxName(row.modelData.taxClass)
                     font.pixelSize: 14
