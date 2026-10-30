@@ -197,6 +197,61 @@ QStringList rangeCells(const QVariantMap &range, const QString &first)
 
 } // namespace
 
+TEST_CASE("Past checks keep the tax they closed with when the rates change", "[reports][range][tax]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    const auto seed = test::seedPosData();
+    {
+        storage::PosStore store(path);
+        REQUIRE(store.open());
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees));
+    }
+    storage::PosStore store(path);
+    REQUIRE(store.open());
+    storage::AsyncWriter writer(path);
+    storage::SqlPosSink sink(writer);
+    PosService pos(*store.load(), &sink);
+    pos.shared()->history = [&](std::int64_t from, std::int64_t to) { return storage::closedChecksBetween(path, from, to); };
+    pos.shared()->settings.tax.foodPpm = 82500;   // 8.25%
+
+    // Last month: 4 salads ($50.00), closed at 8.25% (its rates kept, saved
+    // and read back from the database).
+    const QDate first = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1).addMonths(-1);
+    core::Check old = pastSale(9101, QDateTime(first.addDays(2), QTime(12, 0)).toMSecsSinceEpoch(), 4, pos);
+    old.closedRates = pos.shared()->settings.tax;
+    sink.saveCheck(old);
+    writer.flush();
+    const auto back = storage::closedChecksBetween(path, old.closedAt - 1, old.closedAt + 1);
+    REQUIRE(back.size() == 1);
+    REQUIRE(back[0].closedRates);
+    CHECK(back[0].closedRates->foodPpm == 82500);
+
+    // The food tax goes up to 10%.
+    pos.shared()->settings.tax.foodPpm = 100000;
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.requestRangeReport(u"sales"_s, u"lastMonth"_s));
+    REQUIRE(waitForRange(pos));
+    const QStringList food = rangeCells(pos.rangeReport(), u"Food tax"_s);
+    REQUIRE(food.size() >= 2);
+    CHECK(food.last() == u"$4.13"_s);   // 8.25% of $50.00, not 10% ($5.00)
+
+    // A check closed now takes the new rates; reopened, it forgets them.
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.addItem(u"cobb"_s);
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    const auto closed = std::ranges::find_if(pos.shared()->closedToday, [&](const core::Check &c) { return c.id == id; });
+    REQUIRE(closed != pos.shared()->closedToday.end());
+    REQUIRE(closed->closedRates);
+    CHECK(closed->closedRates->foodPpm == 100000);
+    REQUIRE(pos.reopenCheck(id));
+    CHECK_FALSE(pos.shared()->open.at(id).closedRates);
+}
+
 TEST_CASE("Reports over a range of days, against the same days last year", "[reports][range]")
 {
     QTemporaryDir dir;

@@ -135,6 +135,7 @@ bool PosService::reopenCheck(qint64 checkId)
     c.closedAt = 0;
     c.businessDay = 0;
     c.drawerSession = 0;
+    c.closedRates.reset();   // today's rates again, until it closes again
     noteEvent(c, tr("Reopened"), "reopen", c.totals(s_->settings.tax).total);
     const std::int64_t id = c.id;
     s_->open[id] = std::move(c);

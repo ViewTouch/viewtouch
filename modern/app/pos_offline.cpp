@@ -181,6 +181,10 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
             m.made = true;
     }
     c.businessDay = s_->day.id;
+    // The rates the screen closed it with (its own copy of the store's), or
+    // the store's now for one from an older screen.
+    if (!c.closedRates)
+        c.closedRates = s_->settings.tax;
     const Totals t = c.totals(s_->settings.tax);
     if (t.cashPaid.cents() > 0 || c.cashTip.cents() > 0) {
         // The drawer it went in, still open here, and the same one (a bank the

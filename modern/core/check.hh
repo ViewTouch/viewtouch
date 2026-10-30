@@ -280,6 +280,10 @@ struct Check {
     // Sold tax-free to a buyer with an exemption certificate (a nonprofit,
     // a school, the government): its number and who, kept for the state.
     std::string taxExempt;
+    // The tax rates it closed with: its totals are always worked out with
+    // them, so a later change of rates leaves past checks (and the reports
+    // over them) as they were. Reopening forgets them.
+    std::optional<TaxRates> closedRates;
     bool autoGratuity = false;        // added for a large party (not by hand)
     std::vector<CheckEvent> events;   // oldest first
     int firedCourse = 1;              // courses up to this one go out on Send

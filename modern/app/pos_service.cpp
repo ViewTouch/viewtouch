@@ -1945,6 +1945,7 @@ bool PosService::closeCheck()
         c->deliveredAt = now();   // paid: the driver is back
     c->closedAt = now();
     c->businessDay = s_->day.id;
+    c->closedRates = s_->settings.tax;   // its totals from now on, whatever the rates become
     applyCloseEffects(*c);
     if (cash)
         c->drawerSession = drawer->id;

@@ -195,6 +195,15 @@ QJsonObject toJson(const Check &c)
          }()}, {u"driverId"_s, qs(c.driverId)}, {u"driverName"_s, qs(c.driverName)},
         {u"outAt"_s, qint64(c.outAt)}, {u"deliveredAt"_s, qint64(c.deliveredAt)}, {u"pointsEarned"_s, c.pointsEarned}, {u"training"_s, c.training},
         {u"offlineId"_s, qs(c.offlineId)},
+        {u"rates"_s, [&c] {
+             if (!c.closedRates)
+                 return QJsonValue();
+             const TaxRates &r = *c.closedRates;
+             return QJsonValue(QJsonObject{{u"food"_s, qint64(r.foodPpm)}, {u"alcohol"_s, qint64(r.alcoholPpm)},
+                                           {u"merchandise"_s, qint64(r.merchandisePpm)}, {u"room"_s, qint64(r.roomPpm)},
+                                           {u"takeoutFood"_s, r.taxTakeoutFood}, {u"gratuity"_s, r.taxGratuity},
+                                           {u"cashRounding"_s, r.cashRoundingCents}});
+         }()},
     };
 }
 
@@ -283,6 +292,17 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.drawerSession = i64(o.value(u"drawerSession"));
     c.gratuityBp = i64(o.value(u"gratuityBp"));
     c.taxExempt = ss(o.value(u"taxExempt").toString());
+    if (const QJsonObject r = o.value(u"rates").toObject(); !r.isEmpty()) {
+        TaxRates rates;
+        rates.foodPpm = r.value(u"food").toInteger();
+        rates.alcoholPpm = r.value(u"alcohol").toInteger();
+        rates.merchandisePpm = r.value(u"merchandise").toInteger();
+        rates.roomPpm = r.value(u"room").toInteger();
+        rates.taxTakeoutFood = r.value(u"takeoutFood").toBool(true);
+        rates.taxGratuity = r.value(u"gratuity").toBool(false);
+        rates.cashRoundingCents = r.value(u"cashRounding").toInt(0);
+        c.closedRates = rates;
+    }
     c.firedCourse = std::max(1, o.value(u"firedCourse").toInt(1));
     c.autoGratuity = o.value(u"autoGratuity").toBool();
     const QJsonObject cust = o.value(u"customer").toObject();

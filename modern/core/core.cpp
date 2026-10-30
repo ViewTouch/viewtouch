@@ -511,8 +511,10 @@ Money Check::kept(const Payment &p, const TaxRates &rates) const
     return p.amount + p.tip - changeFrom(p, rates);
 }
 
-Totals Check::totals(const TaxRates &rates) const
+Totals Check::totals(const TaxRates &now) const
 {
+    // A closed check keeps the rates it closed with (closedRates).
+    const TaxRates &rates = closedRates ? *closedRates : now;
     Totals t;
 
     std::map<TaxClass, Money> byClass;
