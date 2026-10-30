@@ -172,6 +172,21 @@ TEST_CASE("AsyncWriter sets aside a row it can never write, and saves the rest",
     CHECK(line.value(u"row"_s).toObject().value(u"id"_s).toInt() == 1);
 }
 
+TEST_CASE("AsyncWriter takes only plain table and column names", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    PosStore store(path);
+    REQUIRE(store.open());
+    AsyncWriter writer(path);
+    QSignalSpy failed(&writer, &AsyncWriter::writeFailed);
+    writer.upsert(u"time_punches; DROP TABLE checks"_s, u"1"_s, {{u"id"_s, 1}});
+    writer.upsert(u"time_punches"_s, u"1"_s, {{u"id) VALUES (1); --"_s, 1}});
+    writer.remove(u"time_punches"_s, u"id = id OR 1"_s, u"1"_s);
+    CHECK(writer.pending() == 0);   // never queued
+    CHECK(failed.size() == 3);
+}
+
 TEST_CASE("Queuing writes never blocks the caller", "[posstore]")
 {
     QTemporaryDir dir;

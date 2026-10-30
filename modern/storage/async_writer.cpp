@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QJsonDocument>
+#include <QRegularExpression>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -101,8 +102,20 @@ AsyncWriter::~AsyncWriter()
     delete worker_;
 }
 
+// A table or column name: put into the SQL as it is, so only plain names
+// (a standby gets them from the network).
+static bool plainName(const QString &name)
+{
+    static const QRegularExpression shape(u"^[A-Za-z_][A-Za-z0-9_]{0,63}$"_s);
+    return shape.match(name).hasMatch();
+}
+
 void AsyncWriter::upsert(const QString &table, const QString &key, const QVariantMap &row)
 {
+    if (!plainName(table) || std::ranges::any_of(row.keys(), [](const QString &c) { return !plainName(c); })) {
+        emit writeFailed(u"%1: not a table or column name"_s.arg(table.left(64)));
+        return;
+    }
     if (mirror_)
         mirror_(QJsonObject{{QStringLiteral("t"), QStringLiteral("op")}, {QStringLiteral("k"), QStringLiteral("up")},
                             {QStringLiteral("table"), table}, {QStringLiteral("key"), key},
@@ -112,6 +125,10 @@ void AsyncWriter::upsert(const QString &table, const QString &key, const QVarian
 
 void AsyncWriter::remove(const QString &table, const QString &keyColumn, const QString &key)
 {
+    if (!plainName(table) || !plainName(keyColumn)) {
+        emit writeFailed(u"%1: not a table or column name"_s.arg(table.left(64)));
+        return;
+    }
     if (mirror_)
         mirror_(QJsonObject{{QStringLiteral("t"), QStringLiteral("op")}, {QStringLiteral("k"), QStringLiteral("rm")},
                             {QStringLiteral("table"), table}, {QStringLiteral("key"), key},
