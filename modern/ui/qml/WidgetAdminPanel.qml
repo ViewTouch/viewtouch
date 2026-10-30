@@ -368,7 +368,8 @@ Item {
                         required property int index
                         objectName: w.sectioned ? "settingsSection-" + row.modelData.key : ""
                         // The record (a section's name and key, when sectioned).
-                        readonly property var rec: w.sectioned ? row.modelData : row.modelData.r
+                        // ({}) for the moment a panel changes: its rows are still the other panel's.
+                        readonly property var rec: (w.sectioned ? row.modelData : row.modelData.r) ?? ({})
                         width: ListView.view.width - listBar.room
                         // Each row a finger's height.
                         implicitHeight: Math.max(implicitContentHeight + topPadding + bottomPadding, 44)
