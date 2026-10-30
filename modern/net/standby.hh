@@ -94,6 +94,10 @@ private:
     QString storeId_;
     QSslServer server_;
     bool ready_ = false;
+    // Wrong PINs to take over: after 5, it waits 30 s before the next try,
+    // twice as long each time after (up to 15 minutes).
+    int wrongPins_ = 0;
+    qint64 lockedUntil_ = 0;
 };
 
 // A screen asks the standby at host:port to take over, with a manager's

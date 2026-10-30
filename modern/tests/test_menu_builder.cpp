@@ -286,6 +286,16 @@ TEST_CASE("Menu import: the usual spreadsheet shapes", "[menubuilder][import]")
     CHECK(r.items[0].category == u"Tortas"_s);
     CHECK(r.items[0].onIt == u"frijol, aguacate"_s);
     CHECK(r.columns.contains(u"onIt"_s));
+
+    // A shop's sheet with what it pays and what it sells for: the price is
+    // the selling price, whichever column comes first.
+    r = readMenuCsv(u"Product,Cost,Retail Price,UPC\nT-Shirt,6.00,19.99,012345678905\n"_s);
+    REQUIRE(r.items.size() == 1);
+    CHECK(r.items[0].price == 19.99);
+    // Only a cost (some menus call the price that): it is the price.
+    r = readMenuCsv(u"Item,Cost\nTaco,3.25\n"_s);
+    REQUIRE(r.items.size() == 1);
+    CHECK(r.items[0].price == 3.25);
 }
 
 TEST_CASE("Menu import: into the menu, categories made, prices updated if asked", "[menubuilder][import]")
@@ -1069,6 +1079,35 @@ TEST_CASE("Menu Builder: text size for a category's items and for one item", "[m
     CHECK(pos.findItem(u"classic-burger"_s)->textSize == 0);
 }
 
+TEST_CASE("Menu Builder: several prices moved at once, by an amount or a share", "[menubuilder][several]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QStringList two{u"classic-burger"_s, u"cheeseburger"_s};
+    const Money burger = pos.findItem(u"classic-burger"_s)->price, cheese = pos.findItem(u"cheeseburger"_s)->price;
+
+    REQUIRE(pos.changeMenuItems(two, {{u"priceAdd"_s, 50}}));
+    CHECK(pos.findItem(u"classic-burger"_s)->price == burger + Money::fromCents(50));
+    CHECK(pos.findItem(u"cheeseburger"_s)->price == cheese + Money::fromCents(50));
+
+    REQUIRE(pos.changeMenuItems(two, {{u"pricePercent"_s, -1000}}));   // 10% less, each from its own
+    const Money b = burger + Money::fromCents(50);
+    CHECK(pos.findItem(u"classic-burger"_s)->price == b - b.percent(1000));
+
+    REQUIRE(pos.changeMenuItems(two, {{u"priceAdd"_s, -100000}}));   // never below zero
+    CHECK(pos.findItem(u"cheeseburger"_s)->price == Money());
+    CHECK_FALSE(pos.changeMenuItems(two, {{u"pricePercent"_s, -10000}}));
+
+    REQUIRE(pos.undoMenuChange());
+    REQUIRE(pos.undoMenuChange());
+    REQUIRE(pos.undoMenuChange());
+    CHECK(pos.findItem(u"classic-burger"_s)->price == burger);
+    // Tax for several at once.
+    REQUIRE(pos.changeMenuItems(two, {{u"taxClass"_s, u"alcohol"_s}}));
+    CHECK(pos.findItem(u"cheeseburger"_s)->taxClass == core::TaxClass::Alcohol);
+}
+
 TEST_CASE("Menu Builder: several items changed or removed at once, one Undo", "[menubuilder][several]")
 {
     test::RecordingSink sink;
@@ -1371,4 +1410,54 @@ TEST_CASE("Barcodes: on an item's card, one item's each; scanned: an item, a cou
     CHECK(pos.findItem(u"Popcorn"_s)->barcodes == std::vector<std::string>{"77777777"});
     CHECK(said.join(u" "_s).contains(u"28400090858 (Chips's)"_s));
     CHECK_FALSE(pos.saveMenuItemCard({{u"id"_s, QString::fromStdString(pos.findItem(u"Popcorn"_s)->id)}, {u"name"_s, u"Popcorn"_s}, {u"barcodes"_s, u"0028400090858"_s}}));
+}
+
+TEST_CASE("Menu Builder: an item's own stock, counted down as it sells, sold out at none", "[menubuilder][stock]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true},
+                                  {u"stockOnHand"_s, u"2"_s}, {u"stockLowAt"_s, u"1"_s}, {u"cost"_s, u"0.80"_s}}));
+    const core::Ingredient *own = pos.shared()->ingredient(app::ownStockId("lemonade"));
+    REQUIRE(own);
+    CHECK(own->onHand == 2);
+    CHECK(own->cost == Money::fromCents(80));
+    const auto row = [&] {
+        for (const QVariant &v : pos.menuItems())
+            if (v.toMap()[u"id"_s] == u"lemonade"_s)
+                return v.toMap();
+        return QVariantMap{};
+    };
+    CHECK(row()[u"stockTrack"_s].toBool());
+    CHECK(row()[u"stockOnHand"_s] == u"2"_s);
+    CHECK(row()[u"cost"_s] == u"0.80"_s);
+
+    // A shop's sale: rung up and paid, never sent.
+    pos.shared()->settings.serviceMode = "retail";
+    REQUIRE(pos.openDrawerSession());
+    const auto sell = [&] {
+        REQUIRE(pos.startCheck(core::CheckType::Takeout));
+        pos.addItem(u"lemonade"_s);
+        REQUIRE(pos.tender(u"cash"_s));
+        REQUIRE(pos.closeCheck());
+    };
+    sell();
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 1);
+    CHECK(row()[u"stockLow"_s].toBool());
+    sell();
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 0);
+    CHECK_FALSE(pos.findItem(u"lemonade"_s)->available);   // none left: sold out by itself
+
+    // Saving the card without touching the count keeps what was sold.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"price"_s, u"3.25"_s}}));
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 0);
+    // Restocked on the card: back for sale.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"12"_s}}));
+    CHECK(pos.findItem(u"lemonade"_s)->available);
+    // Not counted any more: no longer sold out for want of it.
+    sell();
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, false}}));
+    CHECK(pos.findItem(u"lemonade"_s)->recipe.empty());
+    CHECK_FALSE(row()[u"stockTrack"_s].toBool());
 }

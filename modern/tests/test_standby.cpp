@@ -229,4 +229,12 @@ TEST_CASE("Standby: a screen asks it to take over with a manager's PIN", "[stand
 
     CHECK(ask(screen, u"1234"_s).first);
     REQUIRE(takeOver.size() == 1);
+
+    // Guessing: after five wrong PINs, even the right one waits.
+    for (int i = 0; i < 5; ++i)
+        CHECK_FALSE(ask(screen, u"0000"_s).first);
+    const auto [locked, wait] = ask(screen, u"1234"_s);
+    CHECK_FALSE(locked);
+    CHECK(wait.contains(u"Too many"_s));
+    CHECK(takeOver.size() == 1);
 }

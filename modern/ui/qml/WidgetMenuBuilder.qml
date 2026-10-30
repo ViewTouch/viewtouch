@@ -52,6 +52,8 @@ Item {
         onTriggered: categoryList.contentY = Math.max(0, Math.min(categoryList.contentHeight - categoryList.height,
                                                                   categoryList.contentY + 14 * w.listScroll))
     }
+    // List: every item in one table (MenuBuilderList) instead of a category's tiles.
+    property bool listView: false
     // Select: several items, then one change for all of them.
     property bool selecting: false
     property bool preview: false
@@ -75,6 +77,14 @@ Item {
             } else {
                 waitingFor = String(open)   // not here yet: opened when it is
             }
+            return
+        }
+        // A code scanned that nothing had (Add an Item With It): a new item with it.
+        const code = zone && zone.controller ? zone.controller.take("menuBuilderNewCode") : undefined
+        if (code) {
+            editItem(null)
+            set("barcodes", String(code))
+            moreOpen = true   // where the barcode is
             return
         }
         // A card left unsaved when this page was left: back as it was.
@@ -141,11 +151,13 @@ Item {
                      buttonColor: i.buttonColor, textSize: i.textSize ?? 0, prepMinutes: i.prepMinutes ? String(i.prepMinutes) : "",
                      takeoutPrice: i.takeoutPrice, periodPrices: Object.assign({}, i.periodPrices),
                      taxClass: i.taxClass, printer: i.printer, station: i.station,
-                     section: i.section ?? "", breakBefore: i.breakBefore ?? "" }
+                     section: i.section ?? "", breakBefore: i.breakBefore ?? "",
+                     stockTrack: !!i.stockTrack, stockOnHand: i.stockOnHand ?? "", stockLowAt: i.stockLowAt ?? "", cost: i.cost ?? "" }
                  : { id: "", name: "", price: "", family: categoryId, image: "", groups: [], onIt: "",
                      available: true, kioskHide: false, description: "", favorite: false, allergens: [],
                      kitchenName: "", number: "", barcodes: "", buttonColor: "", textSize: 0, prepMinutes: "", takeoutPrice: "", periodPrices: {},
                      section: "", breakBefore: "",
+                     stockTrack: false, stockOnHand: "", stockLowAt: "", cost: "",
                      // what its category's items start with
                      taxClass: category ? (category.taxClass || "food") : "food",
                      printer: category ? (category.printer || "kitchen") : "kitchen", station: category ? category.station : "" }
@@ -349,12 +361,20 @@ Item {
     }
     // The card's More settings, open or not (stays so from item to item).
     property bool moreOpen: false
-    // Find an item anywhere on the menu (its name, or its number).
+    // Find an item anywhere on the menu: its name, number, barcode, category
+    // or kitchen name. In the List, the table shows what's found.
     property string search: ""
+    function matches(i, t) {
+        return i.name.toLowerCase().includes(t)
+            || (i.number !== "" && i.number.startsWith(t))
+            || (i.barcodes ?? "").toLowerCase().split(", ").some(b => b !== "" && b.includes(t))
+            || (i.familyName ?? "").toLowerCase().includes(t)
+            || (i.kitchenName ?? "").toLowerCase().includes(t)
+    }
     readonly property var found: {
         const t = search.trim().toLowerCase()
-        if (t === "") return []
-        return allItems.filter(i => i.name.toLowerCase().includes(t) || (i.number !== "" && i.number === t)).slice(0, 30)
+        if (t === "" || listView) return []
+        return allItems.filter(i => matches(i, t))
     }
     // Like…: another item's choices, what's on it, allergens, kitchen and
     // tax, kitchen time and color (not its name, price, number or photo).
@@ -403,10 +423,30 @@ Item {
             waitingFor = ""
             categoryId = added.family
             editItem(added)
+            // Pages of buttons placed by hand don't fill themselves: its
+            // button goes on the page with its category's items.
+            const c = zone ? zone.controller : null
+            if (c && c.menuScreensHandBuilt && pos && pos.can("layout.edit")) {
+                const page = c.categoryPage(added.family)
+                if (page !== "")
+                    c.addItemButton(page, added.id, added.name)
+            }
         }
     }
     function saveItem() {
         const card = copy(draft)
+        // Stock as it was when the card opened isn't sent: what sold since stays sold.
+        const saved = card.id ? allItems.find(i => i.id === card.id) : null
+        if (saved) {
+            for (const k of ["stockOnHand", "stockLowAt", "cost"])
+                if (String(card[k] ?? "") === String(saved[k] ?? ""))
+                    delete card[k]
+            if (!!card.stockTrack === !!saved.stockTrack && card.stockOnHand === undefined
+                && card.stockLowAt === undefined && card.cost === undefined)
+                delete card.stockTrack
+        } else if (!card.stockTrack) {
+            delete card.stockTrack
+        }
         if (card.id === "")
             waitingFor = card.name.trim()
         pos.saveMenuItemCard(card)
@@ -519,7 +559,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 48
                     font.pixelSize: 16
-                    placeholderText: qsTr("🔍 Find an item (name or number)")
+                    placeholderText: qsTr("🔍 Find an item (name, number or barcode)")
                     text: w.search
                     onTextEdited: w.search = text
                     inputMethodHints: Qt.ImhNoPredictiveText
@@ -527,7 +567,7 @@ Item {
                 ListView {
                     id: foundList
                     objectName: "builderFound"
-                    visible: w.mode === "menu" && w.search.trim() !== ""
+                    visible: w.mode === "menu" && w.search.trim() !== "" && !w.listView
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
@@ -626,7 +666,7 @@ Item {
                 }
                 ListView {
                     id: categoryList
-                    visible: w.mode === "menu" && w.search.trim() === ""
+                    visible: w.mode === "menu" && (w.search.trim() === "" || w.listView)
                     interactive: w.dragId === ""
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -776,8 +816,21 @@ Item {
                         Layout.preferredWidth: implicitWidth
                         text: qsTr("Export")
                         ToolTip.visible: hovered
-                        ToolTip.text: qsTr("The whole menu as a file, for Import… at another store")
-                        onClicked: w.zone.controller.exportMenu()
+                        ToolTip.text: qsTr("The whole menu as a file, for Import… at another store, or as a spreadsheet")
+                        onClicked: exportMenuChoice.open()
+                        Menu {
+                            id: exportMenuChoice
+                            MenuItem {
+                                objectName: "builderExportFile"
+                                text: qsTr("For Another ViewTouch")
+                                onTriggered: w.zone.controller.exportMenu()
+                            }
+                            MenuItem {
+                                objectName: "builderExportSheet"
+                                text: qsTr("As a Spreadsheet (.csv)")
+                                onTriggered: w.zone.controller.exportMenuSheet()
+                            }
+                        }
                     }
                     TouchButton {
                         id: startersKey
@@ -811,7 +864,7 @@ Item {
             // --- the category's items ---
             ColumnLayout {
                 visible: (!w.narrow || w.stage === "items") && w.mode === "menu"
-                Layout.preferredWidth: w.narrow ? -1 : 430
+                Layout.preferredWidth: w.narrow ? -1 : w.listView ? 700 : 430
                 Layout.fillWidth: w.narrow
                 Layout.fillHeight: true
                 spacing: 8
@@ -874,16 +927,26 @@ Item {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         text: w.selecting ? qsTr("Touch the items to change together.")
+                            : w.listView ? ""
                             : w.items.length > 1 ? (w.narrow ? qsTr("Hold one and drag it to move it (the order screen follows).")
                                                              : qsTr("Hold one and drag it to move it, or onto a category."))
                             : ""
                         opacity: 0.6
                         font.pixelSize: 13
                     }
+                    // Every item in one table, or the category's tiles.
+                    TouchButton {
+                        objectName: "builderListView"
+                        implicitHeight: 44
+                        font.pixelSize: 14
+                        highlighted: w.listView
+                        text: w.listView ? qsTr("▦ Tiles") : qsTr("☰ List")
+                        onClicked: { w.listView = !w.listView; w.preview = false }
+                    }
                     // The order screen's buttons, as they'll look.
                     TouchButton {
                         objectName: "builderPreview"
-                        visible: !!w.category && w.items.length > 0 && !w.selecting
+                        visible: !!w.category && w.items.length > 0 && !w.selecting && !w.listView
                         implicitHeight: 44
                         font.pixelSize: 14
                         checkable: true
@@ -894,7 +957,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelect"
-                        visible: !!w.category && w.items.length > 0
+                        visible: (!!w.category && w.items.length > 0) || w.listView
                         implicitHeight: 44
                         font.pixelSize: 14
                         highlighted: w.selecting
@@ -939,10 +1002,12 @@ Item {
                         objectName: "builderSelectAll"
                         implicitHeight: 44
                         font.pixelSize: 14
-                        readonly property bool all: w.items.length > 0 && w.items.every(i => w.selected.includes(i.id))
+                        // What's shown: the category's tiles, or the List's rows.
+                        readonly property var shown: w.listView ? builderList.rows : w.items
+                        readonly property bool all: shown.length > 0 && shown.every(i => w.selected.includes(i.id))
                         text: all ? qsTr("None") : qsTr("All")
                         onClicked: {
-                            const here = w.items.map(i => i.id)
+                            const here = shown.map(i => i.id)
                             w.selected = all ? w.selected.filter(id => !here.includes(id))
                                              : w.selected.concat(here.filter(id => !w.selected.includes(id)))
                         }
@@ -962,6 +1027,22 @@ Item {
                         enabled: w.selected.length > 0
                         text: qsTr("Color…")
                         onClicked: colorSeveral.open()
+                    }
+                    TouchButton {
+                        objectName: "builderSelectPrice"
+                        implicitHeight: 44
+                        font.pixelSize: 14
+                        enabled: w.selected.length > 0
+                        text: qsTr("Price…")
+                        onClicked: priceSeveral.open()
+                    }
+                    TouchButton {
+                        objectName: "builderSelectTax"
+                        implicitHeight: 44
+                        font.pixelSize: 14
+                        enabled: w.selected.length > 0
+                        text: qsTr("Tax…")
+                        onClicked: taxSeveral.open()
                     }
                     TouchButton {
                         objectName: "builderSelectSoldOut"
@@ -991,7 +1072,7 @@ Item {
                 // Preview: this category on the order screen (its menu area, scaled down).
                 Rectangle {
                     objectName: "builderPreviewPane"
-                    visible: w.preview && !w.selecting
+                    visible: w.preview && !w.selecting && !w.listView
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: Ui.deep
@@ -1013,9 +1094,16 @@ Item {
                         }
                     }
                 }
+                MenuBuilderList {
+                    id: builderList
+                    visible: w.listView
+                    builder: w
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
                 GridView {
                     id: itemGrid
-                    visible: !w.preview || w.selecting
+                    visible: (!w.preview || w.selecting) && !w.listView
                     interactive: w.dragId === ""
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -1352,6 +1440,56 @@ Item {
                                 Switch {
                                     checked: !(w.draft.kioskHide ?? false)
                                     onToggled: w.set("kioskHide", !checked)
+                                }
+                                // Its own stock: counted down as it sells, sold out at none.
+                                Label { text: qsTr("Track stock") }
+                                Switch {
+                                    objectName: "builderStockTrack"
+                                    checked: w.draft.stockTrack ?? false
+                                    onToggled: w.set("stockTrack", checked)
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: qsTr("Count how many are left: one less for each sold, sold out at none, and in Count Stock, deliveries and the Stock report.")
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("On hand") }
+                                TextField {
+                                    objectName: "builderStockOnHand"
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    text: w.draft.stockOnHand ?? ""
+                                    placeholderText: qsTr("How many there are now, e.g. 24")
+                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    onTextEdited: w.set("stockOnHand", text)
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("Low at") }
+                                TextField {
+                                    objectName: "builderStockLowAt"
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    text: w.draft.stockLowAt ?? ""
+                                    placeholderText: qsTr("Warn when this many are left, e.g. 5")
+                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    onTextEdited: w.set("stockLowAt", text)
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("Cost") }
+                                RowLayout {
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    TextField {
+                                        objectName: "builderCost"
+                                        Layout.fillWidth: true
+                                        text: w.draft.cost ?? ""
+                                        placeholderText: qsTr("What one costs you, e.g. 6.50")
+                                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                        onTextEdited: w.set("cost", text)
+                                    }
+                                    // What's left of the price once it's paid for.
+                                    Label {
+                                        readonly property real cost: parseFloat(String(w.draft.cost ?? "").replace(",", "."))
+                                        readonly property real price: parseFloat(String(w.draft.price ?? "").replace(",", "."))
+                                        visible: cost > 0 && price > 0
+                                        text: qsTr("Margin %1%").arg(Math.round((price - cost) / price * 100))
+                                        opacity: 0.7
+                                    }
                                 }
                             }
 
@@ -2041,7 +2179,9 @@ Item {
                             ToolTip.text: qsTr("Every setting: delivery price, recipe, by weight, discounts…")
                             onClicked: {
                                 const b = w
-                                b.leave(() => b.zone.controller.jumpTo("admin-menu"))
+                                // The Menu panel opens on this item.
+                                const id = b.draft.id
+                                b.leave(() => { b.zone.controller.keep("adminOpen:menu", id); b.zone.controller.jumpTo("admin-menu") })
                             }
                         }
                     }
@@ -2179,6 +2319,119 @@ Item {
                 }
             }
             TouchButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: moveSeveral.close() }
+        }
+    }
+    // Several items' prices: set to one price, or moved by an amount or a share.
+    Popup {
+        id: priceSeveral
+        objectName: "builderPriceSeveral"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 520, 520)
+        modal: true
+        padding: 16
+        property string how: "set"   // set | add | percent
+        onOpened: { how = "set"; priceAmount.text = "" }
+        // What the first few chosen would cost after, as a check before applying.
+        function after(i) {
+            const v = parseFloat(priceAmount.text.replace(",", "."))
+            if (isNaN(v)) return null
+            const now = i.priceValue
+            const p = how === "set" ? v : how === "add" ? now + v : now * (1 + v / 100)
+            return Math.max(0, Math.round(p * 100) / 100)
+        }
+        contentItem: ColumnLayout {
+            spacing: 8
+            Label { text: qsTr("Price of %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: [{ id: "set", label: qsTr("Set to") }, { id: "add", label: qsTr("Add / take off") },
+                            { id: "percent", label: qsTr("Change by %") }]
+                    delegate: TouchButton {
+                        required property var modelData
+                        objectName: "builderPriceHow-" + modelData.id
+                        Layout.fillWidth: true
+                        highlighted: priceSeveral.how === modelData.id
+                        text: modelData.label
+                        onClicked: priceSeveral.how = modelData.id
+                    }
+                }
+            }
+            TextField {
+                id: priceAmount
+                objectName: "builderPriceAmount"
+                Layout.fillWidth: true
+                implicitHeight: 48
+                font.pixelSize: 18
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                placeholderText: priceSeveral.how === "set" ? qsTr("Like 9.50")
+                               : priceSeveral.how === "add" ? qsTr("Like 0.50, or -0.25 to take off")
+                               : qsTr("Like 5, or -10 for 10% less")
+            }
+            Repeater {
+                model: w.allItems.filter(i => w.selected.includes(i.id)).slice(0, 4)
+                delegate: Label {
+                    required property var modelData
+                    readonly property var p: priceSeveral.after(modelData)
+                    visible: p !== null
+                    text: modelData.name + ":  " + modelData.priceValue.toFixed(2) + "  →  " + (p ?? 0).toFixed(2)
+                    font.pixelSize: 14
+                    opacity: 0.8
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                TouchButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: priceSeveral.close() }
+                TouchButton {
+                    id: applyPrice
+                    objectName: "builderPriceApply"
+                    Layout.fillWidth: true
+                    highlighted: true
+                    readonly property real v: parseFloat(priceAmount.text.replace(",", "."))
+                    enabled: !isNaN(v) && (priceSeveral.how !== "set" || v >= 0)
+                    text: qsTr("Change")
+                    onClicked: {
+                        const how = priceSeveral.how, v = applyPrice.v, b = w
+                        priceSeveral.close()
+                        if (how === "set")
+                            b.changeSelected({ price: v.toFixed(2) })
+                        else if (how === "add")
+                            b.changeSelected({ priceAdd: Math.round(v * 100) })
+                        else
+                            b.changeSelected({ pricePercent: Math.round(v * 100) })
+                    }
+                }
+            }
+        }
+    }
+    Popup {
+        id: taxSeveral
+        objectName: "builderTaxSeveral"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 520, 520)
+        modal: true
+        padding: 16
+        contentItem: ColumnLayout {
+            spacing: 6
+            Label { text: qsTr("Tax for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Repeater {
+                model: w.taxes
+                delegate: TouchButton {
+                    required property var modelData
+                    objectName: "builderTaxTo-" + modelData.id
+                    Layout.fillWidth: true
+                    text: modelData.name
+                    onClicked: {
+                        const id = modelData.id, b = w
+                        taxSeveral.close()
+                        b.changeSelected({ taxClass: id })
+                    }
+                }
+            }
+            TouchButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: taxSeveral.close() }
         }
     }
     Popup {

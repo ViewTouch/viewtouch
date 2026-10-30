@@ -1115,6 +1115,12 @@ int runStore(const Args &cli, const Options &o)
             say(pos, QCoreApplication::translate("main", "Could not save to the database (will retry): %1").arg(error));
             pos.shared()->noteProblem("database", {}, error.toStdString());
         });
+        QObject::connect(writer.get(), &vt::storage::AsyncWriter::rowSetAside, &pos,
+                         [&pos, w = writer.get()](const QString &table, const QString &key, const QString &error) {
+            say(pos, QCoreApplication::translate("main", "One change could not be saved and was kept in %1: %2")
+                         .arg(w->setAsidePath(), error));
+            pos.shared()->noteProblem("database", {}, (table + u' ' + key + u": " + error).toStdString());
+        });
     }
 
     // Backups: every --backup-every hours and after each End of Day.

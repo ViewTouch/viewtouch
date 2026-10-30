@@ -122,6 +122,35 @@ TEST_CASE("Discounts reduce each tax class proportionally", "[check][tax]")
     CHECK(t.total == usd(1755 + 154));
 }
 
+TEST_CASE("A percent off lowers the tax only on the lines it applies to", "[check][tax]")
+{
+    Check c;
+    c.addItem(item("Burger", 1000));
+    MenuItem wine = item("Wine", 1000, TaxClass::Alcohol);
+    wine.noDiscount = true;
+    c.addItem(wine);
+    c.addPayment({"d50", "50% off", TenderKind::Discount, 5000}, {});
+
+    const Totals t = c.totals(rates());
+    CHECK(t.discounts == usd(500));   // half of the burger only
+    // food 10.00 - 5.00 = 5.00 -> 0.4125 -> 0.41; wine keeps its full 10.00 -> 1.00
+    CHECK(t.taxableByClass.at(TaxClass::Food) == usd(500));
+    CHECK(t.taxableByClass.at(TaxClass::Alcohol) == usd(1000));
+    CHECK(t.taxByClass.at(TaxClass::Food) == usd(41));
+    CHECK(t.taxByClass.at(TaxClass::Alcohol) == usd(100));
+}
+
+TEST_CASE("Capped discounts: each discount's line adds up to what came off", "[check]")
+{
+    Check c = burgerAndBeer();   // 19.50
+    const auto a = c.addPayment({"d70", "70% off", TenderKind::Discount, 7000}, {}).id;
+    const auto b = c.addPayment({"d60", "60% off", TenderKind::Discount, 6000}, {}).id;
+    const Totals t = c.totals(rates());
+    CHECK(t.discounts == usd(1950));
+    CHECK(t.discountOf.at(a) + t.discountOf.at(b) == t.discounts);
+    CHECK(t.tax == usd(0));
+}
+
 TEST_CASE("A full comp leaves nothing to pay", "[check]")
 {
     Check c = burgerAndBeer();

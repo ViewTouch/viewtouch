@@ -16,6 +16,7 @@
 #include <QTemporaryDir>
 #include <QFontMetricsF>
 #include "menuprint.hh"
+#include "app/menu_import.hh"
 #include "app/i18n.hh"
 #include "language.hh"
 #include "fake_stripe.hh"
@@ -351,11 +352,8 @@ struct Screen : Session {
     // Tap a visible keypad key by its text.
     void tapKey(const QString &text)
     {
-        QQuickItem *found = findKey(window->contentItem(), text);
-        REQUIRE(found);
-        const QPointF centre = found->mapToScene(QPointF(found->width() / 2, found->height() / 2));
-        QTest::mouseClick(window, Qt::LeftButton, {}, centre.toPoint());
-        QTest::qWait(30);
+        // Through tapItem: a key in a list scrolled past it is scrolled to first.
+        tapItem(findKey(window->contentItem(), text));
     }
 };
 
@@ -1825,6 +1823,61 @@ TEST_CASE("UI: Menu Builder: an item's sizes", "[flow][ui][sizes]")
     CHECK(by(u"builderSizesText"_s)->property("text").toString() == u"Small 7.00  ·  Large 9.25"_s);
     CHECK(by(u"builderPrice"_s)->property("text").toString() == u"7.00"_s);
     CHECK_FALSE(shown(u"builderNotSaved"_s));
+}
+
+TEST_CASE("UI: Menu Builder: every item in a list, found by barcode, prices moved together", "[flow][ui][menubuilder][itemlist]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb Salad"_s}, {u"barcodes"_s, u"0712345678911"_s}}));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(60);
+    };
+    tap(u"builderListView"_s);
+    REQUIRE(by(u"builderList"_s));
+    // Every category's items, not only the one picked.
+    CHECK(by(u"builderListRow-classic-burger"_s));
+    CHECK(by(u"builderListRow-cobb"_s));
+
+    // Found by part of its barcode.
+    QQuickItem *search = by(u"builderSearch"_s);
+    REQUIRE(search);
+    search->setProperty("text", u"12345678"_s);
+    QMetaObject::invokeMethod(search, "textEdited");
+    QTest::qWait(60);
+    CHECK(by(u"builderListRow-cobb"_s));
+    CHECK_FALSE(by(u"builderListRow-classic-burger"_s));
+    s.shot("builder-list");
+
+    // Touched: its card.
+    tap(u"builderListRow-cobb"_s);
+    CHECK(by(u"builderCard"_s));
+
+    // Select both burgers, and 50 cents more on each.
+    search->setProperty("text", u"burger"_s);
+    QMetaObject::invokeMethod(search, "textEdited");
+    QTest::qWait(60);
+    const Money burger = s.pos.findItem(u"classic-burger"_s)->price, cheese = s.pos.findItem(u"cheeseburger"_s)->price;
+    tap(u"builderSelect"_s);
+    tap(u"builderListRow-classic-burger"_s);
+    tap(u"builderListRow-cheeseburger"_s);
+    tap(u"builderSelectPrice"_s);
+    tap(u"builderPriceHow-add"_s);
+    QQuickItem *amount = by(u"builderPriceAmount"_s);
+    REQUIRE(amount);
+    amount->setProperty("text", u"0.50"_s);
+    QTest::qWait(30);
+    tap(u"builderPriceApply"_s);
+    QTest::qWait(60);
+    CHECK(s.pos.findItem(u"classic-burger"_s)->price == burger + Money::fromCents(50));
+    CHECK(s.pos.findItem(u"cheeseburger"_s)->price == cheese + Money::fromCents(50));
 }
 
 TEST_CASE("UI: Menu Builder: a ready-made picture for an item, on the order screen", "[flow][ui][readypicture]")
@@ -5266,6 +5319,67 @@ TEST_CASE("UI: a food truck's customer display: now serving, and who's ready whi
     CHECK_FALSE(find(root, u"objectName"_s, u"readyStrip"_s));
 }
 
+TEST_CASE("Flow: the items as a spreadsheet, read back by Import", "[flow][retail][import]")
+{
+    Session s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade, Fresh"_s}, {u"barcodes"_s, u"012345678905"_s},
+                                    {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"9"_s}, {u"cost"_s, u"0.80"_s}}));
+    QTemporaryDir dir;
+    s.c.setExportDirectory(dir.path());
+    const QString path = s.c.exportMenuSheet();
+    REQUIRE_FALSE(path.isEmpty());
+    QFile f(path);
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const QString text = QString::fromUtf8(f.readAll());
+    CHECK(text.contains(u"\"Lemonade, Fresh\""_s));   // a comma in a name, quoted
+
+    const auto read = app::readMenuCsv(text);
+    CHECK(read.problems.isEmpty());
+    const auto it = std::ranges::find_if(read.items, [](const auto &i) { return i.name == u"Lemonade, Fresh"_s; });
+    REQUIRE(it != read.items.end());
+    CHECK(it->price == double(s.pos.findItem(u"lemonade"_s)->price.cents()) / 100.0);   // the price, not the cost
+    CHECK(it->category == u"Drinks"_s);
+    // Every item there, none of the choices (modifiers).
+    int items = 0;
+    for (const QVariant &v : s.pos.menuItems())
+        items += v.toMap()[u"modifier"_s].toBool() ? 0 : 1;
+    CHECK(int(read.items.size()) == items);
+}
+
+TEST_CASE("UI: a code nothing has: a manager makes it a new item's barcode", "[flow][ui][retail][barcode]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));   // a manager
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"barcodes"_s, u"012345678905"_s}}));
+    REQUIRE(s.c.jumpTo(u"index-lunch"_s));
+    QTest::qWait(60);
+    QQuickItem *root = s.window->contentItem();
+
+    // Its UPC read as an EAN-13 (a 0 in front): still the Cobb.
+    const int before = int(s.pos.lines().size());
+    s.c.scanned(u"0012345678905"_s);
+    QTest::qWait(60);
+    if (s.pos.choosingInfo()[u"active"_s].toBool())
+        s.pos.finishChoosing();
+    CHECK(int(s.pos.lines().size()) == before + 1);
+    CHECK(s.c.unknownCode().isEmpty());
+
+    s.c.scanned(u"4006381333931"_s);
+    QTest::qWait(60);
+    CHECK(s.c.unknownCode() == u"4006381333931"_s);
+    QQuickItem *card = Screen::findBy(root, "objectName", u"unknownCodeCard"_s);
+    REQUIRE(card);
+    s.shot("unknown-code");
+    s.tapItem(Screen::findBy(root, "objectName", u"addItemForCode"_s));
+    QTest::qWait(150);
+    CHECK(s.c.pageId() == u"menu-builder"_s);
+    CHECK(s.c.unknownCode().isEmpty());
+    // A new item's card, the code in its barcodes.
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"4006381333931"_s));
+    s.shot("unknown-code-card");
+}
+
 TEST_CASE("UI: retail: nothing goes to the kitchen; a scan rings it in from any page", "[flow][ui][truck]")
 {
     Session s;
@@ -7940,6 +8054,9 @@ TEST_CASE("Flow: an item's button added to a page built by hand, in its next fre
         pages << p.toMap()[u"id"_s].toString();
     CHECK(pages.contains(u"items-burgers"_s));      // a page of buttons placed by hand
     CHECK_FALSE(pages.contains(u"menu-all"_s));     // self-filling: no need
+    // Where a new burger's button goes by itself: with the other burgers.
+    CHECK(s.c.categoryPage(u"burgers"_s) == u"items-burgers"_s);
+    CHECK(s.c.categoryPage(u"no-such-category"_s).isEmpty());
     const bool added = s.c.addItemButton(u"items-burgers"_s, melt, u"Patty Melt"_s);
     INFO(s.c.statusText().toStdString());
     REQUIRE(added);
@@ -8685,6 +8802,63 @@ TEST_CASE("UI: Reports -> Forecast: a coming day, chosen by its key", "[flow][ui
     CHECK(report[u"rows"_s].toList().value(0).toMap()[u"cells"_s].toStringList().value(0).contains(u"4 past weeks"_s));
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"Classic Burger"_s));
     s.shot("forecast");
+}
+
+TEST_CASE("UI: reports are picked from the list beside them; a swipe goes to the next", "[flow][ui][reports]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(50);
+    QQuickItem *view = Screen::findBy(s.window->contentItem(), "reportId", u"sales"_s);
+    REQUIRE(view);
+    CHECK(view->property("docked").toBool());   // the list is beside the report, not behind a key
+
+    s.tapKey(u"Items"_s);
+    QTest::qWait(50);
+    CHECK(view->property("reportId").toString() == u"items"_s);
+
+    // A finger across the report, right to left: the next report (Categories).
+    const QPointF from = view->mapToScene(QPointF(view->width() * 0.45, view->height() * 0.7));
+    const qreal across = view->width() * 0.3;
+    QTest::mousePress(s.window, Qt::LeftButton, {}, from.toPoint());
+    for (int i = 1; i <= 12; ++i) {
+        QTest::mouseMove(s.window, (from - QPointF(across * i / 12, 0)).toPoint());
+        QTest::qWait(10);
+    }
+    QTest::mouseRelease(s.window, Qt::LeftButton, {}, (from - QPointF(across, 0)).toPoint());
+    QTest::qWait(50);
+    CHECK(view->property("reportId").toString() == u"categories"_s);
+
+    // A report that is one day at a time puts the days back to one day.
+    s.tapKey(u"This Month"_s);
+    s.tapKey(u"Tips"_s);
+    QTest::qWait(50);
+    CHECK(view->property("period").toString() == u"day"_s);
+    s.shot("reports-side-list");
+}
+
+TEST_CASE("UI: reports on a phone: the list behind the report's name", "[flow][ui][reports][phone]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *view = Screen::findBy(root, "reportId", u"sales"_s);
+    REQUIRE(view);
+    CHECK_FALSE(view->property("docked").toBool());
+    CHECK_FALSE(Screen::findBy(root, "objectName", u"report-items"_s));   // not until asked for
+    s.shot("reports-phone");
+
+    s.tapItem(Screen::findBy(root, "objectName", u"reportPicker"_s));
+    QTest::qWait(60);
+    CHECK(view->property("listOpen").toBool());
+    s.shot("reports-phone-list");
+    s.tapItem(Screen::findBy(root, "objectName", u"report-items"_s));
+    QTest::qWait(60);
+    CHECK(view->property("reportId").toString() == u"items"_s);
+    CHECK_FALSE(view->property("listOpen").toBool());
 }
 
 TEST_CASE("UI: the Changes report: who changed what", "[flow][ui][changes]")

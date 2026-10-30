@@ -36,6 +36,7 @@
 #include "storage/layout_store.hh"
 
 #include <QPointer>
+#include <QSet>
 
 #include <QDir>
 #include <QJsonArray>
@@ -434,6 +435,7 @@ QString LayoutController::rolePage(const QString &role) const
 void LayoutController::onLoggedInChanged(bool loggedIn)
 {
     restartIdle();
+    setUnknownCode({});   // offered to the one who scanned it
     // A food truck's kitchen, bar or expo screen (a page nobody logs in to):
     // the counter signing in there leaves it where it is.
     if (const vt::layout::Page *here = currentPage(); loggedIn && atCounter() && !editing() && here
@@ -1182,6 +1184,46 @@ QString LayoutController::emojiPicture(const QString &emoji)
     return ref;
 }
 
+QString LayoutController::exportMenuSheet()
+{
+    if (!pos_ || !pos_->can(QString::fromLatin1(vt::core::perm::Manager)))
+        return {};
+    // The headings Import… reads back.
+    const auto field = [](QString s) {
+        if (s.contains(u',') || s.contains(u'"') || s.contains(u'\n')) {
+            s.replace(u"\""_s, u"\"\""_s);
+            s = u'"' + s + u'"';
+        }
+        return s;
+    };
+    QStringList lines{u"Name,Category,Price,Cost,Tax,PLU,Barcode,On Hand,Low At,Sold Out"_s};
+    for (const QVariant &v : pos_->menuItems()) {
+        const QVariantMap i = v.toMap();
+        if (i.value(u"modifier"_s).toBool())
+            continue;
+        lines << QStringList{field(i.value(u"name"_s).toString()), field(i.value(u"familyName"_s).toString()),
+                             QString::number(i.value(u"priceValue"_s).toDouble(), 'f', 2), i.value(u"cost"_s).toString(),
+                             i.value(u"taxClass"_s).toString(), i.value(u"number"_s).toString(),
+                             field(i.value(u"barcodes"_s).toString()), i.value(u"stockOnHand"_s).toString(),
+                             i.value(u"stockLowAt"_s).toString(),
+                             i.value(u"availableSet"_s).toBool() ? QString() : u"Yes"_s}.join(u',');
+    }
+    const QString dir = exportDir_.isEmpty() ? QDir::home().filePath(u"ViewTouch Exports"_s) : exportDir_;
+    QString store = pos_->storeName();
+    store.replace(QRegularExpression(u"[\\/:*?\"<>|]"_s), u"-"_s);
+    const QString path = QDir(dir).filePath(u"Items - %1 - %2.csv"_s.arg(store.isEmpty() ? u"ViewTouch"_s : store,
+                                                                        QDate::currentDate().toString(Qt::ISODate)));
+    QSaveFile f(path);
+    // With a byte-order mark: Excel then reads the names' accents right.
+    if (!QDir().mkpath(dir) || !f.open(QIODevice::WriteOnly)
+        || f.write("\xEF\xBB\xBF" + lines.join(u"\r\n"_s).toUtf8() + "\r\n") < 0 || !f.commit()) {
+        setStatus(tr("Could not save the menu: %1").arg(f.errorString()));
+        return {};
+    }
+    setStatus(tr("Saved to %1").arg(path));
+    return path;
+}
+
 void LayoutController::exportMenu()
 {
     if (!pos_)
@@ -1234,6 +1276,31 @@ QVariantList LayoutController::handBuiltPages(const QString &itemId) const
         out.append(QVariantMap{{u"id"_s, p.id}, {u"name"_s, p.name}, {u"has"_s, has}});
     }
     return out;
+}
+
+QString LayoutController::categoryPage(const QString &family) const
+{
+    if (!pos_ || family.isEmpty())
+        return {};
+    QSet<QString> theirs;
+    for (const QVariant &v : pos_->menuItems()) {
+        const QVariantMap m = v.toMap();
+        if (m.value(u"family"_s).toString() == family)
+            theirs.insert(m.value(u"id"_s).toString());
+    }
+    QString best;
+    int most = 0;
+    for (const QVariant &v : handBuiltPages({})) {
+        const vt::layout::Page *p = activeLayout().page(v.toMap().value(u"id"_s).toString());
+        if (!p)
+            continue;
+        const int n = int(std::ranges::count_if(p->zones, [&](const vt::layout::Zone &z) { return theirs.contains(orders(z)); }));
+        if (n > most) {
+            most = n;
+            best = p->id;
+        }
+    }
+    return best;
 }
 
 bool LayoutController::addItemButton(const QString &pageId, const QString &itemId, const QString &label)
@@ -1707,11 +1774,24 @@ void LayoutController::scanned(const QString &code)
     if (editing() || !pos_ || !pos_->loggedIn() || c.isEmpty())
         return;
     typedNumber_.clear();
+    setUnknownCode({});
     const auto *page = currentPage();
     const bool ordering = page && (page->kind == u"index" || page->kind == u"items" || page->kind == u"modifier");
+    // One barcode, but for leading zeros (a scanner may read a UPC as EAN-13).
+    const auto sameCode = [](const QString &a, const QString &b) {
+        static const QRegularExpression digits(u"^[0-9]{6,}$"_s);
+        if (a == b)
+            return true;
+        if (!digits.match(a).hasMatch() || !digits.match(b).hasMatch())
+            return false;
+        const auto strip = [](const QString &s) { qsizetype i = 0; while (i < s.size() && s[i] == u'0') ++i; return s.mid(i); };
+        return strip(a) == strip(b);
+    };
     for (const QVariant &v : pos_->menuItems()) {
         const QVariantMap m = v.toMap();
-        if (m.value(u"number"_s).toString() != c && !m.value(u"barcodes"_s).toString().split(u", "_s).contains(c))
+        const QStringList codes = m.value(u"barcodes"_s).toString().split(u", "_s, Qt::SkipEmptyParts);
+        if (m.value(u"number"_s).toString() != c
+            && std::ranges::none_of(codes, [&](const QString &b) { return sameCode(b, c); }))
             continue;
         if (ordering) {
             orderItem(m.value(u"id"_s).toString());
@@ -1724,10 +1804,37 @@ void LayoutController::scanned(const QString &code)
         }
         return;
     }
-    call(u"scanCode"_s, {c}, [this](const QVariant &kind) {
+    call(u"scanCode"_s, {c}, [this, c](const QVariant &kind) {
         if (kind.toString() == u"giftCard" && pageId() != u"gift-card" && activeLayout().page(u"gift-card"_s))
             navigate(Navigator::Mode::Push, u"gift-card"_s);
+        // Nothing has it: a manager may make it a new item's barcode.
+        else if (kind.toString().isEmpty() && pos_ && pos_->can(QString::fromLatin1(vt::core::perm::Manager))
+                 && activeLayout().page(u"menu-builder"_s))
+            setUnknownCode(c);
     });
+}
+
+void LayoutController::setUnknownCode(const QString &code)
+{
+    if (unknownCode_ == code)
+        return;
+    unknownCode_ = code;
+    emit unknownCodeChanged();
+}
+
+void LayoutController::addItemForCode()
+{
+    const QString code = unknownCode_;
+    setUnknownCode({});
+    if (code.isEmpty())
+        return;
+    keep(u"menuBuilderNewCode"_s, code);   // the Menu Builder opens a new card with it
+    navigate(Navigator::Mode::Push, u"menu-builder"_s);
+}
+
+void LayoutController::dismissUnknownCode()
+{
+    setUnknownCode({});
 }
 
 void LayoutController::orderItem(const QString &itemId, bool clearTyped)

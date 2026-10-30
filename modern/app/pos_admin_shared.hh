@@ -86,9 +86,16 @@ inline QVariantMap permField(const char *permission, const QString &label)
                 u"hint"_s, QString());
 }
 
+// A number typed in a form: "18.5", or "18,5" where a comma marks the
+// decimals ("1,250.00": a thousands comma). 0 when it isn't one.
 inline double number(const QVariantMap &r, const char16_t *key)
 {
-    return r.value(QString::fromUtf16(key)).toString().toDouble();
+    QString t = r.value(QString::fromUtf16(key)).toString().trimmed();
+    if (!t.contains(u'.') && t.count(u',') == 1)
+        t.replace(u',', u'.');
+    else
+        t.remove(u',');
+    return t.toDouble();
 }
 
 // The jobs that can be in the tip pool, in their usual order.

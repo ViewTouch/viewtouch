@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QLocale>
 #include <QMap>
 #include <QRegularExpression>
 
@@ -86,6 +87,12 @@ QStringList strings(const QVariant &v)
 }
 
 } // namespace
+
+// The ingredient that is an item's own stock (Track stock on its card).
+std::string ownStockId(const std::string &itemId)
+{
+    return "item-" + itemId;
+}
 
 // "11.50", "$11.50", "11,50": a price in cents; -1 if it isn't one.
 qint64 priceCents(QString text, const QString &symbol)
@@ -782,6 +789,53 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
         settingsChanged();
     }
 
+    // Its own stock (a shop's T-shirt, a bottle of wine): an ingredient of
+    // its own, one used up for each sold, so Count Stock, deliveries, low
+    // stock, sold out by itself and the Stock report work as for the
+    // kitchen's. stockOnHand, stockLowAt: counts; cost: what one costs.
+    std::optional<Ingredient> stock;   // saved once the item is
+    if (card.contains(u"stockTrack"_s)) {
+        const std::string own = ownStockId(item.id);
+        std::erase_if(item.recipe, [&](const core::RecipeLine &r) { return r.ingredientId == own; });
+        if (card.value(u"stockTrack"_s).toBool()) {
+            const auto count = [](const QVariant &v, double *out) {
+                QString t = v.toString().trimmed();
+                if (t.isEmpty()) { *out = 0; return true; }
+                bool ok = false;
+                *out = QLocale::c().toDouble(t.replace(u',', u'.'), &ok);
+                return ok && *out >= 0;
+            };
+            // What the card leaves out stays as it is (sold meanwhile: not undone).
+            const Ingredient *was = s_->ingredient(own);
+            double onHand = was ? was->onHand : 0, lowAt = was ? was->lowAt : 0;
+            if (card.contains(u"stockOnHand"_s) && !count(card.value(u"stockOnHand"_s), &onHand))
+                return fail(tr("On hand is how many there are, like 24."));
+            if (card.contains(u"stockLowAt"_s) && !count(card.value(u"stockLowAt"_s), &lowAt))
+                return fail(tr("Low at is how many, like 5 (or empty)."));
+            qint64 cost = was ? was->cost.cents() : 0;
+            if (card.contains(u"cost"_s)) {
+                const QString costText = card.value(u"cost"_s).toString().trimmed();
+                cost = costText.isEmpty() ? 0 : priceCents(costText, qs(s_->settings.currencySymbol));
+                if (cost < 0)
+                    return fail(tr("Type what one costs, like 6.50, or leave it empty."));
+            }
+            Ingredient g = was ? *was : Ingredient{own, item.name, "each"};
+            if (was)
+                g.adjusted += onHand - was->onHand;   // a different count: a change by hand
+            else
+                g.start = onHand;
+            g.name = item.name;
+            g.onHand = onHand;
+            g.lowAt = lowAt;
+            g.cost = Money::fromCents(cost);
+            stock = g;
+            item.recipe.push_back({own, 1});
+        } else if (item.recipe.empty() && item.autoSoldOut) {
+            item.available = true;   // sold out only for want of the stock it no longer counts
+            item.autoSoldOut = false;
+        }
+    }
+
     if (adding) {
         // After the last item of its category, so it shows at its end.
         auto at = menu.end();
@@ -796,6 +850,19 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
         *it = item;
         if (s_->sink)
             s_->sink->saveMenuItem(*it, int(it - menu.begin()));
+    }
+    if (stock) {
+        auto &list = s_->ingredients;
+        auto at = std::ranges::find_if(list, [&](const Ingredient &g) { return g.id == stock->id; });
+        if (at == list.end()) {
+            list.push_back(*stock);
+            at = list.end() - 1;
+        } else {
+            *at = *stock;
+        }
+        if (s_->sink)
+            s_->sink->saveIngredient(*at, int(at - list.begin()));
+        refreshSoldOut();
     }
     menuChanged();
     const bool hadSizes = s_->settings.modifierGroup(sizeGroupId(item.id)) != nullptr;
@@ -1450,7 +1517,11 @@ int PosService::importMenuFile(const QVariantMap &file)
 }
 
 // Several items at once (the Menu Builder's Select): the same change to
-// each ({family, buttonColor, available}), or removed; one Undo step.
+// each (any card field: family, buttonColor, available, taxClass, printer,
+// price...), or removed; one Undo step. Prices can also move by an amount
+// (priceAdd, in cents, may be negative) or a share (pricePercent, in basis
+// points: 500 = 5% more, -1000 = 10% less), each item from its own price,
+// rounded to the cent and never below zero.
 bool PosService::changeMenuItems(const QStringList &ids, const QVariantMap &changes)
 {
     if (!require(perm::Manager, tr("Changing the menu")))
@@ -1458,11 +1529,27 @@ bool PosService::changeMenuItems(const QStringList &ids, const QVariantMap &chan
     for (const QString &id : ids)
         if (!findItem(id))
             return fail(tr("'%1' is not on the menu.").arg(id));
+    const bool adding = changes.contains(u"priceAdd"_s), scaling = changes.contains(u"pricePercent"_s);
+    const qint64 add = changes.value(u"priceAdd"_s).toLongLong();
+    const qint64 bp = changes.value(u"pricePercent"_s).toLongLong();
+    if (scaling && (bp <= -10000 || bp > 100000))
+        return fail(tr("A price change is between -99% and +1000%."));
     const MenuStep step(this, tr("Change %n item(s)", "", int(ids.size())));
     for (const QString &id : ids) {
+        const MenuItem *was = findItem(id);
         QVariantMap card = changes;
+        card.remove(u"priceAdd"_s);
+        card.remove(u"pricePercent"_s);
+        if (adding || scaling) {
+            Money price = was->price;
+            if (scaling)
+                price += price.percent(bp);
+            if (adding)
+                price += Money::fromCents(add);
+            card.insert(u"price"_s, QString::number(std::max<qint64>(0, price.cents()) / 100.0, 'f', 2));
+        }
         card.insert(u"id"_s, id);
-        card.insert(u"name"_s, qs(findItem(id)->name));
+        card.insert(u"name"_s, qs(was->name));
         if (!saveMenuItemCard(card))
             return false;
     }

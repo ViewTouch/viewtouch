@@ -122,6 +122,7 @@ Item {
     // The records changed (a server's answer comes after adminChanged, with
     // the saved values): a form with nothing typed in it shows them.
     onRecordsChanged: {
+        openRecord()   // sent from elsewhere, on a handheld: once they come
         if (pending === "save-new") {
             if (records.length > countAtSave) {
                 pending = ""
@@ -187,7 +188,21 @@ Item {
                 index = k.index
                 draft = k.draft
                 dirty = true
+            } else {
+                // Sent from elsewhere (the Menu Builder's More…): that record.
+                openId = zone.controller.take("adminOpen:" + panel) ?? ""
+                openRecord()
             }
+        }
+    }
+    property string openId: ""
+    function openRecord() {
+        if (openId === "")
+            return
+        const i = records.findIndex(r => r.id === openId)
+        if (i >= 0) {
+            openId = ""
+            choose(i)
         }
     }
     Component.onCompleted: open()

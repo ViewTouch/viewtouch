@@ -8,6 +8,8 @@
 #include <QRegularExpression>
 #include <QThreadPool>
 
+#include <algorithm>
+
 #include <QDateTime>
 
 using namespace Qt::StringLiterals;
@@ -707,8 +709,17 @@ QVariantList PosService::menuItemsNow() const
         return qs(id);
     };
     for (const MenuItem &m : s_->menu) {
+        // Its own stock (Track stock), when it counts one.
+        const core::Ingredient *own = std::ranges::any_of(m.recipe, [&](const core::RecipeLine &r) { return r.ingredientId == ownStockId(m.id); })
+            ? s_->ingredient(ownStockId(m.id)) : nullptr;
+        const auto amount = [](double v) { return QString::number(v, 'g', 10); };
         out.append(QVariantMap{{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}, {u"family"_s, qs(m.family)},
                                {u"familyName"_s, familyName(m.family)},
+                               {u"stockTrack"_s, own != nullptr},
+                               {u"stockOnHand"_s, own ? amount(own->onHand) : QString()},
+                               {u"stockLowAt"_s, own && own->lowAt > 0 ? amount(own->lowAt) : QString()},
+                               {u"stockLow"_s, own && own->low()},
+                               {u"cost"_s, own && own->cost.cents() ? QString::number(double(own->cost.cents()) / 100.0, 'f', 2) : QString()},
                                {u"price"_s, format(m.priceDuring(period))}, {u"modifier"_s, m.isModifier},
                                {u"regularPrice"_s, format(m.price)},
                                {u"available"_s, m.available && ticketsLeft(m) != 0}, {u"image"_s, qs(m.image)},

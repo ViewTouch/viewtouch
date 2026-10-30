@@ -95,7 +95,10 @@ void ServerFinder::onReadyRead()
         if (v4)
             from = QHostAddress(ip);
         s.host = from.toString();
-        s.port = quint16(o.value(u"port").toInt(DefaultPort));
+        const int port = o.value(u"port").toInt(DefaultPort);
+        if (port < 1 || port > 65535)
+            continue;   // not a port: not a ViewTouch answering
+        s.port = quint16(port);
         s.role = o.value(u"role").toString(u"main"_s);
         s.term = o.value(u"term").toInt();
         // The same server can answer on several networks: keep one entry

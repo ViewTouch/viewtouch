@@ -1352,6 +1352,16 @@ TEST_CASE("Working offline: the kit keeps the store's secrets, and a check is ta
     CHECK(third[u"id"_s].toLongLong() == first[u"id"_s].toLongLong() + 1);
     again.taken(item[u"uid"_s].toString());
     CHECK(again.pendingCount() == 0);
+
+    // Sent again after End of Day put it in the past days: still the same check.
+    QJsonObject late = item[u"check"_s].toObject();
+    late[u"offlineId"_s] = u"ended-day"_s;
+    core::Check saved = *app::checkFromJson(late);
+    saved.id = 777;
+    shared.history = [&](std::int64_t, std::int64_t) { return std::vector<core::Check>{saved}; };
+    const QVariantMap fourth = store.takeOfflineCheck(late);
+    CHECK(fourth[u"id"_s].toLongLong() == 777);
+    CHECK(fourth[u"again"_s].toBool());
 }
 
 TEST_CASE("Working offline on the screen: Work Offline, the bar says so, and back", "[net][remote][offline][ui]")

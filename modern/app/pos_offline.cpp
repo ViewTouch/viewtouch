@@ -137,6 +137,12 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
             return {{u"id"_s, qint64(id)}, {u"again"_s, true}};
     if (const auto it = std::ranges::find_if(s_->closedToday, same); it != s_->closedToday.end())
         return {{u"id"_s, qint64(it->id)}, {u"again"_s, true}};
+    // ...or closed on a day already ended (End of Day ran before the answer got back).
+    if (s_->history && c.openedAt > 0) {
+        const std::vector<Check> past = s_->history(c.openedAt - 86'400'000, now() + 60'000);
+        if (const auto it = std::ranges::find_if(past, same); it != past.end())
+            return {{u"id"_s, qint64(it->id)}, {u"again"_s, true}};
+    }
     const Employee *server = s_->employee(c.serverId);
     if (!server)
         return {{u"error"_s, tr("%1 isn't on the staff here.").arg(qs(c.serverName))}};

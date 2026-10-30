@@ -53,6 +53,9 @@ class LayoutController : public QObject {
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusChanged)
     // What a held button does: {title, text}; empty when nothing is explained.
     Q_PROPERTY(QVariantMap explanation READ explanation NOTIFY explanationChanged)
+    // A code scanned that nothing has, while a manager is on: offered to
+    // become a new item's barcode. Empty: none.
+    Q_PROPERTY(QString unknownCode READ unknownCode NOTIFY unknownCodeChanged)
     Q_PROPERTY(bool editing READ editing NOTIFY editingChanged)
     // Screen saver: dimmed after no touches for a while (Store Settings).
     Q_PROPERTY(bool asleep READ asleep NOTIFY asleepChanged)
@@ -226,12 +229,18 @@ public:
     // The whole menu as a file (Exports, or the folder set for them), for
     // Import... at another store.
     Q_INVOKABLE void exportMenu();
+    // Every item as a spreadsheet (.csv): changed there and brought back with
+    // Import… (Update prices). Returns the file ("" when it couldn't).
+    Q_INVOKABLE QString exportMenuSheet();
     // A ready-made picture for an item: the emoji drawn big into a PNG the
     // store keeps ("store:emoji-1f32e.png"); "" if it can't be.
     Q_INVOKABLE QString emojiPicture(const QString &emoji);
     // Pages of buttons placed by hand that an item's button can go on:
     // [{id, name, has}] (has: one for `itemId` is there already).
     Q_INVOKABLE QVariantList handBuiltPages(const QString &itemId) const;
+    // The hand-built page a category's items are on: the one with the most
+    // buttons for its items ("" when none has any). A new item's button goes there.
+    Q_INVOKABLE QString categoryPage(const QString &family) const;
     // A button for the item on that page, like its other item buttons, in
     // the next free place; saved like the page editor saves.
     Q_INVOKABLE bool addItemButton(const QString &pageId, const QString &itemId, const QString &label);
@@ -248,6 +257,10 @@ public:
     Q_INVOKABLE void explain(const QString &zoneId);
     Q_INVOKABLE void clearExplanation();
     QVariantMap explanation() const { return explanation_; }
+    QString unknownCode() const { return unknownCode_; }
+    // The code scanned that nothing has: a new item with it, in the Menu Builder.
+    Q_INVOKABLE void addItemForCode();
+    Q_INVOKABLE void dismissUnknownCode();
     QString describeAction(const vt::layout::Action &action) const;
     // Pages to start on, for the admin forms: [{value: id, text: name}], empty first.
     // Pages to choose from (an empty first entry); only "floor": the floor
@@ -301,6 +314,7 @@ signals:
     void closeRequested();
     void statusChanged();
     void explanationChanged();
+    void unknownCodeChanged();
     void editingChanged();
     void asleepChanged();
     void mealPeriodChanged();
@@ -366,6 +380,8 @@ private:
     QString lookedId_;
     void updateTerminalLook();
     QVariantMap explanation_;
+    QString unknownCode_;
+    void setUnknownCode(const QString &code);
     QString typedNumber_;
     // While leaving edit mode the editor object outlives `editing_` briefly,
     // so QML panels unload before the editor they bind to goes away.

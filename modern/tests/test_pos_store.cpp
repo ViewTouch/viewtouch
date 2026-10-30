@@ -6,6 +6,9 @@
 #include "storage/pos_store.hh"
 
 #include <QElapsedTimer>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QSqlDatabase>
@@ -141,6 +144,49 @@ TEST_CASE("AsyncWriter reports failures and keeps the row queued", "[posstore]")
     CHECK(writer.pending() == 1);
 }
 
+TEST_CASE("AsyncWriter sets aside a row it can never write, and saves the rest", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    PosStore store(path);
+    REQUIRE(store.open());
+    AsyncWriter writer(path);
+    QSignalSpy setAside(&writer, &AsyncWriter::rowSetAside);
+
+    writer.upsert(u"no_such_table"_s, u"1"_s, {{u"id"_s, 1}});
+    writer.upsert(u"time_punches"_s, u"7"_s,
+                  {{u"id"_s, 7}, {u"employee_id"_s, u"sam"_s}, {u"clock_in"_s, 1000}, {u"clock_out"_s, 0}});
+    for (int i = 0; i < 6 && writer.pending() > 0; ++i)
+        writer.flush();
+    writer.flush();   // the rest goes at once after the bad row leaves
+    QCoreApplication::processEvents();
+    CHECK(writer.pending() == 0);
+    REQUIRE(setAside.size() == 1);
+    CHECK(setAside.first()[0].toString() == u"no_such_table"_s);
+    CHECK(store.punches().size() == 1);
+
+    QFile kept(writer.setAsidePath());
+    REQUIRE(kept.open(QIODevice::ReadOnly));
+    const QJsonObject line = QJsonDocument::fromJson(kept.readLine()).object();
+    CHECK(line.value(u"table"_s).toString() == u"no_such_table"_s);
+    CHECK(line.value(u"row"_s).toObject().value(u"id"_s).toInt() == 1);
+}
+
+TEST_CASE("AsyncWriter takes only plain table and column names", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    PosStore store(path);
+    REQUIRE(store.open());
+    AsyncWriter writer(path);
+    QSignalSpy failed(&writer, &AsyncWriter::writeFailed);
+    writer.upsert(u"time_punches; DROP TABLE checks"_s, u"1"_s, {{u"id"_s, 1}});
+    writer.upsert(u"time_punches"_s, u"1"_s, {{u"id) VALUES (1); --"_s, 1}});
+    writer.remove(u"time_punches"_s, u"id = id OR 1"_s, u"1"_s);
+    CHECK(writer.pending() == 0);   // never queued
+    CHECK(failed.size() == 3);
+}
+
 TEST_CASE("Queuing writes never blocks the caller", "[posstore]")
 {
     QTemporaryDir dir;
@@ -250,6 +296,33 @@ TEST_CASE("A version 1 POS database is migrated in place", "[posstore]")
     CHECK(data->lastCheckId == 7);
     CHECK(store.checks(core::CheckStatus::Closed).size() == 1);
     CHECK(data->lastDayId == 0);   // no days yet: the service opens day 1
+}
+
+TEST_CASE("A database stopped halfway through adding cash tips still opens", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    {
+        PosStore store(path);
+        REQUIRE(store.open());
+    }
+    {
+        // The column is there but the version says it isn't: what a stop
+        // between the two steps left behind before they were one transaction.
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, u"half"_s);
+        db.setDatabaseName(path);
+        REQUIRE(db.open());
+        QSqlQuery q(db);
+        REQUIRE(q.exec(u"UPDATE meta SET value = '12' WHERE key = 'pos_schema_version'"_s));
+        db.close();
+    }
+    QSqlDatabase::removeDatabase(u"half"_s);
+
+    PosStore store(path);
+    QString error;
+    const bool opened = store.open(&error);
+    INFO(error.toStdString());
+    CHECK(opened);
 }
 
 TEST_CASE("A shift keeps the job worked and its pay in the database", "[posstore][pay]")

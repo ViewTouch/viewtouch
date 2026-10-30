@@ -349,7 +349,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (record.contains(u"paidBreaks"_s))
             s_->settings.paidBreaks = record.value(u"paidBreaks"_s).toBool();
         if (record.contains(u"tipAllocation"_s))
-            s_->settings.tipAllocationBp = std::clamp<std::int64_t>(std::llround(record.value(u"tipAllocation"_s).toDouble() * 100), 200, 800);
+            s_->settings.tipAllocationBp = std::clamp<std::int64_t>(std::llround(number(record, u"tipAllocation") * 100), 200, 800);
         if (record.contains(u"checksPerServerHour"_s))
             s_->settings.checksPerServerHour = std::clamp(record.value(u"checksPerServerHour"_s).toInt(), 1, 50);
         // A state just picked: its rules (the fields below can still say otherwise).
@@ -373,7 +373,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                 s_->settings.mealBreakAfterHours = std::clamp(record.value(u"mealBreakAfterHours"_s).toInt(), 0, 12);
             if (record.contains(u"giftCardCashBelow"_s))
                 s_->settings.giftCardCashBelowCents =
-                    std::clamp<std::int64_t>(std::llround(record.value(u"giftCardCashBelow"_s).toDouble() * 100), 0, 100000);
+                    std::clamp<std::int64_t>(std::llround(number(record, u"giftCardCashBelow") * 100), 0, 100000);
         }
         if (record.contains(u"overtimeWeeklyHours"_s))
             s_->settings.overtimeWeeklyHours = std::clamp(record.value(u"overtimeWeeklyHours"_s).toInt(), 0, 168);
@@ -536,11 +536,11 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.cashDiscountBp = bp;
         }
         if (record.contains(u"tabHold"_s))
-            s_->settings.tabHold = std::max<std::int64_t>(0, std::llround(record.value(u"tabHold"_s).toDouble() * 100.0));
+            s_->settings.tabHold = std::max<std::int64_t>(0, std::llround(number(record, u"tabHold") * 100.0));
         if (record.contains(u"offlineCardMax"_s))
-            s_->settings.offlineCardMax = std::max<std::int64_t>(0, std::llround(record.value(u"offlineCardMax"_s).toDouble() * 100.0));
+            s_->settings.offlineCardMax = std::max<std::int64_t>(0, std::llround(number(record, u"offlineCardMax") * 100.0));
         if (record.contains(u"offlineCardTotal"_s))
-            s_->settings.offlineCardTotal = std::max<std::int64_t>(0, std::llround(record.value(u"offlineCardTotal"_s).toDouble() * 100.0));
+            s_->settings.offlineCardTotal = std::max<std::int64_t>(0, std::llround(number(record, u"offlineCardTotal") * 100.0));
         if (record.contains(u"offlineCards"_s) && record.value(u"offlineCards"_s).toBool() != s_->settings.offlineCards) {
             s_->settings.offlineCards = record.value(u"offlineCards"_s).toBool();
             setStripeOffline(s_->settings.offlineCards);   // the readers follow
@@ -560,7 +560,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (record.contains(u"deliveryFeeToDriver"_s))
             s_->settings.deliveryFeeToDriver = record.value(u"deliveryFeeToDriver"_s).toBool();
         if (record.contains(u"deliveryFee"_s)) {
-            const double fee = record.value(u"deliveryFee"_s).toDouble();
+            const double fee = number(record, u"deliveryFee");
             if (fee < 0 || fee > 1000)
                 return fail(tr("Write the delivery fee in dollars."));
             s_->settings.deliveryFee = Money::fromCents(std::llround(fee * 100));
@@ -651,7 +651,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (record.contains(u"extraPercent"_s))
             s_->settings.extraPercent = std::clamp(record.value(u"extraPercent"_s).toInt(), 0, 500);
         if (record.contains(u"extraCharge"_s)) {
-            const double extra = record.value(u"extraCharge"_s).toDouble();
+            const double extra = number(record, u"extraCharge");
             if (extra < 0)
                 return fail(tr("The Extra charge can't be negative."));
             s_->settings.extraCharge = Money::fromCents(std::llround(extra * 100));
@@ -887,7 +887,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
         && std::ranges::none_of(i18n::languages(), [&](const i18n::Language &l) { return l.code == language; }))
         return fail(tr("Choose a language."));
     // Pay: their rate, and other jobs as "bartender 9.00", one per line.
-    const double rate = record.value(u"payRate"_s, 0.0).toDouble();
+    const double rate = number(record, u"payRate");
     if (rate < 0 || rate > 1000)
         return fail(tr("Write the pay rate in dollars an hour."));
     std::vector<Job> otherJobs;
@@ -997,9 +997,9 @@ bool PosService::savePromotionRecord(int index, const QVariantMap &r)
     // No categories or items: the whole order (a coupon; a by-itself one only when it says so).
     if (p.families.empty() && p.items.empty() && p.code.empty())
         return fail(tr("Say which categories or items it covers."));
-    p.percentBp = std::clamp<std::int64_t>(std::llround(r.value(u"percent"_s).toDouble() * 100.0), 0, 10000);
-    p.amount = Money::fromCents(std::max<std::int64_t>(0, std::llround(r.value(u"amount"_s).toDouble() * 100.0)));
-    p.minimum = Money::fromCents(std::max<std::int64_t>(0, std::llround(r.value(u"minimum"_s).toDouble() * 100.0)));
+    p.percentBp = std::clamp<std::int64_t>(std::llround(number(r, u"percent") * 100.0), 0, 10000);
+    p.amount = Money::fromCents(std::max<std::int64_t>(0, std::llround(number(r, u"amount") * 100.0)));
+    p.minimum = Money::fromCents(std::max<std::int64_t>(0, std::llround(number(r, u"minimum") * 100.0)));
     if (p.percentBp <= 0 && p.amount.cents() <= 0)
         return fail(tr("How much off? (50 = half price, or an amount)"));
     if (p.amount.cents() > 0 && p.buy > 0)

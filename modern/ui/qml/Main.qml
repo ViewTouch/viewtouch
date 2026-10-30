@@ -1483,6 +1483,58 @@ ApplicationWindow {
         MouseArea { anchors.fill: parent; onClicked: root.controller.clearExplanation() }
     }
 
+    // A code scanned that nothing has, with a manager on: make it a new item.
+    Rectangle {
+        id: unknownCodeCard
+        objectName: "unknownCodeCard"
+        visible: root.controller.unknownCode !== ""
+        z: 50
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.topMargin: 24
+        width: Math.min(root.width - 40, 640)
+        height: unknownCol.implicitHeight + 32
+        radius: 14
+        color: "#f0101418"
+        border.color: "#f5b940"
+        border.width: 2
+        MouseArea { anchors.fill: parent }   // the page under it isn't touched
+        Column {
+            id: unknownCol
+            x: 20; y: 16
+            width: parent.width - 40
+            spacing: 12
+            Text {
+                width: parent.width
+                text: qsTr("Nothing has the code %1.").arg(root.controller.unknownCode)
+                color: "white"
+                font.pixelSize: 22
+                font.bold: true
+                wrapMode: Text.WrapAnywhere
+            }
+            Row {
+                spacing: 12
+                PosButton {
+                    objectName: "addItemForCode"
+                    width: (unknownCol.width - 12) / 2
+                    height: 64
+                    font.pixelSize: 18
+                    highlighted: true
+                    text: qsTr("Add an Item With It")
+                    onClicked: root.controller.addItemForCode()
+                }
+                PosButton {
+                    objectName: "dismissUnknownCode"
+                    width: (unknownCol.width - 12) / 2
+                    height: 64
+                    font.pixelSize: 18
+                    text: qsTr("Not Now")
+                    onClicked: root.controller.dismissUnknownCode()
+                }
+            }
+        }
+    }
+
     Connections {
         target: root.controller
         function onStatusChanged() { root.toast(root.controller.statusText) }
