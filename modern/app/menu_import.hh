@@ -28,6 +28,10 @@ struct ImportedItem {
     QString photo;             // a picture's file name, next to the spreadsheet
     QString barcode;           // the package's barcode(s), "012345678905"
     QString number;            // its PLU, "104"
+    QString sku;               // the store's own code for it (matches it again)
+    // A shop's stock: what one costs, how many there are, when to warn
+    // (as text, as typed; empty: not in the file).
+    QString cost, onHand, lowAt, par;
     QList<ImportedPrice> sizes;   // two or more, each its own price
     QStringList groups;        // the choice groups it asks for, by name
     bool alcohol = false;

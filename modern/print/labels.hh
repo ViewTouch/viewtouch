@@ -14,6 +14,7 @@ namespace vt::print {
 struct Label {
     std::string title;
     std::vector<std::string> lines;
+    std::string barcode;   // under the lines (a price tag), drawn by the printer; empty: none
 };
 
 // `widthMm` x `heightMm` labels at 203 dots per inch (8 dots a mm), one after

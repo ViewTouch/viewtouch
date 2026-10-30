@@ -608,6 +608,39 @@ bool PosService::printPrepLabels(const QVariantMap &r)
     return true;
 }
 
+bool PosService::printPriceTags(const QStringList &itemIds, int copies)
+{
+    if (!require(perm::Manager, tr("Printing price tags")))
+        return false;
+    if (itemIds.isEmpty())
+        return fail(tr("Choose the items first."));
+    if (copies < 1 || copies > 50)
+        return fail(tr("Print 1 to 50 of each at a time."));
+    if (int(itemIds.size()) * copies > 500)
+        return fail(tr("That's more than 500 tags: print them a few at a time."));
+    // The label printer, else the receipt printer (a slip each).
+    std::string printer = labelPrinterId();
+    if (printer.empty())
+        printer = s_->settings.receiptPrinterFor(ss(terminal_));
+    if (printer.empty() || !s_->printer)
+        return fail(tr("Set up a label printer first (Manager → Printers; then Store Settings → Inventory)."));
+    std::vector<std::pair<std::string, std::vector<std::string>>> labels;
+    std::vector<std::string> codes;
+    for (const QString &id : itemIds) {
+        const MenuItem *m = findItem(id);
+        if (!m)
+            return fail(tr("'%1' is not on the menu.").arg(id));
+        const std::string code = !m->barcodes.empty() ? m->barcodes.front() : m->number;
+        for (int i = 0; i < copies; ++i) {
+            labels.push_back({m->name, {format(m->price).toStdString()}});
+            codes.push_back(code);
+        }
+    }
+    s_->printer->printLabels(s_->settings, labels, printer, codes);
+    emit notice(tr("Printing %n price tag(s)", "", int(labels.size())));
+    return true;
+}
+
 // --- waste -------------------------------------------------------------------------------
 
 QVariantMap PosService::wasteLog() const

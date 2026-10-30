@@ -553,7 +553,8 @@ public:
     static QStringList allergenNames(const std::vector<std::string> &ids);
     Q_INVOKABLE void setAllergies(const QStringList &ids, int seat = 0) { invoke(QStringLiteral("setAllergies"), {ids, seat}); }
     Q_INVOKABLE void importMenuFile(const QVariantMap &file) { invoke(QStringLiteral("importMenuFile"), {file}); }
-    Q_INVOKABLE void importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {}) { invoke(QStringLiteral("importMenuRows"), {rows, categoryId, updatePrices, groups}); }
+    Q_INVOKABLE void importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {},
+                                    bool updateStock = false) { invoke(QStringLiteral("importMenuRows"), {rows, categoryId, updatePrices, groups, updateStock}); }
     Q_INVOKABLE void addMenuItemsFromText(const QString &categoryId, const QString &text) { invoke(QStringLiteral("addMenuItemsFromText"), {categoryId, text}); }
     Q_INVOKABLE void deleteChoiceGroup(const QString &id) { invoke(QStringLiteral("deleteChoiceGroup"), {id}); }
     Q_INVOKABLE void finishChoosing() { invoke(QStringLiteral("finishChoosing")); }
@@ -570,6 +571,7 @@ public:
     Q_INVOKABLE void problemsSeen() { invoke(QStringLiteral("problemsSeen")); }
     // {ingredient | name, hours, count, note}.
     Q_INVOKABLE void printPrepLabels(const QVariantMap &labels) { invoke(QStringLiteral("printPrepLabels"), {labels}); }
+    Q_INVOKABLE void printPriceTags(const QStringList &itemIds, int copies = 1) { invoke(QStringLiteral("printPriceTags"), {itemIds, copies}); }
     Q_INVOKABLE void searchChecks(const QString &query, int days = 365, int offset = 0) { invoke(QStringLiteral("searchChecks"), {query, days, offset}); }
     // Orders for later: ready at this time (ms since 1970; 0 = as soon as possible).
     Q_INVOKABLE void setDueAt(double at) { invoke(QStringLiteral("setDueAt"), {qint64(at)}); }

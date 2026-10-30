@@ -76,6 +76,11 @@ QString what(const QString &header)
                       u"sale price"_s, u"amount"_s, u"precio"_s, u"precio de venta"_s}},
         // What the store pays: the price only when the sheet has no price.
         {u"cost"_s, {u"cost"_s, u"unit cost"_s, u"cost price"_s, u"costo"_s}},
+        {u"onHand"_s, {u"on hand"_s, u"stock"_s, u"in stock"_s, u"stock on hand"_s, u"qty"_s, u"quantity"_s, u"existencia"_s,
+                       u"existencias"_s}},
+        {u"lowAt"_s, {u"low at"_s, u"reorder point"_s, u"reorder at"_s, u"reorder level"_s, u"min stock"_s}},
+        {u"par"_s, {u"order up to"_s, u"par"_s, u"par level"_s}},
+        {u"sku"_s, {u"sku"_s}},
         {u"category"_s, {u"category"_s, u"categories"_s, u"family"_s, u"group"_s, u"section"_s, u"menu group"_s, u"type"_s,
                          u"categoria"_s, u"categorias"_s, u"seccion"_s, u"grupo"_s, u"tipo"_s}},
         {u"menu"_s, {u"menu"_s, u"reporting category"_s}},   // a category when there's no other
@@ -244,9 +249,11 @@ MenuImport readTable(const QList<QStringList> &rows)
     if (!at.contains(u"category"_s) && at.contains(u"menu"_s))
         at.insert(u"category"_s, at.value(u"menu"_s));
     for (const QString &key : {u"name"_s, u"price"_s, u"category"_s, u"subgroup"_s, u"description"_s, u"onIt"_s, u"photo"_s,
-                               u"barcode"_s, u"number"_s, u"size"_s, u"groups"_s, u"alcohol"_s})
+                               u"barcode"_s, u"number"_s, u"size"_s, u"groups"_s, u"alcohol"_s, u"sku"_s, u"onHand"_s, u"lowAt"_s, u"par"_s})
         if (at.contains(key))
             out.columns << key;
+    if (at.contains(u"cost"_s) && at.value(u"cost"_s) != at.value(u"price"_s))
+        out.columns << u"cost"_s;
     if (!modifierSets.isEmpty() && !out.columns.contains(u"groups"_s))
         out.columns << u"groups"_s;
     const auto cell = [&](const QStringList &r, const QString &key) {
@@ -337,6 +344,13 @@ MenuImport readTable(const QList<QStringList> &rows)
         item.photo = cell(row, u"photo"_s);
         item.barcode = cell(row, u"barcode"_s);
         item.number = cell(row, u"number"_s);
+        item.sku = cell(row, u"sku"_s);
+        // The cost only from a column of its own (not the one taken as the price).
+        if (at.contains(u"cost"_s) && at.value(u"cost"_s) != at.value(u"price"_s))
+            item.cost = cell(row, u"cost"_s).remove(QRegularExpression(u"[^0-9.,]"_s));
+        item.onHand = cell(row, u"onHand"_s).trimmed();
+        item.lowAt = cell(row, u"lowAt"_s).trimmed();
+        item.par = cell(row, u"par"_s).trimmed();
         item.alcohol = yes(cell(row, u"alcohol"_s));
         item.groups = listOf(cell(row, u"groups"_s));
         for (const auto &[i, group] : modifierSets)

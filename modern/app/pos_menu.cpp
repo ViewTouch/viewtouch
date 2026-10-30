@@ -719,6 +719,7 @@ QVariantList PosService::menuItemsNow() const
                                {u"stockOnHand"_s, own ? amount(own->onHand) : QString()},
                                {u"stockLowAt"_s, own && own->lowAt > 0 ? amount(own->lowAt) : QString()},
                                {u"stockLow"_s, own && own->low()},
+                               {u"stockPar"_s, own && own->par > 0 ? amount(own->par) : QString()},
                                {u"cost"_s, own && own->cost.cents() ? QString::number(double(own->cost.cents()) / 100.0, 'f', 2) : QString()},
                                {u"price"_s, format(m.priceDuring(period))}, {u"modifier"_s, m.isModifier},
                                {u"regularPrice"_s, format(m.price)},

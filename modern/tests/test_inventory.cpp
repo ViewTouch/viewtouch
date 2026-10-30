@@ -689,11 +689,13 @@ struct LabelPrinter : app::PosPrinter {
     void printReport(const core::PosSettings &, const core::Report &, const std::string &) override {}
     void openDrawer(const core::PosSettings &, const std::string &) override {}
     void printLabels(const core::PosSettings &, const std::vector<std::pair<std::string, std::vector<std::string>>> &l,
-                     const std::string &p) override
+                     const std::string &p, const std::vector<std::string> &b = {}) override
     {
         labels = l;
         printer = p;
+        barcodes = b;
     }
+    std::vector<std::string> barcodes;
 };
 
 } // namespace
@@ -718,6 +720,79 @@ TEST_CASE("Labels: ZPL and TSPL for label printers, a slip for a receipt printer
     CHECK(prints == 2);
     const print::Document slip = print::labelSlip(labels[0]);
     CHECK(print::renderText(slip, 32).find("Pico de gallo") != std::string::npos);
+}
+
+TEST_CASE("Price tags: a barcode under the name and price, in each printer's own way", "[labels][pricetags]")
+{
+    const std::vector<print::Label> tags{{"T-Shirt", {"$19.99"}, "012345678905"}, {"Mug", {"$8.00"}, "4006381333931"},
+                                         {"Sticker", {"$1.00"}, "STK-7"}};
+    const std::string zpl = print::renderZpl(tags, 51, 25);
+    CHECK(zpl.find("^BUN,") != std::string::npos);                    // UPC-A
+    CHECK(zpl.find("^FD012345678905^FS") != std::string::npos);
+    CHECK(zpl.find("^BEN,") != std::string::npos);                    // EAN-13
+    CHECK(zpl.find("^BCN,") != std::string::npos);                    // anything else: Code 128
+    const std::string tspl = print::renderTspl(tags, 51, 25);
+    CHECK(tspl.find("BARCODE 16,") != std::string::npos);
+    CHECK(tspl.find("\"UPCA\"") != std::string::npos);
+    CHECK(tspl.find("\"EAN13\"") != std::string::npos);
+    CHECK(tspl.find("\"128\"") != std::string::npos);
+    // A receipt printer draws it itself (GS k); a plain copy shows the code.
+    const print::Document slip = print::labelSlip(tags[2]);
+    CHECK(print::renderEscPos(slip, 42, true).find("\x1dk\x49") != std::string::npos);
+    CHECK(print::renderText(slip, 32).find("[STK-7]") != std::string::npos);
+    CHECK(print::renderEscPos(print::labelSlip(tags[1]), 42, true).find("\x1dk\x43\x0d" "4006381333931") != std::string::npos);
+
+    // From the Menu Builder: each item's name, price and barcode (or its number).
+    app::PosData data = test::seedPosData();
+    PosService pos(data, nullptr);
+    LabelPrinter printer;
+    pos.setPrinter(&printer);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"barcodes"_s, u"012345678905"_s}}));
+    REQUIRE(pos.printPriceTags({u"cobb"_s, u"caesar"_s}, 2));
+    REQUIRE(printer.labels.size() == 4);
+    CHECK(printer.labels[0].first == "Cobb");
+    CHECK(printer.labels[0].second.front() == "$12.50");
+    CHECK(printer.barcodes[0] == "012345678905");
+    CHECK(printer.barcodes[2] == pos.findItem(u"caesar"_s)->number);
+    CHECK_FALSE(pos.printPriceTags({}, 1));
+    CHECK_FALSE(pos.printPriceTags({u"cobb"_s}, 51));
+}
+
+TEST_CASE("Track stock: Undo puts it back; Order up to puts it on the order list; removing it removes its stock", "[inventory][stock]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const std::string own = app::ownStockId("lemonade");
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true},
+                                  {u"stockOnHand"_s, u"3"_s}, {u"stockLowAt"_s, u"5"_s}, {u"stockPar"_s, u"24"_s},
+                                  {u"cost"_s, u"0.80"_s}}));
+    REQUIRE(pos.shared()->ingredient(own));
+    CHECK(pos.shared()->ingredient(own)->par == 24);
+    // Low and below its par: on the Stock report's order list (21 to order).
+    const core::Report rep = pos.buildReport(u"stock"_s);
+    bool ordered = false;
+    for (const core::ReportRow &row : rep.rows)
+        ordered = ordered || (!row.cells.empty() && row.cells.front().starts_with("Lemonade") && row.cells.size() >= 4 && row.cells[3] == "21");
+    CHECK(ordered);
+
+    // A change to its stock settings, undone.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true}, {u"stockLowAt"_s, u"2"_s}}));
+    CHECK(pos.shared()->ingredient(own)->lowAt == 2);
+    REQUIRE(pos.undoMenuChange());
+    CHECK(pos.shared()->ingredient(own)->lowAt == 5);
+    // Tracking it at all, undone: its stock goes.
+    REQUIRE(pos.undoMenuChange());
+    CHECK_FALSE(pos.shared()->ingredient(own));
+    CHECK(pos.findItem(u"lemonade"_s)->recipe.empty());
+
+    // Removed from the menu: its stock with it; Undo brings both back.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"9"_s}}));
+    REQUIRE(pos.deleteMenuItemCard(u"lemonade"_s));
+    CHECK_FALSE(pos.shared()->ingredient(own));
+    REQUIRE(pos.undoMenuChange());
+    REQUIRE(pos.shared()->ingredient(own));
+    CHECK(pos.shared()->ingredient(own)->onHand == 9);
 }
 
 TEST_CASE("Prep labels: what, made and use by, on the label printer", "[labels]")

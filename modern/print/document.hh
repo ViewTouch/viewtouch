@@ -21,7 +21,7 @@ struct Raster {
 
 struct Document {
     enum class Align { Left, Center, Right };
-    enum class Kind { Text, Columns, Rule, Blank, Image };
+    enum class Kind { Text, Columns, Rule, Blank, Image, Barcode };
 
     struct Line {
         Kind kind = Kind::Text;
@@ -31,6 +31,8 @@ struct Document {
         bool bold = false;
         bool big = false;      // double width and height
         std::shared_ptr<const Raster> raster;   // Image: printed centered (plain text skips it)
+        // Barcode: `text` is the code, printed by the printer itself (EAN-13
+        // or UPC-A when it's one, else Code 128) with its digits under it.
     };
 
     std::vector<Line> lines;
@@ -43,7 +45,12 @@ struct Document {
     Document &rule();
     Document &blank();
     Document &image(std::shared_ptr<const Raster> raster);
+    Document &barcode(std::string code);
 };
+
+// What a barcode can be: digits for EAN-13 (13) or UPC-A (12), else Code 128
+// of plain ASCII (letters, digits, - . / and space). Empty: not printable.
+std::string barcodeText(const std::string &code);
 
 // Plain letters a printer without accents can show (é -> e, € -> EUR, no control characters).
 std::string plainLetters(const std::string &s);

@@ -152,12 +152,13 @@ Item {
                      takeoutPrice: i.takeoutPrice, periodPrices: Object.assign({}, i.periodPrices),
                      taxClass: i.taxClass, printer: i.printer, station: i.station,
                      section: i.section ?? "", breakBefore: i.breakBefore ?? "",
-                     stockTrack: !!i.stockTrack, stockOnHand: i.stockOnHand ?? "", stockLowAt: i.stockLowAt ?? "", cost: i.cost ?? "" }
+                     stockTrack: !!i.stockTrack, stockOnHand: i.stockOnHand ?? "", stockLowAt: i.stockLowAt ?? "",
+                     stockPar: i.stockPar ?? "", cost: i.cost ?? "" }
                  : { id: "", name: "", price: "", family: categoryId, image: "", groups: [], onIt: "",
                      available: true, kioskHide: false, description: "", favorite: false, allergens: [],
                      kitchenName: "", number: "", barcodes: "", buttonColor: "", textSize: 0, prepMinutes: "", takeoutPrice: "", periodPrices: {},
                      section: "", breakBefore: "",
-                     stockTrack: false, stockOnHand: "", stockLowAt: "", cost: "",
+                     stockTrack: false, stockOnHand: "", stockLowAt: "", stockPar: "", cost: "",
                      // what its category's items start with
                      taxClass: category ? (category.taxClass || "food") : "food",
                      printer: category ? (category.printer || "kitchen") : "kitchen", station: category ? category.station : "" }
@@ -438,11 +439,11 @@ Item {
         // Stock as it was when the card opened isn't sent: what sold since stays sold.
         const saved = card.id ? allItems.find(i => i.id === card.id) : null
         if (saved) {
-            for (const k of ["stockOnHand", "stockLowAt", "cost"])
+            for (const k of ["stockOnHand", "stockLowAt", "stockPar", "cost"])
                 if (String(card[k] ?? "") === String(saved[k] ?? ""))
                     delete card[k]
             if (!!card.stockTrack === !!saved.stockTrack && card.stockOnHand === undefined
-                && card.stockLowAt === undefined && card.cost === undefined)
+                && card.stockLowAt === undefined && card.stockPar === undefined && card.cost === undefined)
                 delete card.stockTrack
         } else if (!card.stockTrack) {
             delete card.stockTrack
@@ -1046,6 +1047,14 @@ Item {
                         onClicked: taxSeveral.open()
                     }
                     TouchButton {
+                        objectName: "builderSelectTags"
+                        implicitHeight: 44
+                        font.pixelSize: 14
+                        enabled: w.selected.length > 0
+                        text: qsTr("Price Tags…")
+                        onClicked: tagsSeveral.open()
+                    }
+                    TouchButton {
                         objectName: "builderSelectSoldOut"
                         implicitHeight: 44
                         font.pixelSize: 14
@@ -1470,6 +1479,16 @@ Item {
                                     placeholderText: qsTr("Warn when this many are left, e.g. 5")
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     onTextEdited: w.set("stockLowAt", text)
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("Order up to") }
+                                TextField {
+                                    objectName: "builderStockPar"
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    text: w.draft.stockPar ?? ""
+                                    placeholderText: qsTr("For the Stock report's order list, e.g. 24")
+                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    onTextEdited: w.set("stockPar", text)
                                 }
                                 Label { visible: !!w.draft.stockTrack; text: qsTr("Cost") }
                                 RowLayout {
@@ -2402,6 +2421,56 @@ Item {
                             b.changeSelected({ priceAdd: Math.round(v * 100) })
                         else
                             b.changeSelected({ pricePercent: Math.round(v * 100) })
+                    }
+                }
+            }
+        }
+    }
+    // Price tags for the chosen items: how many of each.
+    Popup {
+        id: tagsSeveral
+        objectName: "builderTagsSeveral"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 480, 480)
+        modal: true
+        padding: 16
+        property int copies: 1
+        onOpened: copies = 1
+        contentItem: ColumnLayout {
+            spacing: 10
+            Label { text: qsTr("Price tags for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                opacity: 0.7
+                text: qsTr("Each with its name, price and barcode (or number), on the label printer.")
+            }
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 12
+                TouchButton { text: "−"; implicitWidth: 64; onClicked: tagsSeveral.copies = Math.max(1, tagsSeveral.copies - 1) }
+                Label {
+                    objectName: "builderTagsCopies"
+                    text: qsTr("%n of each", "", tagsSeveral.copies)
+                    font.pixelSize: 20
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.preferredWidth: 140
+                }
+                TouchButton { text: "+"; implicitWidth: 64; onClicked: tagsSeveral.copies = Math.min(50, tagsSeveral.copies + 1) }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                TouchButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: tagsSeveral.close() }
+                TouchButton {
+                    objectName: "builderTagsPrint"
+                    Layout.fillWidth: true
+                    highlighted: true
+                    text: qsTr("Print")
+                    onClicked: {
+                        const ids = w.selected.slice(), n = tagsSeveral.copies
+                        tagsSeveral.close()
+                        w.pos.printPriceTags(ids, n)
                     }
                 }
             }

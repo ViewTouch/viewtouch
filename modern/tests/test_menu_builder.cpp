@@ -1461,3 +1461,46 @@ TEST_CASE("Menu Builder: an item's own stock, counted down as it sells, sold out
     CHECK(pos.findItem(u"lemonade"_s)->recipe.empty());
     CHECK_FALSE(row()[u"stockTrack"_s].toBool());
 }
+
+TEST_CASE("Menu import: stock and cost from a shop's sheet; the same item found by its barcode", "[menubuilder][import][stock]")
+{
+    // A sheet as Export writes it, with stock.
+    const auto read = app::readMenuCsv(u"Name,Category,Price,Cost,Tax,PLU,Barcode,On Hand,Low At,Order Up To,Sold Out\n"
+                                       u"Cobb Salad,Salads,12.50,4.10,food,203,0712345678911,30,5,40,\n"
+                                       u"Beanie,Merch,15.00,6.00,merchandise,,0099887766554,12,3,,\n"_s);
+    REQUIRE(read.items.size() == 2);
+    CHECK(read.items[0].cost == u"4.10"_s);
+    CHECK(read.items[0].onHand == u"30"_s);
+    CHECK(read.items[0].lowAt == u"5"_s);
+    CHECK(read.items[0].par == u"40"_s);
+    CHECK(read.columns.contains(u"onHand"_s));
+
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    // The Cobb on the menu has that barcode, under its old name.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"barcodes"_s, u"0712345678911"_s}}));
+    const auto row = [](const app::ImportedItem &i) {
+        return QVariantMap{{u"name"_s, i.name}, {u"price"_s, i.price}, {u"category"_s, i.category}, {u"barcodes"_s, i.barcode},
+                           {u"number"_s, i.number}, {u"cost"_s, i.cost}, {u"stockOnHand"_s, i.onHand},
+                           {u"stockLowAt"_s, i.lowAt}, {u"stockPar"_s, i.par}};
+    };
+    const QVariantList rows{row(read.items[0]), row(read.items[1])};
+    // Without Update stock: the new item gets its stock, the Cobb doesn't.
+    REQUIRE(pos.importMenuRows(rows, {}, false) > 0);
+    CHECK_FALSE(pos.shared()->ingredient(app::ownStockId("cobb")));
+    const auto beanie = std::ranges::find_if(pos.shared()->menu, [](const core::MenuItem &m) { return m.name == "Beanie"; });
+    REQUIRE(beanie != pos.shared()->menu.end());
+    const core::Ingredient *b = pos.shared()->ingredient(app::ownStockId(beanie->id));
+    REQUIRE(b);
+    CHECK(b->onHand == 12);
+    CHECK(b->cost == Money::fromCents(600));
+    CHECK(pos.findItem(u"cobb"_s)->name == "Cobb");   // found by its barcode, not added again
+    CHECK(std::ranges::count_if(pos.shared()->menu, [](const core::MenuItem &m) { return m.name == "Cobb Salad"; }) == 0);
+    // With Update stock: the Cobb's too.
+    REQUIRE(pos.importMenuRows(rows, {}, false, {}, true) > 0);
+    const core::Ingredient *c = pos.shared()->ingredient(app::ownStockId("cobb"));
+    REQUIRE(c);
+    CHECK(c->onHand == 30);
+    CHECK(c->par == 40);
+}

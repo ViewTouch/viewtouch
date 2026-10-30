@@ -35,7 +35,7 @@ public:
                         bool sent) override;
     void printLabels(const core::PosSettings &settings,
                      const std::vector<std::pair<std::string, std::vector<std::string>>> &labels,
-                     const std::string &printerId) override;
+                     const std::string &printerId, const std::vector<std::string> &barcodes = {}) override;
 
     // For tests: the clock used on tickets.
     void setClock(std::function<std::int64_t()> now) { now_ = std::move(now); }

@@ -27,6 +27,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <tuple>
 #include <vector>
 
 namespace vt::app {
@@ -89,10 +90,11 @@ public:
     // A test page on printer `printerId` (its logo, text sizes, a cut), and
     // the drawer wired to it opened when `kickDrawer`. False: no such printer.
     virtual bool printTestPage(const core::PosSettings &, const std::string &, bool) { return false; }
-    // Prep labels (title, then lines) on printer `printerId`: a label printer
-    // in its own language, or a receipt printer as slips.
+    // Labels (title, then lines) on printer `printerId`: a label printer in
+    // its own language, or a receipt printer as slips. `barcodes`: one for
+    // each label, under its lines (price tags); empty: none.
     virtual void printLabels(const core::PosSettings &, const std::vector<std::pair<std::string, std::vector<std::string>>> &,
-                             const std::string &) {}
+                             const std::string &, const std::vector<std::string> &barcodes = {}) { Q_UNUSED(barcodes) }
     // A self-order kiosk's slip for the guest: the order number to show at
     // the counter and what they ordered; `sent`: already being made.
     virtual void printOrderSlip(const core::PosSettings &settings, const core::Check &check,
@@ -220,7 +222,20 @@ public:
         std::vector<core::MenuItem> menu;
         std::vector<core::MenuCategory> categories;
         std::vector<core::ModifierGroup> groups;
-        bool operator==(const MenuState &) const = default;
+        // Items' own stock (Track stock, "item-<id>"): kept whole, compared
+        // by what the card sets, so a sale since doesn't stop an Undo.
+        std::vector<core::Ingredient> ownStock;
+        bool operator==(const MenuState &o) const
+        {
+            const auto settings = [](const std::vector<core::Ingredient> &list) {
+                std::vector<std::tuple<std::string, std::string, double, std::int64_t, double>> out;
+                for (const core::Ingredient &g : list)
+                    out.emplace_back(g.id, g.name, g.lowAt, g.cost.cents(), g.par);
+                return out;
+            };
+            return menu == o.menu && categories == o.categories && groups == o.groups
+                   && settings(ownStock) == settings(o.ownStock);
+        }
     };
     struct MenuUndo {
         QString label;
@@ -540,6 +555,9 @@ public:
     QVariantMap prepLabels() const override;
     // {ingredient | name, hours (use by; 0: none), count, note}.
     bool printPrepLabels(const QVariantMap &labels);
+    // Price tags for these items, `copies` of each: its name, price and
+    // barcode (else its number), on the label printer (else the receipt printer).
+    bool printPriceTags(const QStringList &itemIds, int copies = 1);
     std::string labelPrinterId() const;
     const std::vector<core::Waste> &wasteEntries() const { return s_->waste; }
     const std::vector<core::StockCount> &stockCounts() const { return s_->stockCounts; }
@@ -933,7 +951,10 @@ public:
     // "Tacos: Carne Asada 3.50, Al Pastor 3.25" / one per line; returns how many were added.
     int addMenuItemsFromText(const QString &categoryId, const QString &text);
     // Rows read from a spreadsheet: [{name, price, category, description, onIt}].
-    int importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {});
+    // updateStock: items already on the menu also get the file's cost, on
+    // hand and low at (Track stock), else only new ones do.
+    int importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups = {},
+                       bool updateStock = false);
     // Starter menus (menu_templates.cpp): [{id, name, description, categories, items}].
     QVariantList menuTemplates() const override;
     // What would trip up service: [{text, item, group, category, serious}].

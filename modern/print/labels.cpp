@@ -51,6 +51,14 @@ std::string renderZpl(const std::vector<Label> &labels, int widthMm, int heightM
         text(l.title, s.title, true);
         for (const std::string &line : l.lines)
             text(line, s.line, false);
+        if (const std::string code = field(barcodeText(l.barcode), "^~"); !code.empty()) {
+            // What room is left, at least 40 dots: EAN-13 / UPC-A, else Code 128.
+            const int tall = std::max(40, h - y - 40);
+            const bool digits = std::ranges::all_of(code, [](char c) { return c >= '0' && c <= '9'; });
+            out += "^FO16," + std::to_string(y) + "^BY2";
+            out += digits && code.size() == 13 ? "^BEN," : digits && code.size() == 12 ? "^BUN," : "^BCN,";
+            out += std::to_string(tall) + ",Y,N^FD" + code + "^FS";
+        }
         out += "^XZ\n";
     }
     return out;
@@ -75,6 +83,12 @@ std::string renderTspl(const std::vector<Label> &labels, int widthMm, int height
         text(l.title, s.title);
         for (const std::string &line : l.lines)
             text(line, s.line);
+        if (const std::string code = field(barcodeText(l.barcode), "\"\r\n"); !code.empty()) {
+            const int tall = std::max(40, h - y - 40);
+            const bool digits = std::ranges::all_of(code, [](char c) { return c >= '0' && c <= '9'; });
+            const char *kind = digits && code.size() == 13 ? "EAN13" : digits && code.size() == 12 ? "UPCA" : "128";
+            out += "BARCODE 16," + std::to_string(y) + ",\"" + kind + "\"," + std::to_string(tall) + ",1,0,2,2,\"" + code + "\"\r\n";
+        }
         out += "PRINT 1,1\r\n";
     }
     return out;
@@ -86,6 +100,8 @@ Document labelSlip(const Label &label)
     d.center(label.title, true, true);
     for (const std::string &line : label.lines)
         d.center(line);
+    if (!label.barcode.empty())
+        d.barcode(label.barcode);
     d.cut = true;
     return d;
 }

@@ -356,6 +356,10 @@
   "one": "%n 项未发送",
   "other": "%n 项未发送"
  },
+ "%n of each": {
+  "one": "每种 %n 张",
+  "other": "每种 %n 张"
+ },
  "%n on the list": {
   "one": "列表中有 %n 项",
   "other": "列表中有 %n 项"
@@ -1213,6 +1217,7 @@
  "Choose something on the left, or Add.": "在左侧选择一项，或点“添加”。",
  "Choose the customer first (their phone number or name).": "请先选择顾客（电话或姓名）。",
  "Choose the driver.": "选择送餐员。",
+ "Choose the items first.": "请先选择菜品。",
  "Choose the orders going out.": "选择要送出的订单。",
  "Choose the screen's card reader.": "选择屏幕的读卡器。",
  "Choose the store's state and ZIP code.": "请选择门店所在州和邮编。",
@@ -1535,6 +1540,7 @@
  "Each size needs a name.": "每个规格都需要名称。",
  "Each size with its whole price. Ordering it asks for the size; the smallest is its price.": "每个规格及其完整价格。点单时会询问规格；最小规格的价格即为它的价格。",
  "Each version this store has run, and when it started here.": "此门店运行过的每个版本，以及开始的时间。",
+ "Each with its name, price and barcode (or number), on the label printer.": "每张标签含名称、价格和条码（或编号），由标签打印机打印。",
  "Earn rewards: touch to add your phone": "赚取奖励：点击添加您的电话",
  "Earned": "利润",
  "Earns each": "每份利润",
@@ -1717,6 +1723,7 @@
  "For screens": "用于屏幕",
  "For screens nobody is logged in to, the customer display, receipts and tickets. Each person can have their own (Employees).": "用于无人登录的屏幕、顾客显示屏、收据和小票。每个人可以有自己的（员工）。",
  "For the Food Cost report.": "用于食材成本报表。",
+ "For the Stock report's order list, e.g. 24": "用于库存报表的订货单，例如 24",
  "For the standby computer. ": "用于备用电脑。",
  "For their role, before tips. For the Labor report.": "其角色的时薪，不含小费。用于人工报表。",
  "For typing names, notes and numbers on a touch screen. Phones and tablets use their own.": "在触摸屏上输入姓名、备注和数字。手机和平板使用自己的键盘。",
@@ -1952,6 +1959,7 @@
  "Item, like Fish Tacos": "菜品，例如 鱼肉塔可",
  "Items": "菜品",
  "Items already on the menu get the file's price (otherwise they're left as they are)": "菜单上已有的菜品采用文件中的价格（否则保持不变）",
+ "Items already on the menu get the file's stock and cost (how many on hand, low at)": "菜单上已有的菜品采用文件中的库存和进价（现有数量、低库存提醒）",
  "Its buttons on the order screen": "它在点单屏幕上的按钮",
  "Its categories (breakfast, lunch...: Menu Builder). Empty: what's on now.": "它的分类（早餐、午餐...：菜单构建器）。空：当前的。",
  "Its categories, choices and items, with typical prices, are added to your menu; nothing already on it changes. Then change anything you like.": "它的分类、选项和菜品（含常见价格）会加入您的菜单；已有内容不变。之后可以随意修改。",
@@ -2110,6 +2118,7 @@
  "Looking…": "正在查找…",
  "Looks": "外观",
  "Lost the connection to the server. Reconnecting…": "与服务器的连接已断开。正在重新连接…",
+ "Low Stock": "库存不足",
  "Low at": "低于",
  "Low at can't be negative.": "低库存线不能为负。",
  "Low at is how many, like 5 (or empty).": "低库存提醒是一个数字，例如 5（或留空）。",
@@ -2635,6 +2644,8 @@
  "Order list": "点单列表",
  "Order the item it goes with first.": "请先点它所搭配的菜品。",
  "Order up": "餐好了",
+ "Order up to": "补货至",
+ "Order up to is how many, like 24 (or empty).": "补货至是一个数字，例如 24（或留空）。",
  "Ordering": "点单",
  "Orders": "订单",
  "Orders (food truck)": "订单（餐车）",
@@ -2848,9 +2859,14 @@
  "Preview…": "预览…",
  "Previous seat": "上一个座位",
  "Price": "价格",
+ "Price Tags…": "价格标签…",
  "Price change": "价格变动",
  "Price change canceled": "已取消价格变动",
  "Price of %n item(s)": "%n 个菜品的价格",
+ "Price tags for %n item(s)": {
+  "one": "%n 个菜品的价格标签",
+  "other": "%n 个菜品的价格标签"
+ },
  "Prices": "价格",
  "Prices by meal period": "分时段价格",
  "Prices by size": "按规格定价",
@@ -2864,6 +2880,7 @@
   "other": "打印 %n 张标签"
  },
  "Print 1 to 50 labels at a time.": "一次打印 1 到 50 张标签。",
+ "Print 1 to 50 of each at a time.": "每种每次打印 1 到 50 张。",
  "Print Every Check (%1)": "打印所有账单（%1）",
  "Print Receipt": "打印收据",
  "Print a receipt": "打印收据",
@@ -2884,12 +2901,17 @@
   "one": "正在打印 %n 张标签：%1",
   "other": "正在打印 %n 张标签：%1"
  },
+ "Printing %n price tag(s)": {
+  "one": "正在打印 %n 张价格标签",
+  "other": "正在打印 %n 张价格标签"
+ },
  "Printing %n receipt(s)": {
   "one": "正在打印 %n 张收据",
   "other": "正在打印 %n 张收据"
  },
  "Printing a copy of check #%1": "正在打印账单 #%1 的副本",
  "Printing labels": "打印标签",
+ "Printing price tags": "打印价格标签",
  "Printing receipt for %1": "正在为 %1 打印收据",
  "Printing receipts": "打印收据",
  "Printing reports": "打印报表",
@@ -3661,6 +3683,7 @@
  "That workbook has no sheets.": "该工作簿没有工作表。",
  "That's a spreadsheet file: save it as CSV first (File → Save As → CSV).": "这是表格文件：请先另存为 CSV（文件 → 另存为 → CSV）。",
  "That's more than 24 hours: check the dates.": "超过 24 小时：请检查日期。",
+ "That's more than 500 tags: print them a few at a time.": "超过 500 张标签：请分批打印。",
  "That's more than the items on the check.": "超过了账单上菜品的金额。",
  "That's over %1's limit: %2 left on the account.": "超过了 %1 的额度：账户还剩 %2。",
  "That's the maintainer's.": "这归维护人员。",

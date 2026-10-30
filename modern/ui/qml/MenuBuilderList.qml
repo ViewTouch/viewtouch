@@ -13,8 +13,10 @@ ColumnLayout {
     spacing: 6
 
     property string scope: "all"     // all | category
-    property string filter: ""       // "" | soldout | nocode
-    property string sortBy: "name"   // name | category | price | tax | code
+    property string filter: ""       // "" | soldout | nocode | low
+    property string sortBy: "name"   // name | category | price | tax | code | stock
+    // A Stock column once anything counts its stock (Track stock).
+    readonly property bool anyStock: builder ? builder.allItems.some(i => i.stockTrack) : false
     property bool descending: false
     // Narrow (beside an item's card): name, price and number only.
     readonly property bool compact: width < 600
@@ -42,6 +44,8 @@ ColumnLayout {
             out = out.filter(i => !i.availableSet)
         else if (filter === "nocode")
             out = out.filter(i => i.number === "" && (i.barcodes ?? "") === "")
+        else if (filter === "low")
+            out = out.filter(i => i.stockTrack && i.stockLow)
         if (t !== "")
             out = out.filter(i => matches(i, t))
         const key = {
@@ -49,7 +53,8 @@ ColumnLayout {
             category: i => (i.familyName ?? "").toLowerCase() + "\u0001" + i.name.toLowerCase(),
             price: i => i.priceValue,
             tax: i => i.taxClass + "\u0001" + i.name.toLowerCase(),
-            code: i => code(i) || "￿",
+            code: i => code(i) || "\uffff",
+            stock: i => i.stockTrack ? Number(i.stockOnHand) : Infinity,
         }[sortBy]
         const sorted = out.slice().sort((a, b) => {
             const x = key(a), y = key(b)
@@ -76,7 +81,7 @@ ColumnLayout {
                 { id: "category", label: list.builder && list.builder.category ? list.builder.category.name : qsTr("This Category"), scope: true },
                 { id: "soldout", label: qsTr("Sold Out") },
                 { id: "nocode", label: qsTr("No Number or Barcode") },
-            ]
+            ].concat(list.anyStock ? [{ id: "low", label: qsTr("Low Stock") }] : [])
             delegate: MenuTouchButton {
                 required property var modelData
                 objectName: "builderListFilter-" + modelData.id
@@ -112,7 +117,7 @@ ColumnLayout {
                     { id: "price", label: qsTr("Price"), w: 80 },
                     { id: "tax", label: qsTr("Tax"), w: 90, wide: true },
                     { id: "code", label: qsTr("Number"), w: 110 },
-                ]
+                ].concat(list.anyStock ? [{ id: "stock", label: qsTr("Stock"), w: 70 }] : [])
                 delegate: Label {
                     required property var modelData
                     objectName: "builderListSort-" + modelData.id
@@ -204,6 +209,16 @@ ColumnLayout {
                     font.pixelSize: 14
                     opacity: 0.8
                     elide: Text.ElideRight
+                }
+                // How many on hand (Track stock): red when low.
+                Label {
+                    visible: list.anyStock
+                    Layout.preferredWidth: 70
+                    horizontalAlignment: Text.AlignRight
+                    text: row.modelData.stockTrack ? row.modelData.stockOnHand : ""
+                    font.pixelSize: 15
+                    font.bold: !!row.modelData.stockLow
+                    color: row.modelData.stockLow ? "#ff6b6b" : palette.windowText
                 }
             }
             MouseArea {

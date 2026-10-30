@@ -33,6 +33,29 @@ Document &Document::blank()
     return *this;
 }
 
+Document &Document::barcode(std::string code)
+{
+    code = barcodeText(code);
+    if (!code.empty()) {
+        Line l;
+        l.kind = Kind::Barcode;
+        l.text = std::move(code);
+        lines.push_back(std::move(l));
+    }
+    return *this;
+}
+
+std::string barcodeText(const std::string &code)
+{
+    std::string out;
+    for (const char c : code)
+        if (c >= 32 && c < 127)
+            out += c;
+    while (!out.empty() && out.back() == ' ')
+        out.pop_back();
+    return out.size() > 40 ? std::string() : out;
+}
+
 Document &Document::image(std::shared_ptr<const Raster> raster)
 {
     if (raster && raster->width > 0 && raster->height > 0) {
@@ -227,6 +250,9 @@ std::vector<std::string> layoutLine(const Document::Line &l, std::size_t width, 
     switch (l.kind) {
     case Document::Kind::Image:   // not text
         break;
+    case Document::Kind::Barcode:   // in a plain-text copy: the code itself
+        rows.push_back(aligned("[" + l.text + "]", width, Document::Align::Center));
+        break;
     case Document::Kind::Blank:
         rows.emplace_back();
         break;
@@ -303,6 +329,25 @@ std::string renderEscPos(const Document &doc, int width, bool accents)
     if (accents)
         out += ESC + "t" + std::string(1, '\x13');   // character set PC858
     for (const Document::Line &l : doc.lines) {
+        if (l.kind == Document::Kind::Barcode) {
+            // GS k: the printer draws it, centered, 80 dots tall, its digits under it.
+            const std::string &code = l.text;
+            const bool digits = std::ranges::all_of(code, [](char c) { return c >= '0' && c <= '9'; });
+            out += ESC + "a" + std::string(1, '\x01');
+            out += GS + "h" + std::string(1, char(80));
+            out += GS + "w" + std::string(1, char(2));
+            out += GS + "H" + std::string(1, char(2));
+            if (digits && (code.size() == 13 || code.size() == 12)) {
+                out += GS + "k" + std::string(1, char(code.size() == 13 ? 67 : 65)) + std::string(1, char(code.size()));
+                out += code;
+            } else {
+                const std::string data = "{B" + code;   // Code 128, set B
+                out += GS + "k" + std::string(1, char(73)) + std::string(1, char(data.size())) + data;
+            }
+            out += "\n";
+            out += ESC + "a" + std::string(1, '\0');
+            continue;
+        }
         if (l.kind == Document::Kind::Image) {
             // GS v 0: a raster picture, centered; in bands so small printer
             // buffers keep up.

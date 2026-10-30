@@ -154,6 +154,13 @@ Dialog {
             Switch { id: updatePrices; objectName: "builderImportPrices" }
             Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's price (otherwise they're left as they are)") }
         }
+        // A sheet with stock (On Hand, Cost, Low At): for items already on the menu too.
+        RowLayout {
+            visible: !importDialog.read.menuFile && ["onHand", "cost", "lowAt", "par"].some(c => (importDialog.read.columns ?? []).includes(c))
+            Layout.fillWidth: true
+            Switch { id: updateStock; objectName: "builderImportStock" }
+            Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's stock and cost (how many on hand, low at)") }
+        }
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -176,7 +183,7 @@ Dialog {
                     const picked = importDialog.items.map((it, i) => i).filter(i => importDialog.ticked(i))
                     const left = importDialog.items.filter((it, i) => !picked.includes(i) && importDialog.sent[i] !== true
                                                                        && !importDialog.isOn(it.name))
-                    menu.pos.importMenuRows(rows, menu.categoryId, updatePrices.checked, importDialog.read.groups ?? [])
+                    menu.pos.importMenuRows(rows, menu.categoryId, updatePrices.checked, importDialog.read.groups ?? [], updateStock.checked)
                     // Some left: the dialog stays, for the next category (what went in
                     // is hidden; the store says if something didn't).
                     if (left.length > 0 && importDialog.picking) {

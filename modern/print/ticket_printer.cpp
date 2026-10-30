@@ -147,14 +147,14 @@ void TicketPrinter::printReport(const PosSettings &settings, const Report &repor
 
 void TicketPrinter::printLabels(const PosSettings &settings,
                                 const std::vector<std::pair<std::string, std::vector<std::string>>> &labels,
-                                const std::string &printerId)
+                                const std::string &printerId, const std::vector<std::string> &barcodes)
 {
     const PrinterConfig *p = settings.printer(printerId);
     if (!p || labels.empty())
         return;
     std::vector<Label> list;
-    for (const auto &[title, lines] : labels)
-        list.push_back({title, lines});
+    for (std::size_t i = 0; i < labels.size(); ++i)
+        list.push_back({labels[i].first, labels[i].second, i < barcodes.size() ? barcodes[i] : std::string()});
     const std::string format = p->effectiveFormat();
     if (format == "zpl" || format == "tspl") {
         PrinterConfig target = *p;

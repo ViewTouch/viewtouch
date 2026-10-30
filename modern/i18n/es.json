@@ -346,6 +346,10 @@
   "one": "%n sin enviar",
   "other": "%n sin enviar"
  },
+ "%n of each": {
+  "one": "%n de cada uno",
+  "other": "%n de cada uno"
+ },
  "%n on the list": {
   "one": "%n en la lista",
   "other": "%n en la lista"
@@ -1219,6 +1223,7 @@
  "Choose something on the left, or Add.": "Elija algo a la izquierda, o toque Agregar.",
  "Choose the customer first (their phone number or name).": "Primero elija al cliente (su teléfono o nombre).",
  "Choose the driver.": "Elija al repartidor.",
+ "Choose the items first.": "Primero elija los artículos.",
  "Choose the orders going out.": "Elija las órdenes que salen.",
  "Choose the screen's card reader.": "Elija el lector de tarjetas de la pantalla.",
  "Choose the store's state and ZIP code.": "Elija el estado y el código postal de la tienda.",
@@ -1553,6 +1558,7 @@
  "Each size needs a name.": "Cada tamaño necesita un nombre.",
  "Each size with its whole price. Ordering it asks for the size; the smallest is its price.": "Cada tamaño con su precio completo. Al pedirlo se pregunta el tamaño; el más pequeño es su precio.",
  "Each version this store has run, and when it started here.": "Cada versión que ha usado esta tienda, y cuándo empezó aquí.",
+ "Each with its name, price and barcode (or number), on the label printer.": "Cada una con su nombre, precio y código de barras (o número), en la impresora de etiquetas.",
  "Earn rewards: touch to add your phone": "Gane recompensas: toque para agregar su teléfono",
  "Earned": "Ganado",
  "Earns each": "Gana c/u",
@@ -1738,6 +1744,7 @@
  "For screens": "Para pantallas",
  "For screens nobody is logged in to, the customer display, receipts and tickets. Each person can have their own (Employees).": "Para pantallas sin sesión iniciada, la pantalla del cliente, recibos y tickets. Cada persona puede tener el suyo (Empleados).",
  "For the Food Cost report.": "Para el reporte de costo de comida.",
+ "For the Stock report's order list, e.g. 24": "Para la lista de pedidos del informe de Existencias, p. ej. 24",
  "For the standby computer. ": "Para la computadora de respaldo. ",
  "For their role, before tips. For the Labor report.": "Por su función, sin propinas. Para el reporte de mano de obra.",
  "For typing names, notes and numbers on a touch screen. Phones and tablets use their own.": "Para escribir nombres, notas y números en una pantalla táctil. Los teléfonos y tabletas usan el suyo.",
@@ -1982,6 +1989,7 @@
  "Item, like Fish Tacos": "Artículo, como Tacos de Pescado",
  "Items": "Artículos",
  "Items already on the menu get the file's price (otherwise they're left as they are)": "Los artículos que ya están en el menú toman el precio del archivo (si no, se quedan como están)",
+ "Items already on the menu get the file's stock and cost (how many on hand, low at)": "Los artículos que ya están en el menú toman las existencias y el costo del archivo (cuántos hay, aviso en)",
  "Its buttons on the order screen": "Sus botones en la pantalla de pedidos",
  "Its categories (breakfast, lunch...: Menu Builder). Empty: what's on now.": "Sus categorías (desayuno, almuerzo...: Constructor de menú). Vacío: lo que está en el menú ahora.",
  "Its categories, choices and items, with typical prices, are added to your menu; nothing already on it changes. Then change anything you like.": "Sus categorías, opciones y artículos, con precios típicos, se agregan a su menú; nada de lo que ya tiene cambia. Luego cambie lo que quiera.",
@@ -2149,6 +2157,7 @@
  "Looking…": "Buscando…",
  "Looks": "Estilos",
  "Lost the connection to the server. Reconnecting…": "Se perdió la conexión con el servidor. Reconectando…",
+ "Low Stock": "Pocas existencias",
  "Low at": "Bajo en",
  "Low at can't be negative.": "\"Bajo en\" no puede ser negativo.",
  "Low at is how many, like 5 (or empty).": "Aviso en es una cantidad, como 5 (o vacío).",
@@ -2678,6 +2687,8 @@
  "Order list": "Lista del pedido",
  "Order the item it goes with first.": "Primero pida el artículo con el que va.",
  "Order up": "Orden lista",
+ "Order up to": "Pedir hasta",
+ "Order up to is how many, like 24 (or empty).": "Pedir hasta es una cantidad, como 24 (o vacío).",
  "Ordering": "Ordenar",
  "Orders": "Pedidos",
  "Orders (food truck)": "Pedidos (food truck)",
@@ -2898,11 +2909,16 @@
  "Preview…": "Vista previa…",
  "Previous seat": "Asiento anterior",
  "Price": "Precio",
+ "Price Tags…": "Etiquetas de precio…",
  "Price change": "Cambio de precios",
  "Price change canceled": "Cambio de precios cancelado",
  "Price of %n item(s)": {
   "one": "Precio de %n artículo",
   "other": "Precio de %n artículos"
+ },
+ "Price tags for %n item(s)": {
+  "one": "Etiquetas de precio para %n artículo",
+  "other": "Etiquetas de precio para %n artículos"
  },
  "Prices": "Precios",
  "Prices by meal period": "Precios por horario de comida",
@@ -2917,6 +2933,7 @@
   "other": "Imprimir %n etiquetas"
  },
  "Print 1 to 50 labels at a time.": "Imprima de 1 a 50 etiquetas a la vez.",
+ "Print 1 to 50 of each at a time.": "Imprima de 1 a 50 de cada uno a la vez.",
  "Print Every Check (%1)": "Imprimir Todas las Cuentas (%1)",
  "Print Receipt": "Imprimir recibo",
  "Print a receipt": "Imprimir un recibo",
@@ -2937,12 +2954,17 @@
   "one": "Imprimiendo %n etiqueta: %1",
   "other": "Imprimiendo %n etiquetas: %1"
  },
+ "Printing %n price tag(s)": {
+  "one": "Imprimiendo %n etiqueta de precio",
+  "other": "Imprimiendo %n etiquetas de precio"
+ },
  "Printing %n receipt(s)": {
   "one": "Imprimiendo %n recibo",
   "other": "Imprimiendo %n recibos"
  },
  "Printing a copy of check #%1": "Imprimiendo una copia de la cuenta #%1",
  "Printing labels": "Imprimir etiquetas",
+ "Printing price tags": "Imprimir etiquetas de precio",
  "Printing receipt for %1": "Imprimiendo recibo de %1",
  "Printing receipts": "Imprimir recibos",
  "Printing reports": "Imprimir reportes",
@@ -3733,6 +3755,7 @@
  "That workbook has no sheets.": "Ese libro no tiene hojas.",
  "That's a spreadsheet file: save it as CSV first (File → Save As → CSV).": "Es un archivo de hoja de cálculo: primero guárdelo como CSV (Archivo → Guardar como → CSV).",
  "That's more than 24 hours: check the dates.": "Son más de 24 horas: revise las fechas.",
+ "That's more than 500 tags: print them a few at a time.": "Son más de 500 etiquetas: imprímalas por partes.",
  "That's more than the items on the check.": "Eso es más que los artículos de la cuenta.",
  "That's over %1's limit: %2 left on the account.": "Eso pasa el límite de %1: quedan %2 en la cuenta.",
  "That's the maintainer's.": "Eso es del técnico.",

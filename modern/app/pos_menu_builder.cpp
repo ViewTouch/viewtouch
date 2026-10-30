@@ -109,7 +109,11 @@ qint64 priceCents(QString text, const QString &symbol)
 
 PosShared::MenuState PosService::menuState() const
 {
-    return {s_->menu, s_->settings.menuCategories, s_->settings.modifierGroups};
+    std::vector<Ingredient> own;
+    for (const Ingredient &g : s_->ingredients)
+        if (g.id.starts_with("item-"))
+            own.push_back(g);
+    return {s_->menu, s_->settings.menuCategories, s_->settings.modifierGroups, std::move(own)};
 }
 
 // One Menu Builder change, as one step to undo: what it was before, kept if
@@ -170,6 +174,31 @@ bool PosService::undoMenuChange()
             s_->sink->saveMenuItem(s_->menu[i], i);
     s_->settings.menuCategories = std::move(step.before.categories);
     s_->settings.modifierGroups = std::move(step.before.groups);
+    // Items' own stock as it was set: what's counted since stays counted;
+    // one that wasn't there goes, one that was comes back.
+    auto &stock = s_->ingredients;
+    for (auto it = stock.begin(); it != stock.end();) {
+        if (it->id.starts_with("item-") && std::ranges::none_of(step.before.ownStock, [&](const Ingredient &g) { return g.id == it->id; })) {
+            if (s_->sink)
+                s_->sink->deleteIngredient(it->id);
+            it = stock.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for (const Ingredient &was : step.before.ownStock) {
+        if (Ingredient *g = s_->ingredient(was.id)) {
+            g->name = was.name;
+            g->lowAt = was.lowAt;
+            g->cost = was.cost;
+            g->par = was.par;
+        } else {
+            stock.push_back(was);
+        }
+    }
+    if (s_->sink)   // every place, as some moved
+        for (int i = 0; i < int(stock.size()); ++i)
+            s_->sink->saveIngredient(stock[i], i);
     settingsChanged();
     menuChanged();
     emit notice(tr("Undone: %1").arg(step.label));
@@ -807,11 +836,13 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
             };
             // What the card leaves out stays as it is (sold meanwhile: not undone).
             const Ingredient *was = s_->ingredient(own);
-            double onHand = was ? was->onHand : 0, lowAt = was ? was->lowAt : 0;
+            double onHand = was ? was->onHand : 0, lowAt = was ? was->lowAt : 0, par = was ? was->par : 0;
             if (card.contains(u"stockOnHand"_s) && !count(card.value(u"stockOnHand"_s), &onHand))
                 return fail(tr("On hand is how many there are, like 24."));
             if (card.contains(u"stockLowAt"_s) && !count(card.value(u"stockLowAt"_s), &lowAt))
                 return fail(tr("Low at is how many, like 5 (or empty)."));
+            if (card.contains(u"stockPar"_s) && !count(card.value(u"stockPar"_s), &par))
+                return fail(tr("Order up to is how many, like 24 (or empty)."));
             qint64 cost = was ? was->cost.cents() : 0;
             if (card.contains(u"cost"_s)) {
                 const QString costText = card.value(u"cost"_s).toString().trimmed();
@@ -827,6 +858,7 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
             g.name = item.name;
             g.onHand = onHand;
             g.lowAt = lowAt;
+            g.par = par;   // the Stock report's To order: up to this many
             g.cost = Money::fromCents(cost);
             stock = g;
             item.recipe.push_back({own, 1});
@@ -1211,7 +1243,8 @@ int PosService::addMenuItemsFromText(const QString &categoryId, const QString &t
 // new price with `updatePrices`. `groups` ({name, min, max, options}): the
 // choice groups the rows ask for by name; one of that name here is used as
 // it is.
-int PosService::importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups)
+int PosService::importMenuRows(const QVariantList &rows, const QString &categoryId, bool updatePrices, const QVariantList &groups,
+                               bool updateStock)
 {
     if (!require(perm::Manager, tr("Changing the menu")))
         return 0;
@@ -1275,9 +1308,33 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
             fail(tr("%1 has no category: choose one, or add a Category column.").arg(name));
             return added;
         }
-        auto existing = std::ranges::find_if(s_->menu, [&](const MenuItem &m) {
-            return !m.isModifier && QString::compare(qs(m.name), name, Qt::CaseInsensitive) == 0;
-        });
+        // The same item again (an exported sheet, changed): by a barcode, its
+        // PLU or SKU, then its name (one renamed in the sheet is still it).
+        const QStringList codes = barcodeList(r.value(u"barcodes"_s).toString());
+        const QString plu = r.value(u"number"_s).toString().trimmed(), sku = r.value(u"sku"_s).toString().trimmed();
+        const auto byCode = [&](const MenuItem &m) {
+            if (m.isModifier)
+                return false;
+            const auto hasCode = [&](const QString &c) {
+                return std::ranges::any_of(m.barcodes, [&](const std::string &b) { return sameBarcode(b, ss(c)); });
+            };
+            // Every barcode its own (one with a code of another item's besides
+            // a new one is a different item, that code left off).
+            return (!codes.isEmpty() && std::ranges::all_of(codes, hasCode)) || (!plu.isEmpty() && qs(m.number) == plu)
+                   || (!sku.isEmpty() && (qs(m.number) == sku || hasCode(sku)));
+        };
+        auto existing = std::ranges::find_if(s_->menu, byCode);
+        if (existing == s_->menu.end())
+            existing = std::ranges::find_if(s_->menu, [&](const MenuItem &m) {
+                return !m.isModifier && QString::compare(qs(m.name), name, Qt::CaseInsensitive) == 0;
+            });
+        // A shop's stock from the sheet (Track stock): what's in it.
+        QVariantMap stock;
+        for (const char16_t *key : {u"cost", u"stockOnHand", u"stockLowAt", u"stockPar"})
+            if (const QString v = r.value(QString::fromUtf16(key)).toString().trimmed(); !v.isEmpty())
+                stock.insert(QString::fromUtf16(key), v);
+        if (!stock.isEmpty())
+            stock.insert(u"stockTrack"_s, true);
         // Its photo, into the store's pictures.
         QString photo;
         if (const QString data = r.value(u"photoData"_s).toString(); !data.isEmpty())
@@ -1291,6 +1348,8 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
                 card.insert(u"barcodes"_s, b);
             if (updatePrices)
                 card.insert(u"price"_s, QString::number(price, 'f', 2));
+            if (updateStock)
+                card.insert(stock);
             if (card.size() == 2) {
                 skipped << name;
                 continue;
@@ -1333,6 +1392,7 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
         }
         if (!asks.isEmpty())
             card.insert(u"groups"_s, asks);
+        card.insert(stock);
         if (!saveMenuItemCard(card))
             return added;
         ++added;
@@ -1583,9 +1643,21 @@ bool PosService::deleteMenuItemCard(const QString &id)
         return fail(tr("'%1' is not on the menu.").arg(id));
     const QString name = qs(it->name);
     const std::string onIt = onItGroupId(it->id), sizes = sizeGroupId(it->id);
+    const std::string own = ownStockId(it->id);
     menu.erase(it);
     if (s_->sink)
         s_->sink->deleteMenuItem(ss(id));
+    // Its own stock (Track stock) goes with it (Undo brings both back); the
+    // ones after it move up a place.
+    if (const auto g = std::ranges::find(s_->ingredients, own, &Ingredient::id); g != s_->ingredients.end()) {
+        const int from = int(g - s_->ingredients.begin());
+        s_->ingredients.erase(g);
+        if (s_->sink) {
+            s_->sink->deleteIngredient(own);
+            for (int i = from; i < int(s_->ingredients.size()); ++i)
+                s_->sink->saveIngredient(s_->ingredients[i], i);
+        }
+    }
     if (std::erase_if(s_->settings.modifierGroups, [&](const ModifierGroup &g) { return g.id == onIt || g.id == sizes; }) > 0)
         settingsChanged();
     menuChanged();

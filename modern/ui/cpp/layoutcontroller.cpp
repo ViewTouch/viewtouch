@@ -1114,6 +1114,10 @@ QVariantMap LayoutController::menuRows(vt::app::MenuImport read, const QDir &bes
             row.insert(u"section"_s, i.section);
         if (!i.number.isEmpty())
             row.insert(u"number"_s, i.number);
+        for (const auto &[key, value] : {std::pair{u"sku"_s, i.sku}, {u"cost"_s, i.cost}, {u"stockOnHand"_s, i.onHand},
+                                         {u"stockLowAt"_s, i.lowAt}, {u"stockPar"_s, i.par}})
+            if (!value.isEmpty())
+                row.insert(key, value);
         if (i.alcohol)
             row.insert(u"alcohol"_s, true);
         if (!i.groups.isEmpty())
@@ -1198,7 +1202,7 @@ QString LayoutController::exportMenuSheet()
         }
         return s;
     };
-    QStringList lines{u"Name,Category,Price,Cost,Tax,PLU,Barcode,On Hand,Low At,Sold Out"_s};
+    QStringList lines{u"Name,Category,Price,Cost,Tax,PLU,Barcode,On Hand,Low At,Order Up To,Sold Out"_s};
     for (const QVariant &v : pos_->menuItems()) {
         const QVariantMap i = v.toMap();
         if (i.value(u"modifier"_s).toBool())
@@ -1207,7 +1211,7 @@ QString LayoutController::exportMenuSheet()
                              QString::number(i.value(u"priceValue"_s).toDouble(), 'f', 2), i.value(u"cost"_s).toString(),
                              i.value(u"taxClass"_s).toString(), i.value(u"number"_s).toString(),
                              field(i.value(u"barcodes"_s).toString()), i.value(u"stockOnHand"_s).toString(),
-                             i.value(u"stockLowAt"_s).toString(),
+                             i.value(u"stockLowAt"_s).toString(), i.value(u"stockPar"_s).toString(),
                              i.value(u"availableSet"_s).toBool() ? QString() : u"Yes"_s}.join(u',');
     }
     const QString dir = exportDir_.isEmpty() ? QDir::home().filePath(u"ViewTouch Exports"_s) : exportDir_;
