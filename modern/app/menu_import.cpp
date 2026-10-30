@@ -72,7 +72,10 @@ QString what(const QString &header)
     const QString h = plain(header);
     static const QList<std::pair<QString, QStringList>> names = {
         {u"name"_s, {u"name"_s, u"item"_s, u"item name"_s, u"product"_s, u"dish"_s, u"menu item"_s, u"nombre"_s, u"producto"_s, u"platillo"_s}},
-        {u"price"_s, {u"price"_s, u"base price"_s, u"default price"_s, u"menu price"_s, u"cost"_s, u"amount"_s, u"precio"_s, u"costo"_s}},
+        {u"price"_s, {u"price"_s, u"base price"_s, u"default price"_s, u"menu price"_s, u"retail price"_s, u"selling price"_s,
+                      u"sale price"_s, u"amount"_s, u"precio"_s, u"precio de venta"_s}},
+        // What the store pays: the price only when the sheet has no price.
+        {u"cost"_s, {u"cost"_s, u"unit cost"_s, u"cost price"_s, u"costo"_s}},
         {u"category"_s, {u"category"_s, u"categories"_s, u"family"_s, u"group"_s, u"section"_s, u"menu group"_s, u"type"_s,
                          u"categoria"_s, u"categorias"_s, u"seccion"_s, u"grupo"_s, u"tipo"_s}},
         {u"menu"_s, {u"menu"_s, u"reporting category"_s}},   // a category when there's no other
@@ -205,6 +208,10 @@ MenuImport readTable(const QList<QStringList> &rows)
             else if (const QString w = what(h); !w.isEmpty() && !found.contains(w))
                 found.insert(w, i);
         }
+        // A sheet with a price and a cost: the price is what it sells for.
+        // Only a cost (some menus call the price that): that is the price.
+        if (!found.contains(u"price"_s) && found.contains(u"cost"_s))
+            found.insert(u"price"_s, found.value(u"cost"_s));
         if (found.contains(u"name"_s)) {
             at = found;
             firstRow = 1;

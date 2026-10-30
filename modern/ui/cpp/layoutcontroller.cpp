@@ -434,6 +434,7 @@ QString LayoutController::rolePage(const QString &role) const
 void LayoutController::onLoggedInChanged(bool loggedIn)
 {
     restartIdle();
+    setUnknownCode({});   // offered to the one who scanned it
     // A food truck's kitchen, bar or expo screen (a page nobody logs in to):
     // the counter signing in there leaves it where it is.
     if (const vt::layout::Page *here = currentPage(); loggedIn && atCounter() && !editing() && here
@@ -1707,11 +1708,24 @@ void LayoutController::scanned(const QString &code)
     if (editing() || !pos_ || !pos_->loggedIn() || c.isEmpty())
         return;
     typedNumber_.clear();
+    setUnknownCode({});
     const auto *page = currentPage();
     const bool ordering = page && (page->kind == u"index" || page->kind == u"items" || page->kind == u"modifier");
+    // One barcode, but for leading zeros (a scanner may read a UPC as EAN-13).
+    const auto sameCode = [](const QString &a, const QString &b) {
+        static const QRegularExpression digits(u"^[0-9]{6,}$"_s);
+        if (a == b)
+            return true;
+        if (!digits.match(a).hasMatch() || !digits.match(b).hasMatch())
+            return false;
+        const auto strip = [](const QString &s) { qsizetype i = 0; while (i < s.size() && s[i] == u'0') ++i; return s.mid(i); };
+        return strip(a) == strip(b);
+    };
     for (const QVariant &v : pos_->menuItems()) {
         const QVariantMap m = v.toMap();
-        if (m.value(u"number"_s).toString() != c && !m.value(u"barcodes"_s).toString().split(u", "_s).contains(c))
+        const QStringList codes = m.value(u"barcodes"_s).toString().split(u", "_s, Qt::SkipEmptyParts);
+        if (m.value(u"number"_s).toString() != c
+            && std::ranges::none_of(codes, [&](const QString &b) { return sameCode(b, c); }))
             continue;
         if (ordering) {
             orderItem(m.value(u"id"_s).toString());
@@ -1724,10 +1738,37 @@ void LayoutController::scanned(const QString &code)
         }
         return;
     }
-    call(u"scanCode"_s, {c}, [this](const QVariant &kind) {
+    call(u"scanCode"_s, {c}, [this, c](const QVariant &kind) {
         if (kind.toString() == u"giftCard" && pageId() != u"gift-card" && activeLayout().page(u"gift-card"_s))
             navigate(Navigator::Mode::Push, u"gift-card"_s);
+        // Nothing has it: a manager may make it a new item's barcode.
+        else if (kind.toString().isEmpty() && pos_ && pos_->can(QString::fromLatin1(vt::core::perm::Manager))
+                 && activeLayout().page(u"menu-builder"_s))
+            setUnknownCode(c);
     });
+}
+
+void LayoutController::setUnknownCode(const QString &code)
+{
+    if (unknownCode_ == code)
+        return;
+    unknownCode_ = code;
+    emit unknownCodeChanged();
+}
+
+void LayoutController::addItemForCode()
+{
+    const QString code = unknownCode_;
+    setUnknownCode({});
+    if (code.isEmpty())
+        return;
+    keep(u"menuBuilderNewCode"_s, code);   // the Menu Builder opens a new card with it
+    navigate(Navigator::Mode::Push, u"menu-builder"_s);
+}
+
+void LayoutController::dismissUnknownCode()
+{
+    setUnknownCode({});
 }
 
 void LayoutController::orderItem(const QString &itemId, bool clearTyped)

@@ -79,6 +79,14 @@ Item {
             }
             return
         }
+        // A code scanned that nothing had (Add an Item With It): a new item with it.
+        const code = zone && zone.controller ? zone.controller.take("menuBuilderNewCode") : undefined
+        if (code) {
+            editItem(null)
+            set("barcodes", String(code))
+            moreOpen = true   // where the barcode is
+            return
+        }
         // A card left unsaved when this page was left: back as it was.
         const k = zone && zone.controller ? zone.controller.take("menuBuilder") : undefined
         if (k) {

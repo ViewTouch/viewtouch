@@ -286,6 +286,16 @@ TEST_CASE("Menu import: the usual spreadsheet shapes", "[menubuilder][import]")
     CHECK(r.items[0].category == u"Tortas"_s);
     CHECK(r.items[0].onIt == u"frijol, aguacate"_s);
     CHECK(r.columns.contains(u"onIt"_s));
+
+    // A shop's sheet with what it pays and what it sells for: the price is
+    // the selling price, whichever column comes first.
+    r = readMenuCsv(u"Product,Cost,Retail Price,UPC\nT-Shirt,6.00,19.99,012345678905\n"_s);
+    REQUIRE(r.items.size() == 1);
+    CHECK(r.items[0].price == 19.99);
+    // Only a cost (some menus call the price that): it is the price.
+    r = readMenuCsv(u"Item,Cost\nTaco,3.25\n"_s);
+    REQUIRE(r.items.size() == 1);
+    CHECK(r.items[0].price == 3.25);
 }
 
 TEST_CASE("Menu import: into the menu, categories made, prices updated if asked", "[menubuilder][import]")

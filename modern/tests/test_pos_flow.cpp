@@ -5318,6 +5318,39 @@ TEST_CASE("UI: a food truck's customer display: now serving, and who's ready whi
     CHECK_FALSE(find(root, u"objectName"_s, u"readyStrip"_s));
 }
 
+TEST_CASE("UI: a code nothing has: a manager makes it a new item's barcode", "[flow][ui][retail][barcode]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));   // a manager
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"barcodes"_s, u"012345678905"_s}}));
+    REQUIRE(s.c.jumpTo(u"index-lunch"_s));
+    QTest::qWait(60);
+    QQuickItem *root = s.window->contentItem();
+
+    // Its UPC read as an EAN-13 (a 0 in front): still the Cobb.
+    const int before = int(s.pos.lines().size());
+    s.c.scanned(u"0012345678905"_s);
+    QTest::qWait(60);
+    if (s.pos.choosingInfo()[u"active"_s].toBool())
+        s.pos.finishChoosing();
+    CHECK(int(s.pos.lines().size()) == before + 1);
+    CHECK(s.c.unknownCode().isEmpty());
+
+    s.c.scanned(u"4006381333931"_s);
+    QTest::qWait(60);
+    CHECK(s.c.unknownCode() == u"4006381333931"_s);
+    QQuickItem *card = Screen::findBy(root, "objectName", u"unknownCodeCard"_s);
+    REQUIRE(card);
+    s.shot("unknown-code");
+    s.tapItem(Screen::findBy(root, "objectName", u"addItemForCode"_s));
+    QTest::qWait(150);
+    CHECK(s.c.pageId() == u"menu-builder"_s);
+    CHECK(s.c.unknownCode().isEmpty());
+    // A new item's card, the code in its barcodes.
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"4006381333931"_s));
+    s.shot("unknown-code-card");
+}
+
 TEST_CASE("UI: retail: nothing goes to the kitchen; a scan rings it in from any page", "[flow][ui][truck]")
 {
     Session s;
