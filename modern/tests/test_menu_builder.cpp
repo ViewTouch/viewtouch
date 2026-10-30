@@ -1411,3 +1411,53 @@ TEST_CASE("Barcodes: on an item's card, one item's each; scanned: an item, a cou
     CHECK(said.join(u" "_s).contains(u"28400090858 (Chips's)"_s));
     CHECK_FALSE(pos.saveMenuItemCard({{u"id"_s, QString::fromStdString(pos.findItem(u"Popcorn"_s)->id)}, {u"name"_s, u"Popcorn"_s}, {u"barcodes"_s, u"0028400090858"_s}}));
 }
+
+TEST_CASE("Menu Builder: an item's own stock, counted down as it sells, sold out at none", "[menubuilder][stock]")
+{
+    test::RecordingSink sink;
+    PosService pos(test::seedPosData(), &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true},
+                                  {u"stockOnHand"_s, u"2"_s}, {u"stockLowAt"_s, u"1"_s}, {u"cost"_s, u"0.80"_s}}));
+    const core::Ingredient *own = pos.shared()->ingredient(app::ownStockId("lemonade"));
+    REQUIRE(own);
+    CHECK(own->onHand == 2);
+    CHECK(own->cost == Money::fromCents(80));
+    const auto row = [&] {
+        for (const QVariant &v : pos.menuItems())
+            if (v.toMap()[u"id"_s] == u"lemonade"_s)
+                return v.toMap();
+        return QVariantMap{};
+    };
+    CHECK(row()[u"stockTrack"_s].toBool());
+    CHECK(row()[u"stockOnHand"_s] == u"2"_s);
+    CHECK(row()[u"cost"_s] == u"0.80"_s);
+
+    // A shop's sale: rung up and paid, never sent.
+    pos.shared()->settings.serviceMode = "retail";
+    REQUIRE(pos.openDrawerSession());
+    const auto sell = [&] {
+        REQUIRE(pos.startCheck(core::CheckType::Takeout));
+        pos.addItem(u"lemonade"_s);
+        REQUIRE(pos.tender(u"cash"_s));
+        REQUIRE(pos.closeCheck());
+    };
+    sell();
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 1);
+    CHECK(row()[u"stockLow"_s].toBool());
+    sell();
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 0);
+    CHECK_FALSE(pos.findItem(u"lemonade"_s)->available);   // none left: sold out by itself
+
+    // Saving the card without touching the count keeps what was sold.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"price"_s, u"3.25"_s}}));
+    CHECK(pos.shared()->ingredient(app::ownStockId("lemonade"))->onHand == 0);
+    // Restocked on the card: back for sale.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, true}, {u"stockOnHand"_s, u"12"_s}}));
+    CHECK(pos.findItem(u"lemonade"_s)->available);
+    // Not counted any more: no longer sold out for want of it.
+    sell();
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, u"lemonade"_s}, {u"name"_s, u"Lemonade"_s}, {u"stockTrack"_s, false}}));
+    CHECK(pos.findItem(u"lemonade"_s)->recipe.empty());
+    CHECK_FALSE(row()[u"stockTrack"_s].toBool());
+}

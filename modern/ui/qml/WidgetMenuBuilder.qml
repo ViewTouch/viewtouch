@@ -151,11 +151,13 @@ Item {
                      buttonColor: i.buttonColor, textSize: i.textSize ?? 0, prepMinutes: i.prepMinutes ? String(i.prepMinutes) : "",
                      takeoutPrice: i.takeoutPrice, periodPrices: Object.assign({}, i.periodPrices),
                      taxClass: i.taxClass, printer: i.printer, station: i.station,
-                     section: i.section ?? "", breakBefore: i.breakBefore ?? "" }
+                     section: i.section ?? "", breakBefore: i.breakBefore ?? "",
+                     stockTrack: !!i.stockTrack, stockOnHand: i.stockOnHand ?? "", stockLowAt: i.stockLowAt ?? "", cost: i.cost ?? "" }
                  : { id: "", name: "", price: "", family: categoryId, image: "", groups: [], onIt: "",
                      available: true, kioskHide: false, description: "", favorite: false, allergens: [],
                      kitchenName: "", number: "", barcodes: "", buttonColor: "", textSize: 0, prepMinutes: "", takeoutPrice: "", periodPrices: {},
                      section: "", breakBefore: "",
+                     stockTrack: false, stockOnHand: "", stockLowAt: "", cost: "",
                      // what its category's items start with
                      taxClass: category ? (category.taxClass || "food") : "food",
                      printer: category ? (category.printer || "kitchen") : "kitchen", station: category ? category.station : "" }
@@ -425,6 +427,18 @@ Item {
     }
     function saveItem() {
         const card = copy(draft)
+        // Stock as it was when the card opened isn't sent: what sold since stays sold.
+        const saved = card.id ? allItems.find(i => i.id === card.id) : null
+        if (saved) {
+            for (const k of ["stockOnHand", "stockLowAt", "cost"])
+                if (String(card[k] ?? "") === String(saved[k] ?? ""))
+                    delete card[k]
+            if (!!card.stockTrack === !!saved.stockTrack && card.stockOnHand === undefined
+                && card.stockLowAt === undefined && card.cost === undefined)
+                delete card.stockTrack
+        } else if (!card.stockTrack) {
+            delete card.stockTrack
+        }
         if (card.id === "")
             waitingFor = card.name.trim()
         pos.saveMenuItemCard(card)
@@ -1405,6 +1419,56 @@ Item {
                                 Switch {
                                     checked: !(w.draft.kioskHide ?? false)
                                     onToggled: w.set("kioskHide", !checked)
+                                }
+                                // Its own stock: counted down as it sells, sold out at none.
+                                Label { text: qsTr("Track stock") }
+                                Switch {
+                                    objectName: "builderStockTrack"
+                                    checked: w.draft.stockTrack ?? false
+                                    onToggled: w.set("stockTrack", checked)
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: qsTr("Count how many are left: one less for each sold, sold out at none, and in Count Stock, deliveries and the Stock report.")
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("On hand") }
+                                TextField {
+                                    objectName: "builderStockOnHand"
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    text: w.draft.stockOnHand ?? ""
+                                    placeholderText: qsTr("How many there are now, e.g. 24")
+                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    onTextEdited: w.set("stockOnHand", text)
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("Low at") }
+                                TextField {
+                                    objectName: "builderStockLowAt"
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    text: w.draft.stockLowAt ?? ""
+                                    placeholderText: qsTr("Warn when this many are left, e.g. 5")
+                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    onTextEdited: w.set("stockLowAt", text)
+                                }
+                                Label { visible: !!w.draft.stockTrack; text: qsTr("Cost") }
+                                RowLayout {
+                                    visible: !!w.draft.stockTrack
+                                    Layout.fillWidth: true
+                                    TextField {
+                                        objectName: "builderCost"
+                                        Layout.fillWidth: true
+                                        text: w.draft.cost ?? ""
+                                        placeholderText: qsTr("What one costs you, e.g. 6.50")
+                                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                        onTextEdited: w.set("cost", text)
+                                    }
+                                    // What's left of the price once it's paid for.
+                                    Label {
+                                        readonly property real cost: parseFloat(String(w.draft.cost ?? "").replace(",", "."))
+                                        readonly property real price: parseFloat(String(w.draft.price ?? "").replace(",", "."))
+                                        visible: cost > 0 && price > 0
+                                        text: qsTr("Margin %1%").arg(Math.round((price - cost) / price * 100))
+                                        opacity: 0.7
+                                    }
                                 }
                             }
 

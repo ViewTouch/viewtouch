@@ -34,6 +34,8 @@ namespace vt::app {
 // "11.50", "$11.50", "11,50" (with `symbol`, the currency's): a price in
 // cents; -1 if it isn't one.
 qint64 priceCents(QString text, const QString &symbol);
+// The ingredient that is an item's own stock (Track stock on its card).
+std::string ownStockId(const std::string &itemId);
 
 // Where the service hands off changes. Implementations must not block: the
 // SQLite one queues writes to a worker thread.
