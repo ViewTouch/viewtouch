@@ -2528,6 +2528,7 @@
  "One": "Un",
  "One Check per Seat": "Une addition par place",
  "One Size Only": "Taille unique seulement",
+ "One change could not be saved and was kept in %1: %2": "Une modification n'a pas pu être enregistrée et a été conservée dans %1 : %2",
  "One fewer guest": "Un couvert de moins",
  "One ingredient per line with the amount, e.g. \"bun 1\" or \"lettuce 0.5\" (Manager -> Inventory). Sold out by itself when one runs short.": "Un ingrédient par ligne avec la quantité, ex. \"pain 1\" ou \"laitue 0.5\" (Gérant -> Inventaire). Épuisé de lui-même quand l'un manque.",
  "One less of the item (−)": "Un de moins de l'article (−)",

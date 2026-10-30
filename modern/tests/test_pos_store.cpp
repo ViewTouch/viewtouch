@@ -6,6 +6,9 @@
 #include "storage/pos_store.hh"
 
 #include <QElapsedTimer>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QSqlDatabase>
@@ -139,6 +142,34 @@ TEST_CASE("AsyncWriter reports failures and keeps the row queued", "[posstore]")
     REQUIRE(failed.size() >= 1);
     CHECK(failed.first()[0].toString().contains(u"no_such_table"_s));
     CHECK(writer.pending() == 1);
+}
+
+TEST_CASE("AsyncWriter sets aside a row it can never write, and saves the rest", "[posstore]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    PosStore store(path);
+    REQUIRE(store.open());
+    AsyncWriter writer(path);
+    QSignalSpy setAside(&writer, &AsyncWriter::rowSetAside);
+
+    writer.upsert(u"no_such_table"_s, u"1"_s, {{u"id"_s, 1}});
+    writer.upsert(u"time_punches"_s, u"7"_s,
+                  {{u"id"_s, 7}, {u"employee_id"_s, u"sam"_s}, {u"clock_in"_s, 1000}, {u"clock_out"_s, 0}});
+    for (int i = 0; i < 6 && writer.pending() > 0; ++i)
+        writer.flush();
+    writer.flush();   // the rest goes at once after the bad row leaves
+    QCoreApplication::processEvents();
+    CHECK(writer.pending() == 0);
+    REQUIRE(setAside.size() == 1);
+    CHECK(setAside.first()[0].toString() == u"no_such_table"_s);
+    CHECK(store.punches().size() == 1);
+
+    QFile kept(writer.setAsidePath());
+    REQUIRE(kept.open(QIODevice::ReadOnly));
+    const QJsonObject line = QJsonDocument::fromJson(kept.readLine()).object();
+    CHECK(line.value(u"table"_s).toString() == u"no_such_table"_s);
+    CHECK(line.value(u"row"_s).toObject().value(u"id"_s).toInt() == 1);
 }
 
 TEST_CASE("Queuing writes never blocks the caller", "[posstore]")

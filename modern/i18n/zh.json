@@ -2528,6 +2528,7 @@
  "One": "一个",
  "One Check per Seat": "每个座位一张账单",
  "One Size Only": "仅单一规格",
+ "One change could not be saved and was kept in %1: %2": "有一项更改无法保存，已保留在 %1：%2",
  "One fewer guest": "客人减一位",
  "One ingredient per line with the amount, e.g. \"bun 1\" or \"lettuce 0.5\" (Manager -> Inventory). Sold out by itself when one runs short.": "每行一种原料和用量，例如 \"bun 1\" 或 \"lettuce 0.5\"（经理 -> 库存）。任一原料不足时自动售罄。",
  "One less of the item (−)": "该菜品减一份 (−)",
