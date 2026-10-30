@@ -82,7 +82,11 @@ ApplicationWindow {
     }
 
     Timer { id: lockTimer; interval: 120000; onTriggered: root.unlocked = false }
-    onPanelChanged: if (panel === "home") lockTimer.restart()
+    onPanelChanged: {
+        if (panel === "home")
+            lockTimer.restart()
+        station.refreshStatus()   // what's at a glance, as it is now
+    }
 
     Connections {
         target: root.station
@@ -96,6 +100,11 @@ ApplicationWindow {
                 "online-update": ["", qsTr("Not installed")],
                 ssh: [qsTr("Done."), qsTr("Couldn't change remote help")],
                 backup: [qsTr("Backed up."), qsTr("The backup failed")],
+                restore: [qsTr("Restored. ViewTouch starts with it."), qsTr("Not restored")],
+                "usb-open": ["", qsTr("No USB stick")],
+                brightness: ["", qsTr("Couldn't change the brightness")],
+                rotate: ["", qsTr("Couldn't turn the screen")],
+                "logs-usb": ["", qsTr("The logs weren't saved")],
                 erase: [qsTr("The store is erased; ViewTouch starts fresh."), qsTr("Not erased")],
                 forget: [qsTr("Choose what this computer is."), qsTr("Couldn't start over")],
                 setup: [qsTr("Set up."), qsTr("Not set up")],
@@ -128,6 +137,10 @@ ApplicationWindow {
             }
             if (action === "erase" && ok)
                 root.station.startPos("setup")
+            if (action === "restore" && ok)
+                root.station.startPos()
+            if (action === "logs-usb" && ok)
+                root.say(message, true)
         }
     }
 
@@ -295,6 +308,22 @@ ApplicationWindow {
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
+            // At a glance: what to look at (amber), or the last backup.
+            Label {
+                objectName: "stationStatus"
+                readonly property var problems: root.station.status.problems ?? []
+                readonly property real backupAt: root.station.status.lastBackupAt ?? 0
+                visible: text !== ""
+                text: problems.length > 0 ? "⚠ " + problems[0] + (problems.length > 1 ? "  (+" + (problems.length - 1) + ")" : "")
+                    : backupAt > 0 && (root.station.role === "store" || root.station.role === "server")
+                      ? "✓ " + qsTr("Backed up %1").arg(Qt.locale().toString(new Date(backupAt), "ddd h:mm AP"))
+                      : ""
+                color: problems.length > 0 ? "#f5b940" : "#8fd19e"
+                font.pixelSize: root.u * 0.95
+                elide: Text.ElideRight
+                Layout.maximumWidth: root.width * 0.3
+                TapHandler { onTapped: root.panel = "about" }   // the whole list
+            }
             StationIcon {
                 name: root.station.network.wifi ? "wifi" : "network"
                 color: root.station.network.online ? "#6fcf97" : "#eb8a7a"
@@ -340,7 +369,8 @@ ApplicationWindow {
             width: page.width
             sourceComponent: ({
                 home: homePanel, network: networkPanel, time: timePanel, updates: updatesPanel,
-                help: helpPanel, reset: resetPanel, about: aboutPanel, setup: setupPanel, maintainer: maintainerPanel
+                help: helpPanel, reset: resetPanel, about: aboutPanel, setup: setupPanel, maintainer: maintainerPanel,
+                restore: restorePanel, display: displayPanel
             })[root.panel]
         }
     }
@@ -407,6 +437,7 @@ ApplicationWindow {
                     onTapped: if (root.station.posState === "running") root.say(qsTr("ViewTouch backs up on its own while it runs."), true)
                               else root.station.backupNow()
                 }
+                Tile { icon: "restore"; label: qsTr("Restore a Backup"); tint: "#2b4d7e"; locked: true; onTapped: root.withPin(() => root.panel = "restore") }
             }
 
             Section { text: qsTr("This computer") }
@@ -421,7 +452,15 @@ ApplicationWindow {
                     onTapped: root.withPin(() => root.panel = "network")
                 }
                 Tile { icon: "clock"; label: qsTr("Date & Time"); detail: root.zoneName(root.station.timeZone); locked: true; onTapped: root.withPin(() => root.panel = "time") }
-                Tile { icon: "update"; label: qsTr("Updates"); locked: true; onTapped: root.withPin(() => root.panel = "updates") }
+                Tile {
+                    icon: "update"
+                    label: qsTr("Updates")
+                    detail: root.onlineReady !== "" ? qsTr("%1 is ready").arg(root.onlineReady) : ""
+                    tint: root.onlineReady !== "" ? "#2b6a4a" : "#2a313c"
+                    locked: true
+                    onTapped: root.withPin(() => root.panel = "updates")
+                }
+                Tile { icon: "display"; label: qsTr("Display"); locked: true; onTapped: root.withPin(() => root.panel = "display") }
                 Tile {
                     icon: "help"
                     label: qsTr("Remote Help")
@@ -429,12 +468,31 @@ ApplicationWindow {
                     locked: true
                     onTapped: root.withPin(() => root.panel = "help")
                 }
-                Tile { icon: "restart"; label: qsTr("Restart"); tint: "#4a3f24"; onTapped: confirm.ask(qsTr("Restart this computer?"), qsTr("Restart"), () => root.station.restartComputer()) }
-                Tile { icon: "power"; label: qsTr("Shut Down"); tint: "#4a3f24"; onTapped: confirm.ask(qsTr("Shut this computer down? Turn it on again with its power button."), qsTr("Shut Down"), () => root.station.shutDown()) }
+                // With the code, when the maintainer says so (staff can't power off mid-service).
+                Tile {
+                    icon: "restart"
+                    label: qsTr("Restart")
+                    tint: "#4a3f24"
+                    locked: root.station.lockPower
+                    onTapped: {
+                        const ask = () => confirm.ask(qsTr("Restart this computer?"), qsTr("Restart"), () => root.station.restartComputer())
+                        if (root.station.lockPower) root.withPin(ask); else ask()
+                    }
+                }
+                Tile {
+                    icon: "power"
+                    label: qsTr("Shut Down")
+                    tint: "#4a3f24"
+                    locked: root.station.lockPower
+                    onTapped: {
+                        const ask = () => confirm.ask(qsTr("Shut this computer down? Turn it on again with its power button."), qsTr("Shut Down"), () => root.station.shutDown())
+                        if (root.station.lockPower) root.withPin(ask); else ask()
+                    }
+                }
                 Tile { icon: "startover"; label: qsTr("Reset…"); tint: "#4a2a2e"; locked: true; onTapped: root.withPin(() => root.panel = "reset") }
                 Tile {
                     objectName: "tileMaintainer"
-                    icon: "about"
+                    icon: "key"
                     label: qsTr("Maintainer Code")
                     locked: true
                     onTapped: root.withPin(() => root.panel = "maintainer")
@@ -710,6 +768,17 @@ ApplicationWindow {
                     }
                 }
             }
+            // Staff can't power the computer off in the middle of service.
+            Section { text: qsTr("Restart and Shut Down") }
+            RowLayout {
+                spacing: root.u
+                Switch {
+                    objectName: "lockPower"
+                    checked: root.station.lockPower
+                    onToggled: root.station.setLockPower(checked)
+                }
+                Note { text: qsTr("Ask for this code to restart or shut down the computer") }
+            }
         }
     }
 
@@ -759,7 +828,11 @@ ApplicationWindow {
                             [qsTr("Used as"), root.roleNames[root.station.role] ?? "—"],
                             [qsTr("Address"), root.station.network.address || "—"],
                             [qsTr("Time zone"), root.station.timeZone],
-                            [qsTr("Hardware"), root.station.model]]
+                            [qsTr("Hardware"), root.station.model],
+                            [qsTr("Disk free"), root.station.status.diskFreePercent !== undefined
+                                                ? qsTr("%1% (%2 GB)").arg(root.station.status.diskFreePercent).arg(Number(root.station.status.diskFreeGb).toFixed(1)) : "—"],
+                            [qsTr("Last backup"), (root.station.status.lastBackupAt ?? 0) > 0
+                                                  ? Qt.locale().toString(new Date(root.station.status.lastBackupAt), "ddd MMM d h:mm AP") : "—"]]
                     delegate: RowLayout {
                         required property var modelData
                         Layout.columnSpan: 2
@@ -768,6 +841,112 @@ ApplicationWindow {
                     }
                 }
             }
+            // What to look at, if anything.
+            Section { text: qsTr("To look at") }
+            Note {
+                objectName: "stationProblems"
+                readonly property var problems: root.station.status.problems ?? []
+                text: problems.length === 0 ? qsTr("Nothing: all is well.") : problems.map(p => "⚠ " + p).join("\n")
+                color: problems.length === 0 ? "#8fd19e" : "#f5b940"
+            }
+            // For whoever helps: the last week of ViewTouch's logs on a USB stick.
+            Section { text: qsTr("Help from someone else") }
+            Note { text: qsTr("Plug in a USB stick and save the last week of ViewTouch's logs on it, for whoever helps you.") }
+            BigButton {
+                objectName: "saveLogs"
+                text: qsTr("Save Logs to USB")
+                enabled: !root.station.busy
+                onClicked: root.station.saveLogs()
+            }
+        }
+    }
+
+    // --- restore a backup ------------------------------------------------------------------
+
+    Component {
+        id: restorePanel
+        Panel {
+            id: rp
+            title: qsTr("Restore a Backup")
+            property var list: root.station.backups()
+            property string chosen: ""
+            readonly property var picked: list.find(b => b.path === chosen) ?? null
+            Connections {
+                target: root.station
+                function onFinished(action) { if (action === "usb-open") rp.list = root.station.backups() }
+            }
+            Note { text: qsTr("Puts the store's data back as it was in a backup: its sales, menu, staff and settings. What's there now is kept beside it, so this can be undone. ViewTouch stops while it's done, then starts with it.") }
+            BigButton {
+                text: qsTr("Look on a USB Stick")
+                enabled: !root.station.busy
+                onClicked: root.station.usbOpen()
+            }
+            Note { visible: rp.list.length === 0; text: qsTr("No backups here yet: ViewTouch makes them every night and at End of Day.") }
+            Repeater {
+                model: rp.list
+                delegate: BigButton {
+                    required property var modelData
+                    objectName: "backup-" + modelData.name
+                    Layout.fillWidth: true
+                    tint: rp.chosen === modelData.path ? Ui.accent : Ui.button
+                    text: Qt.locale().toString(new Date(modelData.at), "dddd MMM d, h:mm AP") + "  ·  " + modelData.where
+                          + "  ·  " + (modelData.size / 1e6).toFixed(1) + " MB" + (modelData.encrypted ? "  ·  🔒" : "")
+                    onClicked: rp.chosen = modelData.path
+                }
+            }
+            Field {
+                id: backupPassword
+                visible: !!rp.picked && rp.picked.encrypted && rp.picked.where !== qsTr("This computer")
+                placeholderText: qsTr("Its backup password (from the store it came from)")
+                echoMode: TextInput.Password
+            }
+            BigButton {
+                objectName: "restoreGo"
+                text: qsTr("Restore This Backup")
+                tint: "#8a6a2a"
+                enabled: !!rp.picked && !root.station.busy
+                onClicked: confirm.ask(qsTr("Put back the store as it was on %1? What's there now is kept beside it.")
+                                           .arg(Qt.locale().toString(new Date(rp.picked.at), "dddd MMM d, h:mm AP")),
+                                       qsTr("Restore"), () => root.station.restoreBackup(rp.chosen, backupPassword.text))
+            }
+            Log {}
+        }
+    }
+
+    // --- the screen ------------------------------------------------------------------------
+
+    Component {
+        id: displayPanel
+        Panel {
+            title: qsTr("Display")
+            Section { text: qsTr("Brightness") }
+            Note { visible: root.station.brightness < 0; text: qsTr("This screen's brightness is set with its own buttons.") }
+            Slider {
+                objectName: "brightnessSlider"
+                visible: root.station.brightness >= 0
+                Layout.fillWidth: true
+                from: 5
+                to: 100
+                stepSize: 5
+                value: Math.max(5, root.station.brightness)
+                onPressedChanged: if (!pressed) root.station.setBrightness(Math.round(value))
+            }
+            Section { text: qsTr("Turn the screen") }
+            Note { text: qsTr("For a screen mounted on its side or upside down. Touch turns with it.") }
+            RowLayout {
+                spacing: root.u
+                Repeater {
+                    model: [[0, qsTr("Normal")], [90, qsTr("90° right")], [180, qsTr("Upside down")], [270, qsTr("90° left")]]
+                    delegate: BigButton {
+                        required property var modelData
+                        objectName: "rotate-" + modelData[0]
+                        text: modelData[1]
+                        tint: root.station.rotation === modelData[0] ? Ui.accent : Ui.button
+                        onClicked: root.station.setRotation(modelData[0])
+                    }
+                }
+            }
+            Note { text: qsTr("The screen sleeps after the time set in ViewTouch's Store Settings → Screens (Screen saver).") }
         }
     }
 

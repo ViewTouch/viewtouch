@@ -12,6 +12,7 @@
 #include <QNetworkInterface>
 #include <QRandomGenerator>
 #include <QRegularExpression>
+#include <QStorageInfo>
 #include <QSysInfo>
 #include <QTimeZone>
 
@@ -105,6 +106,22 @@ StationController::StationController(QString dataDir, QString configFile, bool k
     readTimeZone();
     readRemoteSupport();
     refreshNetwork();
+    // What's at a glance: now, every minute, and after a backup or a restore.
+    connect(&networkTimer_, &QTimer::timeout, this, [this, n = 0]() mutable {
+        if (++n % 6 == 0)
+            refreshStatus();
+    });
+    connect(this, &StationController::finished, this, [this](const QString &action, bool, const QString &) {
+        if (action == u"backup" || action == u"restore")
+            refreshStatus();
+        else if (action == u"brightness")
+            emit displayChanged();
+    });
+    connect(this, &StationController::posChanged, this, &StationController::refreshStatus);
+    connect(this, &StationController::networkChanged, this, &StationController::refreshStatus);
+    refreshStatus();
+    if (rotation_ != 0)
+        QTimer::singleShot(1000, this, &StationController::applyRotation);   // the screen as it was turned
 }
 
 StationController::~StationController()
@@ -142,6 +159,10 @@ void StationController::load()
     name_ = o.value(u"name").toString(QSysInfo::machineHostName());
     pinHash_ = o.value(u"pinHash").toString();
     pinSalt_ = o.value(u"pinSalt").toString();
+    rotation_ = o.value(u"rotation").toInt();
+    if (rotation_ != 90 && rotation_ != 180 && rotation_ != 270)
+        rotation_ = 0;
+    lockPower_ = o.value(u"lockPower").toBool();
 }
 
 bool StationController::save()
@@ -150,7 +171,8 @@ bool StationController::save()
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;
     f.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
-    const QJsonObject o{{u"role"_s, role_}, {u"name"_s, name_}, {u"pinHash"_s, pinHash_}, {u"pinSalt"_s, pinSalt_}};
+    const QJsonObject o{{u"role"_s, role_}, {u"name"_s, name_}, {u"pinHash"_s, pinHash_}, {u"pinSalt"_s, pinSalt_},
+                        {u"rotation"_s, rotation_}, {u"lockPower"_s, lockPower_}};
     return f.write(QJsonDocument(o).toJson()) > 0;
 }
 
@@ -544,6 +566,173 @@ void StationController::setBusy(bool busy)
         busy_ = busy;
         emit busyChanged();
     }
+}
+
+QString StationController::backupDir() const
+{
+    return QDir(dataDir_).filePath(u"backups"_s);
+}
+
+void StationController::refreshStatus()
+{
+    QVariantMap s;
+    QStringList problems;
+    // The newest backup on this computer.
+    const QFileInfoList backups = QDir(backupDir()).entryInfoList({u"viewtouch-*.db"_s, u"viewtouch-*.vtbak"_s},
+                                                                  QDir::Files, QDir::Time);
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (!backups.isEmpty()) {
+        const qint64 at = backups.first().lastModified().toMSecsSinceEpoch();
+        const int hours = int((now - at) / 3'600'000);
+        s.insert(u"lastBackupAt"_s, at);
+        s.insert(u"backupAgeHours"_s, hours);
+        if (hours > 36 && (role_ == u"store" || role_ == u"server"))
+            problems << tr("No backup in %n day(s)", nullptr, hours / 24);
+    } else {
+        s.insert(u"lastBackupAt"_s, 0);
+        if (role_ == u"store" || role_ == u"server")
+            problems << tr("No backup yet");
+    }
+    // Room left for the store's data (and its backups).
+    const QStorageInfo disk(dataDir_);
+    if (disk.isValid() && disk.bytesTotal() > 0) {
+        const int free = int(100 * disk.bytesAvailable() / disk.bytesTotal());
+        s.insert(u"diskFreePercent"_s, free);
+        s.insert(u"diskFreeGb"_s, double(disk.bytesAvailable()) / 1e9);
+        if (free < 10)
+            problems << tr("Only %1% of the disk is free").arg(free);
+    }
+    // ViewTouch stopping by itself today.
+    int today = 0;
+    for (const QDateTime &t : crashes_)
+        if (t.date() == QDate::currentDate())
+            ++today;
+    s.insert(u"crashesToday"_s, today);
+    if (today > 0)
+        problems << tr("ViewTouch stopped by itself %n time(s) today", nullptr, today);
+    if (posState_ == u"gaveUp")
+        problems << tr("ViewTouch isn't running");
+    if (!network_.value(u"online"_s).toBool())
+        problems << tr("No network");
+    s.insert(u"problems"_s, problems);
+    if (s != status_) {
+        status_ = s;
+        emit statusChanged();
+    }
+}
+
+QVariantList StationController::backups() const
+{
+    struct Found {
+        QFileInfo file;
+        QString where;
+    };
+    std::vector<Found> found;
+    const auto look = [&](const QString &dir, const QString &where) {
+        for (const QFileInfo &f : QDir(dir).entryInfoList({u"viewtouch-*.db"_s, u"viewtouch-*.vtbak"_s}, QDir::Files))
+            found.push_back({f, where});
+    };
+    look(backupDir(), tr("This computer"));
+    // USB sticks (usbOpen() mounts them, read only): at their top or in a backups folder.
+    for (const QFileInfo &stick : QDir(u"/run/vtmodern-usb"_s).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        look(stick.filePath(), tr("USB stick"));
+        look(QDir(stick.filePath()).filePath(u"backups"_s), tr("USB stick"));
+    }
+    std::ranges::sort(found, [](const Found &a, const Found &b) { return a.file.lastModified() > b.file.lastModified(); });
+    QVariantList out;
+    for (const Found &f : found)
+        out.append(QVariantMap{{u"path"_s, f.file.absoluteFilePath()}, {u"name"_s, f.file.fileName()},
+                               {u"at"_s, f.file.lastModified().toMSecsSinceEpoch()}, {u"size"_s, f.file.size()},
+                               {u"encrypted"_s, f.file.suffix() == u"vtbak"}, {u"where"_s, f.where}});
+    return out;
+}
+
+void StationController::usbOpen()
+{
+    run(u"usb-open"_s, {});
+}
+
+void StationController::restoreBackup(const QString &path, const QString &password)
+{
+    // Only one of the backups listed: never a path from elsewhere.
+    const QVariantList list = backups();
+    if (std::ranges::none_of(list, [&](const QVariant &v) { return v.toMap().value(u"path"_s).toString() == path; })) {
+        emit finished(u"restore"_s, false, tr("That backup isn't there any more."));
+        return;
+    }
+    stopPos();
+    // Its password on stdin, for an encrypted one this store's key doesn't open.
+    run(u"restore"_s, storeArgs() << u"--restore"_s << path, (password + u'\n').toUtf8(),
+        QCoreApplication::applicationFilePath());
+}
+
+namespace {
+// The screen's backlight (a Raspberry Pi's display, a laptop's), if any.
+QString backlight()
+{
+    const QFileInfoList lights = QDir(u"/sys/class/backlight"_s).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    return lights.isEmpty() ? QString() : lights.first().filePath();
+}
+int readNumber(const QString &file)
+{
+    QFile f(file);
+    return f.open(QIODevice::ReadOnly) ? QString::fromLatin1(f.readAll()).trimmed().toInt() : -1;
+}
+} // namespace
+
+int StationController::brightness() const
+{
+    const QString dir = backlight();
+    if (dir.isEmpty())
+        return -1;
+    const int max = readNumber(dir + u"/max_brightness"_s), now = readNumber(dir + u"/brightness"_s);
+    return max > 0 && now >= 0 ? int(std::lround(100.0 * now / max)) : -1;
+}
+
+void StationController::setBrightness(int percent)
+{
+    run(u"brightness"_s, {QString::number(std::clamp(percent, 5, 100))});   // never quite dark
+}
+
+void StationController::setRotation(int degrees)
+{
+    if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270)
+        return;
+    rotation_ = degrees;
+    save();
+    emit displayChanged();
+    applyRotation();
+}
+
+// The screen turned, by the compositor it runs in (cage, through wlr-randr);
+// touch turns with it.
+void StationController::applyRotation()
+{
+    const QString outputs = runQuick(u"wlr-randr"_s, {});
+    QString output;
+    for (const QString &line : outputs.split(u'\n'))
+        if (!line.isEmpty() && !line.front().isSpace()) {
+            output = line.section(u' ', 0, 0);
+            break;
+        }
+    if (output.isEmpty()) {
+        emit finished(u"rotate"_s, false, tr("This screen can't be turned from here."));
+        return;
+    }
+    const QString transform = rotation_ == 0 ? u"normal"_s : QString::number(rotation_);
+    run(u"rotate"_s, {u"--output"_s, output, u"--transform"_s, transform}, {}, u"wlr-randr"_s);
+}
+
+void StationController::setLockPower(bool on)
+{
+    lockPower_ = on;
+    save();
+    emit configChanged();
+}
+
+void StationController::saveLogs()
+{
+    run(u"logs-usb"_s, {});
 }
 
 void StationController::run(const QString &action, const QStringList &args, const QByteArray &input,

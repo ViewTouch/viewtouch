@@ -14,6 +14,8 @@
 #   vtmodern-device online-update                       download it (signed), install it, and the newest tablet apps
 #   vtmodern-device usb-open                            the USB sticks plugged in, read-only, for pictures
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
+#   vtmodern-device brightness PERCENT                  the screen's backlight, 5 to 100
+#   vtmodern-device logs-usb                            the last week of ViewTouch's logs onto a USB stick
 #   vtmodern-device reboot | poweroff
 set -eu
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
@@ -316,6 +318,50 @@ ssh)
     *) die "on or off" ;;
     esac
     ;;
+brightness)
+    pct=${1:-}
+    printf '%s' "$pct" | grep -Eq '^[0-9]{1,3}$' || die "A number from 5 to 100."
+    [ "$pct" -ge 5 ] && [ "$pct" -le 100 ] || die "A number from 5 to 100."
+    done=0
+    for light in /sys/class/backlight/*; do
+        [ -w "$light/brightness" ] || continue
+        max=$(cat "$light/max_brightness")
+        echo $((max * pct / 100)) > "$light/brightness"
+        done=1
+    done
+    [ "$done" -eq 1 ] || die "This screen's brightness can't be set from here (use its own buttons)."
+    echo "Brightness $pct%."
+    ;;
+logs-usb)
+    # The first USB stick with a file system: mounted writable just for this,
+    # then let go (safe to pull out once it says so).
+    part=""
+    for dev in $(lsblk -rpno NAME,TRAN,TYPE | awk '$2=="usb" && $3=="disk"{print $1}'); do
+        for p in $(lsblk -rpno NAME,TYPE "$dev" | awk '$2=="part"{print $1}') "$dev"; do
+            [ -n "$(lsblk -no FSTYPE "$p" | head -1)" ] && { part=$p; break 2; }
+        done
+    done
+    [ -n "$part" ] || die "No USB stick found. Plug one in and try again."
+    dir=/run/vtmodern-usb-write
+    mkdir -p "$dir"
+    if findmnt -rn -S "$part" >/dev/null; then
+        umount "$part" || die "The USB stick is busy. Take it out, put it back and try again."
+    fi
+    mount -o rw,nosuid,nodev,noexec "$part" "$dir" || die "Couldn't open the USB stick."
+    file="$dir/ViewTouch-logs-$(hostname)-$(date +%Y%m%d-%H%M).txt"
+    {
+        echo "ViewTouch logs from $(hostname), $(date)"
+        echo "$(os_name), $(uname -r)"
+        echo
+        df -h / 2>/dev/null
+        echo
+        journalctl --no-pager --since "-7 days" -u 'vtmodern*' 2>&1 | tail -n 20000
+    } > "$file" 2>&1 || { umount "$dir"; die "Couldn't write on the USB stick."; }
+    sync
+    umount "$dir"
+    rmdir "$dir" 2>/dev/null || true
+    echo "Saved as $(basename "$file"). You can take the USB stick out."
+    ;;
 reboot)
     systemctl reboot
     ;;
@@ -323,7 +369,7 @@ poweroff)
     systemctl poweroff
     ;;
 *)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2
+    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' >&2
     exit 1
     ;;
 esac

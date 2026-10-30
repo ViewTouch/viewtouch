@@ -65,7 +65,7 @@ apt-get update -qq
 # libgl1-mesa-dri: drawing in software when the graphics card can't
 # (vtmodern-screen; a virtual machine without 3D acceleration). kbd: chvt,
 # to the ViewTouch screen at boot (not in a minimal Debian).
-apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
+apt-get install -y --no-install-recommends cage wlr-randr qt6-wayland nftables unattended-upgrades rfkill \
     network-manager fonts-dejavu-core fonts-inter fonts-noto-cjk fonts-noto-color-emoji openssh-server \
     sudo locales libgl1-mesa-dri kbd
 

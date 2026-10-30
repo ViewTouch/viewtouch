@@ -406,6 +406,61 @@ TEST_CASE("Station: every tile of the main register's home screen fits a 1280 x 
     CHECK(tiles >= 10);
 }
 
+TEST_CASE("Station: status at a glance, backups to restore, a locked power button, a turned screen", "[station]")
+{
+    QTemporaryDir dir;
+    {
+        QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(R"({"role": "store", "name": "Main Register"})");
+    }
+    StationController station(dir.path(), {}, false);
+    // No backup yet: said, for a main register.
+    station.refreshStatus();
+    CHECK(station.status()[u"lastBackupAt"_s].toLongLong() == 0);
+    CHECK(station.status()[u"problems"_s].toStringList().contains(u"No backup yet"_s));
+    CHECK(station.status()[u"diskFreePercent"_s].toInt() > 0);
+
+    // A backup made last night, and an encrypted one: listed, newest first.
+    QDir(dir.path()).mkpath(u"backups"_s);
+    const QString older = QDir(dir.path()).filePath(u"backups/viewtouch-20261001-020000.vtbak"_s);
+    const QString newer = QDir(dir.path()).filePath(u"backups/viewtouch-20261029-020000.db"_s);
+    for (const QString &path : {older, newer}) {
+        QFile f(path);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write("x");
+    }
+    {
+        QFile f(older);
+        REQUIRE(f.open(QIODevice::ReadWrite));
+        REQUIRE(f.setFileTime(QDateTime::currentDateTime().addDays(-20), QFileDevice::FileModificationTime));
+    }
+    const QVariantList list = station.backups();
+    REQUIRE(list.size() == 2);
+    CHECK(list[0].toMap()[u"path"_s] == newer);
+    CHECK_FALSE(list[0].toMap()[u"encrypted"_s].toBool());
+    CHECK(list[1].toMap()[u"encrypted"_s].toBool());
+    CHECK(list[0].toMap()[u"where"_s] == u"This computer"_s);
+    station.refreshStatus();
+    CHECK(station.status()[u"lastBackupAt"_s].toLongLong() > 0);
+    CHECK_FALSE(station.status()[u"problems"_s].toStringList().contains(u"No backup yet"_s));
+
+    // Only a backup from the list is restored, never a path from elsewhere.
+    QSignalSpy finished(&station, &StationController::finished);
+    station.restoreBackup(u"/etc/passwd"_s);
+    REQUIRE(finished.size() == 1);
+    CHECK(finished[0][0] == u"restore"_s);
+    CHECK_FALSE(finished[0][1].toBool());
+
+    // Restart and Shut Down with the code; the screen turned: kept.
+    station.setLockPower(true);
+    station.setRotation(90);
+    station.setRotation(45);   // not a way to turn a screen: ignored
+    StationController again(dir.path(), {}, false);
+    CHECK(again.lockPower());
+    CHECK(again.rotation() == 90);
+}
+
 // The manual's pictures of the home screen and the first-time setup
 // (hidden: run with "[manual]" and VTM_SHOTS).
 TEST_CASE("Manual: the home screen and the first-time setup", "[.manual]")
@@ -434,6 +489,20 @@ TEST_CASE("Manual: the home screen and the first-time setup", "[.manual]")
         CHECK(window->findChild<QQuickItem *>(u"tileMaintainer"_s));
         if (!shots.isEmpty())
             window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/m147-home-screen.png"_s);
+        // Its panels: restoring a backup, the screen, about (what to look at).
+        QDir(dir.path()).mkpath(u"backups"_s);
+        for (const char *name : {"viewtouch-20261029-020000.db", "viewtouch-20261028-230000.db"}) {
+            QFile b(QDir(dir.path()).filePath(u"backups/"_s + QString::fromLatin1(name)));
+            REQUIRE(b.open(QIODevice::WriteOnly));
+            b.write(QByteArray(1'500'000, 'x'));
+        }
+        for (const auto &[panel, file] : {std::pair{"restore", "m190-station-restore"}, {"display", "m191-station-display"},
+                                          {"about", "m192-station-about"}}) {
+            window->setProperty("panel", QString::fromLatin1(panel));
+            QTest::qWait(300);
+            if (!shots.isEmpty())
+                window->grabWindow().save(QString::fromLocal8Bit(shots) + u'/' + QString::fromLatin1(file) + u".png"_s);
+        }
     }
     {
         QTemporaryDir dir;

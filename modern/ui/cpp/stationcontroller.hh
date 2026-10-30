@@ -43,6 +43,16 @@ class StationController : public QObject {
     Q_PROPERTY(QString model READ model CONSTANT)
     // False when run without the helper (a test on a desktop): those icons say so.
     Q_PROPERTY(bool canManage READ canManage CONSTANT)
+    // At a glance, for the top bar: {lastBackupAt (ms, 0: none), backupAgeHours,
+    // diskFreePercent, diskFreeGb, crashesToday, problems: [what to look at]}.
+    Q_PROPERTY(QVariantMap status READ status NOTIFY statusChanged)
+    // The screen's brightness, 0-100 (-1: this screen's can't be set here),
+    // and how it's turned (0, 90, 180, 270 degrees).
+    Q_PROPERTY(int brightness READ brightness NOTIFY displayChanged)
+    Q_PROPERTY(int rotation READ rotation NOTIFY displayChanged)
+    // Restart and Shut Down ask for the maintainer's code (staff can't power
+    // the computer off in the middle of service).
+    Q_PROPERTY(bool lockPower READ lockPower NOTIFY configChanged)
 
 public:
     // ViewTouch is started with this data folder and settings file (--config),
@@ -65,6 +75,10 @@ public:
     QString version() const;
     QString model() const;
     bool canManage() const;
+    QVariantMap status() const { return status_; }
+    int brightness() const;
+    int rotation() const { return rotation_; }
+    bool lockPower() const { return lockPower_; }
 
     // Start ViewTouch (on `afterLogin` once someone logs in: a page id, or "setup").
     Q_INVOKABLE void startPos(const QString &afterLogin = {});
@@ -104,6 +118,23 @@ public:
     Q_INVOKABLE void restartComputer();
     Q_INVOKABLE void shutDown();
 
+    // The store's backups, newest first: this computer's (its backups
+    // folder) and any on a USB stick plugged in (after usbOpen()), as
+    // [{path, name, at (ms), size, encrypted, where}].
+    Q_INVOKABLE QVariantList backups() const;
+    Q_INVOKABLE void usbOpen();
+    // That backup in place of the store's data: ViewTouch stops, the data
+    // now is kept beside it, and finished("restore") says how it went. An
+    // encrypted one from another computer needs its backup password.
+    Q_INVOKABLE void restoreBackup(const QString &path, const QString &password = {});
+    // The screen: brightness (0-100), turned (0, 90, 180, 270).
+    Q_INVOKABLE void setBrightness(int percent);
+    Q_INVOKABLE void setRotation(int degrees);
+    Q_INVOKABLE void setLockPower(bool on);
+    // The last week of ViewTouch's logs, onto a USB stick (for whoever helps).
+    Q_INVOKABLE void saveLogs();
+    Q_INVOKABLE void refreshStatus();
+
 signals:
     void configChanged();
     void posChanged();
@@ -113,6 +144,8 @@ signals:
     void outputChanged();
     void timeZoneChanged();
     void remoteSupportChanged();
+    void statusChanged();
+    void displayChanged();
     // Each action's end: ok, and what to say.
     void finished(const QString &action, bool ok, const QString &message);
 
@@ -156,4 +189,9 @@ private:
     bool timeSynced_ = false;
     bool remoteSupport_ = false;
     QTimer networkTimer_;
+    QVariantMap status_;
+    int rotation_ = 0;
+    bool lockPower_ = false;
+    void applyRotation();
+    QString backupDir() const;
 };
