@@ -517,64 +517,74 @@ Totals Check::totals(const TaxRates &rates) const
 
     std::map<TaxClass, Money> byClass;
     Money discountable, staffDiscountable;   // what percent discounts and staff meals apply to
+    // The same, by tax class: a percent off falls only on the lines it took
+    // something off (an alcohol line that can't be discounted keeps its tax).
+    std::map<TaxClass, Money> discountableByClass, staffDiscountableByClass;
     for (const OrderLine &l : lines) {
         const Money lt = l.total();
         t.items += lt;
         if (l.isGiftCard())
             t.giftCardsSold += lt;
-        if (!l.isGiftCard() && !l.noDiscount)
+        if (!l.isGiftCard() && !l.noDiscount) {
             discountable += lt;
-        if (!l.isGiftCard() && !l.noDiscount && !l.noStaffDiscount)
+            if (l.taxClass != TaxClass::None)
+                discountableByClass[l.taxClass] += lt;
+        }
+        if (!l.isGiftCard() && !l.noDiscount && !l.noStaffDiscount) {
             staffDiscountable += lt;
+            if (l.taxClass != TaxClass::None)
+                staffDiscountableByClass[l.taxClass] += lt;
+        }
         if (l.taxClass != TaxClass::None)
             byClass[l.taxClass] += lt;
     }
 
     // Discounts: each is a share of the items total; together they never
-    // exceed it.
+    // exceed it. Each one's part of every tax class goes with it: a percent
+    // off on the class's lines it applies to, a fixed amount (rewards,
+    // promotions) over everything that may be discounted, by sales.
+    const Money discounted = t.items - t.giftCardsSold;   // nothing comes off a gift card bought
+    std::map<TaxClass, Money> discountShare;
     for (const Payment &p : payments) {
         if (p.kind != TenderKind::Discount)
             continue;
-        // Percent off what may be discounted, or a fixed amount (rewards, promotions).
-        const Money off = (p.staffMeal ? staffDiscountable : discountable).percent(p.percentBp) + p.amount;
+        const Money &base = p.staffMeal ? staffDiscountable : discountable;
+        const auto &baseByClass = p.staffMeal ? staffDiscountableByClass : discountableByClass;
+        const Money percentOff = base.percent(p.percentBp);
+        const Money off = percentOff + p.amount;
         t.discounts += off;
         t.discountOf[p.id] = off;
         if (p.staffMeal)
             t.staffMeals += off;
+        for (const auto &[cls, amount] : byClass) {
+            Money share;
+            if (base.cents() > 0 && baseByClass.contains(cls))
+                share += percentOff.scaled(baseByClass.at(cls).cents(), base.cents());
+            if (discounted.cents() > 0)
+                share += p.amount.scaled(amount.cents(), discounted.cents());
+            discountShare[cls] += share;
+        }
     }
-    if (t.discounts > t.items - t.giftCardsSold)   // nothing comes off a gift card bought
-        t.discounts = t.items - t.giftCardsSold;
+    if (t.discounts > discounted) {
+        // Capped: every discount, and its part of each class, shrinks alike,
+        // so the receipt's discount lines add up to what came off.
+        const Money uncapped = t.discounts;
+        t.discounts = discounted;
+        auto shrink = [&](Money m) { return uncapped.cents() > 0 ? m.scaled(discounted.cents(), uncapped.cents()) : Money(); };
+        Money left = discounted;
+        std::int64_t lastId = -1;
+        for (auto &[id, off] : t.discountOf) {
+            off = shrink(off);
+            left -= off;
+            lastId = id;
+        }
+        if (lastId >= 0)
+            t.discountOf[lastId] += left;   // rounding leftovers
+        t.staffMeals = shrink(t.staffMeals);
+        for (auto &[cls, share] : discountShare)
+            share = shrink(share);
+    }
     t.subtotal = t.items - t.discounts;
-
-    // Spread the discount over tax classes in proportion to their sales,
-    // giving rounding leftovers to the largest class, then tax each class
-    // on its net total.
-    Money taxableTotal;
-    for (const auto &[cls, amount] : byClass)
-        taxableTotal += amount;
-    // The part of the discount that falls on taxable sales (comments and
-    // untaxed lines take the rest; gift cards sold take none: never discounted).
-    const Money discounted = t.items - t.giftCardsSold;
-    const Money taxableDiscount = taxableTotal.cents() > 0 && discounted.cents() > 0
-        ? Money::fromCents(t.discounts.cents() * taxableTotal.cents() / discounted.cents())
-        : Money();
-    Money allocated;
-    TaxClass largest = TaxClass::None;
-    Money largestAmount;
-    std::map<TaxClass, Money> discountShare;
-    for (const auto &[cls, amount] : byClass) {
-        if (largest == TaxClass::None || amount > largestAmount) {
-            largest = cls;
-            largestAmount = amount;
-        }
-        if (taxableTotal.cents() > 0) {
-            const Money share = Money::fromCents(taxableDiscount.cents() * amount.cents() / taxableTotal.cents());
-            discountShare[cls] = share;
-            allocated += share;
-        }
-    }
-    if (largest != TaxClass::None)
-        discountShare[largest] += taxableDiscount - allocated;
 
     for (const auto &[cls, amount] : byClass) {
         if (!taxExempt.empty())
