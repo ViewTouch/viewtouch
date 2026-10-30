@@ -5363,6 +5363,20 @@ TEST_CASE("Manual: reports, the item list, stock and barcodes", "[.manual]")
         card->setProperty("contentY", std::clamp(y - 140, 0.0, std::max(0.0, card->property("contentHeight").toDouble() - card->height())));
         clean(s);
         s.shot("m186-builder-track-stock");
+        // The list with its Stock column, and price tags for two items.
+        search->setProperty("text", QString());
+        QMetaObject::invokeMethod(search, "textEdited");
+        QTest::qWait(100);
+        s.tapItem(by(s, u"builderSelect"_s));   // Select: the card closes, the list is wide again
+        s.tapItem(by(s, u"builderListSort-stock"_s));   // the tracked ones first
+        clean(s);
+        s.shot("m189-builder-stock-column");
+        for (const char *id : {"classic-burger", "cheeseburger"})
+            if (QQuickItem *row = by(s, u"builderListRow-"_s + QString::fromLatin1(id)))
+                s.tapItem(row);
+        s.tapItem(by(s, u"builderSelectTags"_s));
+        clean(s);
+        s.shot("m188-price-tags");
     }
     {
         Screen s(false, 1280, 800);
