@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 # The version: MAJOR.MINOR here, changed by hand for a release; the third
 # number is the build number (commits so far), added by every build:
 # 0.9.1283, 0.9.1284... (cmake/BuildInfo.cmake).
-project(ViewTouchModern VERSION 0.11 LANGUAGES CXX)
+project(ViewTouchModern VERSION 0.12 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
