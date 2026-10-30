@@ -138,11 +138,15 @@ Item {
     }
 
     // The value columns, each as wide as its widest cell (a heading too),
-    // between 4 and 12 units; the first column takes what's left, at least
+    // between 4 and 14 units; the first column takes what's left, at least
     // 9 units. Wider than the space: the table slides sideways.
     FontMetrics { id: cellFont; font.family: w.face; font.pixelSize: w.unit }
     FontMetrics { id: boldFont; font.family: w.face; font.pixelSize: w.unit; font.bold: true }
     readonly property var valueWidths: {
+        // Read, so this is worked out again once the fonts have their size
+        // (measured before, with the size they started at, the columns came out short).
+        if (cellFont.font.pixelSize <= 0 || boldFont.font.pixelSize <= 0)
+            return []
         const cols = report.columns ?? []
         const rowsIn = report.rows ?? []
         let n = Math.max(0, cols.length - 1)
@@ -160,7 +164,7 @@ Item {
             for (let i = 1; i < cells.length && i <= n; ++i)
                 out[i - 1] = Math.max(out[i - 1], m.advanceWidth(cells[i]))
         }
-        return out.map(x => Math.max(w.unit * 4, Math.min(w.unit * 12, x + w.unit)))
+        return out.map(x => Math.max(w.unit * 4, Math.min(w.unit * 14, x * 1.05 + w.unit)))
     }
     function valueWidth(i) { return i > 0 && i <= valueWidths.length ? valueWidths[i - 1] : w.unit * 7 }
     readonly property real valuesW: valueWidths.reduce((a, x) => a + x, 0)
