@@ -351,11 +351,8 @@ struct Screen : Session {
     // Tap a visible keypad key by its text.
     void tapKey(const QString &text)
     {
-        QQuickItem *found = findKey(window->contentItem(), text);
-        REQUIRE(found);
-        const QPointF centre = found->mapToScene(QPointF(found->width() / 2, found->height() / 2));
-        QTest::mouseClick(window, Qt::LeftButton, {}, centre.toPoint());
-        QTest::qWait(30);
+        // Through tapItem: a key in a list scrolled past it is scrolled to first.
+        tapItem(findKey(window->contentItem(), text));
     }
 };
 
@@ -8685,6 +8682,63 @@ TEST_CASE("UI: Reports -> Forecast: a coming day, chosen by its key", "[flow][ui
     CHECK(report[u"rows"_s].toList().value(0).toMap()[u"cells"_s].toStringList().value(0).contains(u"4 past weeks"_s));
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"Classic Burger"_s));
     s.shot("forecast");
+}
+
+TEST_CASE("UI: reports are picked from the list beside them; a swipe goes to the next", "[flow][ui][reports]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(50);
+    QQuickItem *view = Screen::findBy(s.window->contentItem(), "reportId", u"sales"_s);
+    REQUIRE(view);
+    CHECK(view->property("docked").toBool());   // the list is beside the report, not behind a key
+
+    s.tapKey(u"Items"_s);
+    QTest::qWait(50);
+    CHECK(view->property("reportId").toString() == u"items"_s);
+
+    // A finger across the report, right to left: the next report (Categories).
+    const QPointF from = view->mapToScene(QPointF(view->width() * 0.45, view->height() * 0.7));
+    const qreal across = view->width() * 0.3;
+    QTest::mousePress(s.window, Qt::LeftButton, {}, from.toPoint());
+    for (int i = 1; i <= 12; ++i) {
+        QTest::mouseMove(s.window, (from - QPointF(across * i / 12, 0)).toPoint());
+        QTest::qWait(10);
+    }
+    QTest::mouseRelease(s.window, Qt::LeftButton, {}, (from - QPointF(across, 0)).toPoint());
+    QTest::qWait(50);
+    CHECK(view->property("reportId").toString() == u"categories"_s);
+
+    // A report that is one day at a time puts the days back to one day.
+    s.tapKey(u"This Month"_s);
+    s.tapKey(u"Tips"_s);
+    QTest::qWait(50);
+    CHECK(view->property("period").toString() == u"day"_s);
+    s.shot("reports-side-list");
+}
+
+TEST_CASE("UI: reports on a phone: the list behind the report's name", "[flow][ui][reports][phone]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *view = Screen::findBy(root, "reportId", u"sales"_s);
+    REQUIRE(view);
+    CHECK_FALSE(view->property("docked").toBool());
+    CHECK_FALSE(Screen::findBy(root, "objectName", u"report-items"_s));   // not until asked for
+    s.shot("reports-phone");
+
+    s.tapItem(Screen::findBy(root, "objectName", u"reportPicker"_s));
+    QTest::qWait(60);
+    CHECK(view->property("listOpen").toBool());
+    s.shot("reports-phone-list");
+    s.tapItem(Screen::findBy(root, "objectName", u"report-items"_s));
+    QTest::qWait(60);
+    CHECK(view->property("reportId").toString() == u"items"_s);
+    CHECK_FALSE(view->property("listOpen").toBool());
 }
 
 TEST_CASE("UI: the Changes report: who changed what", "[flow][ui][changes]")

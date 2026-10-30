@@ -966,7 +966,8 @@ page("admin-schedule", "Schedule", "manager", [
 ], permission="manager")
 
 page("reports", "Reports", "manager", [
-    zone("report", 16, 16, 1440, 1048, kind="reportView"),
+    # The list of reports sits in the report's right side, above ‹ Manager.
+    zone("report", 16, 16, 1888, 912, kind="reportView"),
     zone("back", 1472, 944, 432, 120, "‹ Manager", actions=[jump(mode="back")]),
 ], permission="manager")
 
