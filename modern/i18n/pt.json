@@ -4551,5 +4551,9 @@
  "👁 Preview": "👁 Prévia",
  "🔍 Find (name or category)": "🔍 Procurar (nome ou categoria)",
  "🔍 Find an item": "🔍 Encontrar um item",
- "🔍 Find an item (name or number)": "🔍 Buscar item"
+ "🔍 Find an item (name or number)": "🔍 Buscar item",
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "PINs errados demais. Tente de novo em %n segundo.",
+  "other": "PINs errados demais. Tente de novo em %n segundos."
+ }
 }

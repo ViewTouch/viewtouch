@@ -4551,5 +4551,9 @@
  "👁 Preview": "👁 预览",
  "🔍 Find (name or category)": "🔍 查找（名称或类别）",
  "🔍 Find an item": "🔍 查找菜品",
- "🔍 Find an item (name or number)": "🔍 查找菜品（名称或编号）"
+ "🔍 Find an item (name or number)": "🔍 查找菜品（名称或编号）",
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "错误 PIN 次数过多。请在 %n 秒后重试。",
+  "other": "错误 PIN 次数过多。请在 %n 秒后重试。"
+ }
 }

@@ -4635,5 +4635,9 @@
  "🔍 Find (name or category)": "🔍 Buscar (nombre o categoría)",
  "🔍 Find an item": "🔍 Buscar un artículo",
  "🔍 Find an item (name or number)": "🔍 Buscar (nombre o número)",
- "🖨 Printed Menu…": "🖨 Menú impreso…"
+ "🖨 Printed Menu…": "🖨 Menú impreso…",
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundo.",
+  "other": "Demasiados PIN incorrectos. Inténtelo de nuevo en %n segundos."
+ }
 }

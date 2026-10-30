@@ -235,6 +235,13 @@ StandbyListener::StandbyListener(QString databasePath, QString storeId, QObject 
                         channel->send({{u"t"_s, u"error"_s}, {u"text"_s, tr("The standby doesn't have a complete copy yet.")}});
                         continue;
                     }
+                    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+                    if (now < lockedUntil_) {
+                        channel->send({{u"t"_s, u"error"_s},
+                                       {u"text"_s, tr("Too many wrong PINs. Try again in %n second(s).", nullptr,
+                                                      int((lockedUntil_ - now + 999) / 1000))}});
+                        continue;
+                    }
                     // A manager's PIN, checked against the copy.
                     storage::PosStore store(db_);
                     const auto data = store.open() ? store.load() : std::nullopt;
@@ -248,9 +255,12 @@ StandbyListener::StandbyListener(QString databasePath, QString storeId, QObject 
                             manager = &e;
                     }
                     if (!manager) {
+                        if (++wrongPins_ >= 5)
+                            lockedUntil_ = now + std::min<qint64>(30'000LL << std::min(wrongPins_ - 5, 5), 15 * 60'000);
                         channel->send({{u"t"_s, u"error"_s}, {u"text"_s, tr("That isn't a manager's PIN.")}});
                         continue;
                     }
+                    wrongPins_ = 0;
                     const QString by = QString::fromStdString(manager->name);
                     qCWarning(lcStandby).noquote() << "taking over as the main server, asked by" << by << "on"
                                                    << socket->property("vtTerminal").toString();
