@@ -37,6 +37,13 @@ namespace vt::net {
 namespace {
 
 constexpr int kReconnectMs = 2000;
+// After 5 tries in a row that got nowhere, a little longer each time, up to
+// 10 s: the store's computer back from a restart is found within seconds,
+// one that is off isn't knocked on every 2 s all day.
+constexpr int kReconnectMaxMs = 10000;
+// A try that hasn't connected after this (an address nothing answers on)
+// is given up, instead of waiting for the system's own minutes-long timeout.
+constexpr int kConnectTimeoutMs = 10000;
 
 // What a server taking an order does at the table: safe to keep while the
 // Wi-Fi is out and send when it's back. Sending, paying, opening checks,
@@ -131,8 +138,10 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         // network in case its address changed.
         if (!welcomed_ && ++failures_ % 3 == 0 && !credentials_.serverId.isEmpty())
             finder_.search(discoveryPort_);
-        if (!welcomed_ && !reconnect_.isActive())
+        if (!welcomed_ && !reconnect_.isActive()) {
+            reconnect_.setInterval(failures_ < 5 ? kReconnectMs : std::min(kReconnectMaxMs, kReconnectMs * (failures_ - 3)));
             reconnect_.start();
+        }
     });
     connect(&finder_, &ServerFinder::found, this, [this](const FoundServer &s) {
         if (s.role == u"standby") {   // the store's standby: ready to take over
@@ -154,6 +163,7 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         emit credentialsChanged(credentials_);
         reconnect_.stop();
         encrypted_ = false;
+        connectingSince_ = QDateTime::currentMSecsSinceEpoch();
         socket_.connectToHostEncrypted(host_, port_);
     });
     // A server that pings and then says nothing for 10 s is out of reach
@@ -169,6 +179,16 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         lastWatch_ = now;
         if (woke) {
             heard_ = std::max(heard_, now);
+            return;
+        }
+        // A try still under way after 10 s: given up (errorOccurred tries again).
+        if (!welcomed_ && connectingSince_ > 0 && now - connectingSince_ > kConnectTimeoutMs
+            && socket_.state() != QAbstractSocket::UnconnectedState) {
+            qCInfo(lcRemote) << "no answer from the server; trying again";
+            connectingSince_ = 0;
+            socket_.abort();
+            if (!reconnect_.isActive() && !rejected_)
+                reconnect_.start();
             return;
         }
         if (welcomed_ && serverPings_ && now - heard_ > silentMs_) {
@@ -194,6 +214,7 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
     connect(&reconnect_, &QTimer::timeout, this, [this] {
         if (socket_.state() == QAbstractSocket::UnconnectedState && !rejected_) {
             encrypted_ = false;
+            connectingSince_ = QDateTime::currentMSecsSinceEpoch();
             socket_.connectToHostEncrypted(host_, port_);
         }
     });
@@ -308,6 +329,7 @@ void RemoteSession::connectTo(const QString &host, quint16 port)
     port_ = port;
     rejected_ = false;
     encrypted_ = false;
+    connectingSince_ = QDateTime::currentMSecsSinceEpoch();
     socket_.connectToHostEncrypted(host_, port_);
 }
 
@@ -419,6 +441,7 @@ void RemoteSession::handle(const QJsonObject &m)
         resendKept(m.value(u"resumed").toBool());
         refusals_ = 0;
         failures_ = 0;
+        connectingSince_ = 0;
         emit onlineChanged();
         if (offlineMode_) {
             goingBack_ = true;

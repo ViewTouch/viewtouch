@@ -234,6 +234,7 @@ private:
     bool rejected_ = false;
     int refusals_ = 0;
     int failures_ = 0;       // connection attempts in a row that got nowhere
+    qint64 connectingSince_ = 0;   // when the try under way began
     ServerFinder finder_;    // to find the server again after an address change
     QString standbyHost_;    // the store's standby, heard while the server was out of reach
     quint16 standbyPort_ = 0;
