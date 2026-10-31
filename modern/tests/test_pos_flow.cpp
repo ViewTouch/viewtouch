@@ -9845,8 +9845,28 @@ TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut 
     QTest::qWait(400);
     CHECK(board->property("contentX").toDouble() > 0);
 
-    // Touching any of its cards bumps the whole order (the cards again: they're
-    // made anew as tickets change).
+    // A new order comes in: the cards already up stay as they were (the same
+    // ones, not made anew), and the new order gets its own.
+    cards.clear();
+    collect(board);
+    QQuickItem *firstCard = nullptr;
+    for (QQuickItem *c : cards)
+        if (c->objectName() == u"kdsCard-%1-1"_s.arg(tickets[0].toMap()[u"checkId"_s].toLongLong()))
+            firstCard = c;
+    REQUIRE(firstCard);
+    const QPointer<QQuickItem> kept(firstCard);
+    order(u"T3"_s, 0, 1);
+    QTest::qWait(200);
+    REQUIRE(s.pos.kitchenTickets().size() == 4);
+    CHECK(kept);                          // not destroyed and made again
+    CHECK((kept && kept->isVisible()));
+    s.pos.bumpTicket(s.pos.kitchenTickets().last().toMap()[u"checkId"_s].toLongLong(),
+                     s.pos.kitchenTickets().last().toMap()[u"sentAt"_s].toLongLong());
+    QTest::qWait(200);
+    REQUIRE(s.pos.kitchenTickets().size() == 3);
+    CHECK(kept);
+
+    // Touching any of its cards bumps the whole order.
     cards.clear();
     collect(board);
     REQUIRE(s.pos.kitchenTickets().size() == 3);   // touching "more" bumped nothing

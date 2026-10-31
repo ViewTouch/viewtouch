@@ -237,9 +237,10 @@ Item {
         width: w.cardWidth - 28
         Repeater {
             id: measured
-            model: w.tickets
+            model: measureModel
             delegate: Item {
-                required property var modelData
+                required property string json
+                readonly property var modelData: JSON.parse(json)
                 property alias firstTop: firstTop
                 property alias moreTop: moreTop
                 property alias lineItems: lineItems
@@ -260,10 +261,39 @@ Item {
         }
     }
 
+    // Kept in step with the tickets, row for row, matched by what's on them:
+    // a ticket that didn't change keeps its measuring (and the board its
+    // cards). Replacing the whole list made every card anew for each change.
+    ListModel { id: measureModel }
+    ListModel { id: columnsModel }
+    // `model` to `keys` (JSON text, one a row), touching only rows that differ.
+    function syncModel(model, keys) {
+        let i = 0
+        for (; i < keys.length; ++i) {
+            if (i < model.count && model.get(i).json === keys[i])
+                continue
+            // Further down: the rows before it went (removed); else a new one.
+            let found = -1
+            for (let j = i + 1; j < model.count; ++j)
+                if (model.get(j).json === keys[i]) { found = j; break }
+            if (found >= 0)
+                model.remove(i, found - i)
+            else if (i < model.count && keys.indexOf(model.get(i).json, i) < 0)
+                model.set(i, { json: keys[i] })   // changed in place
+            else
+                model.insert(i, { json: keys[i] })
+        }
+        if (model.count > keys.length)
+            model.remove(keys.length, model.count - keys.length)
+    }
+
     // [[{ticket, part, parts, from, to}, ...], ...]: the columns, left to right.
     property var columns: []
     function relayout() { Qt.callLater(w.layoutColumns) }
-    onTicketsChanged: relayout()
+    onTicketsChanged: {
+        syncModel(measureModel, tickets.map(t => JSON.stringify(t)))
+        relayout()
+    }
     onArmedChanged: relayout()
     function layoutColumns() {
         const room = board.height
@@ -321,6 +351,7 @@ Item {
             return
         columnsKey = key
         w.columns = out
+        syncModel(columnsModel, out.map(c => JSON.stringify(c)))
     }
     property string columnsKey: ""
 
@@ -500,10 +531,11 @@ Item {
                 id: columnsRow
                 spacing: 12
                 Repeater {
-                    model: w.columns
+                    model: columnsModel
                     delegate: Column {
                         id: ticketColumn
-                        required property var modelData
+                        required property string json
+                        readonly property var modelData: JSON.parse(json)
                         width: w.cardWidth
                         spacing: 12
                         Repeater {
