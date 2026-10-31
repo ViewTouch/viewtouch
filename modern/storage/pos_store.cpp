@@ -363,7 +363,16 @@ bool PosStore::seed(const PosSettings &settings, const std::vector<MenuItem> &me
 
 std::optional<app::PosData> PosStore::load(QStringList *errors) const
 {
-    QSqlQuery q(QSqlDatabase::database(connection_));
+    // One read transaction for all ~30 tables: one moment's data (the writer
+    // saving between two of them can't mix before and after), and faster.
+    QSqlDatabase db = QSqlDatabase::database(connection_);
+    struct Reading {
+        QSqlDatabase &db;
+        bool on;
+        explicit Reading(QSqlDatabase &d) : db(d), on(d.transaction()) {}
+        ~Reading() { if (on) db.rollback(); }   // nothing written: let go
+    } reading(db);
+    QSqlQuery q(db);
     app::PosData data;
 
     if (!q.exec(u"SELECT json FROM settings WHERE key = 'pos'"_s) || !q.next()) {
