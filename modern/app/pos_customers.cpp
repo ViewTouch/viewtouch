@@ -7,6 +7,8 @@
 #include "app/pos_service.hh"
 
 #include <QDateTime>
+#include <QPointer>
+#include <QThreadPool>
 #include <QRandomGenerator>
 
 #include <algorithm>
@@ -95,10 +97,11 @@ bool PosService::forgetCustomer(const QString &id)
         return fail(tr("They owe %1 on their house account: settle it first.").arg(format(it->accountBalance)));
     const std::string cid = it->id;
     const std::string digits = CustomerRecord::digits(it->phone);
-    const auto theirs = [&](const std::string &customerId, const std::string &phone) {
+    // By value: the earlier days' checks are scrubbed later, after this returns.
+    const auto theirs = [cid, digits](const std::string &customerId, const std::string &phone) {
         return (!cid.empty() && customerId == cid) || (digits.size() >= 7 && CustomerRecord::digits(phone) == digits);
     };
-    const auto scrub = [&](Check &c) {
+    const auto scrub = [theirs](Check &c) {
         if (!theirs(c.customerId, c.customer.phone))
             return false;
         c.customer = {};
@@ -123,7 +126,7 @@ bool PosService::forgetCustomer(const QString &id)
     }
     for (const auto &[checkId, c] : s_->open)
         inMemory.insert(checkId);
-    const auto scrubParty = [&](Party &p) {
+    const auto scrubParty = [theirs](Party &p) {
         if (!theirs(p.customerId, p.phone))
             return false;
         p.name = ss(tr("Guest"));
@@ -138,29 +141,47 @@ bool PosService::forgetCustomer(const QString &id)
         if (scrubParty(p))
             saveParty(p);
     }
-    // Earlier days, in the database (and the standby's copy, through the writer).
-    if (s_->customerTrail) {
-        auto [old, parties] = s_->customerTrail(cid, digits);
-        for (Check &c : old)
-            if (!inMemory.contains(c.id) && scrub(c)) {
-                if (s_->sink)
-                    s_->sink->saveCheck(c);
-                ++checks;
-            }
-        for (Party &p : parties)
-            if (!partiesInMemory.contains(p.id) && scrubParty(p) && s_->sink)
-                s_->sink->saveParty(p);
-    }
     s_->customers.erase(it);
-    if (s_->sink) {
+    if (s_->sink)
         s_->sink->removeCustomer(cid);
-        s_->sink->purge();
-    }
-    // The change log says a customer was forgotten, not who.
-    logChange(tr("Customers"), tr("A customer"), QString(), QString(), tr("Forgotten (removed from %n check(s))", "", checks));
     emit s_->customersChanged();
     emit s_->checksChanged();
-    emit notice(tr("Forgotten: their details are off %n check(s), and their record is gone.", "", checks));
+    // Earlier days, in the database (and the standby's copy, through the
+    // writer): read on a worker (every check ever kept, searched; a Pi with
+    // years of them held the screen for seconds), scrubbed back here.
+    const auto done = [this](int count) {
+        if (s_->sink)
+            s_->sink->purge();   // the journal too: nothing of theirs left on disk
+        // The change log says a customer was forgotten, not who.
+        logChange(tr("Customers"), tr("A customer"), QString(), QString(), tr("Forgotten (removed from %n check(s))", "", count));
+        emit notice(tr("Forgotten: their details are off %n check(s), and their record is gone.", "", count));
+    };
+    if (!s_->customerTrail) {
+        done(checks);
+        return true;
+    }
+    QPointer<PosService> self(this);
+    QThreadPool::globalInstance()->start([self, trail = s_->customerTrail, cid, digits, checks, inMemory, partiesInMemory,
+                                          scrub, scrubParty, done] {
+        auto found = trail(cid, digits);
+        if (PosService *pos = self.data())
+            QMetaObject::invokeMethod(pos, [self, found = std::move(found), checks, inMemory, partiesInMemory, scrub,
+                                            scrubParty, done]() mutable {
+                if (!self)
+                    return;
+                int count = checks;
+                for (Check &c : found.first)
+                    if (!inMemory.contains(c.id) && scrub(c)) {
+                        if (self->s_->sink)
+                            self->s_->sink->saveCheck(c);
+                        ++count;
+                    }
+                for (Party &p : found.second)
+                    if (!partiesInMemory.contains(p.id) && scrubParty(p) && self->s_->sink)
+                        self->s_->sink->saveParty(p);
+                done(count);
+            }, Qt::QueuedConnection);
+    });
     return true;
 }
 

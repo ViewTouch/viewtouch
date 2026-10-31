@@ -13,6 +13,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QSignalSpy>
+#include <QTest>
 #include <QTemporaryDir>
 
 #include <algorithm>
@@ -816,7 +817,17 @@ TEST_CASE("Forgetting a customer: their details come off every check and party, 
     CHECK_FALSE(pos.forgetCustomer(dana));
     pos.logout();
     REQUIRE(pos.loginWithPin(u"1234"_s));
+    QSignalSpy said(&pos, &app::PosService::notice);
     REQUIRE(pos.forgetCustomer(dana));
+    CHECK(pos.shared()->customers.empty());   // the record: gone at once
+    // The earlier days' checks: scrubbed in the background, then it says so.
+    const auto forgotten = [&] {
+        return std::ranges::any_of(said, [](const QList<QVariant> &n) { return n[0].toString().startsWith(u"Forgotten"_s); });
+    };
+    for (int i = 0; i < 1000 && !forgotten(); ++i)
+        QTest::qWait(10);
+    REQUIRE(forgotten());
+    CHECK(std::ranges::any_of(said, [](const QList<QVariant> &n) { return n[0].toString().contains(u"2 checks"_s); }));
     writer.flush();
 
     CHECK(pos.shared()->customers.empty());
