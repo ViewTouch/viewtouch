@@ -857,6 +857,7 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
                 g.start = onHand;
             g.name = item.name;
             g.onHand = onHand;
+            g.settle();
             g.lowAt = lowAt;
             g.par = par;   // the Stock report's To order: up to this many
             g.cost = Money::fromCents(cost);

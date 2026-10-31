@@ -1796,6 +1796,7 @@ Ingredient ingredientFromJson(const QJsonObject &o)
     } else {
         i.start = i.onHand;   // from before counts: what it had is where it starts
     }
+    i.settle();   // a drift saved before (99.99999999)
     return i;
 }
 

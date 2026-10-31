@@ -38,6 +38,15 @@ struct Ingredient {
     double adjusted = 0;
 
     bool low() const { return onHand <= lowAt; }
+    // Amounts to the thousandth after each change: 0.1 oz taken off a
+    // thousand times is 100 oz, not 99.99999999 (a count of exactly the
+    // low mark not read as above it). Kept as numbers, as saved.
+    static double thousandths(double v) { return std::round(v * 1000.0) / 1000.0; }
+    void settle()
+    {
+        for (double *v : {&onHand, &start, &received, &sold, &wasted, &adjusted})
+            *v = thousandths(*v);
+    }
     bool operator==(const Ingredient &) const = default;
 };
 

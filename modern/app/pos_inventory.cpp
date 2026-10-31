@@ -89,6 +89,7 @@ void PosService::takeStock(const std::vector<OrderLine> &lines, int sign)
         const bool wasLow = g.low();
         g.onHand -= it->second * sign;
         g.sold += it->second * sign;
+        g.settle();
         if (!wasLow && g.low())
             nowLow << tr("%1 (%2 %3 left)").arg(qs(g.name), amountText(g.onHand), qs(g.unit));
         if (s_->sink)
@@ -420,6 +421,7 @@ bool PosService::receiveDelivery(const QVariantMap &r)
         const auto g = std::ranges::find_if(s_->ingredients, [&](const Ingredient &x) { return x.id == l.ingredientId; });
         g->onHand += l.qty;
         g->received += l.qty;
+        g->settle();
         if (l.unitCost.cents() > 0)
             g->cost = l.unitCost;
         if (s_->sink)
@@ -707,6 +709,7 @@ bool PosService::logWaste(const QVariantMap &r)
             continue;
         g->onHand -= q;
         g->wasted += q;
+        g->settle();
         w.lines.push_back({g->id, g->name, g->unit, q, g->cost});
         if (s_->sink)
             s_->sink->saveIngredient(*g, int(g - s_->ingredients.begin()));

@@ -904,3 +904,27 @@ TEST_CASE("Price watch: a delivery at higher prices names the items over the foo
     CHECK(listed);
     CHECK(before.size() < over.size());
 }
+
+TEST_CASE("Stock amounts: a tenth taken off a thousand times is exactly a hundred", "[inventory][drift]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    setOnHand(pos, "lettuce", 200);
+    const double lowAt = pos.shared()->ingredient("lettuce")->lowAt;
+    // A tenth of an ounce thrown away, a thousand times (as recipes take it).
+    for (int i = 0; i < 1000; ++i)
+        REQUIRE(pos.logWaste({{u"ingredient"_s, u"lettuce"_s}, {u"qty"_s, u"0.1"_s}, {u"reason"_s, u"Expired or spoiled"_s}}));
+    const core::Ingredient *g = pos.shared()->ingredient("lettuce");
+    CHECK(g->onHand == 100.0);    // not 100.00000000001
+    CHECK(g->wasted == 100.0);
+    // Exactly at the low mark: low.
+    setOnHand(pos, "lettuce", lowAt + 1);
+    for (int i = 0; i < 10; ++i)
+        REQUIRE(pos.logWaste({{u"ingredient"_s, u"lettuce"_s}, {u"qty"_s, u"0.1"_s}, {u"reason"_s, u"Expired or spoiled"_s}}));
+    CHECK(pos.shared()->ingredient("lettuce")->onHand == lowAt);
+    CHECK(pos.shared()->ingredient("lettuce")->low());
+    // A drift saved before is settled when read.
+    core::Ingredient old = *g;
+    old.onHand = 99.99999999997;
+    CHECK(app::ingredientFromJson(app::toJson(old)).onHand == 100.0);
+}
