@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QRegularExpression>
+#include <cmath>
 
 #include <algorithm>
 #include <functional>
@@ -106,6 +107,17 @@ QString what(const QString &header)
     return {};
 }
 
+// Above this, not a price (in cents near the limit of whole numbers, a
+// few of it would overflow the totals).
+constexpr double kMaxPrice = 10'000'000;
+
+// From Toast's JSON: a price, else 0.
+double jsonPrice(const QJsonValue &v)
+{
+    const double p = v.toDouble();
+    return std::isfinite(p) && p > 0 && p < kMaxPrice ? p : 0;
+}
+
 bool price(QString text, double *out)
 {
     text = text.trimmed();
@@ -119,7 +131,7 @@ bool price(QString text, double *out)
         text.remove(u',');
     bool ok = false;
     *out = text.toDouble(&ok);
-    return ok && *out >= 0;
+    return ok && *out >= 0 && *out < kMaxPrice;   // 99999999999999 isn't a price
 }
 
 bool yes(const QString &cell)
@@ -546,7 +558,7 @@ MenuImport readToastMenu(const QJsonDocument &doc)
         for (const QJsonValue &x : options) {
             const QJsonObject opt = ref(optionRefs, x);
             if (const QString name = opt.value(u"name"_s).toString().simplified(); !name.isEmpty())
-                g.options << ImportedPrice{name, std::max(0.0, opt.value(u"price"_s).toDouble())};
+                g.options << ImportedPrice{name, jsonPrice(opt.value(u"price"_s))};
         }
         if (g.name.isEmpty() || g.options.isEmpty())
             return {};
@@ -593,7 +605,7 @@ MenuImport readToastMenu(const QJsonDocument &doc)
                     if (const QString name = groupName(g); !name.isEmpty() && !item.groups.contains(name))
                         item.groups << name;
                 if (o.value(u"price"_s).isDouble()) {
-                    item.price = std::max(0.0, o.value(u"price"_s).toDouble());
+                    item.price = jsonPrice(o.value(u"price"_s));
                 } else {
                     // Priced by its choices (a size), else not at all.
                     const bool byChoice = std::ranges::any_of(item.groups, [&](const QString &n) {

@@ -15,6 +15,7 @@
 #include <QRegularExpression>
 
 #include <algorithm>
+#include <cmath>
 #include <ranges>
 
 using namespace Qt::StringLiterals;
@@ -104,7 +105,9 @@ qint64 priceCents(QString text, const QString &symbol)
         text.remove(u',');                  // 1,250.00
     bool ok = false;
     const double v = text.toDouble(&ok);
-    return ok && v >= 0 ? std::llround(v * 100.0) : -1;
+    // Not "inf", "nan" or 1e300 (Qt reads them; rounding one to whole cents
+    // is undefined): an amount under ten million.
+    return ok && std::isfinite(v) && v >= 0 && v < 10'000'000 ? std::llround(v * 100.0) : -1;
 }
 
 PosShared::MenuState PosService::menuState() const

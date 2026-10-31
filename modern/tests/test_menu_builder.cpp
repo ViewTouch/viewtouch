@@ -4,6 +4,9 @@
 #include "app/pos_json.hh"
 #include "storage/pos_store.hh"
 #include "qt_catch.hh"
+#include <QJsonArray>
+#include <cmath>
+#include <random>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -1503,4 +1506,82 @@ TEST_CASE("Menu import: stock and cost from a shop's sheet; the same item found 
     REQUIRE(c);
     CHECK(c->onHand == 30);
     CHECK(c->par == 40);
+}
+
+TEST_CASE("Fuzz: a menu import from a damaged file never crashes, and what it reads is sane", "[menubuilder][import][fuzz]")
+{
+    const int rounds = std::max(400, qEnvironmentVariableIntValue("VTM_FUZZ_ROUNDS") * 100);
+    const QByteArray book = workbookOf({{u"Menu"_s, {{u"Item"_s, u"Price"_s, u"Category"_s, u"Barcode"_s},
+                                                     {u"Cobb"_s, u"12.50"_s, u"Salads"_s, u"012345678905"_s},
+                                                     {u"Coffee"_s, u"$2.98"_s, u"Drinks"_s, u""_s},
+                                                     {u"Fries"_s, u"3,50"_s, u"Sides"_s, u"4006381333931"_s}}}});
+    const QString csv = u"Item,Price,Category\nCobb,12.50,Salads\n\"Fish, chips\",9.99,Mains\nTea,2,Drinks\n"_s;
+    std::mt19937 rng{2026};
+    const auto pick = [&](int n) { return int(rng() % unsigned(std::max(1, n))); };
+    const auto sane = [](const app::MenuImport &m) {
+        for (const app::ImportedItem &i : m.items) {
+            CHECK(i.name.size() < 100000);
+            INFO(i.name.left(40).toStdString() << " at " << i.price);
+            CHECK(std::isfinite(i.price));   // never NaN or infinite: it becomes money
+            CHECK(std::abs(i.price) < 1e9);
+        }
+    };
+    for (int round = 0; round < rounds; ++round) {
+        INFO("round " << round);
+        // Excel: bytes changed, cut short, a piece doubled.
+        QByteArray bent = book;
+        switch (pick(3)) {
+        case 0:
+            for (int i = 1 + pick(20); i > 0; --i)
+                bent[pick(int(bent.size()))] = char(pick(256));
+            break;
+        case 1: bent.truncate(pick(int(bent.size()))); break;
+        default: {
+            const int at = pick(int(bent.size())), n = pick(400);
+            bent.insert(at, bent.mid(pick(int(bent.size())), n));
+        }
+        }
+        QString error;
+        if (const auto sheets = app::readXlsx(bent, &error))
+            sane(app::readMenuSheets(*sheets));
+        // CSV: characters changed, quotes left open, odd separators.
+        QString text = csv;
+        for (int i = 1 + pick(12); i > 0; --i)
+            text[pick(int(text.size()))] = QChar(QStringLiteral("\",;\t\n\r$€.0123456789aZ\u0000‮").at(pick(17)));
+        sane(app::readMenuCsv(text));
+        // Toast's export: JSON with parts swapped.
+        QJsonObject toast{{u"menus"_s, QJsonArray{QJsonObject{{u"name"_s, u"Lunch"_s},
+                          {u"menuGroups"_s, QJsonArray{QJsonObject{{u"name"_s, u"Mains"_s},
+                          {u"menuItems"_s, QJsonArray{QJsonObject{{u"name"_s, u"Burger"_s}, {u"price"_s, 9.5}}}}}}}}}}};
+        const QStringList keys{u"menus"_s, u"menuGroups"_s, u"menuItems"_s, u"price"_s, u"name"_s};
+        QJsonValue odd = pick(2) ? QJsonValue(pick(1000) - 500) : QJsonValue(QJsonArray{QJsonValue(), u"x"_s});
+        if (pick(2))
+            toast.insert(keys[pick(5)], odd);
+        const QJsonDocument doc(toast);
+        if (app::isToastMenu(doc))
+            sane(app::readToastMenu(doc));
+    }
+}
+
+TEST_CASE("Menu import: prices that aren't amounts (NaN, infinity, 1e999) aren't read as prices", "[menubuilder][import][fuzz]")
+{
+    // Typed on a card: the same ("inf" was read as infinity, and rounded to cents: undefined).
+    for (const char *typed : {"inf", "-inf", "nan", "1e300", "1e999", "99999999999999"})
+        CHECK(app::priceCents(QString::fromLatin1(typed), u"$"_s) == -1);
+    CHECK(app::priceCents(u"$11.50"_s, u"$"_s) == 1150);
+    CHECK(app::priceCents(u"3,50"_s, u"$"_s) == 350);
+    for (const char *price : {"NaN", "nan", "inf", "-inf", "Infinity", "1e999", "-1e999", "99999999999999", "1e308", "0x10"}) {
+        INFO(price);
+        const app::MenuImport csv = app::readMenuCsv(u"Item,Price\nCobb,%1\n"_s.arg(QString::fromLatin1(price)));
+        for (const app::ImportedItem &i : csv.items) {
+            CHECK(std::isfinite(i.price));
+            CHECK(std::abs(i.price) < 1e9);
+        }
+        const auto sheets = app::readXlsx(workbookOf({{u"Menu"_s, {{u"Item"_s, u"Price"_s}, {u"Cobb"_s, QString::fromLatin1(price)}}}}));
+        REQUIRE(sheets);
+        for (const app::ImportedItem &i : app::readMenuSheets(*sheets).items) {
+            CHECK(std::isfinite(i.price));
+            CHECK(std::abs(i.price) < 1e9);
+        }
+    }
 }
