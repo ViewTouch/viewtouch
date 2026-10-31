@@ -140,8 +140,9 @@ struct Options {
           "Manager -> Terminals; on, except on Android, which has its own)."_s, u"yes|no"_s};
     QCommandLineOption screen{u"screen"_s,
         u"Pages for this screen: phone (phone versions, portrait), standard, auto "
-        "(phones get phone pages; the default on Android), or timeClock (only clocking in and out "
-        "and schedules). Overrides Manager → Terminals."_s, u"mode"_s};
+        "(phones get phone pages; the default on Android), timeClock (only clocking in and out "
+        "and schedules), or nowServing (a TV for guests: orders being made and ready). "
+        "Overrides Manager → Terminals."_s, u"mode"_s};
     QCommandLineOption windowed{u"windowed"_s,
         u"Start in a window instead of full screen (also with --size). F11 switches either way."_s};
     QCommandLineOption backupDir{u"backup-dir"_s, u"Where backups go (default: <data dir>/backups)."_s, u"dir"_s};
@@ -653,8 +654,8 @@ int runTerminal(const Args &cli, const Options &o)
         remote.setOfflineJournal(QDir(dataDir).filePath(u"offline.db"_s));
         if (cli.isSet(o.selfOrder))
             remote.setRequestedScreen(u"selfOrder"_s);
-        else if (cli.value(o.screen) == u"timeClock")
-            remote.setRequestedScreen(u"timeClock"_s);
+        else if (cli.value(o.screen) == u"timeClock" || cli.value(o.screen) == u"nowServing")
+            remote.setRequestedScreen(cli.value(o.screen));
         QObject::connect(&remote, &vt::net::RemoteSession::credentialsChanged, &remote, save);
         remote.connectTo(creds->host, creds->port);
         qInfo().noquote() << "Connecting to" << creds->host << "port" << creds->port << "as" << creds->terminalName

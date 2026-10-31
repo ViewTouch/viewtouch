@@ -1074,6 +1074,9 @@ public:
     // steps in (a manager, for the Manager screens), and logging out goes
     // back to the counter, the order in progress still open.
     bool counterMode() const { return serviceMode() == u"foodTruck" && !selfOrder_; }
+    // Quick orders called by their number: a food truck's, or a restaurant's
+    // at the counter (Store Settings: Restaurant: call orders by number).
+    bool numbersOrders() const;
     // The setting changed, or the screen started: sign the counter in (or
     // out, when it isn't a food truck any more).
     void applyServiceMode();

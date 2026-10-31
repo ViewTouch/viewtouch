@@ -217,6 +217,7 @@ if(Qt6_FOUND)
             ui/qml/SetupGuide.qml
             ui/qml/LayoutGallery.qml
             ui/qml/CustomerDisplay.qml
+            ui/qml/NowServing.qml
             ui/qml/CustomerDisplayWindow.qml
             ui/qml/WidgetLoginPad.qml
             ui/qml/WidgetNumPad.qml

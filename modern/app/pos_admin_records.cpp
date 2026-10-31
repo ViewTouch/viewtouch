@@ -102,7 +102,7 @@ QVariantList PosService::adminRecords(const QString &panel)
             return l.join(u'\n');
         }();
         add({{u"storeName"_s, qs(s_->settings.storeName)}, {u"serviceMode"_s, qs(s_->settings.serviceMode)},
-             {u"truckAskStaff"_s, s_->settings.truckAskStaff}, {u"truckNeedsName"_s, s_->settings.truckNeedsName}, {u"language"_s, qs(s_->settings.language)}, {u"currencySymbol"_s, qs(s_->settings.currencySymbol)},
+             {u"truckAskStaff"_s, s_->settings.truckAskStaff}, {u"truckNeedsName"_s, s_->settings.truckNeedsName}, {u"orderNumbers"_s, s_->settings.orderNumbers}, {u"language"_s, qs(s_->settings.language)}, {u"currencySymbol"_s, qs(s_->settings.currencySymbol)},
              {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"receiptFooter"_s, qs(s_->settings.receiptFooter)},
              {u"receiptFreeChoices"_s, s_->settings.receiptFreeChoices},
              {u"soldOutBackNextDay"_s, s_->settings.soldOutBackNextDay},

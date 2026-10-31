@@ -8,6 +8,7 @@
 #   sudo vtmodern-setup kitchen [HOST] [NAME]    a kitchen screen (orders to make, bumped by touch)
 #   sudo vtmodern-setup selforder [HOST] [NAME]  a self-order kiosk for guests
 #   sudo vtmodern-setup timeclock [HOST] [NAME]  a time clock: clocking in and out, and schedules
+#   sudo vtmodern-setup board [HOST] [NAME]      a Now Serving board: a TV showing orders made and ready
 #   sudo vtmodern-setup standby CODE [HOST]      a standby server: a live copy that takes over
 #   sudo vtmodern-setup pair                     on a server without a screen: a code to pair a screen with
 #   sudo vtmodern-setup maintainer [CODE|off]    the store's maintainer code (asked for when not given)
@@ -31,7 +32,7 @@ DATA_DIR=/var/lib/viewtouch
 DRY=${VTM_SETUP_DRYRUN:-}
 
 usage() {
-    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
 
@@ -204,17 +205,18 @@ What is this machine?
   4) Kitchen screen     shows the orders to make; bumped by touch
   5) Self-order kiosk   guests order on their own and pay at the counter
   6) Time clock         staff clock in and out and see their schedules
-  7) Standby server     keeps a live copy of the data, takes over if the main one stops
-  8) Nothing            ViewTouch doesn't start at boot
+  7) Now Serving board  a TV for guests: their order numbers, made and ready
+  8) Standby server     keeps a live copy of the data, takes over if the main one stops
+  9) Nothing            ViewTouch doesn't start at boot
 EOF
-    ask "Choose 1-8:" 1
+    ask "Choose 1-9:" 1
     case "$answer" in
         1) cmd=store ;; 2) cmd=server ;; 3) cmd=terminal ;; 4) cmd=kitchen ;;
-        5) cmd=selforder ;; 6) cmd=timeclock ;; 7) cmd=standby ;; 8) cmd=off ;;
-        *) echo "Choose a number from 1 to 8." >&2; exit 1 ;;
+        5) cmd=selforder ;; 6) cmd=timeclock ;; 7) cmd=board ;; 8) cmd=standby ;; 9) cmd=off ;;
+        *) echo "Choose a number from 1 to 9." >&2; exit 1 ;;
     esac
     case "$cmd" in
-        terminal|kitchen|selforder|timeclock)
+        terminal|kitchen|selforder|timeclock|board)
             ask "The store's main machine (an address, or auto to find it):" auto
             host=$answer
             ask "This screen's name:" "$(uname -n)"
@@ -231,7 +233,7 @@ EOF
             case "$answer" in [yY]*) guest_display=yes ;; esac ;;
     esac
     case "$cmd" in
-        store|terminal|kitchen|selforder|timeclock)
+        store|terminal|kitchen|selforder|timeclock|board)
             if systemctl is-enabled --quiet display-manager.service 2>/dev/null; then
                 ask "Turn the desktop login off, so this screen is only ViewTouch? (y/n)" y
                 case "$answer" in [yY]*) no_desktop=yes ;; esac
@@ -271,7 +273,7 @@ if [ -z "$cmd" ]; then
 else
     shift
     case "$cmd" in
-        terminal|kitchen|selforder|timeclock) host=${1:-auto}; name=${2:-$(uname -n)} ;;
+        terminal|kitchen|selforder|timeclock|board) host=${1:-auto}; name=${2:-$(uname -n)} ;;
         standby) code=${1:-}; host=${2:-auto} ;;
     esac
 fi
@@ -326,6 +328,14 @@ timeclock)
 screen = timeClock"
     echo "This screen is now a time clock ($name): staff type their PIN to clock in or out"
     echo "and see their schedule. \"Log In to the Register...\" at the bottom is for managers."
+    join_note
+    ;;
+board)
+    need_root
+    join_store "$host" "$name" "
+screen = nowServing"
+    echo "This screen is now a Now Serving board ($name): guests see their order numbers"
+    echo "while they're made and when they're ready. Holding the top-left corner shows the login page."
     join_note
     ;;
 standby)

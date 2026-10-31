@@ -316,6 +316,55 @@ TEST_CASE("Food truck: pagers, Ready and Picked Up at the window", "[truck]")
     CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 2);   // still on #2
 }
 
+TEST_CASE("Counter service: a restaurant calls quick orders by number", "[truck]")
+{
+    app::PosData d = test::seedPosData();
+    d.settings.orderNumbers = true;
+    app::PosShared shared(std::move(d), nullptr);
+    app::PosService pos(&shared, u"Counter 1"_s);
+    // Still a restaurant: logins, nobody signed in as the Counter.
+    CHECK(pos.serviceMode() == u"restaurant"_s);
+    CHECK_FALSE(pos.loggedIn());
+    CHECK(pos.serviceInfo()[u"numbers"_s].toBool());
+    CHECK_FALSE(pos.serviceInfo()[u"counter"_s].toBool());
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+
+    // A quick order: #1, then #2; a table's check isn't numbered.
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"soda"_s));
+    CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 1);
+    CHECK(pos.checkInfo()[u"label"_s].toString() == u"#1"_s);
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Ana"_s}}));
+    REQUIRE(pos.sendOrder());
+    const qint64 ana = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.releaseCheck();
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"soda"_s));
+    CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 2);
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+
+    // The board's list: both being made; Ana's called, then picked up.
+    QVariantList orders = pos.truckOrders();
+    REQUIRE(orders.size() == 2);
+    REQUIRE(pos.orderReady(ana));
+    orders = pos.truckOrders();
+    CHECK(orders.last().toMap()[u"label"_s].toString() == u"#1 Ana"_s);
+    CHECK(orders.last().toMap()[u"ready"_s].toBool());
+    CHECK(orders.last().toMap()[u"readyMinutes"_s].toInt() == 0);
+    REQUIRE(pos.orderPickedUp(ana));
+    CHECK(pos.truckOrders().size() == 1);
+
+    // Without the setting: a quick order isn't numbered.
+    app::PosShared plain(test::seedPosData(), nullptr);
+    app::PosService other(&plain, u"Register"_s);
+    CHECK_FALSE(other.serviceInfo()[u"numbers"_s].toBool());
+    REQUIRE(other.loginWithPin(u"1234"_s));
+    REQUIRE(other.startCheck(core::CheckType::Quick));
+    REQUIRE(other.addItem(u"soda"_s));
+    CHECK(other.checkInfo()[u"orderNumber"_s].toInt() == 0);
+}
+
 TEST_CASE("Setup guide: a food truck from the first page", "[truck]")
 {
     app::PosData d = test::seedPosData();

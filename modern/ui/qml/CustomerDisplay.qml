@@ -21,8 +21,9 @@ Rectangle {
     // Pictures by ref ("store:logo.png", a path...): this screen's copy.
     function img(ref) { return pos ? (pos.imageRevision < 0 ? undefined : pos.imageUrl(ref)) : ref }
     readonly property string logo: !prompt.logo ? "" : img(prompt.logo)
-    // A food truck: the orders being made and those ready, called by number and name.
-    readonly property bool truck: pos !== null && (pos.service?.mode ?? "") === "foodTruck"
+    // Orders called by number (a food truck, a restaurant at the counter): the
+    // orders being made and those ready, by number and name.
+    readonly property bool truck: pos !== null && (pos.service?.numbers ?? false)
     readonly property var truckOrders: truck ? (pos.truckOrders ?? []) : []
     readonly property var readyOrders: truckOrders.filter(o => o.ready)
     readonly property var makingOrders: truckOrders.filter(o => !o.ready)

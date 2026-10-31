@@ -33,6 +33,11 @@ QString PosService::serviceMode() const
     return u"restaurant"_s;
 }
 
+bool PosService::numbersOrders() const
+{
+    return counterMode() || (s_->settings.orderNumbers && serviceMode() == u"restaurant" && !selfOrder_);
+}
+
 QVariantMap PosService::serviceInfo() const
 {
     const bool truck = counterMode();
@@ -42,7 +47,9 @@ QVariantMap PosService::serviceInfo() const
             {u"steppedIn"_s, truck && !counterUser_.empty() && !userId_.empty() && userId_ != counterUser_},
             {u"askStaff"_s, s_->settings.truckAskStaff},
             {u"person"_s, person && person->id != counterEmployee().id ? nameOf(*person) : QString()},
-            {u"needsName"_s, s_->settings.truckNeedsName}};
+            {u"needsName"_s, s_->settings.truckNeedsName},
+            // Orders called by number: the Orders button, Now Serving.
+            {u"numbers"_s, truck || (s_->settings.orderNumbers && serviceMode() == u"restaurant")}};
 }
 
 void PosService::applyServiceMode()
@@ -233,6 +240,7 @@ QVariantList PosService::truckOrders() const
                                {u"name"_s, qs(c->customer.name)}, {u"label"_s, qs(c->label)}, {u"pager"_s, c->pager},
                                {u"items"_s, items.join(u", "_s)},
                                {u"minutes"_s, int((t - sentAt(c)) / 60'000)}, {u"ready"_s, c->readyAt != 0},
+                               {u"readyMinutes"_s, c->readyAt ? int((t - c->readyAt) / 60'000) : 0},
                                {u"paid"_s, c->status == CheckStatus::Closed}});
     }
     return out;

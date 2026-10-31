@@ -82,7 +82,7 @@ setup)
     role=${1:-}
     name=${2:-}
     guest=${3:-}
-    case "$role" in store|terminal|kitchen|selforder|timeclock) ;; *) die "Unknown role: $role" ;; esac
+    case "$role" in store|terminal|kitchen|selforder|timeclock|board) ;; *) die "Unknown role: $role" ;; esac
     valid_name "$name" || die "Use letters, numbers and dashes for the name."
     flags=
     [ "$guest" = "--guest-display" ] && flags=--guest-display

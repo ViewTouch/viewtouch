@@ -45,7 +45,8 @@
         }
       ],
       "showWhen": {
-        "service": "restaurant"
+        "service": "restaurant",
+        "numbers": false
       }
     },
     {
@@ -68,7 +69,7 @@
         }
       ],
       "showWhen": {
-        "service": "foodTruck"
+        "numbers": true
       }
     },
     {

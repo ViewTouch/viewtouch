@@ -56,6 +56,25 @@ Q_LOGGING_CATEGORY(lcLayout, "vt.layout")
 
 namespace {
 
+// A zone's show/hide rules. The Orders button (to truck-orders) of a page
+// edited before 0.15 says "a food truck": it's wherever orders are called
+// by number now (a restaurant at the counter too), in the Tables button's
+// place.
+QJsonObject showRule(const vt::layout::Zone &z)
+{
+    QJsonObject rule = z.extra.value(u"showWhen").toObject();
+    if (z.id == u"flow-tables" && rule.value(u"service").toString() == u"restaurant" && !rule.contains(u"numbers"))
+        rule.insert(u"numbers", false);
+    if (rule.value(u"service").toString() == u"foodTruck"
+        && std::ranges::any_of(z.actions, [](const vt::layout::Action &a) {
+               return a.type() == u"jump" && a.str(u"page") == u"truck-orders";
+           })) {
+        rule.remove(u"service");
+        rule.insert(u"numbers", true);
+    }
+    return rule;
+}
+
 // Page id of the first push/replace jump, used to light index tabs.
 QString primaryJumpTarget(const Layout &layout, const vt::layout::Zone &zone)
 {
@@ -178,7 +197,7 @@ void LayoutController::sleepTimeout()
     const vt::layout::Page *page = activeLayout().page(pageId());
     const bool watched = page && page->kind == u"kitchen";
     const bool kiosk = pos_ && pos_->selfOrderInfo().value(u"on"_s).toBool();
-    if (watched || kiosk || editing()) {
+    if (watched || kiosk || nowServingScreen() || editing()) {
         restartSleep();
         return;
     }
@@ -733,6 +752,12 @@ void LayoutController::setFormFactorOverride(const QString &formFactor)
         restAtLoginPage();
         return;
     }
+    if (formFactor == u"nowServing") {   // not a page size: the board covers them
+        nowServingScreen_ = true;
+        updateFormFactor();
+        emit formFactorChanged();
+        return;
+    }
     formFactorOverride_ = formFactor == u"auto" ? QString() : formFactor;
     updateFormFactor();
 }
@@ -749,8 +774,17 @@ void LayoutController::windowResized(qreal width, qreal height)
     updateFormFactor();
 }
 
+bool LayoutController::nowServingScreen() const
+{
+    return nowServingScreen_ || (pos_ && pos_->screenMode() == u"nowServing");
+}
+
 void LayoutController::updateFormFactor()
 {
+    if (const bool board = nowServingScreen(); board != nowServingShown_) {   // Manager -> Terminals
+        nowServingShown_ = board;
+        emit formFactorChanged();
+    }
     QString mode = formFactorOverride_;
     if (mode.isEmpty() && pos_)
         mode = pos_->screenMode();   // Manager -> Terminals
@@ -1495,6 +1529,10 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     const QString mode = pos_ ? pos_->serviceInfo().value(u"mode"_s).toString() : QString();
     if (!service.isEmpty() && !service.split(u',').contains(mode.isEmpty() ? u"restaurant"_s : mode))
         return false;
+    // Orders called by number (a food truck, a restaurant at the counter).
+    if (const QJsonValue numbers = rule.value(u"numbers"); numbers.isBool()
+        && numbers.toBool() != (pos_ && pos_->serviceInfo().value(u"numbers"_s).toBool()))
+        return false;
     // The store's style (Store Settings -> Screens -> Style): a button only one style has.
     const QString style = rule.value(u"style").toString();
     return style.isEmpty() || style == vt::layout::Layout::styleOf(activeLayout().theme);
@@ -1508,7 +1546,7 @@ bool LayoutController::triggerHotkey(const QString &key)
     // Topmost zone wins, matching touch order.
     for (auto it = zones.rbegin(); it != zones.rend(); ++it) {
         if (it->zone->enabled && it->zone->hotkey.compare(key, Qt::CaseInsensitive) == 0
-            && ruleShows(it->zone->extra.value(u"showWhen").toObject())) {
+            && ruleShows(showRule(*it->zone))) {
             activate(it->zone->id);
             return true;
         }
@@ -2340,7 +2378,7 @@ void LayoutController::refresh()
             {ZoneModel::PropsRole, moved ? [&] { QVariantMap p = z.props.toVariantMap(); p.remove(u"chairs"_s); return p; }()
                                          : z.props.toVariantMap()},
             {ZoneModel::SoldOutRole, soldOut},
-            {ZoneModel::ShowWhenRole, z.extra.value(u"showWhen").toObject().toVariantMap()},
+            {ZoneModel::ShowWhenRole, showRule(z).toVariantMap()},
             {ZoneModel::ItemIdRole, orders},
             {ZoneModel::RotationRole, moved ? 0 : vt::layout::rotationOf(z)},   // in rows on a phone: straight
         });

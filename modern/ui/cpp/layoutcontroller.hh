@@ -67,6 +67,9 @@ class LayoutController : public QObject {
     // "phone": phone versions of pages (and phone-sized layouts) are shown;
     // "standard": pages as designed.
     Q_PROPERTY(QString formFactor READ formFactor NOTIFY formFactorChanged)
+    // A Now Serving board (a TV for guests: --screen nowServing, or Manager ->
+    // Terminals): the board covers the pages.
+    Q_PROPERTY(bool nowServingScreen READ nowServingScreen NOTIFY formFactorChanged)
     // The screen stays on (tablets, registers); a phone's sleeps like a phone's.
     Q_PROPERTY(bool screenStaysOn READ screenStaysOn NOTIFY formFactorChanged)
     // Breakfast, lunch, dinner... now (zones can show only during one).
@@ -122,6 +125,7 @@ public:
     QString statusText() const { return status_; }
     bool editing() const { return editing_; }
     bool asleep() const { return asleep_; }
+    bool nowServingScreen() const;
     // The touch that wakes the screen does nothing else (Main.qml's dim layer takes it).
     Q_INVOKABLE void wake();
     void setScreenSaverForTesting(int ms) { sleepOverrideMs_ = ms; restartSleep(); }
@@ -367,6 +371,8 @@ private:
     QString formFactor_ = QStringLiteral("standard");
     QString formFactorOverride_;
     bool timeClockScreen_ = false;   // --screen timeClock
+    bool nowServingScreen_ = false;  // --screen nowServing
+    bool nowServingShown_ = false;
     bool autoFormFactor_ = false;
     bool phoneSizedWindow_ = false;
     QString exportDir_;

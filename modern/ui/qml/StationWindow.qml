@@ -39,7 +39,7 @@ ApplicationWindow {
 
     readonly property var roleNames: ({
         store: qsTr("Main register"), terminal: qsTr("Register"), kitchen: qsTr("Kitchen screen"),
-        selforder: qsTr("Self-order kiosk"), timeclock: qsTr("Time clock")
+        selforder: qsTr("Self-order kiosk"), timeclock: qsTr("Time clock"), board: qsTr("Now Serving board")
     })
 
     palette {
@@ -983,7 +983,7 @@ ApplicationWindow {
             property bool guestDisplay: setupState.guestDisplay
             onGuestDisplayChanged: setupState.guestDisplay = guestDisplay
             readonly property var defaultNames: ({ store: "Main-Register", terminal: "Register-2", kitchen: "Kitchen",
-                                                   selforder: "Kiosk", timeclock: "Time-Clock" })
+                                                   selforder: "Kiosk", timeclock: "Time-Clock", board: "Now-Serving" })
             readonly property var steps: [qsTr("Welcome"), qsTr("This computer"), qsTr("Its name"), qsTr("Network"),
                                           qsTr("Time zone"), qsTr("Maintainer code")]
 
@@ -1027,7 +1027,8 @@ ApplicationWindow {
                                 ["terminal", "register", qsTr("Another register that joins the main one.")],
                                 ["kitchen", "kitchen", qsTr("Shows the orders to make; touch one when it's ready.")],
                                 ["selforder", "kiosk", qsTr("Guests order on their own and pay at the counter.")],
-                                ["timeclock", "timeclock", qsTr("Staff clock in and out and see their schedules.")]]
+                                ["timeclock", "timeclock", qsTr("Staff clock in and out and see their schedules.")],
+                                ["board", "display", qsTr("A TV for guests: their order numbers while they're made and when they're ready.")]]
                         delegate: Tile {
                             required property var modelData
                             implicitWidth: root.u * 14

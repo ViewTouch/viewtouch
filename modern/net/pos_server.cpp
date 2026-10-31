@@ -529,7 +529,7 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         // Set up as a self-order kiosk or a time clock (vtmodern-setup): taken
         // when Manager -> Terminals has no screen for it yet.
         const std::string wanted = m.value(u"screen").toString().toStdString();
-        if (paired->screen.empty() && (wanted == "selfOrder" || wanted == "timeClock"))
+        if (paired->screen.empty() && (wanted == "selfOrder" || wanted == "timeClock" || wanted == "nowServing"))
             for (core::TerminalConfig &t : shared_->settings.terminals)
                 if (t.id == paired->id) {
                     t.screen = wanted;
@@ -696,9 +696,9 @@ void PosServer::sendKit(Connection *c, QByteArray *common)
 {
     if (!c->session || c->standby)
         return;
-    // A self-order kiosk or a time clock doesn't sell on its own.
+    // A self-order kiosk, a time clock or a Now Serving board doesn't sell on its own.
     const core::TerminalConfig *paired = shared_->settings.pairedTerminal(c->terminalId.toStdString());
-    if (!paired || paired->screen == "selfOrder" || paired->screen == "timeClock")
+    if (!paired || paired->screen == "selfOrder" || paired->screen == "timeClock" || paired->screen == "nowServing")
         return;
     QByteArray made;
     if (!common)

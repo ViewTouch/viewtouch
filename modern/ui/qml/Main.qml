@@ -122,7 +122,7 @@ ApplicationWindow {
     onEditingChanged: if (!editing) pageView.forceActiveFocus()
 
     // Something over the whole screen (see the page's `enabled`).
-    readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
+    readonly property bool pageCovered: selfOrder.visible || nowServing.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
                                         || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible || exemptSheet.visible
                                         || TouchGuard.sheetOpen || reasonSheet.visible || handoffSheet.visible
@@ -1065,6 +1065,21 @@ ApplicationWindow {
         visible: !root.editing && root.controller.pos !== null && ((root.controller.pos as PosService).selfOrder.on ?? false)
         pos: root.controller.pos as PosService
         onManagerExit: approvalPad.leavingKiosk = true
+    }
+
+    // A Now Serving board (a TV for guests): only the board, unless someone
+    // logs in (held top-left corner: the login page, for a minute).
+    NowServing {
+        id: nowServing
+        objectName: "nowServingBoard"
+        anchors.fill: parent
+        z: 56
+        property bool peeking: false
+        visible: !root.editing && root.controller.nowServingScreen && root.controller.pos !== null
+                 && !peeking && !(root.controller.pos as PosService).loggedIn
+        pos: root.controller.pos as PosService
+        onPeek: { peeking = true; peekTimer.restart() }
+        Timer { id: peekTimer; interval: 60000; onTriggered: nowServing.peeking = false }
     }
 
     // Screen saver: dimmed after no touches; the first touch only wakes it.

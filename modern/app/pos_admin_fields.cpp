@@ -359,6 +359,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                      "until someone touches Switch Person. Off: sales are the Counter's, and nobody logs in.")),
             field(u"truckNeedsName"_s, tr("Food truck: orders need a name"), u"bool"_s,
                   tr("Every order is called by its number (#1, #2... from 1 each day). On: a name too, before Send or Pay.")),
+            field(u"orderNumbers"_s, tr("Restaurant: call orders by number"), u"bool"_s,
+                  tr("Counter service: quick orders get a number (#1, #2... from 1 each day), shown on a Now Serving "
+                     "board (a TV) and the customer display; Orders marks them Ready and Picked Up.")),
             with(field(u"language"_s, tr("Language"), u"enum"_s,
                        tr("For screens nobody is logged in to, the customer display, receipts and tickets. "
                           "Each person can have their own (Employees).")),
@@ -727,7 +730,8 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                        tr("Phone pages: big buttons in portrait, for phones and small handhelds.")),
                  u"options"_s, options({{"", "Automatic (phone pages on phones)"}, {"standard", "Standard pages"},
                                         {"phone", "Phone pages"}, {"selfOrder", "Self-order kiosk (guests order on their own)"},
-                                        {"timeClock", "Time Clock (clock in / out and schedules only)"}})),
+                                        {"timeClock", "Time Clock (clock in / out and schedules only)"},
+                                        {"nowServing", "Now Serving board (a TV for guests: orders made and ready)"}})),
             with(field(u"service"_s, tr("How this screen serves"), u"enum"_s,
                        tr("A restaurant's food truck, say. Store setting: %1.")
                            .arg(s_->settings.serviceMode == "foodTruck" ? tr("Food truck")

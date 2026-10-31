@@ -157,6 +157,9 @@ struct PosSettings {
     // order needs a name before Send or Pay (it's called by its number too).
     bool truckAskStaff = false;
     bool truckNeedsName = false;
+    // A restaurant at the counter: quick orders called by their number too
+    // (#1, #2... each day), shown on the Now Serving board, the Orders page.
+    bool orderNumbers = false;
     std::string currencySymbol = "$";
     // Colors the store mixed itself (custom colors), the newest first.
     std::vector<std::string> customColors;

@@ -1136,7 +1136,7 @@ bool PosService::startCheck(CheckType type)
         break;
     case CheckType::Quick:
         c.label = ss(tr("Quick %1").arg(c.id));
-        if (counterMode() && !c.training) {   // a food truck's: called by its number (and a name)
+        if (numbersOrders() && !c.training) {   // a food truck's, a counter's: called by its number (and a name)
             c.orderNumber = nextOrderNumber();
             c.label = ss(orderLabel(c));
         }

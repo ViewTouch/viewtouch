@@ -245,7 +245,7 @@ void StationController::handToStore(const QString &pin, int triesLeft)
 
 void StationController::setup(const QString &role, const QString &name, bool guestDisplay, const QString &pin)
 {
-    static const QStringList roles{u"store"_s, u"terminal"_s, u"kitchen"_s, u"selforder"_s, u"timeclock"_s};
+    static const QStringList roles{u"store"_s, u"terminal"_s, u"kitchen"_s, u"selforder"_s, u"timeclock"_s, u"board"_s};
     static const QRegularExpression hostName(u"^[A-Za-z0-9][A-Za-z0-9-]{0,62}$"_s);
     if (!roles.contains(role)) {
         emit finished(u"setup"_s, false, tr("Choose what this computer is."));

@@ -207,7 +207,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         t.receiptPrinter = ss(record.value(u"receiptPrinter"_s).toString());
         t.drawer = ss(drawer);
         const QString screen = record.value(u"screen"_s).toString();
-        if (!QStringList{QString(), u"standard"_s, u"phone"_s, u"selfOrder"_s, u"timeClock"_s}.contains(screen))
+        if (!QStringList{QString(), u"standard"_s, u"phone"_s, u"selfOrder"_s, u"timeClock"_s, u"nowServing"_s}.contains(screen))
             return fail(tr("Choose the terminal's screen layout."));
         t.screen = ss(screen);
         if (record.contains(u"service"_s)) {
@@ -315,6 +315,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.truckAskStaff = record.value(u"truckAskStaff"_s).toBool();
         if (record.contains(u"truckNeedsName"_s))
             s_->settings.truckNeedsName = record.value(u"truckNeedsName"_s).toBool();
+        if (record.contains(u"orderNumbers"_s))
+            s_->settings.orderNumbers = record.value(u"orderNumbers"_s).toBool();
         s_->settings.currencySymbol = ss(record.value(u"currencySymbol"_s).toString());
         s_->settings.receiptHeader = ss(record.value(u"receiptHeader"_s).toString());
         s_->settings.receiptFooter = ss(record.value(u"receiptFooter"_s).toString());

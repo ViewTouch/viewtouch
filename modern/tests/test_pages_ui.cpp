@@ -114,6 +114,88 @@ TEST_CASE("A food truck's screens render cleanly with orders waiting", "[ui][pag
     CHECK(g_warnings == QStringList{});
 }
 
+TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui][pages][truck]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    test::RecordingSink sink;
+    app::PosData data = test::seedPosData();
+    data.settings.orderNumbers = true;   // a restaurant at the counter
+    app::PosService pos(std::move(data), &sink);
+    LayoutController c(std::move(*layout));
+    c.setPos(&pos);
+
+    // The order page: Orders in Tables' place.
+    const auto rule = [&](const QString &zone) {
+        const vt::layout::Page *page = c.activeLayout().page(u"order-template"_s);
+        REQUIRE(page);
+        const vt::layout::Zone *z = page->zone(zone);
+        REQUIRE(z);
+        return z->extra.value(u"showWhen").toObject();
+    };
+    CHECK(c.ruleShows(rule(u"flow-orders"_s)));
+    CHECK_FALSE(c.ruleShows(rule(u"flow-tables"_s)));
+
+    // Two orders: Ana's ready, Lee's being made.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Ana"_s}}));
+    REQUIRE(pos.sendOrder());
+    const qint64 ana = pos.checkInfo()[u"id"_s].toLongLong();
+    pos.releaseCheck();
+    REQUIRE(pos.orderReady(ana));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Lee"_s}}));
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+    pos.logout();
+
+    c.setFormFactorOverride(u"nowServing"_s);
+    CHECK(c.nowServingScreen());
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                 {u"width"_s, 1920}, {u"height"_s, 1080}});
+    g_warnings.clear();
+    const QtMessageHandler previous = qInstallMessageHandler(collect);
+    engine.loadFromModule("ViewTouch", "Main");
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(100);
+    auto *board = window->findChild<QQuickItem *>(u"nowServingBoard"_s);
+    REQUIRE(board);
+    CHECK(board->isVisible());
+    const std::function<QQuickItem *(QQuickItem *, const QString &)> named = [&](QQuickItem *r, const QString &name) -> QQuickItem * {
+        for (QQuickItem *i : r->childItems()) {
+            if (i->objectName() == name) return i;
+            if (QQuickItem *h = named(i, name)) return h;
+        }
+        return nullptr;
+    };
+    QQuickItem *ready = named(board, u"boardReady"_s);
+    QQuickItem *making = named(board, u"boardPreparing"_s);
+    REQUIRE(ready);
+    REQUIRE(making);
+    CHECK(ready->property("count").toInt() == 1);
+    CHECK(making->property("count").toInt() == 1);
+    if (const QByteArray shots = qgetenv("VTM_SHOTS"); !shots.isEmpty()) {
+        QTest::qWait(4000);   // after the just-called flash
+        window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/m193-now-serving-board.png"_s);
+    }
+
+    // Someone logs in: the pages; out again: the board.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QTest::qWait(50);
+    CHECK_FALSE(board->isVisible());
+    pos.logout();
+    QTest::qWait(50);
+    CHECK(board->isVisible());
+    qInstallMessageHandler(previous);
+    CHECK(g_warnings == QStringList{});
+}
+
 namespace {
 
 int countVisible(QQuickItem *root, const char *classPrefix)
