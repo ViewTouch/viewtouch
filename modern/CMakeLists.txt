@@ -12,6 +12,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(VTM_BUILD_TESTS "Build ViewTouch Modern unit tests" ON)
 
+# Bug hunting builds (not for release): sanitizers ("address,undefined":
+# memory used after it's freed, past its end, undefined behavior) and line
+# coverage (gcov), on everything built here.
+set(VTM_SANITIZE "" CACHE STRING "Sanitizers to build with, e.g. address,undefined")
+option(VTM_COVERAGE "Build with gcov line coverage" OFF)
+if(VTM_SANITIZE)
+    add_compile_options(-fsanitize=${VTM_SANITIZE} -fno-omit-frame-pointer -fno-sanitize-recover=undefined)
+    add_link_options(-fsanitize=${VTM_SANITIZE})
+endif()
+if(VTM_COVERAGE)
+    add_compile_options(--coverage -fprofile-update=atomic)
+    add_link_options(--coverage)
+endif()
+
 # The repository (its LICENSE); everything else the build uses is in modern/.
 set(VTM_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 

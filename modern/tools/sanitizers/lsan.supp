@@ -1,0 +1,8 @@
+# LeakSanitizer: allocations made once and kept for the program's life by
+# libraries ViewTouch uses (not ViewTouch's own). Nothing of ours belongs here.
+leak:libfontconfig.so
+leak:libEGL
+leak:libGLX
+leak:libgallium
+leak:libdbus-1.so
+leak:libglib-2.0.so
