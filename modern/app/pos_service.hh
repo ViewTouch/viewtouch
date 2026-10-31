@@ -1004,6 +1004,7 @@ public:
     QString screenMode() const override;
     QString terminalLook() const override;
     QString terminalKeyboard() const override;
+    QString terminalGuestScreen() const override;
     QString terminalStartCategory() const override;
     QVariantMap serviceInfo() const override;
 

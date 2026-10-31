@@ -447,7 +447,7 @@ struct WifiRelay {
                 const auto pass = [this](QTcpSocket *from, QTcpSocket *to, bool back) {
                     QObject::connect(from, &QTcpSocket::readyRead, from, [this, from, to, back] {
                         const QByteArray bytes = from->readAll();
-                        if (!cut && !(back && cutReplies))
+                        if (!cut && !(back && cutReplies) && to->isOpen())   // (not one side already gone)
                             to->write(bytes);
                     });
                 };
@@ -1581,4 +1581,56 @@ TEST_CASE("Working offline: a food truck's second screen keeps selling as the co
     CHECK(listed);
     // And the second screen is the counter again, on the store's computer.
     CHECK(waitFor([&] { return t.h->remote->userName() == u"Counter"_s; }));
+}
+
+TEST_CASE("Now Serving board on its own computer: nobody logged in, the orders arrive and move", "[net][remote][truck][board]")
+{
+    Store store;
+    store.shared.settings.orderNumbers = true;   // a restaurant at the counter
+    // The board, set up with vtmodern-setup board (--screen nowServing).
+    auto board = std::make_unique<net::RemoteSession>(u"Board"_s);
+    board->setCredentials(store.pairedDevice(u"Board"_s));
+    board->setRequestedScreen(u"nowServing"_s);
+    board->connectTo(u"127.0.0.1"_s, store.server.port());
+    REQUIRE(board->waitForWelcome(5000));
+    Screen tv(std::move(board));
+    REQUIRE(waitFor([&] { return tv.remote->screenMode() == u"nowServing"_s; }));
+    CHECK(tv.c.nowServingScreen());
+    CHECK_FALSE(tv.remote->loggedIn());
+    CHECK(tv.remote->serviceInfo()[u"numbers"_s].toBool());
+    CHECK(store.shared.settings.pairedTerminal(tv.remote->credentials().terminalId.toStdString())->screen == "nowServing");
+
+    // The register sends two orders.
+    Screen reg(store.terminal(u"Front"_s));
+    reg.pin("1234");
+    const auto order = [&](const QString &name) {
+        reg.remote->invoke(u"startCheck"_s, {int(core::CheckType::Quick)});
+        reg.settle();
+        reg.remote->invoke(u"addItem"_s, {u"caesar"_s});
+        reg.settle();
+        reg.remote->setCustomer({{u"name"_s, name}});
+        reg.settle();
+        reg.remote->invoke(u"sendOrder"_s, {});
+        reg.settle();
+        const qint64 id = reg.remote->checkInfo()[u"id"_s].toLongLong();
+        reg.remote->invoke(u"releaseCheck"_s, {});
+        reg.settle();
+        return id;
+    };
+    const qint64 ana = order(u"Ana"_s);
+    order(u"Lee"_s);
+    REQUIRE(waitFor([&] { return tv.remote->truckOrders().size() == 2; }));
+    CHECK(tv.remote->truckOrders()[0].toMap()[u"label"_s].toString() == u"#1 Ana"_s);
+    CHECK_FALSE(tv.remote->truckOrders()[0].toMap()[u"ready"_s].toBool());
+
+    // Ana's called: Ready on the board; picked up: gone from it.
+    reg.remote->invoke(u"orderReady"_s, {ana});
+    REQUIRE(waitFor([&] {
+        const QVariantList o = tv.remote->truckOrders();
+        return std::ranges::any_of(o, [](const QVariant &v) { return v.toMap()[u"ready"_s].toBool(); });
+    }));
+    reg.remote->invoke(u"orderPickedUp"_s, {ana});
+    REQUIRE(waitFor([&] { return tv.remote->truckOrders().size() == 1; }));
+    CHECK(tv.remote->truckOrders()[0].toMap()[u"label"_s].toString() == u"#2 Lee"_s);
+    CHECK_FALSE(tv.remote->loggedIn());
 }

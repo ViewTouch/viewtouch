@@ -221,6 +221,10 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (!QStringList{QString(), u"on"_s, u"off"_s}.contains(keyboard))
             return fail(tr("Choose whether the screen shows a keyboard."));
         t.keyboard = ss(keyboard);
+        const QString guestScreen = record.value(u"guestScreen"_s).toString();
+        if (!QStringList{QString(), u"board"_s}.contains(guestScreen))
+            return fail(tr("Choose what the screen facing the guests shows."));
+        t.guestScreen = ss(guestScreen);
         const QString requireName = record.value(u"requireName"_s).toString();
         if (!QStringList{QString(), u"yes"_s, u"no"_s}.contains(requireName))
             return fail(tr("Choose whether phone orders need a name at this screen."));
@@ -576,6 +580,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.waitMinutesPerParty = std::clamp(record.value(u"waitMinutesPerParty"_s).toInt(), 1, 120);
         if (record.contains(u"tableReadyText"_s) && !record.value(u"tableReadyText"_s).toString().trimmed().isEmpty())
             s_->settings.tableReadyText = ss(record.value(u"tableReadyText"_s).toString().trimmed());
+        if (record.contains(u"orderReadyText"_s))
+            s_->settings.orderReadyText = ss(record.value(u"orderReadyText"_s).toString().trimmed().left(300));
         if (record.contains(u"textWebhook"_s)) {
             // Guests' phone numbers go there: only over an encrypted connection.
             const QString url = record.value(u"textWebhook"_s).toString().trimmed();

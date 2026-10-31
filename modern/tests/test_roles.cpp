@@ -1,4 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
+#include "storage/async_writer.hh"
+#include "storage/pos_store.hh"
 
 #include "app/i18n.hh"
 #include "app/pos_json.hh"
@@ -459,6 +461,172 @@ TEST_CASE("Station: status at a glance, backups to restore, a locked power butto
     StationController again(dir.path(), {}, false);
     CHECK(again.lockPower());
     CHECK(again.rotation() == 90);
+}
+
+TEST_CASE("Station: a backup made, the store changed, the backup restored by touch", "[station][restore]")
+{
+    QTemporaryDir dir;
+    {
+        QFile f(QDir(dir.path()).filePath(u"station.json"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(R"({"role": "store", "name": "Main Register"})");
+    }
+    const QString db = QDir(dir.path()).filePath(u"viewtouch.db"_s);
+    // A store as ViewTouch makes one (its pages too), with two months of sales.
+    {
+        QProcess demo;
+        demo.start(QString::fromLocal8Bit(VTM_PROGRAM), {u"--data-dir"_s, dir.path(), u"--demo-data"_s});
+        REQUIRE(demo.waitForFinished(120000));
+        REQUIRE(demo.exitCode() == 0);
+    }
+    const auto named = [&](const char *name) {
+        storage::PosStore store(db);
+        REQUIRE(store.open());
+        auto data = store.load();
+        REQUIRE(data);
+        data->settings.storeName = name;
+        storage::AsyncWriter writer(db);
+        storage::SqlPosSink(writer).saveSettings(data->settings);
+        writer.flush();
+    };
+    const auto storeName = [&] {
+        storage::PosStore store(db);
+        REQUIRE(store.open());
+        return QString::fromStdString(store.load()->settings.storeName);
+    };
+    named("Before");
+    qputenv("VTM_STATION_VTMODERN", VTM_PROGRAM);
+    StationController station(dir.path(), {}, false);
+    QSignalSpy finished(&station, &StationController::finished);
+    station.backupNow();   // ViewTouch itself, as Back Up Now runs it
+    REQUIRE(finished.wait(60000));
+    INFO(finished.last()[2].toString().toStdString() << " / " << station.output().toStdString());
+    REQUIRE(finished.last()[1].toBool());
+    const QVariantList backups = station.backups();
+    REQUIRE(backups.size() == 1);
+
+    named("After");
+    REQUIRE(storeName() == u"After"_s);
+    finished.clear();
+    station.restoreBackup(backups[0].toMap()[u"path"_s].toString());
+    REQUIRE(finished.wait(60000));
+    INFO(finished.last()[2].toString().toStdString());
+    REQUIRE(finished.last()[0] == u"restore"_s);
+    REQUIRE(finished.last()[1].toBool());
+    CHECK(storeName() == u"Before"_s);
+    // What was there kept beside it: undone the same way.
+    CHECK(QDir(dir.path()).entryList({u"viewtouch.db.before-restore-*"_s}).size() == 1);
+    qunsetenv("VTM_STATION_VTMODERN");
+}
+
+TEST_CASE("Station: the computer's commands go to the helper as they should", "[station][helper]")
+{
+    QTemporaryDir dir;
+    // A pretend helper: notes what it's asked, says the last line back; "fail" fails.
+    const QString log = dir.filePath(u"asked.txt"_s);
+    const QString helper = dir.filePath(u"helper.sh"_s);
+    {
+        QFile f(helper);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(("#!/bin/sh\necho \"$*\" >> '" + log.toUtf8() + "'\n"
+                 "[ \"$2\" = fail ] && { echo \"Wrong password.\"; exit 1; }\n"
+                 "echo \"Done: $*\"\n"));
+        f.setPermissions(f.permissions() | QFile::ExeOwner);
+    }
+    qputenv("VTM_STATION_HELPER", helper.toLocal8Bit());
+    StationController station(dir.path(), {}, false);
+    CHECK(station.canManage());
+    QSignalSpy finished(&station, &StationController::finished);
+    const auto asked = [&] {
+        QFile f(log);
+        REQUIRE(f.open(QIODevice::ReadOnly));
+        return QString::fromUtf8(f.readAll()).trimmed().split(u'\n').last();
+    };
+    const auto done = [&](const QString &action) {
+        REQUIRE(finished.wait(10000));
+        CHECK(finished.last()[0] == action);
+        return finished.last()[1].toBool();
+    };
+
+    // Brightness: a percent, never quite dark, never over 100.
+    station.setBrightness(150);
+    CHECK(done(u"brightness"_s));
+    CHECK(asked() == u"brightness 100"_s);
+    station.setBrightness(0);
+    CHECK(done(u"brightness"_s));
+    CHECK(asked() == u"brightness 5"_s);
+    station.usbOpen();
+    CHECK(done(u"usb-open"_s));
+    CHECK(asked() == u"usb-open"_s);
+    station.saveLogs();
+    CHECK(done(u"logs-usb"_s));
+    CHECK(asked() == u"logs-usb"_s);
+    CHECK(finished.last()[2] == u"Done: logs-usb"_s);   // what it said, for the screen
+
+    // One at a time: a second while the first runs is refused, not lost silently.
+    station.setBrightness(50);
+    station.setBrightness(60);
+    REQUIRE(finished.size() >= 5);
+    CHECK_FALSE(finished.last()[1].toBool());
+    CHECK(finished.last()[2] == u"Wait for the last one to finish."_s);
+    CHECK(done(u"brightness"_s));
+    CHECK(asked() == u"brightness 50"_s);
+
+    station.setRemoteSupport(true);
+    CHECK(done(u"ssh"_s));
+    CHECK(asked() == u"ssh on"_s);
+
+    // A failure says why.
+    station.connectWifi(u"fail"_s, u"secret"_s);
+    CHECK_FALSE(done(u"wifi"_s));
+    CHECK(finished.last()[2] == u"Wrong password."_s);
+    qunsetenv("VTM_STATION_HELPER");
+}
+
+TEST_CASE("Station: a new ViewTouch looked for twice a day, installed at night only when allowed", "[station][helper][updates]")
+{
+    QTemporaryDir dir;
+    const QString log = dir.filePath(u"asked.txt"_s);
+    const QString helper = dir.filePath(u"helper.sh"_s);
+    {
+        QFile f(helper);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(("#!/bin/sh\necho \"$*\" >> '" + log.toUtf8() + "'\n"
+                 "case \"$1\" in online-check) echo 'READY 9.9 0.14' ;; online-update) echo 'INSTALLED 9.9' ;; esac\n"));
+        f.setPermissions(f.permissions() | QFile::ExeOwner);
+    }
+    qputenv("VTM_STATION_HELPER", helper.toLocal8Bit());
+    StationController station(dir.path(), {}, false);
+    for (int i = 0; i < 300 && !station.network()[u"online"_s].toBool(); ++i)
+        QTest::qWait(10);
+    REQUIRE(station.network()[u"online"_s].toBool());
+    QSignalSpy finished(&station, &StationController::finished);
+    const auto asked = [&] {
+        QFile f(log);
+        return f.open(QIODevice::ReadOnly) ? QString::fromUtf8(f.readAll()).trimmed().split(u'\n') : QStringList{};
+    };
+    // Midday: looked for, found; Updates says so.
+    const QDateTime noon(QDate(2026, 11, 2), QTime(12, 0));
+    station.updatesTick(noon);
+    REQUIRE(finished.wait(10000));
+    CHECK(station.newVersion() == u"9.9"_s);
+    CHECK(asked() == QStringList{u"online-check"_s});
+    // Not again for twelve hours; at night, not installed unless allowed.
+    station.updatesTick(noon.addSecs(3600));
+    const QDateTime night(QDate(2026, 11, 3), QTime(3, 30));
+    station.updatesTick(night);
+    REQUIRE(finished.wait(10000));
+    CHECK(asked() == (QStringList{u"online-check"_s, u"online-check"_s}));   // only looked again
+    // Allowed (kept): installed at night, once.
+    station.setAutoUpdate(true);
+    CHECK(StationController(dir.path(), {}, false).autoUpdate());
+    station.updatesTick(night.addSecs(600));
+    REQUIRE(finished.wait(10000));
+    CHECK(asked().last() == u"online-update"_s);
+    CHECK(station.newVersion().isEmpty());
+    // Not by day.
+    REQUIRE(station.newVersion().isEmpty());
+    qunsetenv("VTM_STATION_HELPER");
 }
 
 // The manual's pictures of the home screen and the first-time setup

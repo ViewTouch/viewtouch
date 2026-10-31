@@ -121,6 +121,14 @@ QString PosService::terminalKeyboard() const
     return {};
 }
 
+QString PosService::terminalGuestScreen() const
+{
+    for (const TerminalConfig &t : s_->settings.terminals)
+        if (qs(t.name) == terminal_)
+            return qs(t.guestScreen);
+    return {};
+}
+
 QString PosService::screenMode() const
 {
     for (const TerminalConfig &t : s_->settings.terminals) {

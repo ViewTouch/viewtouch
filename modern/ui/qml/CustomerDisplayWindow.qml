@@ -10,5 +10,11 @@ Window {
     visible: true
     color: "#0f1318"
     title: qsTr("ViewTouch — Customer Display")
-    CustomerDisplay { anchors.fill: parent; pos: win.pos }
+    // Manager -> Terminals: the Now Serving board instead of their order.
+    Loader {
+        anchors.fill: parent
+        sourceComponent: (win.pos?.terminalGuestScreen ?? "") === "board" ? guestBoard : guestOrder
+        Component { id: guestOrder; CustomerDisplay { pos: win.pos } }
+        Component { id: guestBoard; NowServing { pos: win.pos } }
+    }
 }

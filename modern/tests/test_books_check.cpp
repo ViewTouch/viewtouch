@@ -2,8 +2,14 @@
 
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
+#include "storage/async_writer.hh"
+#include "storage/pos_store.hh"
+#include <QDateTime>
+#include <QTemporaryDir>
+#include <QTest>
 
 #include <random>
+#include <set>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -573,5 +579,139 @@ TEST_CASE("Books check: random days, every report agrees with the checks and eac
                              "untaxed takeout food", "practice checks"}) {
         INFO(what << ": " << seen[what] << " checks");
         CHECK(seen[what] >= 5);
+    }
+}
+
+TEST_CASE("Books check: a week's report is its days added up, a refund of an earlier day's sale too", "[books][bookscheck][range]")
+{
+    // A real database, wired as ViewTouch wires it, so the range report reads
+    // the checks and refunds back the way a bookkeeper's would.
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    const auto seed = test::seedPosData();
+    {
+        storage::PosStore store(path);
+        REQUIRE(store.open());
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees));
+    }
+    storage::PosStore store(path);
+    REQUIRE(store.open());
+    storage::AsyncWriter writer(path);
+    storage::SqlPosSink sink(writer);
+    PosService pos(*store.load(), &sink);
+    app::PosShared &shared = *pos.shared();
+    shared.history = [&](std::int64_t from, std::int64_t to) { return storage::closedChecksBetween(path, from, to); };
+    shared.refundHistory = [&](std::int64_t from, std::int64_t to) { return storage::refundsBetween(path, from, to); };
+    shared.findChecks = [&](const app::PosShared::CheckFind &f) {
+        writer.flush();
+        return storage::findClosedChecks(path, f.from, f.to, f.words, f.limit, f.offset);
+    };
+    shared.settings.promotions.clear();
+    shared.settings.askReasons = false;
+    core::PosSettings::Promotion save5;
+    save5.id = "save5";
+    save5.name = "Save $5";
+    save5.code = "SAVE5";
+    save5.amount = Money::fromCents(500);
+    shared.settings.promotions = {save5};
+
+    // Monday to Thursday, noon to 9 PM.
+    const QDate monday(2026, 10, 5);
+    std::int64_t clock = QDateTime(monday, QTime(11, 0)).toMSecsSinceEpoch();
+    shared.setClock([&clock] { return clock; });
+    shared.day.openedAt = clock;
+
+    const std::vector<const char *> menu{"classic-burger", "caesar", "cobb", "coffee", "soda", "draft-beer",
+                                         "house-wine", "pancakes", "burger-combo"};
+    std::mt19937 random(7);
+    const auto pick = [&](int n) { return int(random() % unsigned(std::max(1, n))); };
+    const auto chance = [&](int percent) { return pick(100) < percent; };
+    const std::vector<std::string> summed{"Checks", "Item sales", "Discounts & comps", "Net sales", "Taxable food sales",
+                                          "Taxable alcohol sales", "Food tax", "Alcohol tax", "Sales tax", "Gratuity",
+                                          "Total with tax", "Credit Card", "Cash", "Change given", "Collected",
+                                          "Card tips (owed to staff)", "Refunds"};
+    std::map<std::string, std::int64_t> week;
+    qint64 mondayCard = 0, mondayCardPayment = 0;
+    for (int day = 0; day < 4; ++day) {
+        INFO("day " << day);
+        clock = QDateTime(monday.addDays(day), QTime(12, 0)).toMSecsSinceEpoch();
+        REQUIRE(pos.loginWithPin(u"1234"_s));
+        pos.entryKey(u"10000"_s);
+        REQUIRE(pos.openDrawerSession());
+        for (int n = 0; n < 12; ++n) {
+            clock += 30 * 60'000;
+            REQUIRE(pos.startCheck(core::CheckType::Takeout));
+            const qint64 id = currentId(pos);
+            for (int i = 0, lines = 1 + pick(3); i < lines; ++i) {
+                REQUIRE(pos.addItem(QString::fromLatin1(menu[std::size_t(pick(int(menu.size())))])));
+                choose(pos, pick);
+            }
+            if (chance(20))
+                pos.applyCoupon(u"SAVE5"_s);
+            if (chance(10))
+                pos.setGratuity(1800);
+            if (chance(50) || (day == 0 && mondayCard == 0)) {
+                REQUIRE(pos.tender(u"credit"_s));
+                if (chance(50))
+                    pos.addTip(200 + pick(4) * 100);
+                if (day == 0 && mondayCard == 0) {
+                    mondayCard = id;
+                    mondayCardPayment = pos.payments().last().toMap()[u"id"_s].toLongLong();
+                }
+            } else {
+                REQUIRE(pos.tender(u"cash"_s));
+            }
+            REQUIRE(pos.closeCheck());
+        }
+        // Wednesday: part of Monday's first card sale given back (charged twice).
+        if (day == 2) {
+            writer.flush();
+            REQUIRE(pos.searchChecks(u"#"_s + QString::number(mondayCard), 0));
+            for (int i = 0; i < 200 && pos.checkSearch()[u"loading"_s].toBool(); ++i)
+                QTest::qWait(10);
+            pos.selectFoundCheck(mondayCard);
+            REQUIRE(pos.refundPayment(mondayCard, mondayCardPayment, 300, u"Charged twice"_s));
+            REQUIRE(shared.refundsToday.size() == 1);
+        }
+        clock = QDateTime(monday.addDays(day), QTime(21, 0)).toMSecsSinceEpoch();
+        pos.entryKey(QString::number(core::expectedCash(shared.drawers.back(), shared.closedToday, shared.settings.tax).cents()));
+        REQUIRE(pos.countDrawer());
+        REQUIRE(pos.endOfDay());
+        // That day's sales report, as End of Day froze it.
+        // (Net sales and Sales tax are in it twice, in their sections and the
+        // totals: counted once.)
+        const QVariantMap frozen = pos.report(u"sales"_s, shared.pastDays.front().day.id);
+        std::set<std::string> counted;
+        for (const QVariant &v : frozen[u"rows"_s].toList()) {
+            const QStringList cells = v.toMap()[u"cells"_s].toStringList();
+            if (cells.size() >= 2 && std::ranges::find(summed, cells[0].toStdString()) != summed.end()
+                && counted.insert(cells[0].toStdString()).second)
+                week[cells[0].toStdString()] += cents(cells[1].toStdString());
+        }
+        if (day == 2)
+            CHECK(week["Refunds"] == -300);
+    }
+    writer.flush();
+
+    // The four days as one report: every line, the days added up.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.requestRangeReport(u"sales"_s, u"custom"_s, monday.toString(u"yyyy-MM-dd"_s),
+                                   monday.addDays(3).toString(u"yyyy-MM-dd"_s)));
+    for (int i = 0; i < 500 && pos.rangeReport()[u"loading"_s].toBool(); ++i)
+        QTest::qWait(20);
+    REQUIRE_FALSE(pos.rangeReport()[u"loading"_s].toBool());
+    std::map<std::string, std::int64_t> range;
+    for (const QVariant &v : pos.rangeReport()[u"report"_s].toMap()[u"rows"_s].toList()) {
+        const QStringList cells = v.toMap()[u"cells"_s].toStringList();
+        if (cells.size() >= 2 && std::ranges::find(summed, cells[0].toStdString()) != summed.end())
+            range.emplace(cells[0].toStdString(), cents(cells.last().toStdString()));
+    }
+    CHECK(week["Checks"] == 48);
+    for (const std::string &line : summed) {
+        INFO(line);
+        if (!week.contains(line))
+            continue;   // never on any day (alcohol, say)
+        REQUIRE(range.contains(line));
+        CHECK(range.at(line) == week.at(line));
     }
 }

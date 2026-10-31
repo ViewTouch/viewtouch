@@ -17,6 +17,7 @@
 #include <QTimeZone>
 
 #include <algorithm>
+#include <functional>
 
 using namespace Qt::StringLiterals;
 
@@ -35,6 +36,13 @@ QString helperPath()
 {
     const QString env = qEnvironmentVariable("VTM_STATION_HELPER");
     return env.isEmpty() ? u"/usr/libexec/vtmodern/vtmodern-device"_s : env;
+}
+
+// ViewTouch itself (the home screen is the same program; a test names it).
+QString vtmodernPath()
+{
+    const QString env = qEnvironmentVariable("VTM_STATION_VTMODERN");
+    return env.isEmpty() ? QCoreApplication::applicationFilePath() : env;
 }
 
 // One line of `nmcli -t`: fields split at ':' (a "\:" is a colon in a value).
@@ -61,6 +69,24 @@ QString runQuick(const QString &program, const QStringList &args, int ms = 4000)
     if (!p.waitForFinished(ms))
         return {};
     return QString::fromUtf8(p.readAllStandardOutput());
+}
+
+// A program's answer, later: the screen doesn't wait for it (a slow
+// timedatectl on a Raspberry Pi held up every touch for a moment).
+void runLater(QObject *owner, const QString &program, const QStringList &args, std::function<void(const QString &)> done)
+{
+    auto *p = new QProcess(owner);
+    QObject::connect(p, &QProcess::finished, owner, [p, done] {
+        p->deleteLater();
+        done(QString::fromUtf8(p->readAllStandardOutput()));
+    });
+    QObject::connect(p, &QProcess::errorOccurred, owner, [p, done](QProcess::ProcessError e) {
+        if (e != QProcess::FailedToStart)
+            return;
+        p->deleteLater();
+        done({});
+    });
+    p->start(program, args);
 }
 
 QString hashPin(const QString &salt, const QString &pin)
@@ -118,6 +144,22 @@ StationController::StationController(QString dataDir, QString configFile, bool k
             emit displayChanged();
     });
     connect(this, &StationController::posChanged, this, &StationController::refreshStatus);
+    // A new ViewTouch: what the helper's last line says ("READY 0.15 0.14", "NEWEST 0.14").
+    connect(this, &StationController::finished, this, [this](const QString &action, bool ok, const QString &said) {
+        QString was = newVersion_;
+        if (action == u"online-check" && ok) {
+            const QStringList words = said.split(u' ', Qt::SkipEmptyParts);
+            newVersion_ = words.value(0) == u"READY" ? words.value(1) : QString();
+        } else if (action == u"online-update" && ok) {
+            newVersion_.clear();
+        }
+        if (newVersion_ != was)
+            emit newVersionChanged();
+    });
+    updatesTimer_.setInterval(30 * 60'000);
+    connect(&updatesTimer_, &QTimer::timeout, this, [this] { updatesTick(); });
+    updatesTimer_.start();
+    QTimer::singleShot(10 * 60'000, this, [this] { updatesTick(); });   // once it's settled
     connect(this, &StationController::networkChanged, this, &StationController::refreshStatus);
     refreshStatus();
     if (rotation_ != 0)
@@ -163,6 +205,7 @@ void StationController::load()
     if (rotation_ != 90 && rotation_ != 180 && rotation_ != 270)
         rotation_ = 0;
     lockPower_ = o.value(u"lockPower").toBool();
+    autoUpdate_ = o.value(u"autoUpdate").toBool();
 }
 
 bool StationController::save()
@@ -172,7 +215,7 @@ bool StationController::save()
         return false;
     f.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     const QJsonObject o{{u"role"_s, role_}, {u"name"_s, name_}, {u"pinHash"_s, pinHash_}, {u"pinSalt"_s, pinSalt_},
-                        {u"rotation"_s, rotation_}, {u"lockPower"_s, lockPower_}};
+                        {u"rotation"_s, rotation_}, {u"lockPower"_s, lockPower_}, {u"autoUpdate"_s, autoUpdate_}};
     return f.write(QJsonDocument(o).toJson()) > 0;
 }
 
@@ -238,7 +281,7 @@ void StationController::handToStore(const QString &pin, int triesLeft)
         }
         QTimer::singleShot(2000, this, [this, pin, triesLeft] { handToStore(pin, triesLeft - 1); });
     });
-    p->start(QCoreApplication::applicationFilePath(), storeArgs() << u"--maintainer-pin"_s << u"-"_s);
+    p->start(vtmodernPath(), storeArgs() << u"--maintainer-pin"_s << u"-"_s);
     p->write(pin.toLatin1() + '\n');
     p->closeWriteChannel();
 }
@@ -324,7 +367,7 @@ void StationController::startPos(const QString &afterLogin)
         if (e == QProcess::FailedToStart)
             posExited(-1, QProcess::CrashExit);
     });
-    pos_->start(QCoreApplication::applicationFilePath(), args);
+    pos_->start(vtmodernPath(), args);
     setPosState(u"running"_s);
 }
 
@@ -490,15 +533,25 @@ void StationController::setTimeZone(const QString &zone)
 
 void StationController::readTimeZone()
 {
-    QString zone = runQuick(u"timedatectl"_s, {u"show"_s, u"-p"_s, u"Timezone"_s, u"--value"_s}).trimmed();
-    if (zone.isEmpty())
-        zone = QString::fromLatin1(QTimeZone::systemTimeZoneId());
-    const bool synced = runQuick(u"timedatectl"_s, {u"show"_s, u"-p"_s, u"NTPSynchronized"_s, u"--value"_s}).trimmed() == u"yes";
-    if (zone != timeZone_ || synced != timeSynced_) {
-        timeZone_ = zone;
-        timeSynced_ = synced;
-        emit timeZoneChanged();
-    }
+    // "Timezone=America/Chicago" and "NTPSynchronized=yes", in one go.
+    runLater(this, u"timedatectl"_s, {u"show"_s, u"-p"_s, u"Timezone"_s, u"-p"_s, u"NTPSynchronized"_s},
+             [this](const QString &answer) {
+                 QString zone;
+                 bool synced = false;
+                 for (const QString &line : answer.split(u'\n', Qt::SkipEmptyParts)) {
+                     if (line.startsWith(u"Timezone="))
+                         zone = line.mid(9).trimmed();
+                     else if (line.startsWith(u"NTPSynchronized="))
+                         synced = line.mid(16).trimmed() == u"yes";
+                 }
+                 if (zone.isEmpty())
+                     zone = QString::fromLatin1(QTimeZone::systemTimeZoneId());
+                 if (zone != timeZone_ || synced != timeSynced_) {
+                     timeZone_ = zone;
+                     timeSynced_ = synced;
+                     emit timeZoneChanged();
+                 }
+             });
 }
 
 // --- keeping the computer --------------------------------------------------------------
@@ -506,12 +559,12 @@ void StationController::readTimeZone()
 void StationController::eraseStore()
 {
     stopPos();
-    run(u"erase"_s, storeArgs() << u"--factory-reset"_s, {}, QCoreApplication::applicationFilePath());
+    run(u"erase"_s, storeArgs() << u"--factory-reset"_s, {}, vtmodernPath());
 }
 
 void StationController::backupNow()
 {
-    run(u"backup"_s, storeArgs() << u"--backup"_s, {}, QCoreApplication::applicationFilePath());
+    run(u"backup"_s, storeArgs() << u"--backup"_s, {}, vtmodernPath());
 }
 
 void StationController::runUpdates()
@@ -541,11 +594,13 @@ void StationController::setRemoteSupport(bool on)
 
 void StationController::readRemoteSupport()
 {
-    const bool on = runQuick(u"systemctl"_s, {u"is-active"_s, u"ssh"_s}).trimmed() == u"active";
-    if (on != remoteSupport_) {
-        remoteSupport_ = on;
-        emit remoteSupportChanged();
-    }
+    runLater(this, u"systemctl"_s, {u"is-active"_s, u"ssh"_s}, [this](const QString &answer) {
+        const bool on = answer.trimmed() == u"active";
+        if (on != remoteSupport_) {
+            remoteSupport_ = on;
+            emit remoteSupportChanged();
+        }
+    });
 }
 
 void StationController::restartComputer()
@@ -663,7 +718,7 @@ void StationController::restoreBackup(const QString &path, const QString &passwo
     stopPos();
     // Its password on stdin, for an encrypted one this store's key doesn't open.
     run(u"restore"_s, storeArgs() << u"--restore"_s << path, (password + u'\n').toUtf8(),
-        QCoreApplication::applicationFilePath());
+        vtmodernPath());
 }
 
 namespace {
@@ -708,19 +763,20 @@ void StationController::setRotation(int degrees)
 // touch turns with it.
 void StationController::applyRotation()
 {
-    const QString outputs = runQuick(u"wlr-randr"_s, {});
-    QString output;
-    for (const QString &line : outputs.split(u'\n'))
-        if (!line.isEmpty() && !line.front().isSpace()) {
-            output = line.section(u' ', 0, 0);
-            break;
+    runLater(this, u"wlr-randr"_s, {}, [this](const QString &outputs) {
+        QString output;
+        for (const QString &line : outputs.split(u'\n'))
+            if (!line.isEmpty() && !line.front().isSpace()) {
+                output = line.section(u' ', 0, 0);
+                break;
+            }
+        if (output.isEmpty()) {
+            emit finished(u"rotate"_s, false, tr("This screen can't be turned from here."));
+            return;
         }
-    if (output.isEmpty()) {
-        emit finished(u"rotate"_s, false, tr("This screen can't be turned from here."));
-        return;
-    }
-    const QString transform = rotation_ == 0 ? u"normal"_s : QString::number(rotation_);
-    run(u"rotate"_s, {u"--output"_s, output, u"--transform"_s, transform}, {}, u"wlr-randr"_s);
+        const QString transform = rotation_ == 0 ? u"normal"_s : QString::number(rotation_);
+        run(u"rotate"_s, {u"--output"_s, output, u"--transform"_s, transform}, {}, u"wlr-randr"_s);
+    });
 }
 
 void StationController::setLockPower(bool on)
@@ -728,6 +784,30 @@ void StationController::setLockPower(bool on)
     lockPower_ = on;
     save();
     emit configChanged();
+}
+
+void StationController::setAutoUpdate(bool on)
+{
+    autoUpdate_ = on;
+    save();
+    emit configChanged();
+}
+
+void StationController::updatesTick(const QDateTime &now)
+{
+    if (busy_ || !canManage() || !network_.value(u"online"_s).toBool())
+        return;
+    // At night, once: the new one installed (ViewTouch and the home screen start again on it).
+    if (autoUpdate_ && !newVersion_.isEmpty() && now.time().hour() >= 3 && now.time().hour() < 5
+        && installedOn_ != now.date()) {
+        installedOn_ = now.date();
+        installOnline();
+        return;
+    }
+    if (!lookedOnline_.isValid() || lookedOnline_.secsTo(now) >= 12 * 3600) {
+        lookedOnline_ = now;
+        checkOnline();
+    }
 }
 
 void StationController::saveLogs()
@@ -771,7 +851,9 @@ void StationController::run(const QString &action, const QStringList &args, cons
         setBusy(false);
         emit finished(action, false, p->errorString());
     });
-    if (program.isEmpty())
+    if (program.isEmpty() && qEnvironmentVariableIsSet("VTM_STATION_HELPER"))
+        p->start(helperPath(), QStringList{action} + args);   // a test's own helper, as is
+    else if (program.isEmpty())
         p->start(u"sudo"_s, QStringList{u"-n"_s, helperPath(), action} + args);
     else
         p->start(program, args);

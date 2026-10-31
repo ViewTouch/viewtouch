@@ -164,8 +164,17 @@ bool PosService::setPager(int pager)
 
 void PosService::callOrder(Check &c)
 {
-    if (!c.readyAt)
+    if (!c.readyAt) {
         c.readyAt = now();
+        // Texted once, when first called (Call Again doesn't), if the store says what.
+        if (!s_->settings.orderReadyText.empty() && !c.customer.phone.empty() && s_->sendText && !c.training) {
+            QString message = qs(s_->settings.orderReadyText);
+            message.replace(u"{name}"_s, qs(c.customer.name))
+                .replace(u"{number}"_s, u"#"_s + QString::number(c.orderNumber))
+                .replace(u"{store}"_s, qs(s_->settings.storeName));
+            s_->sendText(qs(c.customer.phone), message.simplified());
+        }
+    }
     if (s_->sink)
         s_->sink->saveCheck(c);
     emit s_->checksChanged();

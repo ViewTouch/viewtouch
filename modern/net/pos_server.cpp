@@ -1015,8 +1015,15 @@ void PosServer::offerUpdate(Connection *c)
 void PosServer::sendUpdatePart(Connection *c)
 {
     Connection::Sending *u = c->update.get();
-    // A couple of parts waiting to go out at most.
+    // A couple of parts waiting to go out at most. Gone mid-way (the tablet
+    // off the Wi-Fi): stop (a closed socket has nothing waiting, and the
+    // rest of the file went nowhere, read and encoded all at once).
     while (u && c->socket->bytesToWrite() + c->socket->encryptedBytesToWrite() < 2 * kUpdatePart) {
+        if (c->socket->state() != QAbstractSocket::ConnectedState) {
+            qCInfo(lcServer) << "update stopped: the screen went away";
+            c->update.reset();
+            return;
+        }
         const QByteArray data = u->file->read(kUpdatePart);
         u->hash.addData(data);
         QJsonObject part{{u"t"_s, u"updatePart"_s}, {u"i"_s, u->part}, {u"n"_s, u->parts},

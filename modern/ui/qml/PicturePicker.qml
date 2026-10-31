@@ -50,11 +50,22 @@ Popup {
                 elide: Text.ElideRight
             }
             PosButton {
+                id: usbButton
                 objectName: "pictureUsb"
-                text: qsTr("USB Stick")
+                property bool opening: false
+                text: opening ? qsTr("Opening…") : qsTr("USB Stick")
+                enabled: !opening
                 implicitHeight: 52
                 font.pixelSize: 16
-                onClicked: { if (picker.pos) picker.pos.openUsbSticks(); picker.refresh() }
+                // The stick opens in the background: the list again once it has.
+                onClicked: {
+                    if (picker.pos && picker.pos.openUsbSticks()) opening = true
+                    else picker.refresh()
+                }
+                Connections {
+                    target: picker.pos
+                    function onUsbSticksOpened() { usbButton.opening = false; picker.refresh() }
+                }
             }
             PosButton {
                 text: qsTr("Browse…")

@@ -130,6 +130,7 @@ public:
     QVariantList truckOrders() const override { return v(u"truckOrders").toList(); }
     QString terminalLook() const override { return v(u"terminalLook").toString(); }
     QString terminalKeyboard() const override { return v(u"terminalKeyboard").toString(); }
+    QString terminalGuestScreen() const override { return v(u"terminalGuestScreen").toString(); }
     QString terminalStartCategory() const override { return v(u"terminalStartCategory").toString(); }
     QString terminalCardReader() const override { return v(u"cardReader").toString(); }
     QVariantMap readerToken() const override { return v(u"readerToken").toMap(); }

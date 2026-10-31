@@ -210,7 +210,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"cashDiscountPercent"_s, double(s_->settings.cashDiscountBp) / 100.0},
              {u"cardTipOn"_s, qs(s_->settings.cardTipOn)},
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
-             {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},
+             {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"orderReadyText"_s, qs(s_->settings.orderReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},
              {u"paidBreaks"_s, s_->settings.paidBreaks}, {u"overtimeDailyHours"_s, s_->settings.overtimeDailyHours},
              {u"laborState"_s, qs(s_->settings.laborState)}, {u"tipAllocation"_s, double(s_->settings.tipAllocationBp) / 100}, {u"doubleTimeDailyHours"_s, s_->settings.doubleTimeDailyHours},
              {u"seventhDayRule"_s, s_->settings.seventhDayRule}, {u"mealBreakAfterHours"_s, s_->settings.mealBreakAfterHours}, {u"restBreakEveryHours"_s, s_->settings.restBreakEveryHours}, {u"scheduleNoticeDays"_s, s_->settings.scheduleNoticeDays}, {u"restBetweenShiftsHours"_s, s_->settings.restBetweenShiftsHours},
@@ -289,7 +289,7 @@ QVariantList PosService::adminRecords(const QString &panel)
         for (const TerminalConfig &t : list) {
             const PrinterConfig *p = s_->settings.printer(t.receiptPrinter);
             add({{u"name"_s, qs(t.name)}, {u"receiptPrinter"_s, qs(t.receiptPrinter)}, {u"drawer"_s, qs(t.drawer)},
-                 {u"screen"_s, qs(t.screen)}, {u"service"_s, qs(t.service)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
+                 {u"screen"_s, qs(t.screen)}, {u"service"_s, qs(t.service)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)}, {u"guestScreen"_s, qs(t.guestScreen)},
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                  {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
                  {u"startPage"_s, qs(t.startPage)},
@@ -325,7 +325,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
                 {u"staffMeal"_s, false}};
     if (panel == u"terminals")
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
-                {u"screen"_s, QString()}, {u"service"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
+                {u"screen"_s, QString()}, {u"service"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"guestScreen"_s, QString()}, {u"requireName"_s, QString()},
                 {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()}, {u"startPage"_s, QString()},
                 {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}, {u"colorSafe"_s, false}};
     if (panel == u"mealPeriods")

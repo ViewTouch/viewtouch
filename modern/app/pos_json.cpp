@@ -987,7 +987,7 @@ QJsonObject toJson(const PosSettings &s)
         terminals.append(QJsonObject{{u"name"_s, qs(t.name)}, {u"receiptPrinter"_s, qs(t.receiptPrinter)},
                                      {u"drawer"_s, qs(t.drawer)}, {u"id"_s, qs(t.id)}, {u"key"_s, qs(t.key)},
                                      {u"pairedAt"_s, qint64(t.pairedAt)}, {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)},
-                                     {u"station"_s, qs(t.station)}, {u"keyboard"_s, qs(t.keyboard)},
+                                     {u"station"_s, qs(t.station)}, {u"keyboard"_s, qs(t.keyboard)}, {u"guestScreen"_s, qs(t.guestScreen)},
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                                      {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}, {u"startPage"_s, qs(t.startPage)},
                                      {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize},
@@ -1249,7 +1249,7 @@ QJsonObject toJson(const PosSettings &s)
                  a.append(QJsonObject{{u"id"_s, qs(r.id)}, {u"label"_s, qs(r.label)}, {u"deviceType"_s, qs(r.deviceType)}});
              return a;
          }()},
-        {u"tipPercents"_s, [&] { QJsonArray a; for (int p : s.tipPercents) a.append(p); return a; }()}, {u"tableReadyText"_s, qs(s.tableReadyText)},
+        {u"tipPercents"_s, [&] { QJsonArray a; for (int p : s.tipPercents) a.append(p); return a; }()}, {u"tableReadyText"_s, qs(s.tableReadyText)}, {u"orderReadyText"_s, qs(s.orderReadyText)},
         {u"textWebhook"_s, qs(s.textWebhook)},
     };
 }
@@ -1299,6 +1299,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.station = ss(t.value(u"station").toString());
         c.look = ss(t.value(u"look").toString());
         c.keyboard = ss(t.value(u"keyboard").toString());
+        c.guestScreen = ss(t.value(u"guestScreen").toString());
         c.requireName = ss(t.value(u"requireName").toString());
         c.cardReader = ss(t.value(u"cardReader").toString());
         c.afterPaying = ss(t.value(u"afterPaying").toString());
@@ -1574,6 +1575,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     }
     if (o.contains(u"tableReadyText") && !o.value(u"tableReadyText").toString().trimmed().isEmpty())
         s.tableReadyText = ss(o.value(u"tableReadyText").toString());
+    s.orderReadyText = ss(o.value(u"orderReadyText").toString());
     s.textWebhook = ss(o.value(u"textWebhook").toString());
     for (const QJsonValue &v : o.value(u"menuCategories").toArray()) {
         const QJsonObject c = v.toObject();

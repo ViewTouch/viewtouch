@@ -5,6 +5,7 @@
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
+#include <QDateTime>
 #include <QQmlApplicationEngine>
 #include <functional>
 #include <QQuickItem>
@@ -185,6 +186,61 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
         window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/m193-now-serving-board.png"_s);
     }
 
+    // A rush: more than fit, a page at a time, the pages said.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    for (int i = 0; i < 24; ++i) {
+        REQUIRE(pos.startCheck(core::CheckType::Quick));
+        REQUIRE(pos.addItem(u"soda"_s));
+        REQUIRE(pos.sendOrder());
+        pos.releaseCheck();
+    }
+    pos.logout();
+    QTest::qWait(100);
+    QQuickItem *pages = named(board, u"boardPreparingPages"_s);
+    REQUIRE(pages);
+    CHECK(pages->isVisible());
+    CHECK(making == named(board, u"boardPreparing"_s));   // the same column, not a new one
+    CHECK(making->property("count").toInt() == 25);
+    CHECK(pages->property("text").toString().startsWith(u"1 of "_s));
+    // Turned after a few seconds, and kept while orders keep coming.
+    QTest::qWait(6500);
+    CHECK(pages->property("text").toString().startsWith(u"2 of "_s));
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+    pos.logout();
+    QTest::qWait(100);
+    CHECK(making->property("count").toInt() == 26);
+    CHECK(pages->property("text").toString().startsWith(u"2 of "_s));
+
+    // Every order picked up: the store's messages; an hour of that: dark,
+    // and the next order lights it again.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    for (const QVariant &o : pos.truckOrders())
+        REQUIRE(pos.orderPickedUp(o.toMap()[u"id"_s].toLongLong()));
+    pos.logout();
+    QTest::qWait(100);
+    QQuickItem *idle = named(board, u"boardIdle"_s);
+    QQuickItem *dark = named(board, u"boardDark"_s);
+    REQUIRE(idle);
+    REQUIRE(dark);
+    CHECK(idle->isVisible());
+    CHECK_FALSE(dark->isVisible());
+    board->setProperty("lastBusy", QDateTime::currentMSecsSinceEpoch() - 2 * 3'600'000.0);
+    board->setProperty("dark", true);   // (the minute's check, now)
+    CHECK(dark->isVisible());
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+    pos.logout();
+    QTest::qWait(100);
+    CHECK_FALSE(dark->isVisible());
+    CHECK_FALSE(idle->isVisible());
+
     // Someone logs in: the pages; out again: the board.
     REQUIRE(pos.loginWithPin(u"1234"_s));
     QTest::qWait(50);
@@ -194,6 +250,116 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
     CHECK(board->isVisible());
     qInstallMessageHandler(previous);
     CHECK(g_warnings == QStringList{});
+}
+
+TEST_CASE("Now Serving: a register's own screen facing the guests can be the board", "[ui][truck][board]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    app::PosData data = test::seedPosData();
+    data.settings.orderNumbers = true;
+    app::PosService pos(std::move(data), nullptr);
+    LayoutController c(std::move(*layout));
+    c.setPos(&pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    // Manager -> Terminals: this register's guest screen, the board.
+    QVariantList terminals = pos.adminRecords(u"terminals"_s);
+    int mine = -1;
+    for (int i = 0; i < terminals.size(); ++i)
+        if (terminals[i].toMap()[u"name"_s].toString() == pos.terminalName())
+            mine = i;
+    QVariantMap me = mine >= 0 ? terminals[mine].toMap() : QVariantMap{{u"name"_s, pos.terminalName()}};
+    me[u"guestScreen"_s] = u"wall"_s;
+    CHECK_FALSE(pos.adminSave(u"terminals"_s, mine, me));   // not a choice
+    me[u"guestScreen"_s] = u"board"_s;
+    REQUIRE(pos.adminSave(u"terminals"_s, mine, me));
+    CHECK(pos.terminalGuestScreen() == u"board"_s);
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.sendOrder());
+    pos.releaseCheck();
+
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)}, {u"customerDisplay"_s, true},
+                                 {u"width"_s, 2560}, {u"height"_s, 800}});
+    g_warnings.clear();
+    const QtMessageHandler previous = qInstallMessageHandler(collect);
+    engine.loadFromModule("ViewTouch", "Main");
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    QTest::qWait(100);
+    const std::function<QQuickItem *(QQuickItem *, const QString &)> named = [&](QQuickItem *r, const QString &name) -> QQuickItem * {
+        for (QQuickItem *i : r->childItems()) {
+            if (i->objectName() == name) return i;
+            if (QQuickItem *h = named(i, name)) return h;
+        }
+        return nullptr;
+    };
+    QQuickItem *making = named(window->contentItem(), u"boardPreparing"_s);
+    REQUIRE(making);
+    CHECK(making->isVisible());
+    CHECK(making->property("count").toInt() == 1);
+    CHECK_FALSE(named(window->contentItem(), u"nowServing"_s));   // not the order display's
+    qInstallMessageHandler(previous);
+    CHECK(g_warnings == QStringList{});
+}
+
+TEST_CASE("Now Serving: the chime is a real sound file", "[ui][truck][board]")
+{
+    const QString file = LayoutController::chimeFile();
+    QFile f(file);
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const QByteArray wav = f.readAll();
+    REQUIRE(wav.size() > 20000);
+    CHECK(wav.startsWith("RIFF"));
+    CHECK(wav.mid(8, 8) == "WAVEfmt ");
+    const auto u32 = [&](int at) { return quint32(quint8(wav[at])) | quint32(quint8(wav[at + 1])) << 8
+                                          | quint32(quint8(wav[at + 2])) << 16 | quint32(quint8(wav[at + 3])) << 24; };
+    CHECK(u32(4) == quint32(wav.size() - 8));      // RIFF size
+    CHECK(u32(24) == 22050u);                      // samples a second
+    CHECK(u32(40) == quint32(wav.size() - 44));    // its sound, all there
+}
+
+TEST_CASE("Counter service: an order page edited before 0.15 still gets Orders in Tables' place", "[ui][pages][truck][upgrade]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    // As it was saved then: Orders for a food truck only, Tables for restaurants.
+    vt::layout::Page *page = layout->page(u"order-template"_s);
+    REQUIRE(page);
+    for (vt::layout::Zone &z : page->zones) {
+        if (z.id == u"flow-orders")
+            z.extra.insert(u"showWhen"_s, QJsonObject{{u"service"_s, u"foodTruck"_s}});
+        if (z.id == u"flow-tables")
+            z.extra.insert(u"showWhen"_s, QJsonObject{{u"service"_s, u"restaurant"_s}});
+    }
+    app::PosData data = test::seedPosData();
+    data.settings.orderNumbers = true;
+    app::PosService pos(std::move(data), nullptr);
+    LayoutController c(std::move(*layout));
+    c.setPos(&pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(c.showPage(u"order-template"_s));
+    const auto shows = [&](const QString &zone) {
+        ZoneModel *m = c.zones();
+        for (int i = 0; i < m->rowCount(); ++i) {
+            const QModelIndex at = m->index(i);
+            if (m->data(at, ZoneModel::ZoneIdRole).toString() == zone)
+                return c.ruleShows(QJsonObject::fromVariantMap(m->data(at, ZoneModel::ShowWhenRole).toMap()));
+        }
+        FAIL("no zone " << zone.toStdString());
+        return false;
+    };
+    CHECK(shows(u"flow-orders"_s));
+    CHECK_FALSE(shows(u"flow-tables"_s));
+
+    // The setting off: Tables again, no Orders.
+    QVariantMap store = pos.adminRecords(u"store"_s).value(0).toMap();
+    store[u"orderNumbers"_s] = false;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK_FALSE(shows(u"flow-orders"_s));
+    CHECK(shows(u"flow-tables"_s));
 }
 
 namespace {

@@ -44,6 +44,10 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 #include <QSettings>
+#include <cmath>
+#include <QFileInfo>
+#include <QProcess>
+#include <QStandardPaths>
 
 using namespace Qt::StringLiterals;
 using vt::app::Navigator;
@@ -203,6 +207,50 @@ void LayoutController::sleepTimeout()
     }
     asleep_ = true;
     emit asleepChanged();
+}
+
+QString LayoutController::chimeFile()
+{
+    const QString file = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath(u"vtmodern-chime.wav"_s);
+    if (QFileInfo(file).size() > 44)
+        return file;
+    // Two notes (E6, C6), 0.35 s each, fading out: 16-bit mono at 22050 Hz.
+    constexpr int rate = 22050, perNote = rate * 35 / 100;
+    QByteArray pcm;
+    for (const double hz : {1318.5, 1046.5})
+        for (int i = 0; i < perNote; ++i) {
+            const double t = double(i) / rate, fade = 1.0 - double(i) / perNote;
+            const auto v = qint16(std::lround(9000.0 * fade * fade * std::sin(2 * M_PI * hz * t)));
+            pcm.append(char(v & 0xff)).append(char((v >> 8) & 0xff));
+        }
+    QByteArray wav;
+    const auto u32 = [&](quint32 v) { for (int b = 0; b < 4; ++b) wav.append(char((v >> (8 * b)) & 0xff)); };
+    const auto u16 = [&](quint16 v) { wav.append(char(v & 0xff)).append(char(v >> 8)); };
+    wav.append("RIFF");
+    u32(quint32(36 + pcm.size()));
+    wav.append("WAVEfmt ");
+    u32(16); u16(1); u16(1); u32(rate); u32(rate * 2); u16(2); u16(16);
+    wav.append("data");
+    u32(quint32(pcm.size()));
+    wav.append(pcm);
+    QSaveFile out(file);
+    if (out.open(QIODevice::WriteOnly)) {
+        out.write(wav);
+        out.commit();
+    }
+    return file;
+}
+
+bool LayoutController::chime()
+{
+    const QString file = chimeFile();
+    for (const QString &player : {u"pw-play"_s, u"aplay"_s, u"paplay"_s}) {
+        const QString path = QStandardPaths::findExecutable(player);
+        if (path.isEmpty())
+            continue;
+        return QProcess::startDetached(path, player == u"aplay" ? QStringList{u"-q"_s, file} : QStringList{file});
+    }
+    return false;
 }
 
 void LayoutController::wake()

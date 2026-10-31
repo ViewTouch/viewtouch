@@ -365,6 +365,43 @@ TEST_CASE("Counter service: a restaurant calls quick orders by number", "[truck]
     CHECK(other.checkInfo()[u"orderNumber"_s].toInt() == 0);
 }
 
+TEST_CASE("Orders by number: the guest texted once when it's ready, if the store says what", "[truck][texts]")
+{
+    app::PosData d = test::seedPosData();
+    d.settings.orderNumbers = true;
+    d.settings.storeName = "Corner Cafe";
+    app::PosShared shared(std::move(d), nullptr);
+    QList<std::pair<QString, QString>> texts;
+    shared.sendText = [&](const QString &to, const QString &message) { texts.append({to, message}); };
+    app::PosService pos(&shared, u"Counter 1"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const auto order = [&](const QVariantMap &customer) {
+        REQUIRE(pos.startCheck(core::CheckType::Quick));
+        REQUIRE(pos.addItem(u"soda"_s));
+        REQUIRE(pos.setCustomer(customer));
+        REQUIRE(pos.sendOrder());
+        const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+        pos.releaseCheck();
+        return id;
+    };
+    // No message set: no text.
+    const qint64 first = order({{u"name"_s, u"Ana"_s}, {u"phone"_s, u"5551234567"_s}});
+    REQUIRE(pos.orderReady(first));
+    CHECK(texts.isEmpty());
+
+    shared.settings.orderReadyText = "Hi {name}, order {number} is ready at {store}!";
+    const qint64 lee = order({{u"name"_s, u"Lee"_s}, {u"phone"_s, u"5559876543"_s}});
+    REQUIRE(pos.orderReady(lee));
+    REQUIRE(texts.size() == 1);
+    CHECK(texts[0].first == u"5559876543"_s);
+    CHECK(texts[0].second == u"Hi Lee, order #2 is ready at Corner Cafe!"_s);
+    REQUIRE(pos.orderReady(lee));   // Call Again: said again, not texted again
+    CHECK(texts.size() == 1);
+    // No phone on it: nothing to text.
+    REQUIRE(pos.orderReady(order({{u"name"_s, u"Sam"_s}})));
+    CHECK(texts.size() == 1);
+}
+
 TEST_CASE("Setup guide: a food truck from the first page", "[truck]")
 {
     app::PosData d = test::seedPosData();

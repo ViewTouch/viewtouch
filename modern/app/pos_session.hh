@@ -229,6 +229,8 @@ class PosSession : public QObject {
     Q_PROPERTY(QString terminalLook READ terminalLook NOTIFY adminChanged)
     // This terminal's on-screen keyboard: "on", "off" or "" (automatic).
     Q_PROPERTY(QString terminalKeyboard READ terminalKeyboard NOTIFY adminChanged)
+    // Its screen facing the guests: "" their order, "board" the Now Serving board.
+    Q_PROPERTY(QString terminalGuestScreen READ terminalGuestScreen NOTIFY adminChanged)
     // Orders opened on this screen start on this menu category (Terminals).
     Q_PROPERTY(QString terminalStartCategory READ terminalStartCategory NOTIFY adminChanged)
     // This terminal's card reader: "stripe", "simulated" or "" (none).
@@ -337,7 +339,8 @@ public:
     // Desktop (each person's on a ViewTouch computer) and USB sticks.
     Q_INVOKABLE QVariantList pictureFiles() const;
     // On a ViewTouch computer: open the USB sticks plugged in (read-only) for
-    // pictureFiles. False where it can't (then they're opened by the desktop).
+    // pictureFiles, without the screen waiting (usbSticksOpened says when).
+    // False where it can't (then they're opened by the desktop).
     Q_INVOKABLE bool openUsbSticks();
     Q_INVOKABLE void removeStoreImage(const QString &ref) { invoke(QStringLiteral("removeStoreImage"), {ref}); }
     // "Logo Final.PNG" -> "store:logo-final.png" ("" if not a picture type).
@@ -397,6 +400,7 @@ public:
     virtual QVariantList truckOrders() const = 0;
     virtual QString terminalLook() const = 0;
     virtual QString terminalKeyboard() const = 0;
+    virtual QString terminalGuestScreen() const = 0;
     virtual QString terminalStartCategory() const = 0;
     virtual QString terminalCardReader() const = 0;
     virtual QVariantMap readerToken() const = 0;
@@ -727,6 +731,7 @@ signals:
     void queriesChanged();
     void onlineChanged();
     void notice(const QString &message);
+    void usbSticksOpened(bool ok);
     void loggedInChanged(bool loggedIn);
     void checkClosed(qint64 checkId);
 

@@ -19,6 +19,7 @@ Rectangle {
     readonly property string logo: !prompt.logo || !pos ? "" : (pos.imageRevision < 0 ? "" : pos.imageUrl(prompt.logo))
     readonly property real unit: Math.max(14, Math.min(width, height * 1.6) / 40)
     signal peek()
+    signal chime()   // an order just called: a sound, where the TV has one
 
     color: "#0b0e12"
 
@@ -36,6 +37,7 @@ Rectangle {
         if (Object.keys(newly).length > 0) {
             fresh = Object.assign({}, fresh, newly)
             freshTimer.restart()
+            chime()
         }
     }
     Timer { id: freshTimer; interval: 8000; onTriggered: b.fresh = ({}) }
@@ -78,11 +80,15 @@ Rectangle {
         spacing: b.unit
         Repeater {
             // Preparing, then Ready (the wider side: it's what guests look for).
-            model: [{title: qsTr("Preparing"), list: b.making, color: "#c7cedb", big: false, share: 2},
-                    {title: qsTr("Ready"), list: b.ready, color: "#3fbf74", big: true, share: 3}]
+            // Two columns that stay: only their orders change (rebuilt with each
+            // order, a page turned back to the first and the flashing restarted).
+            model: 2
             delegate: ColumnLayout {
                 id: column
-                required property var modelData
+                required property int index
+                readonly property var modelData: index === 0
+                    ? {title: qsTr("Preparing"), list: b.making, color: "#c7cedb", big: false, share: 2}
+                    : {title: qsTr("Ready"), list: b.ready, color: "#3fbf74", big: true, share: 3}
                 objectName: modelData.big ? "boardReady" : "boardPreparing"
                 readonly property int count: modelData.list.length
                 Layout.fillWidth: true
@@ -98,6 +104,16 @@ Rectangle {
                     font.bold: true
                 }
                 Rectangle { Layout.fillWidth: true; height: 4; radius: 2; color: column.modelData.color; opacity: 0.6 }
+                // Which page of them (more than fit at once).
+                Text {
+                    objectName: column.modelData.big ? "boardReadyPages" : "boardPreparingPages"
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    visible: flow.pages > 1
+                    text: qsTr("%1 of %2").arg(flow.page + 1).arg(flow.pages)
+                    color: "#7d8796"
+                    font.pixelSize: b.unit * 0.9
+                }
                 Flow {
                     id: flow
                     Layout.fillWidth: true
@@ -106,8 +122,19 @@ Rectangle {
                     clip: true
                     readonly property real cardH: b.unit * (column.modelData.big ? 4.4 : 3)
                     readonly property int across: column.modelData.big ? 2 : 1
+                    // More than fit: a page at a time, turned every few seconds.
+                    readonly property int perPage: Math.max(1, Math.floor((height + spacing) / (cardH + spacing)) * across)
+                    readonly property int pages: Math.max(1, Math.ceil(column.count / perPage))
+                    property int page: 0
+                    onPagesChanged: if (page >= pages) page = 0
+                    Timer {
+                        interval: 6000
+                        running: flow.pages > 1
+                        repeat: true
+                        onTriggered: flow.page = (flow.page + 1) % flow.pages
+                    }
                     Repeater {
-                        model: column.modelData.list
+                        model: column.modelData.list.slice(flow.page * flow.perPage, (flow.page + 1) * flow.perPage)
                         delegate: Rectangle {
                             id: card
                             required property var modelData
@@ -144,15 +171,68 @@ Rectangle {
         }
     }
 
-    Text {
-        anchors.centerIn: parent
+    // Nothing waiting: the store's pictures and messages in turn (Store
+    // Settings, as on the customer display), and what the board is for.
+    Item {
+        id: idle
+        objectName: "boardIdle"
+        anchors { left: parent.left; right: parent.right; top: header.bottom; bottom: parent.bottom; margins: b.unit * 2 }
         visible: b.orders.length === 0
-        text: qsTr("Your order number shows here while it's made, and when it's ready.")
-        color: "#7d8796"
-        font.pixelSize: b.unit * 1.3
-        width: parent.width * 0.7
-        wrapMode: Text.WordWrap
-        horizontalAlignment: Text.AlignHCenter
+        readonly property var slides: b.prompt.slides ?? []
+        property int index: 0
+        Timer {
+            interval: 8000
+            running: idle.visible && idle.slides.length > 1
+            repeat: true
+            onTriggered: idle.index = (idle.index + 1) % Math.max(1, idle.slides.length)
+        }
+        readonly property string current: slides.length ? slides[index % slides.length] : ""
+        readonly property bool picture: current.startsWith("image:")
+        Image {
+            anchors { fill: parent; bottomMargin: b.unit * 3 }
+            visible: idle.picture
+            fillMode: Image.PreserveAspectFit
+            source: !idle.picture || !b.pos ? "" : (b.pos.imageRevision < 0 ? "" : b.pos.imageUrl(idle.current.slice(6)))
+        }
+        Text {
+            anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; verticalCenterOffset: -b.unit }
+            visible: !idle.picture && idle.current !== ""
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: idle.current
+            color: "white"
+            font.pixelSize: b.unit * 2.2
+            font.bold: true
+        }
+        Text {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: qsTr("Your order number shows here while it's made, and when it's ready.")
+            color: "#7d8796"
+            font.pixelSize: b.unit * 1.3
+        }
+    }
+
+    // An hour with nothing to show (closed, say): dark, to spare the TV; the
+    // next order lights it again.
+    property double lastBusy: Date.now()
+    property bool dark: false
+    onOrdersChanged: if (orders.length > 0) { lastBusy = Date.now(); dark = false }
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: b.dark = b.orders.length === 0 && Date.now() - b.lastBusy > b.darkAfterMs
+    }
+    property int darkAfterMs: 3600000
+    Rectangle {
+        objectName: "boardDark"
+        anchors.fill: parent
+        visible: b.dark
+        color: "black"
+        z: 5
+        TapHandler { onTapped: { b.lastBusy = Date.now(); b.dark = false } }
     }
 
     // Held for three seconds: the login page underneath, for a minute.

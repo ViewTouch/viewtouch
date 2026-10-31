@@ -70,6 +70,9 @@ struct TerminalConfig {
     // The on-screen keyboard for typing: "on", "off", or empty = on (but the
     // phone's or tablet's own keyboard on Android).
     std::string keyboard;
+    // Its second screen facing the guests: empty = their order and paying (the
+    // customer display); "board" = the Now Serving board, full screen.
+    std::string guestScreen;
     // Phone orders need a name before Send here: "yes", "no", or empty = the person's / the store's.
     std::string requireName;
     // Its prep labels print here (a printer id); empty = the store's label printer.
@@ -563,6 +566,9 @@ struct PosSettings {
     // Tip choices offered to the guest (percent of the check before gratuity).
     std::vector<int> tipPercents{15, 18, 20, 25};
     std::string tableReadyText = "Hi {name}, your table at {store} is ready! Please come to the host stand.";
+    // Texted when an order called by number is ready (its guest's phone on
+    // the check); empty: no text. {name}, {number}, {store}.
+    std::string orderReadyText;
     std::string textWebhook;
 
     bool hasDrawer(const std::string &terminal) const

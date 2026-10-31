@@ -30,7 +30,9 @@ ApplicationWindow {
     // home | network | time | updates | help | reset | about | setup
     property string panel: station.role === "" ? "setup" : "home"
     // A newer ViewTouch found online (its version), to install.
-    property string onlineReady: ""
+    // A newer ViewTouch online (the home screen looks twice a day).
+    readonly property string onlineReady: station.newVersion
+    property bool askedOnline: false   // said only when someone touched Check
     Timer { id: restartSoon; interval: 3000; onTriggered: Qt.quit() }
 
     // Settings opened with the PIN stay open for two minutes.
@@ -113,13 +115,14 @@ ApplicationWindow {
                 poweroff: ["", qsTr("Couldn't shut down")]
             }[action] ?? [qsTr("Done."), qsTr("That didn't work")]
             // A newer ViewTouch online: what the helper's last line says.
+            if (action === "online-check" && !root.askedOnline)
+                return   // the twice-a-day look: quiet (Updates says when one's ready)
             if (ok && action === "online-check") {
+                root.askedOnline = false
                 const words = (message ?? "").split(" ")
-                root.onlineReady = words[0] === "READY" ? words[1] : ""
                 root.say(words[0] === "READY" ? qsTr("ViewTouch %1 is ready (this computer has %2).").arg(words[1]).arg(words[2] ?? "")
                                               : qsTr("This computer has the newest ViewTouch (%1).").arg(words[1] ?? ""), true)
             } else if (ok && action === "online-update") {
-                root.onlineReady = ""
                 root.say(qsTr("ViewTouch %1 is installed. Starting it again…").arg((message ?? "").split(" ")[1] ?? ""), true)
                 restartSoon.start()   // the home screen on the new version (its service starts it again)
             }
@@ -640,7 +643,7 @@ ApplicationWindow {
                     text: qsTr("Check for a New ViewTouch")
                     tint: Ui.accent
                     enabled: !root.station.busy
-                    onClicked: root.station.checkOnline()
+                    onClicked: { root.askedOnline = true; root.station.checkOnline() }
                 }
                 BigButton {
                     objectName: "installOnline"
@@ -650,6 +653,15 @@ ApplicationWindow {
                     enabled: !root.station.busy
                     onClicked: root.station.installOnline()
                 }
+            }
+            RowLayout {
+                spacing: root.u
+                Switch {
+                    objectName: "autoUpdate"
+                    checked: root.station.autoUpdate
+                    onToggled: root.station.setAutoUpdate(checked)
+                }
+                Note { text: qsTr("Install a new ViewTouch by itself at night (between 3 and 5 AM); ViewTouch starts again on it") }
             }
             Note { text: qsTr("Security updates for the computer install by themselves each night; Update Now gets them all at once.") }
             RowLayout {

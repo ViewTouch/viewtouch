@@ -248,13 +248,24 @@ bool PosSession::openUsbSticks()
     const QString helper = u"/usr/libexec/vtmodern/vtmodern-device"_s;
     if (!QFileInfo(helper).isExecutable())
         return false;
-    QProcess p;
-    p.start(u"sudo"_s, {u"-n"_s, helper, u"usb-open"_s});
-    if (!p.waitForFinished(15000) || p.exitCode() != 0) {
-        const QString why = QString::fromUtf8(p.readAllStandardError()).trimmed();
-        emit notice(why.isEmpty() ? tr("No USB stick found.") : why);
-        return false;
-    }
+    auto *p = new QProcess(this);
+    connect(p, &QProcess::finished, this, [this, p](int code, QProcess::ExitStatus status) {
+        p->deleteLater();
+        const bool ok = status == QProcess::NormalExit && code == 0;
+        if (!ok) {
+            const QString why = QString::fromUtf8(p->readAllStandardError()).trimmed();
+            emit notice(why.isEmpty() ? tr("No USB stick found.") : why.split(u'\n').last());
+        }
+        emit usbSticksOpened(ok);
+    });
+    connect(p, &QProcess::errorOccurred, this, [this, p](QProcess::ProcessError e) {
+        if (e != QProcess::FailedToStart)
+            return;
+        p->deleteLater();
+        emit notice(tr("No USB stick found."));
+        emit usbSticksOpened(false);
+    });
+    p->start(u"sudo"_s, {u"-n"_s, helper, u"usb-open"_s});
     return true;
 }
 

@@ -132,7 +132,10 @@ ApplicationWindow {
         x: root.posWidth
         width: root.width - root.posWidth
         height: root.height
-        sourceComponent: CustomerDisplay { pos: root.controller.pos as PosService }
+        // Manager -> Terminals: the Now Serving board instead of their order.
+        sourceComponent: ((root.controller.pos as PosService)?.terminalGuestScreen ?? "") === "board" ? guestBoard : guestOrder
+        Component { id: guestOrder; CustomerDisplay { pos: root.controller.pos as PosService } }
+        Component { id: guestBoard; NowServing { pos: root.controller.pos as PosService; onChime: root.controller.chime() } }
     }
 
     ColumnLayout {
@@ -1079,6 +1082,7 @@ ApplicationWindow {
                  && !peeking && !(root.controller.pos as PosService).loggedIn
         pos: root.controller.pos as PosService
         onPeek: { peeking = true; peekTimer.restart() }
+        onChime: root.controller.chime()
         Timer { id: peekTimer; interval: 60000; onTriggered: nowServing.peeking = false }
     }
 

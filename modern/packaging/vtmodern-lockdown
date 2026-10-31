@@ -64,10 +64,11 @@ apt-get update -qq
 # turned on, below). locales: the language and region, below.
 # libgl1-mesa-dri: drawing in software when the graphics card can't
 # (vtmodern-screen; a virtual machine without 3D acceleration). kbd: chvt,
-# to the ViewTouch screen at boot (not in a minimal Debian).
+# to the ViewTouch screen at boot (not in a minimal Debian). wlr-randr: the
+# screen turned (Display). alsa-utils: aplay, the Now Serving board's chime.
 apt-get install -y --no-install-recommends cage wlr-randr qt6-wayland nftables unattended-upgrades rfkill \
     network-manager fonts-dejavu-core fonts-inter fonts-noto-cjk fonts-noto-color-emoji openssh-server \
-    sudo locales libgl1-mesa-dri kbd
+    sudo locales libgl1-mesa-dri kbd alsa-utils
 
 # --- the account ViewTouch runs as ----------------------------------------------------
 # Normally "viewtouch" (a system account). If someone made "viewtouch" their

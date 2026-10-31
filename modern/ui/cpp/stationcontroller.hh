@@ -53,6 +53,10 @@ class StationController : public QObject {
     // Restart and Shut Down ask for the maintainer's code (staff can't power
     // the computer off in the middle of service).
     Q_PROPERTY(bool lockPower READ lockPower NOTIFY configChanged)
+    // A newer ViewTouch online (looked for twice a day, quietly): its version,
+    // else empty. With autoUpdate, it installs itself between 3 and 5 AM.
+    Q_PROPERTY(QString newVersion READ newVersion NOTIFY newVersionChanged)
+    Q_PROPERTY(bool autoUpdate READ autoUpdate NOTIFY configChanged)
 
 public:
     // ViewTouch is started with this data folder and settings file (--config),
@@ -79,6 +83,8 @@ public:
     int brightness() const;
     int rotation() const { return rotation_; }
     bool lockPower() const { return lockPower_; }
+    QString newVersion() const { return newVersion_; }
+    bool autoUpdate() const { return autoUpdate_; }
 
     // Start ViewTouch (on `afterLogin` once someone logs in: a page id, or "setup").
     Q_INVOKABLE void startPos(const QString &afterLogin = {});
@@ -131,6 +137,10 @@ public:
     Q_INVOKABLE void setBrightness(int percent);
     Q_INVOKABLE void setRotation(int degrees);
     Q_INVOKABLE void setLockPower(bool on);
+    Q_INVOKABLE void setAutoUpdate(bool on);
+    // Twice a day: look for a new ViewTouch; at night, with autoUpdate, install
+    // it. `now` for a test.
+    void updatesTick(const QDateTime &now = QDateTime::currentDateTime());
     // The last week of ViewTouch's logs, onto a USB stick (for whoever helps).
     Q_INVOKABLE void saveLogs();
     Q_INVOKABLE void refreshStatus();
@@ -146,6 +156,7 @@ signals:
     void remoteSupportChanged();
     void statusChanged();
     void displayChanged();
+    void newVersionChanged();
     // Each action's end: ok, and what to say.
     void finished(const QString &action, bool ok, const QString &message);
 
@@ -192,6 +203,11 @@ private:
     QVariantMap status_;
     int rotation_ = 0;
     bool lockPower_ = false;
+    bool autoUpdate_ = false;
+    QString newVersion_;
+    QDateTime lookedOnline_;
+    QDate installedOn_;
+    QTimer updatesTimer_;
     void applyRotation();
     QString backupDir() const;
 };
