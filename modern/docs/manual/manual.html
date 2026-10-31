@@ -74,6 +74,12 @@
 </ul>
 
 <!-- ======================================================================= -->
+<h1>What's new since 0.14</h1>
+<ul>
+<li><b>A Now Serving board on a TV</b>: guests see their order numbers while they're made and when they're ready (Manager → Terminals, or the home screen's first-time setup).</li>
+<li><b>Counter service in a restaurant</b>: <b>Restaurant: call orders by number</b> numbers quick orders like a food truck's, with the Orders page, the customer display and the board (chapter 11).</li>
+</ul>
+
 <h1>What's new in 0.14</h1>
 <ul>
 <li><b>The home screen</b> of a computer only for ViewTouch: <b>Restore a Backup</b> by touch (from the computer or a USB stick); <b>Display</b> (brightness, a screen turned); the top bar says what to look at (backups, disk, ViewTouch stopping, the network) or when the last backup was; <b>Updates</b> says when a new version is ready; <b>Save Logs to USB</b> under About; Restart and Shut Down can ask for the maintainer's code (chapter 1).</li>
@@ -994,6 +1000,13 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <td><img src="shots/m178-truck-ready-strip.jpg" width="280" height="158"><br><small>While the next guest orders</small></td>
 </tr></table>
 <p>The customer display (a second screen facing the guests, chapter 6) shows <b>Ready</b> and <b>Preparing</b> between guests: <i>#1 Ana</i> in green once it's called, <i>#2 Lee</i> while it's made. While the next guest orders, their order fills the screen and a green strip says who is ready. Picked-up orders leave it. Pagers' numbers aren't shown, only order numbers and names. With nothing waiting, it shows the store's pictures and messages as usual.</p>
+
+<h3>A Now Serving board on a TV</h3>
+<p class="shot"><img src="shots/m193-now-serving-board.jpg" width="560" height="315"></p>
+<p class="caption">The Now Serving board: Preparing, and Ready in big green cards.</p>
+<p>A TV on the wall can show the guests the same thing, full screen. Plug the TV into a small computer (a Raspberry Pi, say) installed <b>Only for ViewTouch</b>, and choose <b>Now Serving board</b> in its first-time setup; or on a screen already joined to the store, set <b>Manager → Terminals → Screen layout</b> to <b>Now Serving board</b>. Nobody works on it and it never goes to sleep. An order shows under <b>Preparing</b> once it's sent, moves to <b>Ready</b> (big and green, flashing for a few seconds) when it's called, and leaves when it's picked up, or 15 minutes after it was called. To reach the login page (a manager closing ViewTouch, say), hold the top-left corner for 3 seconds; the board comes back a minute after.</p>
+<h3>Counter service in a restaurant</h3>
+<p>A restaurant where guests order at the counter can call orders by number too: turn on <b>Manager → Store Settings → Restaurant: call orders by number</b>. Each quick order then gets a number from #1 each day (with the guest's name, when it's on the check), and the order page's <b>Orders</b> button takes the place of <b>Tables</b>. Everything above works the same way: the Orders page, Ready and Picked Up, a kitchen screen calling an order when its last item is bumped, the customer display and the Now Serving board. Logins, tables and the rest of the restaurant stay as they are.</p>
 
 <h3>When a second screen loses the main computer</h3>
 <p>A truck with a second screen (a tablet at the window, say) keeps selling if the cable or Wi-Fi to the main computer is lost: it goes on as the Counter, with names, pagers and cash. Its orders are numbered from 100 above the store's (<i>#103</i>), so they never match the main computer's, which keeps counting. When it's back, its orders reach the main computer with their numbers, names and pagers, and show on Orders. (A truck with one computer has nothing to lose: the register is the store's computer.)</p>

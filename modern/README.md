@@ -79,6 +79,7 @@ Then it runs **`sudo vtmodern-setup`**, which asks what this machine is (any tim
 | Kitchen screen | `vtmodern-setup kitchen [host] [name]` | Opens on the orders to make; its Station button picks what it shows |
 | Self-order kiosk | `vtmodern-setup selforder [host] [name]` | Guests order on their own and pay at the counter |
 | Time clock | `vtmodern-setup timeclock [host] [name]` | Staff clock in and out and see their schedules |
+| Now Serving board | `vtmodern-setup board [host] [name]` | A TV for guests: order numbers being made and ready |
 | Standby server | `vtmodern-setup standby CODE [host]` | A live copy of the data that takes over if the main machine stops (pairs once with the code) |
 | Nothing | `vtmodern-setup off` | ViewTouch doesn't start at boot |
 
@@ -360,6 +361,8 @@ Store Settings → *How you serve* (`PosSettings::serviceMode`), or one screen's
 - **Orders:** quick checks on a truck are numbered from 1 each business day (`Check::orderNumber`, label "#27 Maria" once named) and carry the guest's pager (`Check::pager`, + Pager on the check; one waiting order a pager). The **Orders** page (`truckOrders` widget) lists those sent and not picked up: **Ready** (`readyAt`) tells every truck screen "#27 Maria is ready: buzz pager 12", **Picked Up** (`pickedUpAt`) takes it off. A kitchen screen bumping the last of an order calls it too. Pagers are buzzed by hand on the pager system's transmitter.
 - **Retail:** logins stay; the menu comes first instead of the floor plan, and the order screen has Log Out where restaurants have Tables, and Manager (for a manager only: `showWhen.login` `manager`) where they have Send. Lines rung in are `kitchenHide` (no tickets, no kitchen screen) and Send is hidden: Pay finishes the sale. A scan on any page rings the item in and goes back to the sale (`LayoutController::scanned`).
 - **Now serving:** on a truck, the customer display shows Ready and Preparing between guests, and a Ready strip while the next guest orders (`CustomerDisplay.qml`, from `truckOrders`).
+- **Counter service:** a restaurant numbers its quick orders too with **Restaurant: call orders by number** (`Settings::orderNumbers`; `PosService::numbersOrders`, `serviceInfo().numbers`). The order page's **Orders** button (`showWhen.numbers`) takes the Tables button's place; pages edited before keep working (their Orders button's `service: foodTruck` reads as `numbers`).
+- **Now Serving board:** a screen set to **Now Serving board** (Manager → Terminals, `--screen nowServing`, `vtmodern-setup board`, or the home screen's first-time setup) shows only the board on a TV (`NowServing.qml`): Preparing, and Ready in big green cards that flash when called, until picked up (or 15 minutes after). Nobody works on it and it never sleeps; holding the top-left corner for 3 seconds shows the login page for a minute.
 - **Offline:** a screen's offline kit carries `firstOrderNumber`, a hundred on from the store's last order for each screen, so orders taken offline never share a number with the store's. `setCustomer` and `setPager` work offline; taken in, the order keeps its number, name and pager.
 - Buttons can show for one way only: `showWhen.service` (`restaurant`, `foodTruck`, `retail`, or several with commas).
 
