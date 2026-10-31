@@ -43,6 +43,8 @@ public:
     const Credentials &credentials() const { return credentials_; }
     void connectTo(const QString &host, quint16 port);
     bool isConnected() const { return welcomed_; }
+    // The connection itself, for tests that send what a screen never would.
+    QSslSocket *socketForTests() { return &socket_; }
     bool isRejected() const { return rejected_; }
     // Where to look for a server that moved (tests use their own port).
     void setDiscoveryPort(quint16 port) { discoveryPort_ = port; }

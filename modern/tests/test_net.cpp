@@ -1,5 +1,6 @@
 #include <functional>
 #include <limits>
+#include <random>
 #include <catch2/catch_test_macros.hpp>
 
 #include "app/pos_json.hh"
@@ -1633,4 +1634,161 @@ TEST_CASE("Now Serving board on its own computer: nobody logged in, the orders a
     REQUIRE(waitFor([&] { return tv.remote->truckOrders().size() == 1; }));
     CHECK(tv.remote->truckOrders()[0].toMap()[u"label"_s].toString() == u"#2 Lee"_s);
     CHECK_FALSE(tv.remote->loggedIn());
+}
+
+TEST_CASE("Fuzz: what a paired screen sends that nobody meant to; the store stays up and its books balance",
+          "[net][fuzz]")
+{
+    Store store;
+    store.shared.settings.serviceMode = "";
+    // A register doing its work, and a screen sending odd things.
+    Screen reg(store.terminal(u"Front"_s));
+    reg.pin("1234");
+    const int rounds = std::max(1, qEnvironmentVariableIntValue("VTM_FUZZ_ROUNDS"));
+    const QStringList names = app::PosService::commandNames();
+    // A real check, as a screen sends one taken offline, to bend.
+    core::Check model;
+    model.id = 900;
+    model.offlineId = "fuzz-0";
+    model.type = core::CheckType::Takeout;
+    model.status = core::CheckStatus::Closed;
+    model.serverId = store.shared.employees.front().id;
+    model.serverName = store.shared.employees.front().name;
+    model.openedAt = store.shared.now() - 600'000;
+    model.closedAt = store.shared.now();
+    model.addItem(store.shared.menu.front());
+    model.addPayment({"cash", "Cash", core::TenderKind::Cash, 0}, model.totals(store.shared.settings.tax).total);
+    const QJsonObject modelJson = app::toJson(model);
+
+    for (int round = 1; round <= rounds; ++round) {
+        std::mt19937 rng{unsigned(round)};
+        const auto pick = [&](int n) { return int(rng() % unsigned(std::max(1, n))); };
+        auto fuzzer = store.terminal(u"Fuzzer %1"_s.arg(round));
+        QSslSocket *raw = fuzzer->socketForTests();
+        const auto oddJson = [&](auto &self, int depth) -> QJsonValue {
+            switch (pick(depth > 2 ? 6 : 9)) {
+            case 0: return QJsonValue();
+            case 1: return pick(2) == 0;
+            case 2: return double(pick(2) ? -1e300 : 9.3e18);
+            case 3: return QString(pick(3) ? 3 : 4000, QChar(u'a' + pick(26)));
+            case 4: return pick(1000) - 500;
+            case 5: return names[pick(int(names.size()))];
+            case 6: { QJsonArray a; for (int i = pick(4); i > 0; --i) a << self(self, depth + 1); return a; }
+            case 7: { QJsonObject o; for (int i = pick(4); i > 0; --i) o.insert(QStringList{u"t"_s, u"m"_s, u"a"_s, u"id"_s, u"check"_s, u"uid"_s}[pick(6)], self(self, depth + 1)); return o; }
+            default: return QString::fromStdString(store.shared.menu[std::size_t(pick(int(store.shared.menu.size())))].id);
+            }
+        };
+        for (int n = 0; n < 60 && raw->state() == QAbstractSocket::ConnectedState; ++n) {
+            QByteArray line;
+            switch (pick(9)) {
+            case 0: {   // bytes, not JSON
+                for (int i = 1 + pick(200); i > 0; --i)
+                    line += char(pick(256));
+                line.replace('\n', ' ');
+                break;
+            }
+            case 1:   // JSON nested deeper than anyone would
+                line = QByteArray(3000, '[') + QByteArray(3000, ']');
+                break;
+            case 2: {   // a message with the wrong types
+                QJsonObject m{{u"t"_s, oddJson(oddJson, 1)}, {u"m"_s, oddJson(oddJson, 1)}, {u"a"_s, oddJson(oddJson, 1)}};
+                line = QJsonDocument(m).toJson(QJsonDocument::Compact);
+                break;
+            }
+            case 3: case 4: case 5: {   // a call, its arguments odd
+                QJsonArray a;
+                for (int i = pick(4); i > 0; --i)
+                    a << oddJson(oddJson, 1);
+                const QJsonObject m{{u"t"_s, u"call"_s}, {u"id"_s, QJsonValue(pick(1000))}, {u"m"_s, QJsonValue(names[pick(int(names.size()))])}, {u"a"_s, a}};
+                line = QJsonDocument(m).toJson(QJsonDocument::Compact);
+                break;
+            }
+            case 6: case 7: {   // a check "taken offline", bent
+                QJsonObject check = modelJson;
+                check.insert(u"offlineId"_s, u"fuzz-%1-%2"_s.arg(round).arg(n));
+                for (int i = 1 + pick(3); i > 0; --i) {
+                    const QStringList keys = check.keys();
+                    check.insert(keys[pick(int(keys.size()))], oddJson(oddJson, 1));
+                }
+                const QJsonObject m{{u"t"_s, u"offlineChecks"_s},
+                                    {u"checks"_s, QJsonArray{QJsonObject{{u"uid"_s, n}, {u"check"_s, check}}}}};
+                line = QJsonDocument(m).toJson(QJsonDocument::Compact);
+                break;
+            }
+            default: {   // the other messages, odd
+                const QJsonObject m{{u"t"_s, QJsonValue(QStringList{u"hello"_s, u"pair"_s, u"pong"_s, u"want"_s, u"getUpdate"_s}[pick(5)])},
+                                    {u"key"_s, oddJson(oddJson, 1)}, {u"on"_s, oddJson(oddJson, 1)}};
+                line = QJsonDocument(m).toJson(QJsonDocument::Compact);
+            }
+            }
+            raw->write(line + '\n');
+            raw->flush();
+            QTest::qWait(2);
+        }
+        QTest::qWait(50);
+        // The register still gets its answer, promptly.
+        bool answered = false;
+        QElapsedTimer took;
+        took.start();
+        reg.remote->invoke(u"clearEntry"_s, {}, [&](const QVariant &) { answered = true; });
+        REQUIRE(waitFor([&] { return answered; }, 3000));
+        CHECK(took.elapsed() < 1500);
+        // Every closed check the store has: paid in full, its parts adding up.
+        for (const core::Check &c : store.shared.closedToday) {
+            const core::Totals t = c.totals(store.shared.settings.tax);
+            INFO("round " << round << ", check " << c.id << " (" << c.offlineId << ")");
+            CHECK(t.balance.cents() <= 0);
+            CHECK(t.total == t.subtotal + t.tax + t.gratuity);
+        }
+    }
+}
+
+TEST_CASE("Working offline: a check that comes in unpaid is open, not a sale; the store's tax rates", "[net][offline][fuzz][found]")
+{
+    test::RecordingSink sink;
+    PosShared shared(test::seedPosData(), &sink);
+    PosService store(&shared, u"Bar"_s);
+    const auto offlineCheck = [&](const char *uid, Money paid) {
+        core::Check c;
+        c.id = 500;
+        c.offlineId = uid;
+        c.type = core::CheckType::Takeout;
+        c.status = core::CheckStatus::Closed;
+        c.serverId = shared.employees.front().id;
+        c.serverName = shared.employees.front().name;
+        c.openedAt = shared.now() - 600'000;
+        c.closedAt = shared.now();
+        c.addItem(shared.menu.front());
+        if (paid.cents() > 0)
+            c.addPayment({"cash", "Cash", core::TenderKind::Cash, 0}, paid);
+        return c;
+    };
+    // Paid in full: a sale.
+    core::Check paid = offlineCheck("ok", Money());
+    paid.addPayment({"cash", "Cash", core::TenderKind::Cash, 0}, paid.totals(shared.settings.tax).total);
+    const qint64 sold = store.takeOfflineCheck(app::toJson(paid))[u"id"_s].toLongLong();
+    REQUIRE(sold > 0);
+    CHECK(std::ranges::any_of(shared.closedToday, [&](const core::Check &c) { return c.id == sold; }));
+
+    // "Closed" with nothing paid: open here, said so, not in today's sales.
+    const qint64 owed = store.takeOfflineCheck(app::toJson(offlineCheck("owed", Money())))[u"id"_s].toLongLong();
+    REQUIRE(owed > 0);
+    CHECK(std::ranges::none_of(shared.closedToday, [&](const core::Check &c) { return c.id == owed; }));
+    REQUIRE(shared.open.contains(owed));
+    CHECK(shared.open.at(owed).status == core::CheckStatus::Open);
+    CHECK(std::ranges::any_of(shared.open.at(owed).events, [](const core::CheckEvent &e) {
+        return QString::fromStdString(e.what).contains(u"not paid in full"_s);
+    }));
+
+    // Taxed at no tax by the screen: the store's rates, and short now, so open too.
+    core::Check untaxed = offlineCheck("untaxed", Money());
+    core::TaxRates none;
+    untaxed.closedRates = none;
+    untaxed.addPayment({"cash", "Cash", core::TenderKind::Cash, 0}, untaxed.totals(none).total);
+    const qint64 fixed = store.takeOfflineCheck(app::toJson(untaxed))[u"id"_s].toLongLong();
+    REQUIRE(shared.open.contains(fixed));
+    CHECK(shared.open.at(fixed).totals(shared.settings.tax).tax.cents() > 0);
+    CHECK(std::ranges::any_of(shared.open.at(fixed).events, [](const core::CheckEvent &e) {
+        return QString::fromStdString(e.what).contains(u"store's rates"_s);
+    }));
 }

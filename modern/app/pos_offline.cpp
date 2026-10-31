@@ -150,6 +150,20 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
         return {{u"skipped"_s, true}};   // a practice check, or one thrown away: nothing to keep
     // Only what a screen can take offline.
     std::erase_if(c.payments, [](const Payment &p) { return !offlineTender(p.kind); });
+    // Taxed at the store's rates: the store says what tax is (a screen's
+    // copy out of date, or wrong, isn't the books').
+    const bool otherRates = c.closedRates && !(*c.closedRates == s_->settings.tax);
+    if (otherRates)
+        c.closedRates = s_->settings.tax;
+    // "Closed" but not paid in full (a payment it can't take offline gone,
+    // or a screen's mistake): open here, for someone to settle, not a sale
+    // in the books with money still owed on it.
+    const bool unpaid = c.status == CheckStatus::Closed && c.totals(s_->settings.tax).balance.cents() > 0;
+    if (unpaid) {
+        c.status = CheckStatus::Open;
+        c.closedAt = 0;
+        c.closedRates.reset();
+    }
 
     // Its number, if it's the next one here; otherwise the next one.
     const std::int64_t was = c.id;
@@ -158,6 +172,10 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
     noteEvent(c, c.id == was ? tr("Taken while %1 was offline").arg(terminal_)
                              : tr("Taken while %1 was offline, as #%2").arg(terminal_).arg(was),
               "offline");
+    if (otherRates)
+        noteEvent(c, tr("Taxed at the store's rates (the screen had others)"), "offline");
+    if (unpaid)
+        noteEvent(c, tr("Came in closed but not paid in full: open again, to settle"), "offline");
     // What went to the kitchen used up its stock here too.
     std::vector<OrderLine> sent;
     for (const OrderLine &l : c.lines)
