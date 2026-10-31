@@ -373,3 +373,45 @@ TEST_CASE("Exceptions: someone far above everyone else on shift is flagged", "[r
     const std::vector<std::string> alone = rowsOf(core::exceptionsReport({&jo}, {}, ctx));
     CHECK(std::ranges::find(alone, "Unusual: voids") == alone.end());
 }
+
+TEST_CASE("Labor cost: the rows add up to the total, to the cent", "[reports][labor][books]")
+{
+    core::PosSettings settings;
+    const std::int64_t now = 1'790'000'000'000;
+    const core::ReportContext ctx{settings, "Today", [](std::int64_t) { return std::string("9:00 PM"); }, now,
+                                  [](std::int64_t ms) { return int(ms / 3'600'000 % 24); },
+                                  [](std::int64_t ms) { return int(ms / 86'400'000); }, now - 3 * 86'400'000LL};
+    // Three people, half an hour each at $10.01: $5.005 apiece.
+    std::vector<core::Employee> staff;
+    std::vector<core::TimePunch> punches;
+    for (int i = 0; i < 3; ++i) {
+        core::Employee e;
+        e.id = "e" + std::to_string(i);
+        e.name = "Cook " + std::to_string(i);
+        staff.push_back(e);
+        core::TimePunch p;
+        p.id = i + 1;
+        p.employeeId = e.id;
+        p.clockIn = now - 3'600'000;
+        p.clockOut = p.clockIn + 30 * 60'000;
+        p.rate = Money::fromCents(1001);
+        punches.push_back(p);
+    }
+    const core::Report r = core::laborReport(punches, staff, ctx);
+    std::int64_t rows = 0;
+    std::string total;
+    bool inCost = false;
+    for (const core::ReportRow &row : r.rows) {
+        if (row.cells.size() == 1 && row.cells[0] == "Labor cost today")
+            inCost = true;
+        if (!inCost || row.cells.size() < 5 || row.cells[0].rfind("Cook ", 0) != 0) {
+            if (inCost && !row.cells.empty() && row.cells[0] == "Labor cost")
+                total = row.cells[4];
+            continue;
+        }
+        CHECK(row.cells[2] == "$5.01");   // each rounded to the cent
+        rows += 501;
+    }
+    CHECK(rows == 1503);
+    CHECK(total == "$15.03");   // what the rows add up to (not $15.02, the sum rounded once)
+}

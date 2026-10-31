@@ -704,7 +704,9 @@ Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Empl
 
     // What today's labor costs: each shift at its pay, overtime at time and
     // a half and double time at double (the extra at the average pay of the day).
-    double pay = 0, premium = 0;
+    // Each row in cents, and the total the rows added up (rounded once at the
+    // end, the rows and the total could be a cent or two apart).
+    Money pay, premium;
     bool anyPay = false;
     for (const TimePunch &p : sorted)
         anyPay = anyPay || p.rate.cents() > 0;
@@ -717,15 +719,15 @@ Report laborReport(const std::vector<TimePunch> &punches, const std::vector<Empl
     for (const auto &[id, person] : people) {
         const double avg = person.today > 0 ? person.payToday / (double(person.today) / hourMs) : 0;
         const double extra = double(person.otTodayMs) / hourMs * avg * 0.5 + double(person.dtTodayMs) / hourMs * avg;
-        pay += person.payToday;
-        premium += extra;
-        r.line({nameOf(id), hours(person.today), ctx.money(Money::fromCents(std::llround(person.payToday))),
-                extra > 0 ? ctx.money(Money::fromCents(std::llround(extra))) : "-",
-                ctx.money(Money::fromCents(std::llround(person.payToday + extra)))});
+        const Money rowPay = Money::fromCents(std::llround(person.payToday));
+        const Money rowExtra = Money::fromCents(std::llround(extra));
+        pay += rowPay;
+        premium += rowExtra;
+        r.line({nameOf(id), hours(person.today), ctx.money(rowPay), rowExtra.cents() > 0 ? ctx.money(rowExtra) : "-",
+                ctx.money(rowPay + rowExtra)});
     }
-    const Money cost = Money::fromCents(std::llround(pay + premium));
-    r.total({"Labor cost", hours(totalMs), ctx.money(Money::fromCents(std::llround(pay))),
-             premium > 0 ? ctx.money(Money::fromCents(std::llround(premium))) : "-", ctx.money(cost)});
+    const Money cost = pay + premium;
+    r.total({"Labor cost", hours(totalMs), ctx.money(pay), premium.cents() > 0 ? ctx.money(premium) : "-", ctx.money(cost)});
     r.line({"Net sales", "", "", "", ctx.money(netSales)});
     if (netSales.cents() > 0) {
         char pct[16];
