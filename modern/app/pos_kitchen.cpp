@@ -327,7 +327,12 @@ QString PosService::kitchenStation() const
 
 bool PosService::setKitchenStation(const QString &station)
 {
-    // Kitchen screens have nobody logged in: this screen only changes itself.
+    // Kitchen screens have nobody logged in: this screen only changes itself,
+    // and only to one of the store's stations (or none: its page's orders).
+    if (!station.isEmpty() && std::ranges::none_of(kitchenStations(), [&](const QVariant &v) {
+            return v.toMap().value(u"id"_s).toString() == station;
+        }))
+        return fail(tr("That isn't one of the kitchen's stations."));
     auto &list = s_->settings.terminals;
     auto it = std::ranges::find_if(list, [&](const TerminalConfig &t) { return qs(t.name) == terminal_; });
     if (it == list.end()) {

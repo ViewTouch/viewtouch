@@ -18,10 +18,38 @@ namespace vt::app {
 
 // --- invoke: operations by name (widgets, remote terminals) ----------------------------------
 
+QStringList PosService::commandNames()
+{
+    QStringList names = commandTable().keys();
+    names.sort();
+    return names;
+}
+
 void PosService::invoke(const QString &method, const QVariantList &args, Reply reply)
 {
-    using Fn = std::function<QVariant(PosService &, const QVariantList &)>;
-    static const QHash<QString, Fn> table = {
+    const QHash<QString, Command> &table = commandTable();
+    const auto it = table.constFind(method);
+    if (it == table.cend()) {
+        emit notice(tr("Unknown operation '%1'").arg(method));
+        if (reply)
+            reply(QVariant(false));
+        return;
+    }
+    // In this terminal's language (on a server, each its own).
+    const i18n::Scope language([this] { return this->language(); });
+    // Remembered, so a manager's approval can run it again.
+    const std::optional<Running> outer = running_;
+    if (method != u"approve" && method != u"cancelApproval")
+        running_ = Running{method, args};
+    const QVariant result = (*it)(*this, args);
+    running_ = outer;
+    if (reply)
+        reply(result);
+}
+
+const QHash<QString, PosService::Command> &PosService::commandTable()
+{
+    static const QHash<QString, Command> table = {
         {u"pinKey"_s, [](PosService &p, const QVariantList &a) { p.pinKey(a.value(0).toString()); return QVariant(true); }},
         {u"entryKey"_s, [](PosService &p, const QVariantList &a) { p.entryKey(a.value(0).toString()); return QVariant(true); }},
         {u"adjustGuests"_s, [](PosService &p, const QVariantList &a) { p.adjustGuests(a.value(0).toInt()); return QVariant(true); }},
@@ -308,23 +336,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"adminNewRecord"_s, [](PosService &p, const QVariantList &a) {
              return p.can(QString::fromLatin1(perm::Manager)) ? QVariant(p.adminNewRecord(a.value(0).toString())) : QVariant(QVariantMap()); }},
     };
-    const auto it = table.constFind(method);
-    if (it == table.cend()) {
-        emit notice(tr("Unknown operation '%1'").arg(method));
-        if (reply)
-            reply(QVariant(false));
-        return;
-    }
-    // In this terminal's language (on a server, each its own).
-    const i18n::Scope language([this] { return this->language(); });
-    // Remembered, so a manager's approval can run it again.
-    const std::optional<Running> outer = running_;
-    if (method != u"approve" && method != u"cancelApproval")
-        running_ = Running{method, args};
-    const QVariant result = (*it)(*this, args);
-    running_ = outer;
-    if (reply)
-        reply(result);
+    return table;
 }
 
 } // namespace vt::app

@@ -476,8 +476,14 @@ bool PosService::sendMessage(const QString &to, const QString &text, qint64 unti
     if (until > 0) {   // posted: kept, and shown until then
         if (until <= now())
             return fail(tr("Pick a time that hasn't passed."));
+        // Up to a month ahead, twenty at a time: they're kept with the
+        // settings, sent to every screen with each change.
+        if (until > now() + 31LL * 24 * 3'600'000)
+            return fail(tr("Pick a time within a month."));
         auto &list = s_->settings.notices;
         std::erase_if(list, [&](const PosSettings::Notice &n) { return n.until <= now(); });
+        if (list.size() >= 20)
+            return fail(tr("Twenty messages are posted already: take one down first."));
         std::int64_t id = 1;
         for (const PosSettings::Notice &n : list)
             id = std::max(id, n.id + 1);
@@ -1087,6 +1093,12 @@ PosSession::TableResult PosService::selectTable(const QString &label)
 {
     if (!require(perm::Order, tr("Opening tables")))
         return TableFailed;
+    // A table's name, as the floor plan has them (from a screen: never empty
+    // or a page of text, on the floor, the receipt and every report).
+    if (label.trimmed().isEmpty() || label.size() > 40 || label != label.trimmed()) {
+        fail(tr("That isn't a table."));
+        return TableFailed;
+    }
     std::vector<std::int64_t> atTable;
     for (const auto &[id, c] : s_->open) {
         if (c.type == CheckType::DineIn && qs(c.label) == label)

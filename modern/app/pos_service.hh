@@ -498,6 +498,8 @@ public:
     void setClock(std::function<std::int64_t()> now) { s_->setClock(std::move(now)); }
 
     void invoke(const QString &method, const QVariantList &args = {}, Reply reply = {}) override;
+    // Every operation invoke() takes by name (for the tests that try them all).
+    static QStringList commandNames();
 
     const core::PosSettings &settings() const { return s_->settings; }
     const core::Check *currentCheck() const;
@@ -1431,6 +1433,9 @@ private:
     bool deletePunchRecord(int index, const QString &why);
     // End of Day: a manager clocks out someone still on the clock (logged as a change).
     bool clockOutPunch(qint64 punchId);
+    // invoke()'s operations by name (a member: they reach the private ones).
+    using Command = std::function<QVariant(PosService &, const QVariantList &)>;
+    static const QHash<QString, Command> &commandTable();
     void logPunchChange(const core::TimePunch &p, const QString &what, const QString &why);
     bool toggleBreakFor(const core::Employee &e);
     QString expenseCategory_;
