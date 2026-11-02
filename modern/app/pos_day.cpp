@@ -1331,6 +1331,17 @@ bool PosService::endOfDay()
     }
     std::erase_if(s_->punches, [](const TimePunch &p) { return !p.open(); });
     std::erase_if(s_->earlierPunches, [this](const TimePunch &p) { return p.clockIn < now() - 8LL * 24 * 3'600'000; });
+    // What's kept in memory is today's or a window, as when it starts up (a
+    // register on for months grew these every day): the day's parties that
+    // are done (the waiting and the booked stay), deliveries and closed days
+    // 60 days back, the last 50 tickets bumped (for Recall).
+    std::erase_if(s_->parties, [](const Party &p) { return p.done(); });
+    std::erase_if(s_->deliveries, [this](const Delivery &d) { return d.at < now() - 60LL * 24 * 3'600'000; });
+    if (s_->pastDays.size() > 60)
+        s_->pastDays.resize(60);   // newest first
+    for (auto *bumps : {&s_->bumped, &s_->served})
+        if (bumps->size() > 50)
+            bumps->erase(bumps->begin(), bumps->end() - 50);
     s_->drawers.clear();
     lastClosedId_ = 0;
     const std::int64_t closedId = s_->day.id;
