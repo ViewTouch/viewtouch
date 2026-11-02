@@ -29,7 +29,7 @@ void noteQmlWarnings(QtMsgType type, const QMessageLogContext &context, const QS
     const QString category = QString::fromLatin1(context.category ? context.category : "");
     if (type == QtWarningMsg && (category == u"qml" || category == u"js" || message.contains(u".qml:"))) {
         QMutexLocker lock(&g_qmlMutex);
-        g_qmlWarnings << g_testName + u": " + message;
+        g_qmlWarnings << g_testName + QStringLiteral(": ") + message;
     }
     if (g_previous)
         g_previous(type, context, message);
