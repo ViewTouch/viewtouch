@@ -370,29 +370,45 @@ TEST_CASE("A long busy service on four terminals: quick, and nothing lost", "[sa
 #include <QJsonArray>
 #include <QProcess>
 
+namespace {
+// The closed days as saved (memory keeps the newest 60, as a restart does).
+struct DaySink : test::RecordingSink {
+    std::vector<app::PastDay> days;
+    void saveDay(const core::BusinessDay &day, const QJsonObject &reports) override
+    {
+        if (day.closedAt != 0)   // (saved when it opens too)
+            days.push_back({day, reports});
+    }
+};
+} // namespace
+
 TEST_CASE("Demo data: months of real service, everything in use, then refuses a store with sales", "[demo]")
 {
-    PosService pos(test::seedPosData(true), nullptr);
+    DaySink sink;
+    PosService pos(test::seedPosData(true), &sink);
     const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
     const QString done = app::fillDemoData(pos, now);
     INFO(done.toStdString());
     CHECK(done.startsWith(u"Added"_s));
     app::PosShared *s = pos.shared();
-    CHECK(s->pastDays.size() == 126);
+    CHECK(sink.days.size() == 126);
+    CHECK(s->pastDays.size() == 60);   // the newest, in memory
     // Some of them years back (Find a Check: 5 Years).
-    CHECK(s->pastDays.back().day.openedAt < now - 4LL * 365 * 24 * 3'600'000);
+    REQUIRE_FALSE(sink.days.empty());
+    CHECK(std::ranges::min(sink.days, {}, [](const app::PastDay &d) { return d.day.openedAt; }).day.openedAt
+          < now - 4LL * 365 * 24 * 3'600'000);
     CHECK(s->customers.size() >= 12);                                    // and phone orders' guests
     CHECK(s->giftCards.size() == 8);
     CHECK(s->shifts.size() > 20);
     for (const core::CustomerRecord &c : s->customers)   // accounts are paid weekly
         if (c.houseAccount) CHECK(c.accountBalance < c.accountLimit);
     // Every past day balanced its banks and closed.
-    for (const app::PastDay &d : s->pastDays)
+    for (const app::PastDay &d : sink.days)
         CHECK(d.day.closedAt > d.day.openedAt);
     // Over the days: refunds, deliveries with the driver, the checklists.
     const auto rowsOf = [&](const char *report, const QString &first) {
         int n = 0;
-        for (const app::PastDay &d : s->pastDays)
+        for (const app::PastDay &d : sink.days)
             for (const QJsonValue &row : d.reports.value(QLatin1StringView(report)).toObject().value(u"rows").toArray())
                 n += row.toObject().value(u"cells").toArray().first().toString().startsWith(first);
         return n;
@@ -651,11 +667,12 @@ TEST_CASE("Today's banks: one closed for last night's End of Day isn't today's",
 TEST_CASE("Demo data made at any hour: today has guests already, nothing closed in the future", "[demo][demomidnight]")
 {
     for (const int minutes : {1, 16, 90, 4 * 60, 9 * 60, 14 * 60 + 10}) {
-        PosService pos(test::seedPosData(true), nullptr);
+        DaySink sink;
+        PosService pos(test::seedPosData(true), &sink);
         const std::int64_t now = QDateTime(QDate::currentDate(), QTime(0, 0)).addSecs(minutes * 60).toMSecsSinceEpoch();
         REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
         INFO(minutes << " minutes after midnight");
-        CHECK(pos.shared()->pastDays.size() == 126);
+        CHECK(sink.days.size() == 126);
         CHECK(pos.shared()->day.openedAt <= now);
         CHECK_FALSE(pos.shared()->closedToday.empty());
         for (const core::Check &c : pos.shared()->closedToday)
