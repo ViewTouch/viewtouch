@@ -49,6 +49,8 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
           ASAN_OPTIONS: detect_leaks=1
-          LSAN_OPTIONS: suppressions=${{ github.workspace }}/modern/tools/sanitizers/lsan.supp
           UBSAN_OPTIONS: print_stacktrace=1
-        run: timeout 8400 ./build/tests/vtm_tests
+        # The checkout's path inside the container ($GITHUB_WORKSPACE), not the runner's.
+        run: |
+          export LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/lsan.supp"
+          timeout 8400 ./build/tests/vtm_tests
