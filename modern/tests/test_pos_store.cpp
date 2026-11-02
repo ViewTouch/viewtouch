@@ -5,6 +5,7 @@
 #include "storage/async_writer.hh"
 #include "storage/pos_store.hh"
 
+#include <QDateTime>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QJsonDocument>
@@ -449,4 +450,83 @@ TEST_CASE("Who changed what: kept through a restart, in the Changes report, arch
         const QVariantList rows = pos.report(u"changes"_s, 1)[u"rows"_s].toList();
         CHECK(std::size_t(rows.size()) == n + 1);
     });
+}
+
+TEST_CASE("PosStore: punches read back by range, and deletes that reach the database", "[posstore][coverage]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    const auto seed = test::seedPosData();
+    {
+        PosStore store(path);
+        REQUIRE(store.open());
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees, nullptr, seed.ingredients));
+    }
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    {
+        AsyncWriter writer(path);
+        SqlPosSink sink(writer);
+        // Three punches: last month, last week, today (with a break, a job, cash tips).
+        for (int i = 0; i < 3; ++i) {
+            core::TimePunch p;
+            p.id = 10 + i;
+            p.employeeId = "sam";
+            p.clockIn = now - std::int64_t(i == 0 ? 30 : i == 1 ? 6 : 0) * 86'400'000 - 8 * 3'600'000;
+            p.clockOut = p.clockIn + 8 * 3'600'000;
+            p.breaks = {{p.clockIn + 3'600'000, p.clockIn + 5'400'000}};
+            p.job = "server";
+            p.rate = Money::fromCents(1525);
+            p.cashTipsDeclared = i == 2;
+            p.cashTips = Money::fromCents(i == 2 ? 4200 : 0);
+            sink.savePunch(p);
+        }
+        core::Shift s;
+        s.id = 5;
+        s.employeeId = "sam";
+        s.start = now + 86'400'000;
+        s.end = s.start + 6 * 3'600'000;
+        sink.saveShift(s);
+        core::Problem pr;
+        pr.id = 3;
+        pr.at = now - 3'600'000;
+        sink.saveProblem(pr);
+        writer.flush();
+    }
+    // Older punches by range (editing one from last month): every field back.
+    const auto lastMonth = storage::punchesBetween(path, now - 40LL * 86'400'000, now - 20LL * 86'400'000);
+    REQUIRE(lastMonth.size() == 1);
+    CHECK(lastMonth[0].id == 10);
+    CHECK(lastMonth[0].breaks.size() == 1);
+    CHECK(lastMonth[0].job == "server");
+    CHECK(lastMonth[0].rate.cents() == 1525);
+    CHECK_FALSE(lastMonth[0].cashTipsDeclared);
+    const auto all = storage::punchesBetween(path, 0, now + 1);
+    REQUIRE(all.size() == 3);
+    CHECK(all.back().cashTipsDeclared);
+    CHECK(all.back().cashTips.cents() == 4200);
+    {
+        PosStore store(path);
+        REQUIRE(store.open());
+        const auto data = store.load();
+        REQUIRE(data);
+        CHECK(data->shifts.size() == 1);
+        CHECK(std::ranges::any_of(data->problems, [](const core::Problem &p) { return p.id == 3; }));
+        CHECK(std::ranges::any_of(data->ingredients, [](const core::Ingredient &g) { return g.id == "lettuce"; }));
+    }
+    // Deleted in Manager: gone from the database, not just the screen.
+    {
+        AsyncWriter writer(path);
+        SqlPosSink sink(writer);
+        sink.deletePunch(11);
+        sink.deleteShift(5);
+        sink.deleteIngredient("lettuce");
+        writer.flush();
+    }
+    CHECK(storage::punchesBetween(path, 0, now + 1).size() == 2);
+    PosStore store(path);
+    REQUIRE(store.open());
+    const auto data = store.load();
+    REQUIRE(data);
+    CHECK(data->shifts.empty());
+    CHECK(std::ranges::none_of(data->ingredients, [](const core::Ingredient &g) { return g.id == "lettuce"; }));
 }
