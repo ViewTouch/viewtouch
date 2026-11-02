@@ -209,12 +209,24 @@ bool restoreDatabase(const QString &backup, const QString &db, QString *keptAs, 
         return false;
     QString kept;
     if (QFile::exists(db)) {
-        kept = db + u".before-restore-"_s + QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s);
+        // A name of its own (two restores in one second clashed, and the
+        // second failed).
+        const QString stamp = db + u".before-restore-"_s + QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s);
+        kept = stamp;
+        for (int n = 2; QFile::exists(kept) || QFile::exists(kept + u"-wal"_s); ++n)
+            kept = stamp + u"-"_s + QString::number(n);
         // The -wal file can hold the latest sales: it moves with the database.
-        if (!moveAside(db, kept) || !moveAside(db + u"-wal"_s, kept + u"-wal"_s)
-            || !moveAside(db + u"-shm"_s, kept + u"-shm"_s)) {
-            setError(error, u"Could not move the current database aside."_s);
-            return false;
+        // All three or none: one moved and the next refused left the store
+        // with no database at all.
+        QStringList moved;
+        for (const QString &part : {QString(), u"-wal"_s, u"-shm"_s}) {
+            if (!moveAside(db + part, kept + part)) {
+                for (const QString &back : moved)
+                    QFile::rename(kept + back, db + back);
+                setError(error, u"Could not move the current database aside."_s);
+                return false;
+            }
+            moved << part;
         }
     }
     if (!QFile::copy(backup, db)) {

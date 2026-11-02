@@ -1,12 +1,19 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "app/pos_json.hh"
+#include "layout_fixture.hh"
+#include "storage/backup.hh"
+#include "storage/layout_store.hh"
+#include "storage/pos_store.hh"
+#include "storage/sealed.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QFile>
+#include <QTemporaryDir>
 
 #include <cmath>
 #include <limits>
@@ -237,4 +244,103 @@ TEST_CASE("What the fuzzing found: a station that isn't one, a table that isn't 
     CHECK_FALSE(pos.sendMessage(u"all"_s, u"One more"_s, now + 3'600'000));
     CHECK(pos.shared()->settings.notices.size() == 20);
     CHECK(pos.sendMessage(u"all"_s, u"Said, not posted"_s, 0));   // a message now: no limit to those
+}
+
+TEST_CASE("Fuzz: a damaged backup is refused, and the store's data is left as it was", "[fuzz][backup]")
+{
+    QTemporaryDir dir;
+    const QString db = dir.filePath(u"viewtouch.db"_s);
+    {
+        storage::PosStore store(db);
+        REQUIRE(store.open());
+        const auto seed = test::seedPosData();
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees));
+        storage::LayoutStore pages(db);
+        REQUIRE(pages.open());
+        REQUIRE(pages.save(*test::loadTestLayout()));
+    }
+    // A good backup: the store itself.
+    const QString good = dir.filePath(u"good.db"_s);
+    REQUIRE(QFile::copy(db, good));
+    QFile f(good);
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const QByteArray goodBytes = f.readAll();
+    f.close();
+    REQUIRE(storage::verifyDatabase(good));
+    const auto storeBytes = [&] {
+        QFile s(db);
+        return s.open(QIODevice::ReadOnly) ? s.readAll() : QByteArray();
+    };
+    std::mt19937 rng{7};
+    const auto pick = [&](int n) { return int(rng() % unsigned(std::max(1, n))); };
+    int refused = 0;
+    for (int round = 0; round < rounds(40); ++round) {
+        INFO("round " << round);
+        QByteArray bent = goodBytes;
+        if (pick(2)) {
+            bent.truncate(pick(int(bent.size())));
+        } else {
+            for (int i = 1 + pick(30); i > 0; --i)
+                bent[pick(int(bent.size()))] = char(pick(256));
+        }
+        const QString file = dir.filePath(u"bent-%1.db"_s.arg(round));
+        QFile out(file);
+        REQUIRE(out.open(QIODevice::WriteOnly));
+        out.write(bent);
+        out.close();
+        const QByteArray before = storeBytes();
+        QString keptAs, error;
+        if (!storage::restoreDatabase(file, db, &keptAs, &error)) {
+            ++refused;
+            CHECK(storeBytes() == before);   // untouched
+            CHECK_FALSE(error.isEmpty());   // and it says why
+        } else {
+            // Taken (the damage missed what matters): it opens and reads.
+            {
+                storage::PosStore store(db);
+                REQUIRE(store.open());
+                CHECK(store.load());
+            }
+            const bool back = storage::restoreDatabase(good, db, &keptAs, &error);   // the good one back
+            INFO("restoring the good one: " << error.toStdString());
+            REQUIRE(back);
+        }
+        QFile::remove(file);
+    }
+    CHECK(refused > 0);
+
+    // Restored twice in the same second (the wrong backup, then the right
+    // one): both taken, each store before kept under its own name.
+    QString first, second, error;
+    REQUIRE(storage::restoreDatabase(good, db, &first, &error));
+    REQUIRE(storage::restoreDatabase(good, db, &second, &error));
+    CHECK(first != second);
+    CHECK(QFile::exists(first));
+    CHECK(QFile::exists(second));
+
+    // Encrypted: any change at all is caught (the header too), nothing written.
+    if (storage::sealingAvailable()) {
+        const QByteArray salt = storage::newSalt();
+        const QByteArray key = storage::sealingKey(u"pass-word"_s, salt);
+        const QString sealed = dir.filePath(u"good.vtbak"_s);
+        REQUIRE(storage::sealFile(good, sealed, key, salt));
+        QFile s(sealed);
+        REQUIRE(s.open(QIODevice::ReadOnly));
+        const QByteArray sealedBytes = s.readAll();
+        s.close();
+        for (int round = 0; round < 12; ++round) {
+            QByteArray bent = sealedBytes;
+            bent[pick(int(bent.size()))] ^= char(1 + pick(255));
+            const QString file = dir.filePath(u"bent-%1.vtbak"_s.arg(round));
+            QFile out(file);
+            REQUIRE(out.open(QIODevice::WriteOnly));
+            out.write(bent);
+            out.close();
+            const QString plain = dir.filePath(u"plain-%1.db"_s.arg(round));
+            INFO("sealed round " << round);
+            CHECK_FALSE(storage::openSealedFileWithKey(file, plain, key));
+            CHECK_FALSE(QFile::exists(plain));
+        }
+        CHECK_FALSE(storage::openSealedFile(sealed, dir.filePath(u"wrong.db"_s), u"not-it"_s));
+    }
 }
