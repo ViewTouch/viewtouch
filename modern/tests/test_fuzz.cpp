@@ -344,3 +344,75 @@ TEST_CASE("Fuzz: a damaged backup is refused, and the store's data is left as it
         CHECK_FALSE(storage::openSealedFile(sealed, dir.filePath(u"wrong.db"_s), u"not-it"_s));
     }
 }
+
+TEST_CASE("Fuzz: saved records with odd fields are read without a crash, and a check still totals", "[fuzz][json]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(pos.addItem(u"cobb"_s));
+    REQUIRE(pos.addItem(u"coffee"_s));
+    pos.setGratuity(1800);
+    REQUIRE(pos.tender(u"credit"_s));
+    pos.addTip(300);
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    const QJsonObject check = app::toJson(pos.shared()->open.at(id));
+    const QJsonObject settings = app::toJson(pos.shared()->settings);
+    const QJsonObject item = app::toJson(pos.shared()->menu.front());
+    const QJsonObject employee = app::toJson(pos.shared()->employees.front());
+    const QJsonObject drawer = app::toJson(pos.shared()->drawers.front());
+
+    std::mt19937 rng{11};
+    const auto pick = [&](int n) { return int(rng() % unsigned(std::max(1, n))); };
+    const auto odd = [&]() -> QJsonValue {
+        switch (pick(9)) {
+        case 0: return QJsonValue();
+        case 1: return pick(2) == 1;
+        case 2: return 9.2e18;
+        case 3: return -9.2e18;
+        case 4: return std::numeric_limits<double>::max();
+        case 5: return u"x"_s;
+        case 6: return QJsonArray{1, u"two"_s, QJsonObject{}};
+        case 7: return QJsonObject{{u"a"_s, 1}};
+        default: return -1;
+        }
+    };
+    // Bent: a few fields (or fields of its lines and payments) something else.
+    const auto bend = [&](QJsonObject o) {
+        for (int i = 1 + pick(4); i > 0; --i) {
+            const QStringList keys = o.keys();
+            const QString k = keys[pick(int(keys.size()))];
+            if (o.value(k).isArray() && pick(2) && !o.value(k).toArray().isEmpty()) {
+                QJsonArray a = o.value(k).toArray();
+                const int at = pick(int(a.size()));
+                if (a[at].isObject()) {
+                    QJsonObject inner = a[at].toObject();
+                    const QStringList ik = inner.keys();
+                    if (!ik.isEmpty())
+                        inner.insert(ik[pick(int(ik.size()))], odd());
+                    a[at] = inner;
+                } else {
+                    a[at] = odd();
+                }
+                o.insert(k, a);
+            } else {
+                o.insert(k, odd());
+            }
+        }
+        return o;
+    };
+    for (int round = 0; round < rounds(60) * 10; ++round) {
+        INFO("round " << round);
+        if (const auto c = app::checkFromJson(bend(check))) {
+            const core::Totals t = c->totals(pos.shared()->settings.tax);
+            CHECK(t.total == t.subtotal + t.tax + t.gratuity);
+        }
+        const core::PosSettings s = app::settingsFromJson(bend(settings));
+        CHECK(s.tax.foodPpm >= 0);
+        app::menuItemFromJson(bend(item));
+        app::employeeFromJson(bend(employee));
+        app::drawerFromJson(bend(drawer));
+    }
+}

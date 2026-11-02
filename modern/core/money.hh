@@ -30,7 +30,15 @@ public:
     // nearest cent (the legacy FltToPrice rule), in exact integer math.
     constexpr Money scaled(std::int64_t numerator, std::int64_t denominator) const
     {
-        const std::int64_t num = cents_ * numerator;
+        std::int64_t num = 0;
+        if (__builtin_mul_overflow(cents_, numerator, &num)) {
+            // Past what 64 bits hold (only an absurd amount: a damaged
+            // record): near enough in long double, held to what fits,
+            // never undefined.
+            const long double v = (long double)cents_ * numerator / denominator;
+            constexpr long double top = 9.2e18L;
+            return Money(std::int64_t(v > top ? top : v < -top ? -top : v));
+        }
         const std::int64_t q = num / denominator;
         const std::int64_t r = num % denominator;
         const std::int64_t twice = (r < 0 ? -r : r) * 2;

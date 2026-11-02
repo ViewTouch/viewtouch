@@ -34,3 +34,16 @@ TEST_CASE("Money formats as decimal string", "[money]")
     CHECK(Money::fromCents(-5).toString() == "-0.05");
     CHECK(Money::fromCents(100000).toString() == "1000.00");
 }
+
+TEST_CASE("Money: a percent of an absurd amount is held to what fits, never undefined", "[money]")
+{
+    // 9.2e18 cents times 15.25% overflowed 64 bits in the middle (a damaged record).
+    const Money huge = Money::fromCents(-9'200'000'000'000'000'000);
+    const Money part = huge.percent(1525);
+    CHECK(part.cents() < 0);
+    CHECK(part.cents() > -9'200'000'000'000'000'000);
+    CHECK(Money::fromCents(9'000'000'000'000'000'000).ppm(1'000'000).cents() > 8'000'000'000'000'000'000);
+    // Everyday amounts: exactly as before.
+    CHECK(Money::fromCents(1250).percent(825).cents() == 103);
+    CHECK(Money::fromCents(-1250).percent(825).cents() == -103);
+}

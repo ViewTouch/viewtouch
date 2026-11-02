@@ -22,15 +22,28 @@ std::vector<std::string> strings(const QJsonArray &a);
 QString qs(const std::string &s) { return QString::fromStdString(s); }
 std::string ss(const QString &s) { return s.toStdString(); }
 
-std::int64_t centsFromDecimal(double value) { return std::llround(value * 100.0); }
-std::int64_t ppmFromPercent(double percent) { return std::llround(percent * 10000.0); }
+// Saved numbers are held to what's possible (a damaged database, a bent
+// copy): an amount within ten billion dollars, so no total overflows; a
+// decimal that isn't a number (NaN, infinity) is 0; rounding it to whole
+// cents was undefined.
+constexpr std::int64_t kMaxCents = 1'000'000'000'000;
+std::int64_t centsFromDecimal(double value)
+{
+    return std::isfinite(value) ? std::llround(std::clamp(value, -1e10, 1e10) * 100.0) : 0;
+}
+std::int64_t ppmFromPercent(double percent)
+{
+    return std::isfinite(percent) ? std::llround(std::clamp(percent, -1e6, 1e6) * 10000.0) : 0;
+}
 double decimalFromCents(std::int64_t cents) { return double(cents) / 100.0; }
 double percentFromPpm(std::int64_t ppm) { return double(ppm) / 10000.0; }
 
 namespace {
 
 qint64 i64(const QJsonValue &v) { return v.toInteger(); }
-Money money(const QJsonValue &v) { return Money::fromCents(v.toInteger()); }
+Money money(const QJsonValue &v) { return Money::fromCents(std::clamp<qint64>(v.toInteger(), -kMaxCents, kMaxCents)); }
+// A rate or a share in basis points / parts per million: 0 to 100% (1,000,000 ppm).
+qint64 fraction(const QJsonValue &v, qint64 whole) { return std::clamp<qint64>(v.toInteger(), 0, whole); }
 
 } // namespace
 
@@ -236,12 +249,12 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         l.itemId = ss(lo.value(u"itemId").toString());
         l.name = ss(lo.value(u"name").toString());
         l.unitPrice = money(lo.value(u"unitPrice"));
-        l.quantity = lo.value(u"quantity").toInt(1);
+        l.quantity = std::clamp(lo.value(u"quantity").toInt(1), -9999, 9999);
         l.taxClass = taxClassFromString(ss(lo.value(u"taxClass").toString()));
         l.qualifier = qualifierFromString(ss(lo.value(u"qualifier").toString()));
         l.printer = ss(lo.value(u"printer").toString());
         l.station = ss(lo.value(u"station").toString());
-        l.weight = i64(lo.value(u"weight"));
+        l.weight = std::clamp<qint64>(i64(lo.value(u"weight")), 0, 100'000'000);
         l.weightUnit = ss(lo.value(u"weightUnit").toString());
         l.sent = lo.value(u"sent").toBool();
         l.voided = lo.value(u"voided").toBool();
@@ -281,7 +294,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         p.tenderName = ss(po.value(u"tenderName").toString());
         p.kind = tenderKindFromString(ss(po.value(u"kind").toString()));
         p.amount = money(po.value(u"amount"));
-        p.percentBp = i64(po.value(u"percentBp"));
+        p.percentBp = fraction(po.value(u"percentBp"), 10000);
         p.tip = money(po.value(u"tip"));
         p.reference = ss(po.value(u"reference").toString());
         p.staffMeal = po.value(u"staffMeal").toBool();
@@ -290,7 +303,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         p.last4 = ss(po.value(u"last4").toString());
         p.offline = ss(po.value(u"offline").toString());
         p.surcharge = money(po.value(u"surcharge"));
-        p.surchargeBp = i64(po.value(u"surchargeBp"));
+        p.surchargeBp = fraction(po.value(u"surchargeBp"), 10000);
         p.funding = ss(po.value(u"funding").toString());
         const QJsonObject shares = po.value(u"classShares").toObject();
         for (auto it = shares.begin(); it != shares.end(); ++it)
@@ -301,17 +314,17 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.nextPaymentId = std::max<std::int64_t>(i64(o.value(u"nextPaymentId")), 1);
     c.businessDay = i64(o.value(u"businessDay"));
     c.drawerSession = i64(o.value(u"drawerSession"));
-    c.gratuityBp = i64(o.value(u"gratuityBp"));
+    c.gratuityBp = fraction(o.value(u"gratuityBp"), 10000);
     c.taxExempt = ss(o.value(u"taxExempt").toString());
     if (const QJsonObject r = o.value(u"rates").toObject(); !r.isEmpty()) {
         TaxRates rates;
-        rates.foodPpm = r.value(u"food").toInteger();
-        rates.alcoholPpm = r.value(u"alcohol").toInteger();
-        rates.merchandisePpm = r.value(u"merchandise").toInteger();
-        rates.roomPpm = r.value(u"room").toInteger();
+        rates.foodPpm = fraction(r.value(u"food"), 1'000'000);
+        rates.alcoholPpm = fraction(r.value(u"alcohol"), 1'000'000);
+        rates.merchandisePpm = fraction(r.value(u"merchandise"), 1'000'000);
+        rates.roomPpm = fraction(r.value(u"room"), 1'000'000);
         rates.taxTakeoutFood = r.value(u"takeoutFood").toBool(true);
         rates.taxGratuity = r.value(u"gratuity").toBool(false);
-        rates.cashRoundingCents = r.value(u"cashRounding").toInt(0);
+        rates.cashRoundingCents = std::clamp(r.value(u"cashRounding").toInt(0), 0, 100);
         c.closedRates = rates;
     }
     c.firedCourse = std::max(1, o.value(u"firedCourse").toInt(1));
@@ -322,7 +335,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.customerId = ss(o.value(u"customerId").toString());
     c.receiptEmail = ss(o.value(u"receiptEmail").toString());
     c.receiptEmailSent = o.value(u"receiptEmailSent").toBool();
-    c.cashTip = Money::fromCents(i64(o.value(u"cashTipCents")));
+    c.cashTip = money(o.value(u"cashTipCents"));
     c.rush = o.value(u"rush").toBool();
     c.kiosk = o.value(u"kiosk").toBool();
     c.orderNumber = o.value(u"orderNumber").toInt();
@@ -351,7 +364,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         c.hold.processor = ss(h.value(u"processor").toString());
         c.hold.cardBrand = ss(h.value(u"brand").toString());
         c.hold.last4 = ss(h.value(u"last4").toString());
-        c.hold.amount = Money::fromCents(h.value(u"amount").toInteger());
+        c.hold.amount = money(h.value(u"amount"));
         c.hold.at = h.value(u"at").toInteger();
     }
     c.pointsEarned = o.value(u"pointsEarned").toInt();
@@ -359,7 +372,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     for (const QJsonValue &v : o.value(u"events").toArray()) {
         const QJsonObject e = v.toObject();
         c.events.push_back({i64(e.value(u"at")), ss(e.value(u"who").toString()), ss(e.value(u"what").toString()),
-                            ss(e.value(u"kind").toString()), Money::fromCents(i64(e.value(u"amount"))),
+                            ss(e.value(u"kind").toString()), money(e.value(u"amount")),
                             ss(e.value(u"reason").toString())});
     }
     return c;
@@ -620,7 +633,7 @@ TimePunch punchFromJson(const QJsonObject &o)
     for (const QJsonValue &b : o.value(u"breaks").toArray())
         p.breaks.push_back({i64(b.toObject().value(u"start")), i64(b.toObject().value(u"end"))});
     p.job = ss(o.value(u"job").toString());
-    p.rate = Money::fromCents(i64(o.value(u"rate")));
+    p.rate = money(o.value(u"rate"));
     const std::int64_t cash = o.contains(u"cashTips") ? i64(o.value(u"cashTips")) : -1;
     p.cashTipsDeclared = cash >= 0;
     p.cashTips = Money::fromCents(std::max<std::int64_t>(0, cash));
@@ -767,7 +780,7 @@ StockCount stockCountFromJson(const QJsonObject &o)
                            ss(l.value(u"unit").toString()), i64(l.value(u"since")), l.value(u"start").toDouble(),
                            l.value(u"received").toDouble(), l.value(u"sold").toDouble(), l.value(u"adjusted").toDouble(),
                            l.value(u"expected").toDouble(), l.value(u"counted").toDouble(),
-                           Money::fromCents(i64(l.value(u"unitCost"))), l.value(u"wasted").toDouble()});
+                           money(l.value(u"unitCost")), l.value(u"wasted").toDouble()});
     }
     return c;
 }
@@ -802,7 +815,7 @@ Waste wasteFromJson(const QJsonObject &o)
         const QJsonObject l = v.toObject();
         w.lines.push_back({ss(l.value(u"ingredient").toString()), ss(l.value(u"name").toString()),
                            ss(l.value(u"unit").toString()), l.value(u"qty").toDouble(),
-                           Money::fromCents(i64(l.value(u"unitCost")))});
+                           money(l.value(u"unitCost"))});
     }
     return w;
 }
@@ -1824,7 +1837,7 @@ Delivery deliveryFromJson(const QJsonObject &o)
         const QJsonObject l = v.toObject();
         d.lines.push_back({ss(l.value(u"ingredientId").toString()), ss(l.value(u"name").toString()),
                            ss(l.value(u"unit").toString()), l.value(u"qty").toDouble(),
-                           Money::fromCents(i64(l.value(u"unitCost")))});
+                           money(l.value(u"unitCost"))});
     }
     return d;
 }
