@@ -18,6 +18,15 @@ using namespace vt::core;
 namespace vt::app {
 
 namespace {
+// The midnight after `midnight` (a day of 23 or 25 hours when the clocks change).
+std::int64_t nextMidnight(std::int64_t midnight)
+{
+    const QDate day = QDateTime::fromMSecsSinceEpoch(midnight).date();
+    return QDateTime(day.addDays(1), QTime(0, 0)).toMSecsSinceEpoch();
+}
+} // namespace
+
+namespace {
 
 QString hourText(std::int64_t ms)
 {
@@ -244,7 +253,7 @@ QVariantList PosService::requestRecords()
         // Time off on a day they're scheduled: say so.
         if (r->kind == "timeOff")
             for (const Shift &s : s_->shifts)
-                if (s.employeeId == r->employeeId && s.start < r->day + 24LL * 3'600'000 && s.end > r->day)
+                if (s.employeeId == r->employeeId && s.start < nextMidnight(r->day) && s.end > r->day)
                     summary += u"\n"_s + tr("They're on the schedule that day (%1 - %2): change it in the Schedule.")
                                              .arg(hourText(s.start), hourText(s.end));
         out.append(QVariantMap{{u"id"_s, qint64(r->id)}, {u"summary"_s, summary}, {u"status"_s, qs(r->status)},

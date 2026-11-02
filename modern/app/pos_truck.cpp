@@ -248,8 +248,9 @@ QVariantList PosService::truckOrders() const
         out.append(QVariantMap{{u"id"_s, qint64(c->id)}, {u"number"_s, c->orderNumber},
                                {u"name"_s, qs(c->customer.name)}, {u"label"_s, qs(c->label)}, {u"pager"_s, c->pager},
                                {u"items"_s, items.join(u", "_s)},
-                               {u"minutes"_s, int((t - sentAt(c)) / 60'000)}, {u"ready"_s, c->readyAt != 0},
-                               {u"readyMinutes"_s, c->readyAt ? int((t - c->readyAt) / 60'000) : 0},
+                               // Never below 0 (the clock set back after it was sent).
+                               {u"minutes"_s, std::max(0, int((t - sentAt(c)) / 60'000))}, {u"ready"_s, c->readyAt != 0},
+                               {u"readyMinutes"_s, c->readyAt ? std::max(0, int((t - c->readyAt) / 60'000)) : 0},
                                {u"paid"_s, c->status == CheckStatus::Closed}});
     }
     return out;
