@@ -56,24 +56,21 @@
 </ol>
 
 <!-- ======================================================================= -->
-<h1>What's new in 0.10</h1>
+<h1>What's new in 0.16</h1>
 <ul>
-<li><b>Restaurant, food truck or retail:</b> the setup guide asks first; Store Settings → <b>How you serve</b> changes it any time, for the store or one screen (chapter 11).</li>
-<li><b>Food trucks:</b> nobody logs in: the screen opens on the menu, ready to ring up and take payment, and is ready again after each sale. One computer is enough; a kitchen screen is optional.
-<ul>
-<li>Each order is called by a number from #1 each day, and a name: <i>#27 Maria</i> on the screen, the kitchen screen, tickets and receipts.</li>
-<li><b>+ Pager</b> keeps the number of the pager handed to the guest. <b>Orders</b> lists what's being made and what's waiting: <b>Ready</b> says <i>#27 Maria is ready: buzz pager 12</i>, <b>Picked Up</b> frees the pager.</li>
-<li>Orders → <b>Manager</b> and a manager's PIN open the Manager screens; Log Out comes back to the counter.</li>
-<li>Optionally the screen asks who's working, for their sales and tips.</li>
-<li>The customer display shows <b>Now serving</b>: Ready and Preparing.</li>
-<li>A second screen that loses the main computer keeps selling, with order numbers of its own.</li>
-</ul></li>
-<li><b>Retail:</b> staff log in and start on the menu; a barcode scanned on any screen rings the item in; nothing goes to a kitchen.</li>
-<li><b>Words that fit, on every screen:</b> every page, form, the kiosk, the setup guide and the customer display were checked at five screen sizes (down to a 7" 800×480 touch screen and phones), in Classic and Modern, in English, Spanish, French and Portuguese. What didn't fit is fixed: buttons that ran off a phone's screen (Terminals), a Printers form wider than the screen, the kiosk's welcome button in French, report dates on phones, item names on a small screen's check (now on two lines), and labels now shrink a little before they're shortened with "…".</li>
-<li><b>Every screen by touch:</b> names, pagers and PINs come with the on-screen keyboard or number pad; nothing needs a keyboard or a mouse.</li>
+<li><b>Moving pictures on the guest screens</b>: an animated GIF or WebP, or a Lottie animation (a <code>.json</code> file from After Effects or LottieFiles), plays on the customer display, the Now Serving board and the kiosk's welcome (chapter 13).</li>
+<li><b>Find… fields</b> show a magnifier, and an <b>✕</b> a finger wide that empties them: on the order screen's Find, the customers lookup, Store Settings, the Menu Builder, the waste log and prep labels. Store Settings' <b>Clear</b> button is now that ✕ (chapter 11).</li>
+<li><b>Phones:</b> the note, Find, new-tab and drawer-reason pages use the phone's own keyboard instead of a tiny one drawn on the page, and every button and field on the checklists, inventory pages, the drawer and the customers search is a finger tall (chapter 14).</li>
+<li><b>Notches and gesture bars:</b> on phones and tablets the on-screen keyboard and a guest-facing tablet's customer display keep clear of the notch, rounded corners and the gesture bar.</li>
+<li><b>Prices and counts</b> bring up a keypad with no minus (and no point for whole numbers); <b>percents</b> (tax rates, discounts, the card surcharge) have big <b>−</b> and <b>+</b> keys, a quarter point at a time, or can be typed exactly (8.875).</li>
+<li><b>The device's own settings:</b> a screen follows the phone's, tablet's or computer's <b>high contrast</b> setting, and when the device asks for <b>less motion</b>, slides, the kiosk's pulsing button, the board's flashing and other decorations stand still.</li>
+<li><b>In your language:</b> the starter store's names (payment types such as Cash and Gift Card, meal periods, categories, modifier groups and their choices, stations) show in the screen's language on the manager screens, the item card, the Menu Builder and the inventory pages, and long phrases in Spanish, French and Portuguese were shortened so they fit (chapter 17).</li>
+<li><b>Emoji</b> in item names (🌶️ Spicy Wings) show in color on every screen; receipts and kitchen tickets print the name without them.</li>
+<li><b>Safer:</b> a name, note or message is always shown exactly as typed, never as formatting a guest could use to take over the kitchen screen or the board; the store's files are readable only by ViewTouch's own account.</li>
+<li><b>Smoother:</b> a check's lines, the guest's screen and the open checks change only what changed; buttons have soft shadows.</li>
+<li><b>Installs bring their own Qt</b> (6.12), the same on every Linux, so ViewTouch looks and works the same everywhere.</li>
 </ul>
 
-<!-- ======================================================================= -->
 <h1>What's new in 0.15</h1>
 <ul>
 <li><b>A Now Serving board on a TV</b>: guests see their order numbers while they're made and when they're ready (Manager → Terminals, or the home screen's first-time setup).</li>
@@ -115,6 +112,24 @@
 <li><b>Sturdier:</b> a percent discount lowers the tax only on what it comes off; one change the database refuses no longer holds up the rest (it's kept beside the database, and a manager is told); a screen's offline sale sent again after End of Day isn't counted twice; numbers can be typed with a comma (18,5); terminals find a computer that comes back faster without knocking all day on one that's off; the standby waits after five wrong PINs.</li>
 </ul>
 
+<h1>What's new in 0.10</h1>
+<ul>
+<li><b>Restaurant, food truck or retail:</b> the setup guide asks first; Store Settings → <b>How you serve</b> changes it any time, for the store or one screen (chapter 11).</li>
+<li><b>Food trucks:</b> nobody logs in: the screen opens on the menu, ready to ring up and take payment, and is ready again after each sale. One computer is enough; a kitchen screen is optional.
+<ul>
+<li>Each order is called by a number from #1 each day, and a name: <i>#27 Maria</i> on the screen, the kitchen screen, tickets and receipts.</li>
+<li><b>+ Pager</b> keeps the number of the pager handed to the guest. <b>Orders</b> lists what's being made and what's waiting: <b>Ready</b> says <i>#27 Maria is ready: buzz pager 12</i>, <b>Picked Up</b> frees the pager.</li>
+<li>Orders → <b>Manager</b> and a manager's PIN open the Manager screens; Log Out comes back to the counter.</li>
+<li>Optionally the screen asks who's working, for their sales and tips.</li>
+<li>The customer display shows <b>Now serving</b>: Ready and Preparing.</li>
+<li>A second screen that loses the main computer keeps selling, with order numbers of its own.</li>
+</ul></li>
+<li><b>Retail:</b> staff log in and start on the menu; a barcode scanned on any screen rings the item in; nothing goes to a kitchen.</li>
+<li><b>Words that fit, on every screen:</b> every page, form, the kiosk, the setup guide and the customer display were checked at five screen sizes (down to a 7" 800×480 touch screen and phones), in Classic and Modern, in English, Spanish, French and Portuguese. What didn't fit is fixed: buttons that ran off a phone's screen (Terminals), a Printers form wider than the screen, the kiosk's welcome button in French, report dates on phones, item names on a small screen's check (now on two lines), and labels now shrink a little before they're shortened with "…".</li>
+<li><b>Every screen by touch:</b> names, pagers and PINs come with the on-screen keyboard or number pad; nothing needs a keyboard or a mouse.</li>
+</ul>
+
+<!-- ======================================================================= -->
 <!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
@@ -192,6 +207,11 @@
 <li><b>The store</b> (the main register only): <b>Setup Guide</b>, <b>Menu</b>, <b>Staff</b>, <b>Printers</b>, <b>Add a Screen</b>, <b>Reports</b>: each opens ViewTouch right there once a manager logs in. <b>Back Up Now</b> makes a backup. <b>Restore a Backup</b> puts the store back as it was in one: pick it by its date, from this computer or a USB stick (<b>Look on a USB Stick</b>; an encrypted one from another computer asks for its backup password). What's there now is kept beside it, so a restore can be undone the same way.</li>
 <li><b>This computer:</b> <b>Network</b> (a cable, or Wi-Fi with the on-screen keyboard; always the store's own network, never the guests' Wi-Fi), <b>Date &amp; Time</b> (the time zone, and whether the clock is set from the internet), <b>Updates</b> (<b>Check for a New ViewTouch</b> looks on the internet and offers <b>Install ViewTouch 0.9.…</b> when there's a newer one: it's checked to be ViewTouch's own and never an older version, the tablets' app comes with it, and the home screen starts again on it; or a new ViewTouch from a USB stick, also only one signed by ViewTouch; security updates for the computer install by themselves each night. Store Check says when a new ViewTouch is out; an Ubuntu computer set up before ViewTouch 0.9.1461 needs one update by hand first, with <i>install-viewtouch.sh</i> or a USB stick, and updates by itself after), <b>Display</b> (the brightness, where the screen allows it, and turning a screen mounted on its side or upside down; touch turns with it), <b>Remote Help</b> (lets a technician connect while it's on), <b>Restart</b>, <b>Shut Down</b>, <b>Reset…</b> (start over and choose again what the computer is, or erase the store; a backup is made first) and <b>About</b> (the disk left, the last backup, what to look at, and <b>Save Logs to USB</b>: the last week of ViewTouch's logs on a USB stick, for whoever helps you).</li>
 </ul>
+<table cellpadding="4"><tr>
+<td><img src="shots/m190-station-restore.jpg" width="180" height="113"><br><small>Restore a Backup</small></td>
+<td><img src="shots/m191-station-display.jpg" width="180" height="113"><br><small>Display: brightness, and turning the screen</small></td>
+<td><img src="shots/m192-station-about.jpg" width="180" height="113"><br><small>About: this computer, and logs for whoever helps you</small></td>
+</tr></table>
 <p><b>At a glance:</b> the top bar says what to look at, in amber: no backup for over a day and a half, less than a tenth of the disk free, ViewTouch stopping by itself today, no network. When all is well, the main register shows when the last backup was. Touch it for the whole list. <b>Updates</b> says when a new ViewTouch is ready to install: the home screen looks twice a day by itself. In Updates, <b>Install a new ViewTouch by itself at night</b> installs it between 3 and 5 AM, and ViewTouch starts again on it. Stores get a new version in turns over a few days, not all on the same night, so it may show up here a day or two after another store has it. If a new version doesn't start properly, the computer goes back to the one before by itself, with the store's data as it was before the update, and the top bar says so.</p>
 <p>The computer's settings (Network, Date &amp; Time, Updates, Remote Help, Reset, Maintainer Code) ask for <b>the maintainer's code</b>, chosen in the first-time setup. On the main register it's also the store's maintainer code (chapter 11: Managers, the owner and the maintainer). Keep it between the owner and the store's technician; it isn't anyone's staff PIN. <b>Maintainer Code</b> changes it (on the main register, for the store too), and can make <b>Restart</b> and <b>Shut Down</b> ask for it too, so nobody turns the computer off in the middle of service.</p>
 <p><b>The first time</b> the computer starts, it asks by touch: what it is (main register, register, kitchen screen, self-order kiosk, time clock), its name, the network, the store's time zone (touch it: the computer may start on another one) and the maintainer's code. Then ViewTouch starts; the main register opens on the setup guide once a manager logs in.</p>
@@ -232,6 +252,8 @@
 <li><b>Staying connected:</b> a phone whose screen went off, or that was in another app, picks up where it was. If it really did lose the store's computer, it reconnects by itself, and Manager → Network shows the screens connected.</li>
 <li><b>Phones don't edit pages.</b> Pages are made on a bigger screen (the main register or a tablet) and reach the phones as soon as they're saved.</li>
 <li><b>Pictures</b> (a logo, a menu photo) are chosen with Android's own photo picker.</li>
+<li><b>Typing on a phone</b> (a note for the kitchen, Find, a tab's name, why a drawer was opened) uses the phone's own keyboard, in its owner's language. PINs are still typed on ViewTouch's number pad.</li>
+<li><b>The notch and the gesture bar</b> are kept clear: pages, the on-screen keyboard and the customer display stay inside the part of the screen that's safe to touch.</li>
 </ul>
 
 <h3>Taking orders at the table</h3>
@@ -442,7 +464,7 @@
 <ul>
 <li><b>Text size</b>: Bigger, Biggest or Largest text, just for them: buttons, the check, the menu, choices, the Pay screen and the floor plan. A screen read from afar can have its own too (Manager → Terminals → <i>Text size</i>): on a kitchen screen the tickets grow with it. A person's own wins while they're logged in.</li>
 <li><b>Colors for color blindness</b>: the colors that mean something (whose table it is, a kitchen ticket getting old, free and seated tables at the host stand) in blue, yellow, orange and vermilion, which color-blind eyes tell apart, instead of green against red. Text on them stays readable, and a late ticket still says LATE. Manager → Terminals has the same switch for a screen nobody logs into, like the kitchen's.</li>
-<li><b>Look</b>: their colors on any screen while they're logged in. <b>High Contrast</b> (black, with every button outlined in white and the colors that mean something at their brightest) is for anyone who reads the screen better that way.</li>
+<li><b>Look</b>: their colors on any screen while they're logged in. <b>High Contrast</b> (black, with every button outlined in white and the colors that mean something at their brightest) is for anyone who reads the screen better that way. A screen with no look of its own also turns High Contrast on when the device's own high contrast setting is on (Android's accessibility settings, or the computer's).</li>
 <li><b>Left-handed</b>: the check moves to the right of the order and Pay screens, the menu to the left.</li>
 <li><b>Start screen</b>: the floor plan they see first after logging in, like the Bar for a bartender.</li>
 <li><b>Language</b>.</li>
@@ -473,7 +495,7 @@
 <p>A scanner types faster than anyone, which is how ViewTouch tells it from someone typing. When a text field is open (the coupon or gift card number), the scan goes into it instead.</p>
 
 <h2>Find an item by typing</h2>
-<p>Don't know where something is on the menu? Touch <b>Find</b> at the top of the order screen and type part of its name: <i>cob</i> finds Cobb, <i>bur</i> every burger. Touch the item to order it; the text clears for the next one.</p>
+<p>Don't know where something is on the menu? Touch <b>Find</b> at the top of the order screen and type part of its name: <i>cob</i> finds Cobb, <i>bur</i> every burger. Touch the item to order it; the text clears for the next one. On a phone, the phone's own keyboard opens for it.</p>
 <p class="shot"><img src="shots/m100-find-item.jpg" width="560" height="315"></p>
 
 <h2>Sold by weight</h2>
@@ -942,7 +964,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="shot"><img src="shots/m34-store-settings.jpg" width="560" height="315"></p>
 <p>The settings are in sections: touch one on the left (The store, Receipts, Cash, Staff hours, Tips, Kitchen, Cards, Loyalty, Self-order kiosk, Backups…) to see only its settings.</p>
 <ul>
-<li><b>Find a setting</b>: type a word or two at the top (<i>tip</i>, <i>receipt</i>, <i>kiosk color</i>). The settings that have them show from every section, each with its section's name above it. <b>Clear</b> goes back to the sections.</li>
+<li><b>Find a setting</b>: type a word or two at the top (<i>tip</i>, <i>receipt</i>, <i>kiosk color</i>). The settings that have them show from every section, each with its section's name above it. The <b>✕</b> at the end of the field empties it and goes back to the sections.</li>
 <li>A setting that only matters when another is on shows once that one is on: <i>…points per dollar</i> and <i>Rewards</i> with <b>Loyalty points</b>, <i>…clock in up to (minutes) early</i> with the schedule rule, the offline limits with <b>Take cards when the internet is down</b>, the backup password with <b>Encrypt backups</b>.</li>
 <li>Made for fingers: numbers have big <b>−</b> and <b>+</b> keys (or touch the number and type it; 0 shows what it means, like <i>Never</i> or <i>Not in it</i>), on/off settings are switches, and lists are rows: tip-outs (<i>Bussers · 15 · of tips</i>), the tip pool (a row for each job in it, with its share), rewards, tip choices, checklists, kitchen stations, expense categories, the customer display's messages and the chart of accounts. <b>+ Add…</b> adds a row, <b>✕</b> takes one out. The same goes for Menu Items, Employees, Payment Types and the other manager pages.</li>
 <li><b>The store's state</b> (Staff hours): pick yours and its labor and gift card laws are set: daily overtime and double time (California: past 8 and 12 hours), California's seventh day in a row, when a meal break is due (California: by the 5th hour; the person is reminded at login half an hour before, Store Check shows who's late, and Reports → Labor lists late or missed meals, where California owes an hour's pay), a paid 10-minute rest break every 4 hours worked (California, Colorado, Kentucky, Minnesota, Nevada, Oregon and Washington; the person is reminded at login), and gift card balances to cash out. Breaks under 20 minutes always count as time worked (federal law). Federal overtime (past 40 hours a week) applies everywhere. Each can still be changed; these are the usual rules for restaurant staff, so check special cases with your accountant.</li>
@@ -1297,6 +1319,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p>Every button can have a picture: in edit mode select it, and set its <b>Picture</b>. The same field is on <b>+ Image</b> buttons, and on the page's <b>Background</b> (with how the picture fits). Pictures you add are kept by the store, so every screen shows them.</p>
 <p class="shot"><img src="shots/m89-picture-field.jpg" width="560" height="315"></p>
 <p class="caption">A button's Picture: the store's pictures, a preview, and Add Picture….</p>
+<p>Pictures can be PNG, JPEG, WebP, GIF, BMP or SVG files, up to 8 MB. On the guest screens (the customer display's and Now Serving board's slides, the kiosk's welcome) an <b>animated GIF or WebP plays</b>, and so does a <b>Lottie animation</b>: a <code>.json</code> file exported from After Effects or downloaded from LottieFiles, added with Add Picture… like any picture. A file that isn't really a Lottie animation is refused. A device set to reduce motion shows the first frame, still.</p>
 <p>Your brand's font works the same way: next to every <b>Font</b> list in edit mode, <b>Add Font…</b> takes a TTF or OTF file. Every screen gets it, and it appears in all the font lists.</p>
 <p class="shot"><img src="shots/m93-store-font.jpg" width="420" height="236"></p>
 <p class="caption">Quick Order in the store's own font.</p>
@@ -1381,6 +1404,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="caption">On a touch screen, text fields bring up a keyboard (a number pad for numbers).</p>
 <p>Touch any text field and the keyboard pops up over the screen: a number pad for phone numbers and amounts. The screen keeps its size; if the keyboard would cover the field, the screen slides up a little so you can see what you type, and back down after. <b>⏎</b> (or <b>Done</b>) saves the field, and <b>⌨▾</b> puts the keyboard away.</p>
 <p>Phones and tablets use their own keyboard, which pops up over the screen the same way. PINs are always typed on ViewTouch's own number pad.</p>
+<p>The keyboard fits what the field takes: a price or a count shows digits and the point with no minus, a whole number no point. A percent (a tax rate, a discount) has <b>−</b> and <b>+</b> beside it, a quarter point at a time, or type it exactly.</p>
 <p>It is on for every screen, since most touch screens have no keyboard. A screen with a real keyboard can turn it off: <b>Manager → Terminals</b> → the screen → <i>On-screen keyboard: Off</i>.</p>
 
 <!-- ======================================================================= -->
@@ -1477,7 +1501,8 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <td><img src="shots/m53-spanish-tables.jpg" width="280" height="158"><br><small>Rosa's floor plan</small></td>
 <td><img src="shots/m54-spanish-choices.jpg" width="280" height="158"><br><small>Taking an order in Spanish</small></td>
 </tr></table>
-<p>Menu items, modifier groups and their options stay as you typed them, because the check, the kitchen and receipts use those names. To translate your own buttons or any phrase, put a file <code>translations/es.json</code> (or <code>fr.json</code>, <code>pt.json</code>, <code>zh.json</code>) in ViewTouch's data folder, for example <code>{"Burger of the Day": "Hamburguesa del día"}</code>.</p>
+<p>The starter store's own names (payment types such as <i>Cash</i> and <i>Gift Card</i>, meal periods, categories, modifier groups and their choices, kitchen stations) show in the screen's language on the manager screens, the Menu Builder, the item card and the inventory pages. A name you typed or changed is shown as you typed it.</p>
+<p>Menu items, modifier groups and their options stay as you typed them on the check, because the check, the kitchen and receipts use those names. To translate your own buttons or any phrase, put a file <code>translations/es.json</code> (or <code>fr.json</code>, <code>pt.json</code>, <code>zh.json</code>) in ViewTouch's data folder, for example <code>{"Burger of the Day": "Hamburguesa del día"}</code>.</p>
 
 <!-- ======================================================================= -->
 <h1>18. Keep running if a computer fails</h1>
