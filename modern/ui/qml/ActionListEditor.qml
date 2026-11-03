@@ -29,7 +29,7 @@ ColumnLayout {
 
     function setKey(i, key, value) {
         const list = copyActions()
-        if (value === undefined || value === "" || (Array.isArray(value) && value.length === 0))
+        if (value === undefined || value === "" || (value !== null && typeof value === "object" && value.length === 0))
             delete list[i][key]
         else
             list[i][key] = value

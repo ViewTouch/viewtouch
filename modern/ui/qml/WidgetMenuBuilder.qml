@@ -183,8 +183,10 @@ Item {
     // the store reads it ("3.5" is 3.50; groups and periods in any order).
     function same(a, b) {
         const norm = v => {
-            if (Array.isArray(v)) {
-                const n = v.map(norm)
+            // A list kept through the controller (keep/take) comes back as
+            // Qt's list, not a JavaScript Array (Qt 6.12): either is a list.
+            if (Array.isArray(v) || (v !== null && typeof v === "object" && typeof v.length === "number")) {
+                const n = Array.from(v, norm)
                 return n.every(x => typeof x === "string") ? n.slice().sort() : n
             }
             if (v && typeof v === "object") {

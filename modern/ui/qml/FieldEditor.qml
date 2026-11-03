@@ -462,12 +462,15 @@ ColumnLayout {
         id: pageList
         TextField {
             Layout.minimumHeight: fe.minHeight
-            text: Array.isArray(fe.value) ? fe.value.join(", ") : ""
+            // An Array, or Qt's list from C++ (not an Array from Qt 6.12 on).
+            readonly property var shown: fe.value !== null && typeof fe.value === "object" && typeof fe.value.length === "number"
+                                       ? Array.from(fe.value) : []
+            text: shown.join(", ")
             placeholderText: qsTr("page-id, page-id, ...")
             selectByMouse: true
             onEditingFinished: {
                 const ids = text.split(",").map(s => s.trim()).filter(s => s.length > 0)
-                if (ids.join(",") !== (Array.isArray(fe.value) ? fe.value.join(",") : ""))
+                if (ids.join(",") !== shown.join(","))
                     fe.commit(ids)
             }
         }
