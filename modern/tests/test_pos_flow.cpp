@@ -9159,7 +9159,10 @@ TEST_CASE("UI: Store Settings in sections: found by search, changes marked, kept
     CHECK(text(u"Self-order kiosk"_s));
     CHECK_FALSE(text(u"Loyalty points"_s));
     s.shot("settings-search");
-    s.tapItem(by(u"settingsSearchClear"_s));
+    QQuickItem *clear = Screen::findBy(by(u"settingsSearch"_s), "objectName", u"findClear"_s);
+    REQUIRE(clear);
+    CHECK(clear->width() >= 44);   // a finger wide (Qt's SearchField draws 22)
+    s.tapItem(clear);   // the field's ✕
     QTest::qWait(60);
     CHECK(text(u"Loyalty points"_s));
 }
@@ -9684,7 +9687,7 @@ TEST_CASE("UI: Store Settings -> About: the version, this screen, the license", 
         QTest::keyClick(s.window, *k);
     QTest::qWait(60);
     CHECK(text(u"ViewTouch version"_s));
-    s.tapItem(by(u"settingsSearchClear"_s));
+    s.tapItem(Screen::findBy(by(u"settingsSearch"_s), "objectName", u"findClear"_s));   // the field's ✕
     QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtEnd");
     QTest::qWait(40);
     s.tapItem(by(u"settingsSection-about"_s));

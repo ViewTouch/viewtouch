@@ -74,14 +74,14 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    TextField {
+                    FindField {
                         objectName: "labelSearch"
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         placeholderText: qsTr("Find…")
-                        onTextEdited: w.search = text
+                        onEdited: typed => w.search = typed
                     }
                     TextField {
                         id: other

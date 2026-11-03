@@ -90,13 +90,13 @@ Item {
                         font.pixelSize: 15
                         onClicked: w.byIngredient = true
                     }
-                    TextField {
+                    FindField {
                         objectName: "wasteSearch"
                         Layout.fillWidth: true
                         implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         placeholderText: qsTr("Find…")
-                        onTextEdited: w.search = text
+                        onEdited: typed => w.search = typed
                     }
                 }
                 GridView {

@@ -95,13 +95,13 @@ Dialog {
         RowLayout {
             visible: importDialog.picking
             Layout.fillWidth: true
-            TextField {
+            FindField {
                 objectName: "builderImportSearch"
                 Layout.fillWidth: true
                 implicitHeight: 44
-                placeholderText: qsTr("🔍 Find (name or category)")
+                placeholderText: qsTr("Find (name or category)")
                 text: importDialog.search
-                onTextEdited: importDialog.search = text
+                onEdited: typed => importDialog.search = typed
                 inputMethodHints: Qt.ImhNoPredictiveText
             }
             MenuTouchButton {

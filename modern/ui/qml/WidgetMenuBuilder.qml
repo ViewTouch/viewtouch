@@ -557,15 +557,15 @@ Item {
                     }
                 }
                 // Anywhere on the menu: its name or number.
-                TextField {
+                FindField {
                     objectName: "builderSearch"
                     visible: w.mode === "menu"
                     Layout.fillWidth: true
                     implicitHeight: 48
                     font.pixelSize: 16
-                    placeholderText: qsTr("🔍 Find an item (name, number or barcode)")
+                    placeholderText: qsTr("Find an item (name, number or barcode)")
                     text: w.search
-                    onTextEdited: w.search = text
+                    onEdited: typed => w.search = typed
                     inputMethodHints: Qt.ImhNoPredictiveText
                 }
                 ListView {

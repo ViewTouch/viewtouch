@@ -302,7 +302,7 @@ Item {
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
             height: visible ? 44 : 0
             spacing: 8
-            TextField {
+            FindField {
                 id: search
                 objectName: "settingsSearch"
                 Layout.fillWidth: true
@@ -310,14 +310,7 @@ Item {
                 font.pixelSize: 16
                 placeholderText: qsTr("Find a setting: tips, receipt, kiosk color…")
                 text: w.query
-                onTextEdited: w.query = text
-            }
-            PosButton {
-                objectName: "settingsSearchClear"
-                visible: w.query !== ""
-                Layout.fillHeight: true
-                text: qsTr("Clear")
-                onClicked: { w.query = ""; search.focus = false }
+                onEdited: typed => w.query = typed
             }
         }
 
@@ -336,7 +329,7 @@ Item {
                 Layout.fillHeight: true
                 spacing: 6
 
-                TextField {
+                FindField {
                     objectName: "adminListFind"
                     visible: w.findable && !w.sectioned
                     Layout.fillWidth: true
@@ -344,7 +337,7 @@ Item {
                     font.pixelSize: 15
                     placeholderText: qsTr("Find…")
                     text: w.listQuery
-                    onTextEdited: w.listQuery = text
+                    onEdited: typed => w.listQuery = typed
                 }
                 ListView {
                     id: list
