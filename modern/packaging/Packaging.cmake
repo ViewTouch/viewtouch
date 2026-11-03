@@ -107,6 +107,8 @@ set(CPACK_PACKAGING_INSTALL_PREFIX /usr)
 set(CPACK_STRIP_FILES ON)
 
 # --- Debian, Ubuntu, Raspberry Pi OS ---
+# (Recommended: the color emoji font, for "🌶 Spicy Wings" on the screens:
+# Qt 6.9 and later pick it for emoji by itself. Receipts leave emoji out.)
 # Debian and Ubuntu builds differ (Qt versions): name the release after the
 # distribution, e.g. vtmodern_0.7.0-1~debian13_arm64.deb.
 set(VTM_OS_TAG "")
@@ -128,7 +130,7 @@ if(VTM_BUNDLE_QT)
     # keyboard maps, OpenGL...), and leaves its libraries out (they're ours).
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS ${CMAKE_INSTALL_PREFIX}/${VTM_QT_HOME}/lib)
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "${VTM_DEB_COMMON}")
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, cups-client, fonts-inter")
+    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, cups-client, fonts-inter, fonts-noto-color-emoji")
 else()
     # The system's Qt: its QML modules and plugins are loaded at run time, so
     # shlibdeps can't see them.
@@ -138,7 +140,7 @@ qml6-module-qtquick-layouts, qml6-module-qtquick-shapes, qml6-module-qtquick-dia
 qml6-module-qtquick-window, qml6-module-qtqml-workerscript, libqt6sql6-sqlite, qt6-qpa-plugins, \
 ${VTM_DEB_COMMON}")
     # fonts-inter: the Modern style's font (Store Settings -> Screens -> Style).
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, qt6-wayland, cups-client, fonts-inter")
+    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "cage, qt6-wayland, cups-client, fonts-inter, fonts-noto-color-emoji")
 endif()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/debian/conffiles
      "/etc/viewtouch/server.conf\n/etc/viewtouch/kiosk.conf\n")
@@ -166,9 +168,9 @@ endif()
 # systemd-sysusers creates the viewtouch account in the install script
 set(CPACK_RPM_PACKAGE_REQUIRES_POST "systemd")
 if(VTM_BUNDLE_QT)
-    set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, cups-client, rsms-inter-fonts")
+    set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, cups-client, rsms-inter-fonts, google-noto-color-emoji-fonts")
 else()
-    set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, qt6-qtwayland, cups-client, rsms-inter-fonts")
+    set(CPACK_RPM_PACKAGE_RECOMMENDS "cage, qt6-qtwayland, cups-client, rsms-inter-fonts, google-noto-color-emoji-fonts")
 endif()
 set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${VTM_PKG}/postinst)
 set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${VTM_PKG}/prerm)

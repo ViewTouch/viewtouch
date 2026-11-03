@@ -895,3 +895,18 @@ TEST_CASE("Receipts say what a service charge and a delivery fee are (fee laws)"
     CHECK(contains(r, "Goes to the driver."));
     CHECK(contains(r, "Goes to the server."));
 }
+
+TEST_CASE("Receipts leave emoji out: \"🌶 Spicy Wings\" prints as Spicy Wings", "[print][emoji]")
+{
+    // On the screens the emoji shows (Qt 6.9 picks the color emoji font);
+    // a receipt printer has no such letters, so it goes, joiners and all.
+    Document d;
+    d.text("🌶️ Spicy Wings 👨‍🍳");
+    const std::string text = renderText(d, 42);
+    CHECK(text.find("Spicy Wings") != std::string::npos);
+    for (const unsigned char c : text)
+        CHECK(c < 0x80);   // nothing a printer would show as junk
+    const std::string escpos = renderEscPos(d, 42, true);
+    CHECK(escpos.find("Spicy Wings") != std::string::npos);
+    CHECK(escpos.find("\xF0\x9F") == std::string::npos);   // no emoji bytes
+}
