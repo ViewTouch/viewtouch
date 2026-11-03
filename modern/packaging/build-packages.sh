@@ -24,6 +24,11 @@ build_here() {
         *) echo "Unknown distribution ${ID:-}; building both" >&2; generator="DEB;RPM" ;;
     esac
     build=${BUILD_DIR:-$modern/build-package-${ID:-linux}-$(uname -m)}
+    # Reproducible: the same commit built again (same system, same folder)
+    # gives the same package, byte for byte. Qt's resource compiler and
+    # CPack stamp files with this time instead of the build's.
+    SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git -C "$repo" log -1 --format=%ct 2>/dev/null || date +%s)}
+    export SOURCE_DATE_EPOCH
     cmake -S "$modern" -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
           -DVTM_BUILD_TESTS=OFF
     cmake --build "$build"
