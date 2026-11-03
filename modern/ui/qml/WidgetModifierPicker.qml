@@ -58,7 +58,7 @@ Item {
                         spacing: w.unit * 0.5
                         Text {
                             textFormat: Text.PlainText
-                            text: group.modelData.name
+                            text: qsTranslate("Data", String(group.modelData.name ?? ""))   // (a starter name, "Cash", in the screen's language; a store's own name as typed)
                             color: w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
@@ -86,7 +86,7 @@ Item {
                                 height: w.unit * 2.6
                                 readonly property bool leftOff: modelData.qualifier === "No"
                                 // "No Onion", "Extra Cheese +$1.50": how it was chosen.
-                                text: (modelData.qualifier ? modelData.qualifier + " " : "") + modelData.name
+                                text: (modelData.qualifier ? modelData.qualifier + " " : "") + qsTranslate("Data", String(modelData.name ?? ""))
                                       + (modelData.soldOut ? "\n" + qsTr("sold out")
                                          : modelData.included && !modelData.chosen ? "\n" + qsTr("comes on it")
                                          : modelData.chosen ? (modelData.chosenPrice ? "\n+" + modelData.chosenPrice : "")

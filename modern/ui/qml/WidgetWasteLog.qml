@@ -116,7 +116,8 @@ Item {
                         objectName: "waste-" + modelData.id
                         width: grid.cellWidth - 6
                         height: grid.cellHeight - 6
-                        text: modelData.name
+                        text: qsTranslate("Data", String(modelData.name ?? ""))
+                        lines: 2
                         checkable: true
                         checked: w.chosen === modelData.id
                         highlighted: checked

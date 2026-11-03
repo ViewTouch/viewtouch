@@ -7,6 +7,8 @@ import QtQuick.Controls.Fusion
 Button {
     id: b
     font.bold: true
+    // How many lines its words may take (a tile: "Combo de Hamburguesa" in two).
+    property int lines: 1
     readonly property color fill: !b.enabled ? Qt.darker(b.palette.button, 1.35)
                                   : b.down ? Qt.lighter(b.highlighted || b.checked ? Ui.accent : b.palette.button, 1.35)
                                   : b.highlighted || b.checked ? Ui.accent : b.palette.button
@@ -18,7 +20,9 @@ Button {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
-        fontSizeMode: Text.HorizontalFit
+        wrapMode: b.lines > 1 ? Text.WordWrap : Text.NoWrap
+        maximumLineCount: b.lines > 1 ? b.lines : 999   // (one: its own lines, "\n", all shown)
+        fontSizeMode: b.lines > 1 ? Text.Fit : Text.HorizontalFit
         // (A font sized in points shrinks by minimumPointSize: without it, it didn't.)
         minimumPixelSize: Math.max(9, b.font.pixelSize * 0.6)
         minimumPointSize: Math.max(7, b.font.pointSize * 0.6)

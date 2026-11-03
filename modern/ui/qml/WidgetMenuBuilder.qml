@@ -563,7 +563,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 48
                     font.pixelSize: 16
-                    placeholderText: qsTr("Find an item (name, number or barcode)")
+                    placeholderText: qsTr("Name, number or barcode")   // (the magnifier says it finds)
                     text: w.search
                     onEdited: typed => w.search = typed
                     inputMethodHints: Qt.ImhNoPredictiveText
@@ -594,7 +594,7 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
                                     textFormat: Text.PlainText
                                     text: (foundRow.cat ? foundRow.cat.name + "  ·  " : "")
@@ -644,7 +644,7 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 10
                             spacing: 0
-                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                             Label {
                                 textFormat: Text.PlainText
                                 text: modelData.rule + "  ·  " + qsTr("%n option(s)", "", modelData.options.length)
@@ -697,7 +697,7 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
                                     textFormat: Text.PlainText
                                     text: qsTr("%n item(s)", "", modelData.count) + "  ·  "
@@ -883,7 +883,7 @@ Item {
                     id: categoryName
                     font.pixelSize: 22
                     font.bold: true
-                    text: w.category ? w.category.name : ""
+                    text: w.category ? qsTranslate("Data", String(w.category.name ?? "")) : ""
                 }
                 Label {
                     textFormat: Text.PlainText
@@ -1157,7 +1157,7 @@ Item {
                                     textFormat: Text.PlainText
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
-                                    text: modelData.add ? qsTr("+ Add Item") : modelData.name
+                                    text: modelData.add ? qsTr("+ Add Item") : qsTranslate("Data", String(modelData.name ?? ""))
                                     color: StoreColors.ink(parent.parent.tint)
                                     font.pixelSize: 18
                                     font.bold: true
@@ -2354,7 +2354,7 @@ Item {
                     required property var modelData
                     objectName: "builderMoveTo-" + modelData.id
                     Layout.fillWidth: true
-                    text: modelData.name
+                    text: qsTranslate("Data", String(modelData.name ?? ""))
                     palette.button: modelData.color || Ui.key
                     palette.buttonText: StoreColors.ink(modelData.color || Ui.key)
                     onClicked: {

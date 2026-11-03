@@ -39,7 +39,7 @@ Item {
             Label {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
-                text: row.modelData.title
+                text: qsTranslate("Data", row.modelData.title ?? "")   // (a station's name, "Kitchen")
                 font.pixelSize: 16
                 font.bold: true
                 elide: Text.ElideRight

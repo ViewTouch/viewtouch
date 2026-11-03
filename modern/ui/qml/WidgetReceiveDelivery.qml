@@ -129,10 +129,15 @@ Item {
                             font.pixelSize: 16
                             font.bold: true
                             color: row.modelData.low ? "#f5b940" : "white"
-                            // Two lines before it's cut: "Veggie Patties" whole.
+                            // Two lines before it's cut: "Veggie Patties" whole;
+                            // one long word ("Mushrooms" on a phone) a size smaller.
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2
                             lineHeight: 0.9
+                            Layout.fillHeight: true
+                            verticalAlignment: Text.AlignVCenter
+                            fontSizeMode: Text.Fit
+                            minimumPixelSize: 12
                             elide: Text.ElideRight
                         }
                         Label {

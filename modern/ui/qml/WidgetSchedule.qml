@@ -210,7 +210,9 @@ Item {
                 TextField {
                     Layout.minimumHeight: w.narrow ? 40 : 0
                     Layout.fillWidth: true
-                    placeholderText: qsTr("note (patio, close…)")
+                    Layout.preferredWidth: 160   // (with no width of its own it got what was left: none)
+                    Layout.minimumWidth: 80
+                    placeholderText: qsTr("Note")   // (the field is narrow: "patio, close…" was cut)
                     text: w.note
                     onTextEdited: w.note = text
                 }

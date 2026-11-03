@@ -248,7 +248,7 @@ Item {
                     visible: !(w.pos && w.pos.pairing.active) && !w.narrow
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    maximumLineCount: 2
+                    maximumLineCount: 3
                     elide: Text.ElideRight
                     text: qsTr("Add a tablet or another screen: Pair a Device, then type the code on it (its Join screen).")
                     opacity: 0.8
@@ -381,12 +381,14 @@ Item {
                             spacing: 0
                             Label {
                                 textFormat: Text.PlainText
-                                text: (w.sectioned ? row.rec.name : row.rec._title) || qsTr("(unnamed)")
+                                text: qsTranslate("Data", String((w.sectioned ? row.rec.name : row.rec._title) || "")) || qsTr("(unnamed)")   // (a starter name, "Cash", in the screen's language; a store's own name as typed)
                                 font.bold: true
                                 font.pixelSize: 15
-                                // A section's name wraps (a narrow list, a longer language).
-                                wrapMode: w.sectioned ? Text.WordWrap : Text.NoWrap
-                                elide: w.sectioned ? Text.ElideNone : Text.ElideRight
+                                // A section's name wraps (a narrow list, a longer language);
+                                // a record's, two lines and cut ("Morgan (Manager) · Tue Nov 3").
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: w.sectioned ? 4 : 2
+                                elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
                             Label {
@@ -398,6 +400,9 @@ Item {
                                 color: w.sectioned ? EditorStyle.warning : palette.windowText
                                 opacity: w.sectioned ? 1 : 0.7
                                 font.pixelSize: 13
+                                // Two lines, then cut ("5 options · required · 3 menu items").
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 2
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }

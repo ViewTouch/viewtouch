@@ -37,7 +37,7 @@ Popup {
                     Column {
                         anchors.centerIn: parent
                         spacing: 6
-                        Label { textFormat: Text.PlainText; anchors.horizontalCenter: parent.horizontalCenter; text: modelData.name; font.pixelSize: 15; font.bold: true }
+                        Label { textFormat: Text.PlainText; anchors.horizontalCenter: parent.horizontalCenter; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 15; font.bold: true }
                         Row {
                             spacing: 3
                             Repeater {
@@ -68,7 +68,7 @@ Popup {
                     textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     x: 12
-                    text: modelData.name
+                    text: qsTranslate("Data", String(modelData.name ?? ""))
                     color: StoreColors.ink(parent.color.toString())
                     font.pixelSize: 16
                     font.bold: true

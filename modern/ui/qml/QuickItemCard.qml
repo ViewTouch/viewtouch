@@ -288,7 +288,7 @@ Popup {
                             implicitHeight: 48
                             font.pixelSize: 15
                             highlighted: on
-                            text: (on ? "✓ " : "") + modelData.name
+                            text: (on ? "✓ " : "") + qsTranslate("Data", String(modelData.name ?? ""))   // (a starter name, "Cash", in the screen's language; a store's own name as typed)
                             onClicked: card.groups = on ? card.groups.filter(g => g !== modelData.id)
                                                         : card.groups.concat([modelData.id])
                         }

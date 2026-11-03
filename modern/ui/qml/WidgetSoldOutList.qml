@@ -45,7 +45,7 @@ Item {
                 Text {
                     textFormat: Text.PlainText
                     width: parent.width
-                    text: cell.modelData.name
+                    text: qsTranslate("Data", String(cell.modelData.name ?? ""))
                     color: "white"
                     font.family: w.face
                     font.pixelSize: 24 * grid.big

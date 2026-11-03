@@ -4195,7 +4195,10 @@ QStringList labelsCutOff(Screen &s, const QString &where)
                 && item->inherits("QQuickAbstractButton")) {
                 const qreal need = item->property("implicitContentWidth").toReal();
                 const qreal room = item->property("availableWidth").toReal();
-                if (room > 0 && need > room + 1)
+                // A key whose words wrap (PosButton's lines): cut only if its text says so.
+                auto *words = item->property("contentItem").value<QQuickItem *>();
+                const bool wraps = item->property("lines").toInt() > 1 && words;
+                if (wraps ? words->property("truncated").toBool() : room > 0 && need > room + 1)
                     out << u"%1 | key | %2 | %3 > %4"_s.arg(where, text).arg(qRound(need)).arg(qRound(room));
             } else if (item->inherits("QQuickText")) {
                 const qreal w = item->width();

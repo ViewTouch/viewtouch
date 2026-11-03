@@ -80,7 +80,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
-            Pick { text: menu.category ? menu.category.name : ""; checked: !pricesDialog.wholeMenu; onClicked: pricesDialog.wholeMenu = false }
+            Pick { text: menu.category ? qsTranslate("Data", String(menu.category.name ?? "")) : ""; checked: !pricesDialog.wholeMenu; onClicked: pricesDialog.wholeMenu = false }
             Pick { objectName: "builderPricesWhole"; text: qsTr("The whole menu"); checked: pricesDialog.wholeMenu; onClicked: pricesDialog.wholeMenu = true }
         }
         RowLayout {
