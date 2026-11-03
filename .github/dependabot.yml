@@ -1,0 +1,11 @@
+# Newer versions of what the workflows use (actions/checkout and the like),
+# offered as pull requests once a month, grouped so it's one to look at.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
