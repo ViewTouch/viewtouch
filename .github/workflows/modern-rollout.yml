@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: write   # upload latest.json to the release
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Sign and publish latest.json
         env:
