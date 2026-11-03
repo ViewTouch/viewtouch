@@ -119,6 +119,7 @@ ColumnLayout {
                     { id: "code", label: qsTr("Number"), w: 110 },
                 ].concat(list.anyStock ? [{ id: "stock", label: qsTr("Stock"), w: 70 }] : [])
                 delegate: Label {
+                    textFormat: Text.PlainText
                     required property var modelData
                     objectName: "builderListSort-" + modelData.id
                     visible: !list.compact || !modelData.wide
@@ -167,6 +168,7 @@ ColumnLayout {
                 anchors.rightMargin: 10
                 spacing: 8
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: (list.builder.selecting ? (row.chosen ? "☑  " : "☐  ") : "") + row.modelData.name
                     font.pixelSize: 17
@@ -180,6 +182,7 @@ ColumnLayout {
                     spacing: 6
                     Rectangle { width: 10; height: 28; radius: 3; color: row.cat ? row.cat.color || "#4a5260" : "#4a5260" }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: row.modelData.familyName ?? ""
                         font.pixelSize: 14
@@ -188,6 +191,7 @@ ColumnLayout {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.preferredWidth: 80
                     horizontalAlignment: Text.AlignRight
                     text: row.modelData.availableSet ? row.modelData.regularPrice : qsTr("sold out")
@@ -196,6 +200,7 @@ ColumnLayout {
                     elide: Text.ElideLeft
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: !list.compact
                     Layout.preferredWidth: 90
                     text: list.taxName(row.modelData.taxClass)
@@ -204,6 +209,7 @@ ColumnLayout {
                     elide: Text.ElideRight
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.preferredWidth: 110
                     text: list.code(row.modelData)
                     font.pixelSize: 14
@@ -212,6 +218,7 @@ ColumnLayout {
                 }
                 // How many on hand (Track stock): red when low.
                 Label {
+                    textFormat: Text.PlainText
                     visible: list.anyStock
                     Layout.preferredWidth: 70
                     horizontalAlignment: Text.AlignRight
@@ -233,6 +240,7 @@ ColumnLayout {
             }
         }
         Label {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: list.rows.length === 0
             width: parent.width - 40
@@ -244,6 +252,7 @@ ColumnLayout {
         }
     }
     Label {
+        textFormat: Text.PlainText
         Layout.fillWidth: true
         text: qsTr("%n item(s)", "", list.rows.length)
         font.pixelSize: 13

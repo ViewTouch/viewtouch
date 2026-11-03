@@ -56,6 +56,7 @@ Item {
                 anchors.margins: w.unit
                 spacing: w.unit * 0.5
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: w.pin.length ? "●".repeat(w.pin.length) : qsTr("Type your PIN")
@@ -103,6 +104,7 @@ Item {
                 anchors.margins: w.unit
                 spacing: w.unit * 0.5
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: w.info.name ?? ""
                     color: w.ink
@@ -112,6 +114,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     objectName: "clockStatus"
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -124,6 +127,7 @@ Item {
                     font.pixelSize: w.unit
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Today: %1 hours").arg(w.info.todayHours ?? "0")
                           + "  ·  " + qsTr("This week: %1 hours").arg(w.ot.weekHours ?? "0")
@@ -134,6 +138,7 @@ Item {
                 }
                 // Close to overtime (or in it).
                 Text {
+                    textFormat: Text.PlainText
                     objectName: "clockOvertime"
                     visible: w.ot.state === "soon" || w.ot.state === "over"
                     Layout.fillWidth: true
@@ -204,6 +209,7 @@ Item {
             color: Ui.sunken
 
             Text {
+                textFormat: Text.PlainText
                 visible: !w.someone
                 anchors.centerIn: parent
                 width: parent.width * 0.8
@@ -229,6 +235,7 @@ Item {
                     anchors.margins: w.unit
                     spacing: w.unit * 0.5
                     Text {
+                        textFormat: Text.PlainText
                         text: qsTr("Which day off?")
                         color: w.ink
                         font.family: w.face
@@ -258,6 +265,7 @@ Item {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: qsTr("Why? (optional)")
                         color: Ui.muted
                         font.family: w.face
@@ -319,6 +327,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: qsTr("My schedule")
                         color: w.ink
@@ -327,6 +336,7 @@ Item {
                         font.bold: true
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: qsTr("%1 hours this week").arg(w.info.weekHours ?? "0")
                         color: Ui.muted
                         font.family: w.face
@@ -334,6 +344,7 @@ Item {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     visible: (w.info.shifts ?? []).length === 0
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -361,6 +372,7 @@ Item {
                             anchors.leftMargin: w.unit * 0.6
                             anchors.rightMargin: w.unit * 0.6
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.preferredWidth: w.unit * 7
                                 text: modelData.day
                                 color: w.ink
@@ -369,6 +381,7 @@ Item {
                                 font.bold: true
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.hours + (modelData.note ? "  ·  " + modelData.note : "")
                                 color: w.ink
@@ -377,6 +390,7 @@ Item {
                                 elide: Text.ElideRight
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 text: modelData.now ? qsTr("now") : qsTr("%1 h").arg(modelData.length)
                                 color: modelData.now ? "#5fd08a" : Ui.muted
                                 font.family: w.face
@@ -393,6 +407,7 @@ Item {
                                 onClicked: { w.touched(); w.pos.timeClockGiveAway(modelData.id) }
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 visible: modelData.givingAway
                                 text: qsTr("up for grabs")
                                 color: "#f5b940"
@@ -404,6 +419,7 @@ Item {
                 }
                 // Others' shifts given away: take one (a manager approves).
                 Text {
+                    textFormat: Text.PlainText
                     visible: w.grabs.length > 0
                     text: qsTr("Up for grabs")
                     color: "#f5b940"
@@ -417,6 +433,7 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.day + "  " + modelData.hours + "  ·  " + modelData.who
                             color: w.ink
@@ -437,6 +454,7 @@ Item {
                 }
                 // My requests and where they stand.
                 Text {
+                    textFormat: Text.PlainText
                     visible: w.mine.length > 0
                     text: qsTr("My requests")
                     color: w.ink
@@ -450,6 +468,7 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.text
                             color: w.ink
@@ -458,6 +477,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             objectName: "requestStatus-" + modelData.id
                             text: modelData.statusText
                             color: modelData.status === "approved" ? "#5fd08a"

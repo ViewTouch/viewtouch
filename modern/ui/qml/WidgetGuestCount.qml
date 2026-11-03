@@ -25,6 +25,7 @@ Item {
             Layout.fillHeight: true
             spacing: 0
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: w.pos ? w.pos.entryGuests : 1
@@ -34,6 +35,7 @@ Item {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 readonly property int n: w.pos ? w.pos.entryGuests : 1

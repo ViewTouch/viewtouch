@@ -59,6 +59,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         visible: w.shown.length === 0
         text: qsTr("Nothing on the menu yet: Manager → Menu Builder.")

@@ -113,6 +113,7 @@ Item {
                         anchors.margins: 8
                         spacing: 0
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: w.name !== "" ? w.name : qsTr("(choose what it is)")
                             color: "black"
@@ -120,8 +121,9 @@ Item {
                             font.bold: true
                             elide: Text.ElideRight
                         }
-                        Text { text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: 15 }
+                        Text { textFormat: Text.PlainText; text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: 15 }
                         Text {
+                            textFormat: Text.PlainText
                             visible: w.hours > 0
                             text: qsTr("Use by %1").arg(w.fmt(new Date(Date.now() + w.hours * 3600000)))
                             color: "black"
@@ -129,13 +131,14 @@ Item {
                             font.bold: true
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: (note.text.trim() !== "" ? note.text.trim() + "  ·  " : "") + (w.pos ? w.pos.userName.split(" ")[0] : "")
                             color: "black"
                             font.pixelSize: 13
                         }
                     }
                 }
-                Label { text: qsTr("Keeps for"); font.pixelSize: 13; opacity: 0.75 }
+                Label { textFormat: Text.PlainText; text: qsTr("Keeps for"); font.pixelSize: 13; opacity: 0.75 }
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
@@ -177,6 +180,7 @@ Item {
                         onClicked: w.count = Math.max(1, w.count - 1)
                     }
                     Label {
+                        textFormat: Text.PlainText
                         objectName: "labelCount"
                         text: String(w.count)
                         Layout.preferredWidth: 44
@@ -206,6 +210,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: (w.info.printer ?? "") !== "" ? qsTr("Prints on %1").arg(w.info.printer)
                                                        : qsTr("No label printer: set one up in Manager → Printers.")

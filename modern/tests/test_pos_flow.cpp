@@ -10234,3 +10234,101 @@ TEST_CASE("Pseudo-localization: what doesn't fit once the words are longer", "[.
     CHECK(pseudoTexts > texts / 2);   // the screens are in the pseudo language
     WARN(cut.size() << " of " << texts << " texts don't fit once longer:\n" << cut.join(u'\n').toStdString());
 }
+
+// What guests and staff type (a kiosk name, a customer, a party on the
+// waitlist, a message, a menu item's name) is shown as typed, never as
+// markup: Qt's Text treats a string that looks like HTML as HTML unless
+// told otherwise, so "<font size=7>FREE</font>" in a name took over the
+// kitchen screen and the board on the dining room's TV, and an <img> made
+// the screen fetch a web address. Every Text says PlainText now; this
+// walks the screens with such strings in them.
+namespace {
+const QString kHostile = u"<font size=\"7\" color=\"red\">HACKED</font><img src=\"http://203.0.113.9/x.png\">"_s;
+
+// Each visible text that contains the hostile string, drawn as markup.
+QStringList shownAsMarkup(QQuickItem *root)
+{
+    QStringList bad;
+    std::function<void(QQuickItem *)> walk = [&](QQuickItem *it) {
+        if (!it->isVisible())
+            return;
+        if (QByteArray(it->metaObject()->className()).startsWith("QQuickText")) {
+            const QString text = it->property("text").toString();
+            const int format = it->property("textFormat").toInt();   // 0 plain, 1 rich, 2 auto, 3 styled, 4 markdown
+            if (text.contains(u"<font size="_s) && format != 0)
+                bad << QString::fromLatin1(it->metaObject()->className()) + u" (format "_s + QString::number(format) + u"): "_s + text.left(80);
+        }
+        for (QQuickItem *c : it->childItems())
+            walk(c);
+    };
+    walk(root);
+    return bad;
+}
+} // namespace
+
+TEST_CASE("Security: names, notes and messages are shown as typed, never as markup", "[flow][ui][security]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, kHostile}}));
+    s.pos.entryKey(u"10000"_s);
+    s.pos.openDrawerSession();
+    // A takeout order with that name, sent to the kitchen; a party; a message.
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(s.pos.addItem(u"cobb"_s));
+    REQUIRE(s.pos.setCustomer({{u"name"_s, kHostile}}));
+    REQUIRE(s.pos.sendOrder());
+    REQUIRE(s.pos.addToWaitlist({{u"name"_s, kHostile}, {u"size"_s, 2}}) > 0);
+    s.pos.sendMessage(u"all"_s, kHostile, 0);
+    QStringList bad;
+    int pages = 0;
+    for (const QString &page : {s.c.pageId(), u"check-list"_s, u"host"_s, u"kitchen"_s, u"tables"_s}) {
+        if (page != s.c.pageId() && !s.c.showPage(page))
+            continue;
+        ++pages;
+        QTest::qWait(120);
+        for (const QString &b : shownAsMarkup(s.window->contentItem()))
+            bad << page + u": "_s + b;
+    }
+    CHECK(pages >= 4);
+    INFO(bad.join(u'\n').toStdString());
+    CHECK(bad.isEmpty());
+
+    // The board on the dining room's TV (a food truck's customer display).
+    s.pos.releaseCheck();
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.addItem(u"caesar"_s));   // a counter: the order starts with its first item
+    REQUIRE(s.pos.setCustomer({{u"name"_s, kHostile}}));
+    REQUIRE(s.pos.tender(u"cash"_s));
+    REQUIRE(s.pos.closeCheck());
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"pos"_s, QVariant::fromValue(static_cast<app::PosSession *>(&s.pos))}});
+    engine.loadFromModule("ViewTouch", "CustomerDisplayWindow");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *board = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(board);
+    board->resize(1280, 720);
+    REQUIRE(QTest::qWaitForWindowExposed(board));
+    std::function<void(QQuickItem *)> thanked = [&](QQuickItem *item) {
+        if (item->property("thanking").isValid())
+            item->setProperty("thanking", false);
+        for (QQuickItem *child : item->childItems())
+            thanked(child);
+    };
+    thanked(board->contentItem());
+    QTest::qWait(120);
+    const QStringList onBoard = shownAsMarkup(board->contentItem());
+    INFO(onBoard.join(u'\n').toStdString());
+    CHECK(onBoard.isEmpty());
+    // ... and it's there, as typed.
+    bool shown = false;
+    std::function<void(QQuickItem *)> look = [&](QQuickItem *it) {
+        if (it->isVisible() && it->property("text").toString().contains(u"<font size="_s))   // (names are cut short)
+            shown = true;
+        for (QQuickItem *c : it->childItems())
+            look(c);
+    };
+    look(board->contentItem());
+    CHECK(shown);
+}

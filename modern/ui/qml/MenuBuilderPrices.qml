@@ -104,7 +104,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
-            Label { text: qsTr("Round to") }
+            Label { textFormat: Text.PlainText; text: qsTr("Round to") }
             Repeater {
                 model: [{ c: 1, t: qsTr("Exact") }, { c: 5, t: "0.05" }, { c: 25, t: "0.25" }, { c: 50, t: "0.50" }]
                 delegate: Pick {
@@ -160,6 +160,7 @@ Dialog {
                 Layout.fillWidth: true
                 spacing: 6
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: "⏰ " + modelData.when + "  ·  " + modelData.label + "  ·  " + qsTr("%n price(s)", "", modelData.count)
                     elide: Text.ElideRight
@@ -184,16 +185,18 @@ Dialog {
                 width: ListView.view.width
                 height: 34
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: modelData.name + (modelData.others ? "  " + qsTr("(+%n other price(s))", "", modelData.others) : "")
                     elide: Text.ElideRight
                     font.pixelSize: 16
                 }
-                Label { text: modelData.was; opacity: 0.6; font.pixelSize: 16 }
-                Label { text: "→"; opacity: 0.6; font.pixelSize: 16 }
-                Label { Layout.preferredWidth: 80; horizontalAlignment: Text.AlignRight; text: modelData.price; font.bold: true; font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; text: modelData.was; opacity: 0.6; font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; text: "→"; opacity: 0.6; font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignRight; text: modelData.price; font.bold: true; font.pixelSize: 16 }
             }
             Label {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 width: parent.width - 40
                 wrapMode: Text.WordWrap

@@ -236,14 +236,14 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 spacing: w.unit * 0.4
-                Text { text: qsTr("From"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
+                Text { textFormat: Text.PlainText; text: qsTr("From"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
                 TextField {
                     implicitWidth: w.unit * 8
                     placeholderText: "2026-09-01"
                     inputMethodHints: Qt.ImhPreferNumbers
                     onTextEdited: w.fromDate = text
                 }
-                Text { text: qsTr("to"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
+                Text { textFormat: Text.PlainText; text: qsTr("to"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
                 TextField {
                     implicitWidth: w.unit * 8
                     placeholderText: "2026-09-30"
@@ -279,6 +279,7 @@ Item {
                     onClicked: if (w.dayIndex < w.days.length - 1) w.dayIndex++
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: dayBar.oneDay ? w.day.label
@@ -374,6 +375,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: w.report.title ?? ""
                 color: w.ink
@@ -417,6 +419,7 @@ Item {
                             Repeater {
                                 model: w.report.columns ?? []
                                 delegate: Text {
+                                    textFormat: Text.PlainText
                                     required property string modelData
                                     required property int index
                                     width: index === 0 ? table.firstW : w.valueWidth(index)
@@ -481,6 +484,7 @@ Item {
                                     Repeater {
                                         model: row.modelData.cells
                                         delegate: Text {
+                                            textFormat: Text.PlainText
                                             required property string modelData
                                             required property int index
                                             // A line with one cell (a section, a note): across the table.
@@ -551,6 +555,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Reports")
                     color: w.ink
@@ -590,6 +595,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: rv.gap
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     Layout.topMargin: rv.unit * 0.3
                     text: group.modelData.label.toUpperCase()

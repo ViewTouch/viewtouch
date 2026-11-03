@@ -321,6 +321,7 @@ Item {
             border.width: 2 * overlay.px
             border.color: EditorStyle.accent
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: "⟳"
                 font.pixelSize: parent.d * 0.7
@@ -370,6 +371,7 @@ Item {
         radius: 4 * overlay.px
         color: "#e0101418"
         Text {
+            textFormat: Text.PlainText
             id: readout
             anchors.centerIn: parent
             color: "white"
@@ -389,6 +391,7 @@ Item {
         radius: 4 * overlay.px
         color: "#e0101418"
         Text {
+            textFormat: Text.PlainText
             id: hint
             anchors.centerIn: parent
             color: "white"

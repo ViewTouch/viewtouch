@@ -40,7 +40,7 @@ Item {
                 Layout.fillHeight: !w.narrow
                 spacing: 10
 
-                Label { text: qsTr("Card number"); opacity: 0.8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Card number"); opacity: 0.8 }
                 RowLayout {
                     Layout.fillWidth: true
                     TextField {
@@ -58,7 +58,7 @@ Item {
                         font.pixelSize: 17; implicitHeight: 48; onClicked: w.lookUp() }
                 }
 
-                Label { text: qsTr("Amount"); opacity: 0.8; Layout.topMargin: 8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Amount"); opacity: 0.8; Layout.topMargin: 8 }
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 4
@@ -77,7 +77,7 @@ Item {
                     }
                 }
                 RowLayout {
-                    Label { text: qsTr("Other $") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Other $") }
                     TextField {
                         implicitHeight: 48
                         id: other
@@ -107,6 +107,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     opacity: 0.6
@@ -140,6 +141,7 @@ Item {
                 Layout.fillHeight: true
                 spacing: 6
                 Label {
+                    textFormat: Text.PlainText
                     text: !w.card.number ? qsTr("Look up a card to see its balance.")
                          : w.found ? qsTr("Card %1").arg(w.card.display) : qsTr("Card %1 isn't active yet").arg(w.card.display)
                     font.pixelSize: 20
@@ -148,13 +150,14 @@ Item {
                     Layout.fillWidth: true
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.found
                     text: w.card.balance ?? ""
                     font.pixelSize: 44
                     font.bold: true
                     color: "#7ee2a8"
                 }
-                Label { visible: w.found; text: qsTr("Since %1").arg(w.card.issued ?? ""); opacity: 0.6 }
+                Label { textFormat: Text.PlainText; visible: w.found; text: qsTr("Since %1").arg(w.card.issued ?? ""); opacity: 0.6 }
                 ListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -165,9 +168,9 @@ Item {
                         required property var modelData
                         width: ListView.view.width - historyBar.room
                         height: 34
-                        Label { text: modelData.at; opacity: 0.6; Layout.preferredWidth: 150 }
-                        Label { text: modelData.what; Layout.fillWidth: true; elide: Text.ElideRight }
-                        Label { text: modelData.amount; font.bold: true }
+                        Label { textFormat: Text.PlainText; text: modelData.at; opacity: 0.6; Layout.preferredWidth: 150 }
+                        Label { textFormat: Text.PlainText; text: modelData.what; Layout.fillWidth: true; elide: Text.ElideRight }
+                        Label { textFormat: Text.PlainText; text: modelData.amount; font.bold: true }
                     }
                 }
             }

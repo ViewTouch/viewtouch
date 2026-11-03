@@ -38,12 +38,14 @@ Rectangle {
         spacing: 2
 
         Label {
+            textFormat: Text.PlainText
             text: qsTr("Editing")
             color: EditorStyle.accent
             font.bold: true
             Layout.rightMargin: 4
         }
         Label {
+            textFormat: Text.PlainText
             text: qsTranslate("Page", bar.controller.pageName)
             font.bold: true
             elide: Text.ElideRight
@@ -190,6 +192,7 @@ Rectangle {
         }
 
         Label {
+            textFormat: Text.PlainText
             visible: bar.editor.dirty
             text: bar.width < 1200 ? qsTr("Unsaved") : qsTr("Unsaved changes")
             color: EditorStyle.warning

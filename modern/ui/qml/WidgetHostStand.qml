@@ -103,6 +103,7 @@ Item {
         opacity: enabled ? 1 : 0.4
     }
     component Small: Text {
+        textFormat: Text.PlainText
         color: Ui.muted
         font.family: w.face
         font.pixelSize: w.unit * 0.75
@@ -138,6 +139,7 @@ Item {
                             color: w.colorFor(modelData[0])
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: modelData[1] + " " + (w.tally[modelData[0]] ?? 0)
                             color: w.ink
                             font.family: w.face
@@ -222,6 +224,7 @@ Item {
                         anchors.leftMargin: w.unit * 0.6
                         anchors.rightMargin: w.unit * 0.6
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             // A regular: ★ after their name, and their note (allergies...).
                             text: row.modelData.name + ((row.modelData.visits ?? 0) >= 2 ? " ★" : "")
@@ -235,6 +238,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: row.modelData.reservation
                                   ? row.modelData.time + (row.modelData.table ? "  ·  " + row.modelData.table : "")
                                   : qsTr("%1 min").arg(row.modelData.waited)
@@ -271,6 +275,7 @@ Item {
                     onClicked: { w.walkInSize--; w.partyId = -1 }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: qsTr("%n guest(s)", "", w.walkInSize)
                     color: w.ink
                     font.family: w.face
@@ -289,6 +294,7 @@ Item {
                 Layout.fillWidth: true
                 visible: w.servers.length > 1
                 Text {
+                    textFormat: Text.PlainText
                     text: qsTr("Server")
                     color: w.ink
                     font.family: w.face

@@ -253,6 +253,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         id: caption
         visible: text !== "" && !zone.hasWidget
         // Page text is translated too (i18n/<lang>.json, or the store's own phrases).
@@ -290,6 +291,7 @@ Item {
         border.color: zone.statusColor("low", "#f5b940")
         border.width: 2
         Text {
+            textFormat: Text.PlainText
             id: leftText
             anchors.centerIn: parent
             text: qsTr("%1 left").arg(zone.stockLeft)
@@ -314,6 +316,7 @@ Item {
             rotation: -8
             color: zone.statusColor("soldOut", "#b83232")
             Text {
+                textFormat: Text.PlainText
                 id: soldOutText
                 anchors.centerIn: parent
                 text: qsTr("SOLD OUT")
@@ -367,6 +370,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         visible: zone.armed
         text: qsTr("tap again")
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 6 }

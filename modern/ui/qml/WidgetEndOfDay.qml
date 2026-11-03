@@ -23,6 +23,7 @@ Item {
         spacing: w.unit * 0.5
 
         Text {
+            textFormat: Text.PlainText
             text: qsTr("Business day #%1").arg(w.day.id ?? "")
             color: w.ink
             font.family: w.face
@@ -30,12 +31,14 @@ Item {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             text: qsTr("Opened %1").arg(w.day.opened ?? "")
             color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.85
         }
         Text {
+            textFormat: Text.PlainText
             text: qsTr("%1 checks closed · net sales %2").arg(w.day.closedChecks ?? 0).arg(w.day.netSales ?? "")
             color: w.ink
             font.family: w.face
@@ -45,6 +48,7 @@ Item {
         Repeater {
             model: w.day.blockers ?? []
             delegate: Text {
+                textFormat: Text.PlainText
                 required property string modelData
                 Layout.fillWidth: true
                 text: "✗  " + modelData
@@ -56,6 +60,7 @@ Item {
         }
         // Still on the clock: clock them out now (or fix it later in Time Punches).
         Text {
+            textFormat: Text.PlainText
             visible: (w.day.clockedIn ?? []).length > 0
             Layout.topMargin: w.unit * 0.4
             text: qsTr("Still clocked in")
@@ -71,6 +76,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: w.unit * 0.5
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: modelData.name + "  ·  " + qsTr("since %1").arg(modelData.since)
                           + (modelData.onBreak ? "  ·  " + qsTr("on break") : "")
@@ -91,6 +97,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: (w.day.clockedIn ?? []).some(p => p.overTwelve)
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -105,6 +112,7 @@ Item {
             Layout.fillWidth: true
             spacing: w.unit * 0.5
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("%n closing task(s) not done yet", "", w.day.closingLeft ?? 0)
                 color: "#f5b940"
@@ -122,6 +130,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.day.ready ?? false
             text: "✓  " + qsTr("Everything is settled and counted.")
             color: "#7ee2a8"
@@ -137,6 +146,7 @@ Item {
             Layout.fillWidth: true
             spacing: w.unit * 0.5
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 readonly property var b: w.backup
@@ -171,6 +181,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("Closing the day saves its reports (see Reports) and starts a new day. Checks cannot be reopened afterwards.")
@@ -217,6 +228,7 @@ Item {
             anchors.fill: parent
             spacing: 12
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("A note for the next shift's manager")
                 color: "white"

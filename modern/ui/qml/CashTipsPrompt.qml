@@ -37,6 +37,7 @@ Rectangle {
             anchors.margins: 20
             spacing: 10
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr("Cash tips you kept today, %1?").arg(prompt.info.who ?? "")
@@ -51,6 +52,7 @@ Rectangle {
                 radius: 8
                 color: Ui.deep
                 Text {
+                    textFormat: Text.PlainText
                     objectName: "cashTipsAmount"
                     anchors.centerIn: parent
                     text: (prompt.pos ? prompt.pos.currencySymbol : "$") + (prompt.typed || "0")

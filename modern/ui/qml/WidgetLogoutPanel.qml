@@ -20,6 +20,7 @@ Item {
         spacing: w.unit * 0.25
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: w.pos && w.pos.loggedIn ? w.pos.userName : qsTr("Nobody logged in")
             color: w.ink
@@ -29,6 +30,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.loggedIn
             Layout.fillWidth: true
             text: w.pos ? w.pos.roleName(w.pos.userRole) : ""
@@ -37,6 +39,7 @@ Item {
             font.pixelSize: w.unit * 0.8
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.loggedIn
             Layout.fillWidth: true
             text: !w.pos || !w.pos.clockedIn ? qsTr("Not clocked in")
@@ -48,6 +51,7 @@ Item {
             wrapMode: Text.WordWrap
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.loggedIn
             Layout.fillWidth: true
             text: (w.myChecks === 1 ? qsTr("1 open check") : qsTr("%1 open checks").arg(w.myChecks))
@@ -58,6 +62,7 @@ Item {
             wrapMode: Text.WordWrap
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos !== null && w.pos.loggedIn && w.pos.nextShift !== ""
             Layout.fillWidth: true
             text: qsTr("Next shift: %1").arg(w.pos ? w.pos.nextShift : "")
@@ -68,6 +73,7 @@ Item {
         }
         // Server banks: the cash this person has to turn in.
         Text {
+            textFormat: Text.PlainText
             readonly property var bank: w.pos ? w.pos.drawer : ({})
             visible: w.pos && w.pos.loggedIn && bank.mode === "serverBank" && (bank.open ?? false)
             Layout.fillWidth: true

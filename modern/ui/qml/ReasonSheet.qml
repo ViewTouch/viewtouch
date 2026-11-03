@@ -30,6 +30,7 @@ Rectangle {
             anchors.margins: 20
             spacing: 10
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: sheet.info.kind === "void" ? qsTr("Why take it off?") : qsTr("Why the discount?")
                 color: "white"
@@ -37,6 +38,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: sheet.info.what ?? ""
                 color: Ui.textSoft

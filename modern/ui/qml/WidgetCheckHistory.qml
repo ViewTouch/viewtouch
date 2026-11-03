@@ -11,6 +11,7 @@ Item {
     readonly property color ink: zone.st.textColor ?? Ui.text
 
     Text {
+        textFormat: Text.PlainText
         id: heading
         x: 16
         y: 12
@@ -32,6 +33,7 @@ Item {
             required property var modelData
             width: ListView.view.width - historyBar.room
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: row.modelData.what
                 color: w.ink
@@ -40,6 +42,7 @@ Item {
                 wrapMode: Text.WordWrap
             }
             Text {
+                textFormat: Text.PlainText
                 text: row.modelData.time + (row.modelData.who ? " · " + row.modelData.who : "")
                 color: Ui.muted
                 font.family: w.face
@@ -47,6 +50,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: history.count === 0
             text: qsTr("Nothing yet.")
             color: Ui.muted

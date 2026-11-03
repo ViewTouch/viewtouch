@@ -27,6 +27,7 @@ Item {
             radius: 8
             color: "#10141a"
             Text {
+                textFormat: Text.PlainText
                 anchors.fill: parent
                 anchors.rightMargin: 16
                 horizontalAlignment: Text.AlignRight

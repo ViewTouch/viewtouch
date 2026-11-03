@@ -56,6 +56,7 @@ Popup {
                      : st.fill ?? (["button", "table"].includes(kind) ? "#4a5263" : "#2a303b")
                 border.color: kind === "label" ? "transparent" : Qt.rgba(1, 1, 1, 0.15)
                 Text {
+                    textFormat: Text.PlainText
                     anchors.fill: parent
                     anchors.margins: 2
                     visible: kind !== "image"
@@ -80,6 +81,7 @@ Popup {
             Layout.fillWidth: true
             Layout.fillHeight: false
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: gal.choices.length ? qsTr("Layouts for %1").arg(gal.choices[0].pageName) : qsTr("Layouts")
                 font.pixelSize: 22
@@ -88,6 +90,7 @@ Popup {
             PosButton { text: qsTr("Close"); onClicked: gal.close() }
         }
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             visible: gal.choices.length === 0
             wrapMode: Text.WordWrap
@@ -124,8 +127,9 @@ Popup {
                                 zones: card.modelData.zones
                                 bg: card.modelData.background ?? ({})
                             }
-                            Label { text: qsTranslate("Layouts", card.modelData.name); font.bold: true; font.pixelSize: 16 }
+                            Label { textFormat: Text.PlainText; text: qsTranslate("Layouts", card.modelData.name); font.bold: true; font.pixelSize: 16 }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: qsTranslate("Layouts", card.modelData.description)
                                 wrapMode: Text.WordWrap
@@ -147,7 +151,7 @@ Popup {
         }
 
         // Page files: someone else's design, or a copy of yours.
-        Label { text: qsTr("This page"); font.bold: true; font.pixelSize: 15 }
+        Label { textFormat: Text.PlainText; text: qsTr("This page"); font.bold: true; font.pixelSize: 15 }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: false
@@ -160,7 +164,7 @@ Popup {
             PosButton { text: qsTr("Add a Page from a File…"); onClicked: files.run("importPage") }
             PosButton { text: qsTr("Export This Page…"); onClicked: files.run("exportPage") }
         }
-        Label { text: qsTr("The whole restaurant (every page)"); font.bold: true; font.pixelSize: 15 }
+        Label { textFormat: Text.PlainText; text: qsTr("The whole restaurant (every page)"); font.bold: true; font.pixelSize: 15 }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: false
@@ -172,6 +176,7 @@ Popup {
                 onClicked: confirm.open()
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 opacity: 0.7
@@ -189,6 +194,7 @@ Popup {
         standardButtons: Dialog.Cancel | Dialog.Ok
         onAboutToShow: DialogWords.apply(this)
         Label {
+            textFormat: Text.PlainText
             width: 420
             wrapMode: Text.WordWrap
             text: qsTr("All of this restaurant's pages are replaced by the ones in the file. Until you Save, Undo brings them back.")

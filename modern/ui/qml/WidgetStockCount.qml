@@ -71,9 +71,9 @@ Item {
                 RowLayout {   // headings
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Label { text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
-                    Label { visible: w.showExpected; text: qsTr("Should be"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { text: qsTr("Counted"); opacity: 0.6; Layout.preferredWidth: 140 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
+                    Label { textFormat: Text.PlainText; visible: w.showExpected; text: qsTr("Should be"); opacity: 0.6; Layout.preferredWidth: 110 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Counted"); opacity: 0.6; Layout.preferredWidth: 140 }
                 }
                 ListView {
                     id: list
@@ -92,6 +92,7 @@ Item {
                             Layout.fillWidth: true
                             spacing: 0
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: row.modelData.name
                                 font.pixelSize: 16
@@ -99,6 +100,7 @@ Item {
                                 elide: Text.ElideRight
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: qsTr("Last counted %1").arg(row.modelData.lastCounted)
                                 font.pixelSize: 12
@@ -107,6 +109,7 @@ Item {
                             }
                         }
                         Label {
+                            textFormat: Text.PlainText
                             visible: w.showExpected
                             Layout.preferredWidth: 110
                             text: (row.modelData.expected ?? "") + " " + row.modelData.unit
@@ -125,6 +128,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.shown.length === 0
                     text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
                                                                   : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
@@ -133,6 +137,7 @@ Item {
                     Layout.fillWidth: true
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Only the items you type are counted; leave the rest empty.")
                     opacity: 0.6
@@ -144,6 +149,7 @@ Item {
                     Layout.fillHeight: false
                     spacing: 10
                     Label {
+                        textFormat: Text.PlainText
                         objectName: "countedHowMany"
                         text: qsTr("%1 of %2 counted").arg(w.howMany).arg((w.info.ingredients ?? []).length)
                         font.pixelSize: 18
@@ -177,7 +183,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { text: qsTr("Counted lately"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Counted lately"); font.bold: true; font.pixelSize: 17 }
                 ListView {
                     id: recent
                     Layout.fillWidth: true
@@ -191,6 +197,7 @@ Item {
                         width: ListView.view.width - recentBar.room
                         spacing: 0
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.when + "  ·  " + modelData.value
                             color: modelData.short ? "#ff9a9e" : "white"
@@ -198,6 +205,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: qsTr("%n item(s)", "", modelData.items) + "  ·  " + modelData.by
                             opacity: 0.6
@@ -207,11 +215,13 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.info.recent ?? []).length === 0
                     text: qsTr("Nothing counted yet.")
                     opacity: 0.6
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Reports → Stock Count shows each item against what should be there.")
                     opacity: 0.6

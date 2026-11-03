@@ -39,6 +39,7 @@ ApplicationWindow {
     }
 
     component Caption: Label {
+        textFormat: Text.PlainText
         color: Ui.muted
         font.pixelSize: root.u * 0.9
     }
@@ -62,12 +63,14 @@ ApplicationWindow {
         spacing: root.u
 
         Label {
+            textFormat: Text.PlainText
             text: qsTr("Join a ViewTouch store")
             font.pixelSize: root.u * 2.2
             font.bold: true
             color: Ui.text
         }
         Label {
+            textFormat: Text.PlainText
             visible: root.join.problem !== ""
             Layout.fillWidth: true
             text: root.join.problem
@@ -110,12 +113,14 @@ ApplicationWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             x: root.u
                             Label {
+                                textFormat: Text.PlainText
                                 text: store.modelData.name || qsTr("ViewTouch server")
                                 font.pixelSize: root.u * 1.3
                                 font.bold: true
                                 color: "white"
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 text: store.modelData.machine + "  ·  " + store.modelData.address
                                 font.pixelSize: root.u * 0.85
                                 color: "#c8d0dc"
@@ -124,6 +129,7 @@ ApplicationWindow {
                         TapHandler { onTapped: addressField.text = store.modelData.address }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: stores.count === 0
                         width: parent.width
@@ -172,6 +178,7 @@ ApplicationWindow {
                 }
                 Item { Layout.fillHeight: true }
                 Label {
+                    textFormat: Text.PlainText
                     visible: root.join.error !== ""
                     Layout.fillWidth: true
                     text: root.join.error

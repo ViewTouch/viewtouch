@@ -37,6 +37,7 @@ Rectangle {
             anchors.margins: 20
             spacing: 10
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: pad.takingOver ? qsTr("Take over the store")
@@ -46,6 +47,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -57,6 +59,7 @@ Rectangle {
                 font.pixelSize: 16
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: pad.pin.length ? "●".repeat(pad.pin.length) : qsTr("Manager PIN")
                 color: pad.pin.length ? "white" : Ui.muted

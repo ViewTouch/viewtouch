@@ -244,6 +244,7 @@ Item {
                 // Not on a phone: beside the two buttons it wrapped a word a line
                 // and ran over the list (the buttons say what they do).
                 Label {
+                    textFormat: Text.PlainText
                     visible: !(w.pos && w.pos.pairing.active) && !w.narrow
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -253,11 +254,13 @@ Item {
                     opacity: 0.8
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.pos && w.pos.pairing.active
                     text: qsTr("Pairing code")
                     opacity: 0.8
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.pos && w.pos.pairing.active
                     text: w.pos ? (w.pos.pairing.code ?? "") : ""
                     font.pixelSize: 30
@@ -266,6 +269,7 @@ Item {
                     color: "#7ee2a8"
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.pos && w.pos.pairing.active
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -353,6 +357,7 @@ Item {
                     ScrollBar.vertical: TouchScrollBar { id: listBar }
                     // An empty list: say so, rather than a blank box.
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         width: parent.width - 24
                         visible: list.count === 0
@@ -382,6 +387,7 @@ Item {
                         contentItem: ColumnLayout {
                             spacing: 0
                             Label {
+                                textFormat: Text.PlainText
                                 text: (w.sectioned ? row.rec.name : row.rec._title) || qsTr("(unnamed)")
                                 font.bold: true
                                 font.pixelSize: 15
@@ -391,6 +397,7 @@ Item {
                                 Layout.fillWidth: true
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 visible: text !== ""
                                 // A section: how many of its settings are changed.
                                 text: !w.sectioned ? row.rec._detail ?? ""
@@ -450,6 +457,7 @@ Item {
                         width: Math.min(parent.width - 40, 420)
                         spacing: 14
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             visible: w.records.length > 0
@@ -458,6 +466,7 @@ Item {
                             font.bold: true
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.WordWrap
@@ -480,6 +489,7 @@ Item {
                 }
 
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.index !== -2
                     text: w.sectioned ? (w.query !== "" ? qsTr("%n setting(s) found", "", w.shownFields.length)
                                                         : (w.sections.find(x => x.key === w.sectionShown) ?? {}).name ?? "")
@@ -510,6 +520,7 @@ Item {
                         width: scroll.availableWidth - formBar.room
                         spacing: 10
                         Label {
+                            textFormat: Text.PlainText
                             visible: w.sectioned && w.query !== "" && w.shownFields.length === 0
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap

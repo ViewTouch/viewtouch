@@ -16,6 +16,7 @@ Item {
     readonly property real unit: Math.max(16, phone ? zone.touch(15.5) : 0, Math.min(34, w.width / 30)) * zone.textScale
 
     Text {
+        textFormat: Text.PlainText
         id: title
         x: 16
         y: 8
@@ -56,6 +57,7 @@ Item {
                     Row {
                         spacing: w.unit * 0.5
                         Text {
+                            textFormat: Text.PlainText
                             text: group.modelData.name
                             color: w.ink
                             font.family: w.face
@@ -63,6 +65,7 @@ Item {
                             font.bold: true
                         }
                         Text {
+                            textFormat: Text.PlainText
                             anchors.baseline: parent.children[0].baseline
                             text: group.modelData.rule
                             color: group.modelData.done ? Ui.muted : "#f5b940"
@@ -150,6 +153,7 @@ Item {
             width: parent.width * 0.85
             spacing: w.unit * 0.4
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: how.name

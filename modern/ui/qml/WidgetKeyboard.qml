@@ -38,6 +38,7 @@ Item {
             radius: 8
             color: "#10141a"
             Text {
+                textFormat: Text.PlainText
                 anchors.fill: parent
                 anchors.leftMargin: 16
                 verticalAlignment: Text.AlignVCenter

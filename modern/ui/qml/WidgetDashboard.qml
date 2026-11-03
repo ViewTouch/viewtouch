@@ -45,6 +45,7 @@ Item {
             anchors.margins: w.unit * 0.8
             spacing: w.unit * 0.25
             Text {
+                textFormat: Text.PlainText
                 text: parent.parent.title
                 color: w.muted
                 font.family: w.face
@@ -54,6 +55,7 @@ Item {
         }
     }
     component Big: Text {
+        textFormat: Text.PlainText
         color: w.ink
         font.family: w.face
         font.pixelSize: w.unit * 2.2
@@ -62,6 +64,7 @@ Item {
         elide: Text.ElideRight
     }
     component Small: Text {
+        textFormat: Text.PlainText
         color: w.muted
         font.family: w.face
         font.pixelSize: w.unit * 0.8
@@ -85,6 +88,7 @@ Item {
         property color tint: w.ink
         Layout.fillWidth: true
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: parent.label
             color: parent.tint
@@ -93,6 +97,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             text: parent.value
             color: parent.tint
             font.family: w.face
@@ -128,6 +133,7 @@ Item {
                     text: qsTr("%1 by this time on %2").arg(w.sales.lastWeek ?? "").arg(w.sales.lastWeekDay ?? "")
                 }
                 Text {
+                    textFormat: Text.PlainText
                     visible: w.sales.change !== undefined
                     text: (w.sales.change > 0 ? "▲ +" : w.sales.change < 0 ? "▼ " : "") + (w.sales.change ?? 0) + "%"
                     color: (w.sales.change ?? 0) >= 0 ? w.good : w.bad
@@ -191,6 +197,7 @@ Item {
             }
             // Labor in the moment: the next hour against who's on.
             Text {
+                textFormat: Text.PlainText
                 objectName: "dashStaffing"
                 readonly property var staffing: w.labor.staffing ?? ({})
                 visible: staffing.known === true
@@ -282,6 +289,7 @@ Item {
                 text: qsTr("As of %1. It updates as checks close and orders go out.").arg(w.d.at ?? "")
             }
             Text {
+                textFormat: Text.PlainText
                 objectName: "dashRequests"
                 visible: (w.d.requestsWaiting ?? 0) > 0
                 text: qsTr("%n request(s) waiting: Schedule → Requests", "", w.d.requestsWaiting ?? 0)

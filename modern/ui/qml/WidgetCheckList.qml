@@ -73,6 +73,7 @@ Item {
         radius: 10
         color: "#2b62b0"
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.leftMargin: 20
@@ -112,6 +113,7 @@ Item {
             }
             readonly property bool locked: w.mode === "" && card.modelData.mayOpen === false
             Text {
+                textFormat: Text.PlainText
                 visible: card.locked
                 anchors { right: parent.right; top: parent.top; margins: 22 }
                 text: "🔒"
@@ -122,6 +124,7 @@ Item {
                 anchors.margins: 24
                 spacing: 4
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: card.modelData.label
                     color: "white"
@@ -131,12 +134,14 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: card.modelData.total
                     color: "white"
                     font.family: w.face
                     font.pixelSize: 26
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: (card.modelData.customer && card.modelData.customer !== card.modelData.label
                            ? card.modelData.customer + " · " : "")
@@ -169,6 +174,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: grid.count === 0
             text: (w.choosesWhose && !w.showAll) || w.mode === "mine" ? qsTr("You have no open checks")

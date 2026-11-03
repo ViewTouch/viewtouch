@@ -91,6 +91,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Set up your store")
                     font.pixelSize: g.narrow ? 24 : 30
@@ -107,6 +108,7 @@ Rectangle {
                 }
             }
             Label {
+                textFormat: Text.PlainText
                 text: qsTr("Step %1 of %2").arg(g.step + 1).arg(g.steps.length)
                 color: Ui.muted
                 font.pixelSize: 15
@@ -133,6 +135,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 14
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -140,6 +143,7 @@ Rectangle {
                         text: qsTr("Welcome! A few steps make ViewTouch yours: your name, your logo, your colors, your taxes, your first menu items and your team.")
                     }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
@@ -152,7 +156,7 @@ Rectangle {
                 // Your store
                 ColumnLayout {
                     spacing: 8
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Your store's name"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Your store's name"); color: "white"; font.pixelSize: 18; font.bold: true }
                     TextField {
                         objectName: "setupStoreName"
                         Layout.fillWidth: true
@@ -160,7 +164,7 @@ Rectangle {
                         text: g.storeName
                         onTextEdited: g.storeName = text
                     }
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextArea {
                         objectName: "setupReceipt"
                         Layout.fillWidth: true
@@ -170,7 +174,7 @@ Rectangle {
                         onTextChanged: g.receiptLines = text
                     }
                     // How it serves: a food truck opens straight to ordering, nobody logs in.
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     Flow {
                         Layout.fillWidth: true
                         spacing: 10
@@ -197,6 +201,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 12
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -220,6 +225,7 @@ Rectangle {
                                 source: g.pos && g.logoRef ? (g.pos.imageRevision < 0 ? undefined : g.pos.imageUrl(g.logoRef)) : ""
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 visible: g.logoRef === ""
                                 text: qsTr("No logo yet")
@@ -260,6 +266,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 12
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -295,6 +302,7 @@ Rectangle {
                                     }
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     x: 12
                                     anchors.bottom: parent.bottom
                                     anchors.bottomMargin: 12
@@ -319,7 +327,7 @@ Rectangle {
                 // Taxes
                 ColumnLayout {
                     spacing: 8
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("The store's ZIP code"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("The store's ZIP code"); color: "white"; font.pixelSize: 18; font.bold: true }
                     RowLayout {
                         spacing: 10
                         TextField {
@@ -340,6 +348,7 @@ Rectangle {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         visible: text !== ""
                         wrapMode: Text.WordWrap
@@ -347,7 +356,7 @@ Rectangle {
                         font.pixelSize: 15
                         text: g.info.zip === g.zip.slice(0, 5) ? (g.info.taxArea ?? "") : ""
                     }
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupFood"
                         Layout.preferredWidth: 220
@@ -357,7 +366,7 @@ Rectangle {
                         text: g.foodTax
                         onTextEdited: g.foodTax = text
                     }
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupAlcohol"
                         Layout.preferredWidth: 220
@@ -368,6 +377,7 @@ Rectangle {
                         onTextEdited: g.alcoholTax = text
                     }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         Layout.topMargin: 10
                         wrapMode: Text.WordWrap
@@ -382,6 +392,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 10
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -439,7 +450,7 @@ Rectangle {
                     }
                     Repeater {
                         model: g.addedItems
-                        delegate: Label { required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
+                        delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
                     }
                     Item { Layout.fillHeight: true }
                 }
@@ -448,6 +459,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 10
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -517,6 +529,7 @@ Rectangle {
                                 radius: 20
                                 color: modelData.sample ? "#3a2f1e" : "#1f3b2c"
                                 Label {
+                                    textFormat: Text.PlainText
                                     id: who
                                     anchors.centerIn: parent
                                     text: modelData.name + "  ·  " + modelData.role + (modelData.sample ? "  ·  " + qsTr("sample") : "")
@@ -535,6 +548,7 @@ Rectangle {
                         onClicked: g.pos.setupRetireSamples()
                     }
                     Label {
+                        textFormat: Text.PlainText
                         visible: (g.info.samples ?? 0) > 0
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
@@ -549,6 +563,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 14
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -557,6 +572,7 @@ Rectangle {
                         text: qsTr("All set, %1!").arg(g.info.storeName ?? "")
                     }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft

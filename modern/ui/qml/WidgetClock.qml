@@ -25,6 +25,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         width: parent.width - 16
         horizontalAlignment: Text.AlignHCenter

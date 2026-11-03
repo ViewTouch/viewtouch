@@ -13,6 +13,7 @@ Item {
     readonly property var orders: pos ? pos.truckOrders : []
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         visible: w.orders.length === 0
         text: qsTr("No orders waiting.")
@@ -54,6 +55,7 @@ Item {
                     width: parent.width
                     spacing: 12
                     Text {
+                        textFormat: Text.PlainText
                         objectName: "truckOrderLabel"
                         width: parent.width - pagerTag.width - 12
                         text: card.modelData.label
@@ -73,6 +75,7 @@ Item {
                         radius: height / 2
                         color: "#ffd479"
                         Text {
+                            textFormat: Text.PlainText
                             id: pagerText
                             anchors.centerIn: parent
                             text: qsTr("Pager %1").arg(card.modelData.pager)
@@ -84,6 +87,7 @@ Item {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: card.modelData.items
                     color: "#d8dee8"
@@ -92,6 +96,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: (card.modelData.ready ? qsTr("Ready") : qsTr("Making it"))
                           + "  ·  " + qsTr("%n min", "", card.modelData.minutes)

@@ -21,6 +21,7 @@ Item {
         required property var modelData
         spacing: 10
         Label {
+            textFormat: Text.PlainText
             Layout.alignment: Qt.AlignTop
             Layout.preferredWidth: 28
             text: row.modelData.info ? "ℹ" : row.modelData.ok ? "✓" : "⚠"
@@ -36,6 +37,7 @@ Item {
             Layout.maximumWidth: Math.max(0, row.width - 38)
             spacing: 0
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: row.modelData.title
                 font.pixelSize: 16
@@ -43,6 +45,7 @@ Item {
                 elide: Text.ElideRight
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 Layout.maximumWidth: Math.max(0, row.width - 38)
                 text: row.modelData.detail
@@ -72,6 +75,7 @@ Item {
                 Layout.preferredWidth: 1
                 spacing: 8
                 Label {
+                    textFormat: Text.PlainText
                     objectName: "readyToOpen"
                     Layout.fillWidth: true
                     text: w.toLook === 0 ? qsTr("✓ Ready to open") : qsTr("⚠ %n to look at", "", w.toLook)
@@ -99,6 +103,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: qsTr("Problems, the last 7 days")
                         font.pixelSize: 20
@@ -126,6 +131,7 @@ Item {
                         width: ListView.view.width - problemsBar.room
                         spacing: 0
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (modelData.new ? "● " : "") + modelData.when
                             color: modelData.new ? "#f5b940" : "white"
@@ -134,6 +140,7 @@ Item {
                             font.bold: modelData.new
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.text
                             font.pixelSize: 15
@@ -142,6 +149,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.info.problems ?? []).length === 0
                     text: qsTr("Nothing went wrong.")
                     opacity: 0.6

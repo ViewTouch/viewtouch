@@ -67,6 +67,7 @@ RowLayout {
             width: parent.width
             spacing: 12
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: qsTr("Phones lay this page out by themselves, in rows of big buttons. Make a phone version to place its buttons yourself: their words, colors and actions stay shared with this page.")
@@ -98,6 +99,7 @@ RowLayout {
                 width: parent.width
                 spacing: 8
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     color: EditorStyle.muted
@@ -111,11 +113,13 @@ RowLayout {
                         required property var modelData
                         Layout.fillWidth: true
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             text: (modelData.label !== "" ? modelData.label : modelData.id) + "  ·  " + modelData.kind
                         }
                         Label {
+                            textFormat: Text.PlainText
                             visible: !modelData.hidden
                             text: qsTr("new")
                             color: EditorStyle.warning
@@ -137,6 +141,7 @@ RowLayout {
                 // sizes, and buttons only it has.
                 Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border; visible: ps.differences.length > 0 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: ps.differences.length > 0
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -149,6 +154,7 @@ RowLayout {
                         required property var modelData
                         Layout.fillWidth: true
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             text: modelData.phoneOnly
@@ -191,6 +197,7 @@ RowLayout {
         title: qsTr("Back to automatic?")
         standardButtons: Dialog.Yes | Dialog.Cancel
         Label {
+            textFormat: Text.PlainText
             width: 360
             wrapMode: Text.WordWrap
             text: qsTr("The phone version goes, and phones lay the page out by themselves again. The page itself doesn't change. (Undo brings it back.)")

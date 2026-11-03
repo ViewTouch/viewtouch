@@ -26,6 +26,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: w.list === "opening" ? qsTr("Opening") : qsTr("Closing")
                 color: w.ink
@@ -34,6 +35,7 @@ Item {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 text: qsTr("%1 of %2 done").arg(w.done).arg(w.tasks.length)
                 color: w.done === w.tasks.length && w.tasks.length > 0 ? "#5fd08a" : Ui.muted
                 font.family: w.face
@@ -41,6 +43,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.tasks.length === 0
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -73,6 +76,7 @@ Item {
                         border.color: row.modelData.done ? Ui.go : Ui.muted
                         border.width: 2
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             visible: row.modelData.done
                             text: "✓"
@@ -82,6 +86,7 @@ Item {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: row.modelData.task
                         color: row.modelData.done ? Ui.textSoft : w.ink
@@ -91,6 +96,7 @@ Item {
                         elide: Text.ElideRight
                     }
                     Text {
+                        textFormat: Text.PlainText
                         visible: row.modelData.done
                         text: row.modelData.by + "  ·  " + row.modelData.at
                         color: Ui.muted

@@ -23,6 +23,7 @@ Popup {
     contentItem: ColumnLayout {
         spacing: 8
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("Like which item? Its choices, what's on it, allergens, kitchen, tax and color are copied here; then change anything.")

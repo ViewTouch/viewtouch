@@ -31,8 +31,9 @@ Popup {
     }
     contentItem: ColumnLayout {
         spacing: 8
-        Label { text: qsTr("Sizes of %1").arg(sizesDialog.item ? sizesDialog.item.name : ""); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("Sizes of %1").arg(sizesDialog.item ? sizesDialog.item.name : ""); font.pixelSize: 20; font.bold: true }
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.75

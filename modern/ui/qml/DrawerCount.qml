@@ -70,6 +70,7 @@ Rectangle {
             spacing: 10
 
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Count %1").arg(sheet.title)
                 color: "white"
@@ -78,6 +79,7 @@ Rectangle {
                 elide: Text.ElideRight
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Touch a row, type how many, then Next.")
                 color: Ui.muted
@@ -125,6 +127,7 @@ Rectangle {
                                     anchors.leftMargin: 14
                                     anchors.rightMargin: 14
                                     Text {
+                                        textFormat: Text.PlainText
                                         Layout.preferredWidth: 110
                                         text: line.modelData.text
                                         color: "white"
@@ -132,12 +135,14 @@ Rectangle {
                                         font.bold: true
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         Layout.fillWidth: true
                                         text: "× " + (sheet.counts[line.index] || (line.current ? "_" : "0"))
                                         color: "white"
                                         font.pixelSize: 22
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: sheet.money(line.n * line.modelData.cents)
                                         color: line.n > 0 ? "white" : "#5d6676"
                                         font.pixelSize: 20
@@ -178,12 +183,14 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: qsTr("Counted")
                     color: "white"
                     font.pixelSize: 22
                 }
                 Text {
+                    textFormat: Text.PlainText
                     objectName: "countTotal"
                     text: sheet.money(sheet.cents())
                     color: "white"

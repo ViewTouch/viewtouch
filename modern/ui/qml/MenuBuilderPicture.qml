@@ -20,7 +20,7 @@ Popup {
                                      "🍹", "🥃", "🍾", "💧"]
     contentItem: ColumnLayout {
         spacing: 10
-        Label { text: qsTr("A picture for %1").arg(menu.draft.name || qsTr("it")); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("A picture for %1").arg(menu.draft.name || qsTr("it")); font.pixelSize: 20; font.bold: true }
         Grid {
             columns: 8
             spacing: 6
@@ -37,6 +37,7 @@ Popup {
                     color: Ui.panel
                     border.color: "#3a424f"
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: parent.modelData
                         font.family: "Noto Color Emoji"

@@ -37,6 +37,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Text {
+                textFormat: Text.PlainText
                 text: w.pos && w.pos.hasCheck ? qsTr("%1 · check #%2").arg(w.pos.check.label).arg(w.pos.check.id)
                                                : qsTr("No check open")
                 color: w.ink
@@ -45,6 +46,7 @@ Item {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 text: qsTr("1. Touch an item")
                 color: Ui.muted
                 font.family: w.face
@@ -71,6 +73,7 @@ Item {
                         anchors.leftMargin: w.unit * 0.5
                         anchors.rightMargin: w.unit * 0.5
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (line.modelData.quantity > 1 ? line.modelData.quantity + " × " : "") + line.modelData.name
                                   + (line.modelData.modifiers.length ? "  (" + line.modelData.modifiers.map(m => m.name).join(", ") + ")" : "")
@@ -80,6 +83,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: line.modelData.price
                             color: w.ink
                             font.family: w.face
@@ -95,6 +99,7 @@ Item {
             Layout.preferredWidth: parent.width * 0.4
             Layout.fillHeight: true
             Text {
+                textFormat: Text.PlainText
                 text: qsTr("2. Move it to")
                 color: Ui.muted
                 font.family: w.face
@@ -137,6 +142,7 @@ Item {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.topMargin: w.unit * 0.5
                 text: qsTr("Or")
                 color: Ui.muted
@@ -186,6 +192,7 @@ Item {
         contentItem: ColumnLayout {
             spacing: 12
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: ways.evenly ? qsTr("Split this check evenly: how many checks?")
                                   : (w.chosen ? qsTr("Share %1: how many ways?").arg(w.chosen.name) : "")
@@ -194,6 +201,7 @@ Item {
                 wrapMode: Text.Wrap
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: ways.evenly ? qsTr("Each check gets the same: whole items while they go around, the rest in even pieces.")
                                   : qsTr("It's cut in even pieces on this check; then move each piece to its check.")

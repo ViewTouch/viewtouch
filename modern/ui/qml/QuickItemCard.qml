@@ -105,6 +105,7 @@ Popup {
     contentItem: ColumnLayout {
         spacing: 10
         Label {
+            textFormat: Text.PlainText
             text: card.item ? qsTr("Change %1").arg(card.item.name) : qsTr("New item")
             font.pixelSize: 22
             font.bold: true
@@ -129,7 +130,7 @@ Popup {
                     columns: 2
                     columnSpacing: 10
                     rowSpacing: 8
-                    Label { text: qsTr("Name"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Name"); font.pixelSize: 16 }
                     TextField {
                         id: nameField
                         objectName: "quickName"
@@ -140,7 +141,7 @@ Popup {
                         placeholderText: qsTr("e.g. Fish Tacos")
                         onTextEdited: card.name = text
                     }
-                    Label { text: qsTr("Price"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Price"); font.pixelSize: 16 }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -156,6 +157,7 @@ Popup {
                             onTextEdited: card.price = text
                         }
                         Label {
+                            textFormat: Text.PlainText
                             visible: card.sizes.length > 0
                             Layout.fillWidth: true
                             text: qsTr("By size, below")
@@ -220,7 +222,7 @@ Popup {
                             }
                         }
                     }
-                    Label { text: qsTr("What's on it"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: 16 }
                     TextField {
                         objectName: "quickOnIt"
                         Layout.fillWidth: true
@@ -230,7 +232,7 @@ Popup {
                         placeholderText: qsTr("lettuce, tomato, onion")
                         onTextEdited: card.onIt = text
                     }
-                    Label { text: qsTr("Kitchen name"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Kitchen name"); font.pixelSize: 16 }
                     TextField {
                         objectName: "quickKitchenName"
                         Layout.fillWidth: true
@@ -268,6 +270,7 @@ Popup {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: card.sharedGroups.length > 0
                     text: qsTr("Choices it asks for")
                     font.pixelSize: 16
@@ -291,7 +294,7 @@ Popup {
                         }
                     }
                 }
-                Label { text: qsTr("Color"); font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; text: qsTr("Color"); font.pixelSize: 16 }
                 ColorPicker {
                     objectName: "quickColor"
                     Layout.fillWidth: true

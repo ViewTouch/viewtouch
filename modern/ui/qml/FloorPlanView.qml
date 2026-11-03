@@ -137,6 +137,7 @@ ColumnLayout {
                     width: parent.width - v.unit
                     spacing: v.unit * 0.1
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: (v.picked(tile.modelData.name) ? "✓ " : "") + tile.modelData.name
@@ -150,6 +151,7 @@ ColumnLayout {
                     Repeater {
                         model: v.tileLines(tile.modelData.name, tile.modelData.seats)
                         Text {
+                            textFormat: Text.PlainText
                             required property var modelData
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
@@ -263,6 +265,7 @@ ColumnLayout {
                         width: (turn > 45 && turn < 135 ? piece.height : piece.width) - piece.side * 0.12
                         rotation: -piece.onScreen
                         Text {
+                            textFormat: Text.PlainText
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: (piece.isPicked ? "✓ " : "") + piece.name
@@ -276,6 +279,7 @@ ColumnLayout {
                         Repeater {
                             model: piece.isTable ? v.lines(piece.name, piece.modelData.props.seats ?? 0) : []
                             Text {
+                                textFormat: Text.PlainText
                                 required property var modelData
                                 required property int index
                                 width: parent.width

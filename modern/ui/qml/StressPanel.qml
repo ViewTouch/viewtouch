@@ -50,6 +50,7 @@ Rectangle {
         visible: !panel.open
         anchors.centerIn: parent
         Label {
+            textFormat: Text.PlainText
             text: panel.done ? (panel.st.passed ? qsTr("Stress test passed") : qsTr("Stress test: problems"))
                              : qsTr("Stress test %1").arg(panel.clock(panel.st.elapsed))
             color: "white"
@@ -68,6 +69,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Stress test") + " · " + (panel.st.phase ?? "")
                 color: "white"
@@ -76,6 +78,7 @@ Rectangle {
                 elide: Text.ElideRight
             }
             Label {
+                textFormat: Text.PlainText
                 text: panel.clock(panel.st.elapsed) + " / " + panel.clock(panel.st.total)
                 color: "#aab3c2"
                 font.pixelSize: 15
@@ -88,6 +91,7 @@ Rectangle {
             value: Math.min(panel.st.elapsed ?? 0, panel.st.total ?? 0)
         }
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: qsTr("%1 pretend staff, %2 handhelds · %3× real time · busy %4%")
                   .arg(panel.st.people ?? 0).arg(panel.st.handhelds ?? 0).arg(panel.st.speed ?? 0)
@@ -104,8 +108,8 @@ Rectangle {
             columns: 2
             columnSpacing: 14
             rowSpacing: 3
-            component Name: Label { color: "#aab3c2"; font.pixelSize: 14 }
-            component Value: Label { color: "white"; font.pixelSize: 14; font.bold: true; Layout.fillWidth: true; horizontalAlignment: Text.AlignRight }
+            component Name: Label { textFormat: Text.PlainText; color: "#aab3c2"; font.pixelSize: 14 }
+            component Value: Label { textFormat: Text.PlainText; color: "white"; font.pixelSize: 14; font.bold: true; Layout.fillWidth: true; horizontalAlignment: Text.AlignRight }
 
             Name { text: qsTr("Open checks · guests") }
             Value { text: (panel.st.open ?? 0) + " · " + (panel.st.guests ?? 0) }
@@ -146,6 +150,7 @@ Rectangle {
 
         // The end: the verdict and the report.
         Label {
+            textFormat: Text.PlainText
             visible: panel.done
             Layout.fillWidth: true
             text: panel.st.passed ? qsTr("PASSED: every check balanced and saved; the screen kept up.")

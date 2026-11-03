@@ -125,6 +125,7 @@ Item {
         property bool first: true
         spacing: 4
         Text {
+            textFormat: Text.PlainText
             visible: top.first && (top.ticket.rush || top.ticket.vip || !!top.ticket.due)
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
@@ -137,6 +138,7 @@ Item {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             visible: top.first && w.expo && !top.ticket.ready
             width: parent.width
             wrapMode: Text.WordWrap
@@ -158,6 +160,7 @@ Item {
             radius: 6
             color: "#c62828"
             Text {
+                textFormat: Text.PlainText
                 id: allergyText
                 anchors.centerIn: parent
                 width: parent.width - 16
@@ -171,6 +174,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: top.first && !!top.ticket.note
             width: parent.width
             wrapMode: Text.WordWrap
@@ -187,6 +191,7 @@ Item {
         id: line
         property var line: ({})
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             wrapMode: Text.WordWrap
             // "S2 1  Cobb Salad", course 2+ marked: the kitchen
@@ -206,6 +211,7 @@ Item {
         Repeater {
             model: line.line.modifiers ?? []
             delegate: Text {
+                textFormat: Text.PlainText
                 required property string modelData
                 width: line.width
                 leftPadding: 28 * w.k
@@ -217,6 +223,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: (line.line.contains ?? []).length > 0
             width: line.width
             leftPadding: 28 * w.k
@@ -255,7 +262,7 @@ Item {
                         width: measure.width
                     }
                 }
-                Text { id: continued; visible: false; text: qsTr("Continued ▸"); font.family: w.face; font.pixelSize: 24 * w.k; font.bold: true }
+                Text { textFormat: Text.PlainText; id: continued; visible: false; text: qsTr("Continued ▸"); font.family: w.face; font.pixelSize: 24 * w.k; font.bold: true }
                 property alias continued: continued
             }
         }
@@ -384,6 +391,7 @@ Item {
             Layout.preferredHeight: stacked ? (w.zone ? w.zone.touch(34) : 40) + Math.ceil(order.length / 3) * (keyH + 6) : 72
             Layout.fillHeight: false   // nested layouts fill by default
             Text {
+                textFormat: Text.PlainText
                 Layout.row: 0
                 Layout.column: 0
                 Layout.columnSpan: header.stacked ? 3 : 1
@@ -573,6 +581,7 @@ Item {
                             anchors.leftMargin: 14
                             anchors.rightMargin: 8
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width
                                 elide: Text.ElideRight
                                 // A long order's cards: "T5  2/3".
@@ -584,6 +593,7 @@ Item {
                                 font.bold: true
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width
                                 elide: Text.ElideRight
                                 text: card.ticket.customer || card.ticket.server
@@ -601,6 +611,7 @@ Item {
                             readonly property bool late: !w.expo && !(card.ticket.ready ?? false)
                                                          && (w.now - card.ticket.sentAt) / 60000 >= (card.ticket.lateMinutes ?? 15)
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.right: parent.right
                                 visible: timeText.late
                                 text: qsTr("LATE")
@@ -610,6 +621,7 @@ Item {
                                 font.bold: true
                             }
                         Text {
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             text: w.expo && card.ticket.ready ? qsTr("READY")
                                 : w.elapsed(card.ticket.sentAt)
@@ -644,6 +656,7 @@ Item {
                             }
                         }
                         Text {
+                            textFormat: Text.PlainText
                             objectName: "kdsContinued"
                             visible: card.modelData.part < card.modelData.parts
                             width: parent.width
@@ -691,6 +704,7 @@ Item {
                 anchors.margins: 14
                 spacing: 6
                 Text {
+                    textFormat: Text.PlainText
                     text: qsTr("All day")
                     color: "white"
                     font.family: w.face
@@ -703,6 +717,7 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             text: modelData.count
                             color: "#f5b940"
                             font.family: w.face
@@ -711,6 +726,7 @@ Item {
                             Layout.preferredWidth: 60 * w.k
                         }
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.name
                             color: "white"
@@ -749,6 +765,7 @@ Item {
         border.color: "white"
         border.width: 2
         Text {
+            textFormat: Text.PlainText
             id: moreText
             objectName: "kdsMore"
             anchors.centerIn: parent
@@ -767,6 +784,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         visible: w.tickets.length === 0
         text: qsTr("All caught up")

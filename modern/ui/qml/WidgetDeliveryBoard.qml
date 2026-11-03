@@ -97,6 +97,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (card.isPicked ? "✓ " : "") + (card.modelData.name || card.modelData.label)
                             color: w.ink
@@ -106,6 +107,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: card.modelData.paid ? qsTr("Paid") : card.modelData.total
                             color: w.ink
                             font.family: w.face
@@ -114,6 +116,7 @@ Item {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         visible: text !== ""
                         text: card.modelData.address
@@ -125,6 +128,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: w.stateText(card.modelData)
                             color: w.ink
@@ -133,6 +137,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             visible: !!card.modelData.promised
                             text: qsTr("Promised %1").arg(card.modelData.promised ?? "")
                             color: card.modelData.late ? "#ffb3b6" : w.ink
@@ -145,6 +150,7 @@ Item {
                 TapHandler { id: cardTap; onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.toggle(card.modelData.id) } }
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -163,6 +169,7 @@ Item {
             Layout.fillHeight: !w.narrow
             spacing: w.unit * 0.4
             Text {
+                textFormat: Text.PlainText
                 text: qsTr("Driver")
                 color: Ui.muted
                 font.family: w.face
@@ -192,6 +199,7 @@ Item {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 visible: w.drivers.length === 0
                 wrapMode: Text.WordWrap
@@ -202,6 +210,7 @@ Item {
             }
             Item { Layout.fillHeight: true; visible: !w.narrow }
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: w.pickedOrders.length === 0 ? qsTr("Touch the orders going out together, then the driver.")

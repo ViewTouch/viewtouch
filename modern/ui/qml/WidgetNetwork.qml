@@ -23,6 +23,7 @@ Item {
         color: status === "ok" ? "#2fbf71" : status === "failed" ? "#e04848" : "#7b8494"
     }
     component Heading: Label {
+        textFormat: Text.PlainText
         font.pixelSize: 22
         font.bold: true
         Layout.topMargin: 14
@@ -54,6 +55,7 @@ Item {
                     spacing: 12
                     Dot { status: "ok" }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         font.pixelSize: 18
@@ -63,6 +65,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     objectName: "storeBuild"
                     visible: !!w.net.build
                     Layout.fillWidth: true
@@ -71,6 +74,7 @@ Item {
                     text: qsTr("This computer runs ViewTouch %1.").arg(w.net.build ?? "")
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.net.term ?? 0) > 0
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -85,6 +89,7 @@ Item {
                     spacing: 12
                     Dot { objectName: "standbyDot"; status: w.standby ? "ok" : "failed" }
                     Label {
+                        textFormat: Text.PlainText
                         objectName: "standbyText"
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
@@ -99,6 +104,7 @@ Item {
 
                 Heading { text: qsTr("Screens connected (%1)").arg((w.net.terminals ?? []).length); visible: w.serving }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.serving && (w.net.terminals ?? []).length === 0
                     text: qsTr("None right now.")
                     opacity: 0.6
@@ -118,9 +124,10 @@ Item {
                             anchors.rightMargin: 14
                             spacing: 14
                             Dot { status: "ok" }
-                            Label { text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
-                            Label { text: modelData.address; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180 }
+                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
+                            Label { textFormat: Text.PlainText; text: modelData.address; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180 }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 font.pixelSize: 16
                                 elide: Text.ElideRight
@@ -128,6 +135,7 @@ Item {
                             }
                             // Behind the store: it needs the update (a manager there can get it).
                             Label {
+                                textFormat: Text.PlainText
                                 objectName: "screenBuild-" + modelData.name
                                 font.pixelSize: 16
                                 color: modelData.behind || modelData.ahead ? "#f5b940" : "white"
@@ -138,7 +146,7 @@ Item {
                                     : modelData.ahead ? qsTr("build %1 · newer than this computer").arg(modelData.build)
                                     : qsTr("build %1").arg(modelData.build)
                             }
-                            Label { text: qsTr("since %1").arg(w.time(modelData.since)); font.pixelSize: 16; opacity: 0.6 }
+                            Label { textFormat: Text.PlainText; text: qsTr("since %1").arg(w.time(modelData.since)); font.pixelSize: 16; opacity: 0.6 }
                         }
                     }
                 }
@@ -146,6 +154,7 @@ Item {
                 // Updates for the screens: the tablet app and Linux packages, put in a folder here.
                 Heading { text: qsTr("Updates for the screens"); visible: w.serving }
                 Label {
+                    textFormat: Text.PlainText
                     objectName: "updatesFolder"
                     visible: w.serving
                     Layout.fillWidth: true
@@ -161,6 +170,7 @@ Item {
 
                 Heading { text: qsTr("Printers") }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.net.printers ?? []).length === 0
                     text: qsTr("No printers set up (Manager → Printers).")
                     opacity: 0.6
@@ -181,9 +191,10 @@ Item {
                             anchors.rightMargin: 14
                             spacing: 14
                             Dot { status: modelData.status }
-                            Label { text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
-                            Label { text: modelData.where || modelData.type; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180; elide: Text.ElideMiddle }
+                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
+                            Label { textFormat: Text.PlainText; text: modelData.where || modelData.type; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180; elide: Text.ElideMiddle }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 font.pixelSize: 16

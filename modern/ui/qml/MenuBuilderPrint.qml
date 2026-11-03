@@ -57,8 +57,8 @@ Popup {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 8
-            Label { text: qsTr("Printed menu"); font.pixelSize: 20; font.bold: true }
-            Label { text: qsTr("Title"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Printed menu"); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Title"); opacity: 0.75 }
             TextField {
                 objectName: "printTitle"
                 Layout.fillWidth: true
@@ -67,7 +67,7 @@ Popup {
                 text: printDialog.title
                 onTextEdited: printDialog.title = text
             }
-            Label { text: qsTr("Under it"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Under it"); opacity: 0.75 }
             TextField {
                 objectName: "printSubtitle"
                 Layout.fillWidth: true
@@ -92,7 +92,7 @@ Popup {
                 Choice { label: qsTr("Descriptions"); on: printDialog.descriptions; onClicked: printDialog.descriptions = !on }
                 Choice { label: qsTr("Sold-out items"); on: printDialog.soldOut; onClicked: printDialog.soldOut = !on }
             }
-            Label { text: qsTr("Categories on it"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Categories on it"); opacity: 0.75 }
             Flickable {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -118,6 +118,7 @@ Popup {
                 }
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 visible: printDialog.saved !== ""
                 text: qsTr("Saved to %1").arg(printDialog.saved)
@@ -161,6 +162,7 @@ Popup {
                 }
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: printDialog.pages > 1 ? qsTr("Page 1 of %1").arg(printDialog.pages)
                                             : printDialog.pages === 1 ? qsTr("1 page") : qsTr("Nothing to print")

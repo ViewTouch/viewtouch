@@ -132,6 +132,7 @@ Item {
         spacing: w.gap
 
         Text {
+            textFormat: Text.PlainText
             objectName: "menuBusyHint"
             visible: w.busyHint !== "" && !w.arranging
             Layout.fillWidth: true
@@ -279,6 +280,7 @@ Item {
                                     color: railKey.dot || "transparent"
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: parent.width - railList.keyH * 0.45
                                     text: w.title(railKey.modelData)
@@ -406,6 +408,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.shown.length === 0
             Layout.alignment: Qt.AlignHCenter
             text: !w.pos || !w.pos.loggedIn ? ""

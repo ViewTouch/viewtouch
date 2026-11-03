@@ -16,6 +16,7 @@ Rectangle {
         spacing: 0
 
         Label {
+            textFormat: Text.PlainText
             text: qsTr("Pages")
             font.bold: true
             font.pixelSize: 15
@@ -45,12 +46,14 @@ Rectangle {
                 contentItem: ColumnLayout {
                     spacing: 1
                     Label {
+                        textFormat: Text.PlainText
                         text: row.modelData.name ? qsTranslate("Page", row.modelData.name) : row.modelData.id
                         font.bold: row.highlighted
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
                     Label {
+                        textFormat: Text.PlainText
                         text: panel.editor.pageKindName(row.modelData.kind)
                               + (row.modelData.role ? "  ·  " + qsTr("role: %1").arg(panel.editor.pageRoleName(row.modelData.role)) : "")
                               + (row.modelData.templateId ? "  ·  ⧉ " + row.modelData.templateId : "")
@@ -119,14 +122,14 @@ Rectangle {
         ColumnLayout {
             anchors.fill: parent
             spacing: 6
-            Label { text: qsTr("Name") }
+            Label { textFormat: Text.PlainText; text: qsTr("Name") }
             TextField {
                 id: nameField
                 Layout.fillWidth: true
                 placeholderText: qsTr("e.g. Happy Hour")
                 onAccepted: newPageDialog.accept()
             }
-            Label { text: qsTr("Type") }
+            Label { textFormat: Text.PlainText; text: qsTr("Type") }
             ComboBox {
                 id: kindBox
                 Layout.fillWidth: true
@@ -139,7 +142,7 @@ Rectangle {
                         templateBox.currentIndex = idx
                 }
             }
-            Label { text: qsTr("Template (zones shown behind this page)") }
+            Label { textFormat: Text.PlainText; text: qsTr("Template (zones shown behind this page)") }
             ComboBox {
                 id: templateBox
                 Layout.fillWidth: true
@@ -164,6 +167,7 @@ Rectangle {
         ColumnLayout {
             anchors.fill: parent
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: panel.editor.references.length === 0

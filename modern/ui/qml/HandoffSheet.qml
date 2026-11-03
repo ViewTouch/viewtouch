@@ -29,6 +29,7 @@ Rectangle {
             anchors.margins: 20
             spacing: 12
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Notes from the last shift")
                 color: "white"
@@ -53,12 +54,14 @@ Rectangle {
                             Layout.fillWidth: true
                             spacing: 2
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.from + "  ·  " + modelData.when
                                 color: Ui.muted
                                 font.pixelSize: 15
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.text
                                 color: "white"

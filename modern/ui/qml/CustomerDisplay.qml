@@ -60,6 +60,7 @@ Rectangle {
             source: d.logo
         }
         Text {
+            textFormat: Text.PlainText
             visible: d.logo === ""
             anchors { left: parent.left; leftMargin: d.unit; verticalCenter: parent.verticalCenter }
             text: d.pos ? d.pos.storeName : ""
@@ -68,6 +69,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors { right: parent.right; rightMargin: d.unit; verticalCenter: parent.verticalCenter }
             visible: d.hasCheck
             // A food truck's label is its order number already (#27 Maria).
@@ -86,6 +88,7 @@ Rectangle {
         height: visible ? d.unit * 2.2 : 0
         color: "#1f5f3a"
         Text {
+            textFormat: Text.PlainText
             anchors { fill: parent; leftMargin: d.unit; rightMargin: d.unit }
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
@@ -118,6 +121,7 @@ Rectangle {
                     Layout.preferredWidth: 1
                     spacing: d.unit * 0.5
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         text: column.modelData[0]
@@ -129,6 +133,7 @@ Rectangle {
                     Repeater {
                         model: column.modelData[1]
                         delegate: Text {
+                            textFormat: Text.PlainText
                             required property var modelData
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
@@ -181,6 +186,7 @@ Rectangle {
                     visible: !slide.picture
                     spacing: d.unit
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         text: qsTr("Welcome!")
@@ -188,6 +194,7 @@ Rectangle {
                         font.pixelSize: d.unit * 1.6
                     }
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -207,6 +214,7 @@ Rectangle {
             visible: d.thanking && !d.hasCheck
             spacing: d.unit * 0.8
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: qsTr("Thank you!")
                 color: "#7ee2a8"
@@ -214,6 +222,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 visible: d.lastTotals.hasChange ?? false
                 text: qsTr("Your change: %1").arg(d.lastTotals.change ?? "")
@@ -221,6 +230,7 @@ Rectangle {
                 font.pixelSize: d.unit * 2
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 visible: (d.lastLoyalty.member ?? "") !== "" && (d.lastLoyalty.earning ?? 0) > 0
                 text: qsTr("You earned %1 points").arg(d.lastLoyalty.earning ?? 0)
@@ -241,7 +251,7 @@ Rectangle {
                     implicitHeight: d.unit * 3.4
                     radius: d.unit * 0.5
                     color: tap.pressed ? Qt.lighter(d.accent, 1.3) : "#2a313d"
-                    Text { anchors.centerIn: parent; text: choice.label; color: "white"; font.pixelSize: d.unit * 1.2 }
+                    Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: choice.label; color: "white"; font.pixelSize: d.unit * 1.2 }
                     TapHandler { id: tap; onTapped: choice.picked() }
                 }
                 Choice { label: qsTr("Print receipt"); onPicked: { d.pos.sendReceipt("print"); d.receiptDone = true } }
@@ -277,6 +287,7 @@ Rectangle {
                     RowLayout {
                         width: parent.width
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
                             color: row.modelData.voided ? "#e06c75" : "white"
@@ -285,6 +296,7 @@ Rectangle {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: row.modelData.voided ? qsTr("void") : row.modelData.price
                             color: row.modelData.voided ? "#e06c75" : "white"
                             font.pixelSize: d.unit * 1.25
@@ -296,6 +308,7 @@ Rectangle {
                             required property var modelData
                             width: row.width
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 leftPadding: d.unit * 1.2
                                 text: "+ " + (modelData.name ?? modelData)
@@ -304,7 +317,7 @@ Rectangle {
                                 elide: Text.ElideRight
                             }
                             // Included in the item's price above.
-                            Text { text: modelData.price ? "+" + modelData.price : ""; color: "#9aa4b5"; font.pixelSize: d.unit * 0.95 }
+                            Text { textFormat: Text.PlainText; text: modelData.price ? "+" + modelData.price : ""; color: "#9aa4b5"; font.pixelSize: d.unit * 0.95 }
                         }
                     }
                 }
@@ -330,6 +343,7 @@ Rectangle {
                         width: parent.width - d.unit
                         visible: (d.loyalty.member ?? "") !== ""
                         Text {
+                            textFormat: Text.PlainText
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: (d.loyalty.named ?? false) ? qsTr("Hi %1!").arg(d.loyalty.member ?? "")
@@ -341,6 +355,7 @@ Rectangle {
                             font.bold: true
                         }
                         Text {
+                            textFormat: Text.PlainText
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: qsTr("%1 points · +%2 today").arg(d.loyalty.points ?? 0).arg(d.loyalty.earning ?? 0)
@@ -351,6 +366,7 @@ Rectangle {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         objectName: "joinRewards"
                         // Inside the button whatever its width: two lines, then smaller.
                         anchors { fill: parent; margins: d.unit * 0.5 }
@@ -378,8 +394,8 @@ Rectangle {
                     property real size: 1.15
                     property color ink: "white"
                     Layout.fillWidth: true
-                    Text { id: l; Layout.fillWidth: true; color: "#c7cedb"; font.pixelSize: d.unit * parent.size }
-                    Text { id: v; color: parent.ink; font.pixelSize: d.unit * parent.size }
+                    Text { textFormat: Text.PlainText; id: l; Layout.fillWidth: true; color: "#c7cedb"; font.pixelSize: d.unit * parent.size }
+                    Text { textFormat: Text.PlainText; id: v; color: parent.ink; font.pixelSize: d.unit * parent.size }
                 }
                 Line { label: qsTr("Subtotal"); value: d.totals.items ?? "" }
                 Line {
@@ -399,6 +415,7 @@ Rectangle {
                 Line { label: qsTr("Cash price"); value: d.totals.cashPrice ?? ""; visible: !!d.totals.cashPrice; ink: "#7ee2a8"; size: 1.4 }
                 Line { label: qsTr("Card price"); value: d.totals.cardPrice ?? ""; visible: !!d.totals.cashPrice; size: 1.4 }
                 Text {
+                    textFormat: Text.PlainText
                     visible: !!d.totals.surchargeNotice
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -421,6 +438,7 @@ Rectangle {
             width: Math.min(parent.width * 0.88, d.unit * 52)
             spacing: d.unit
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: qsTr("Add a tip?")
                 color: "white"
@@ -428,6 +446,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: qsTr("Total %1").arg(d.totals.total ?? "")
                 color: "#9aa4b5"
@@ -450,6 +469,7 @@ Rectangle {
                         Column {
                             anchors.centerIn: parent
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: choice.modelData.percent + "%"
                                 color: "white"
@@ -457,6 +477,7 @@ Rectangle {
                                 font.bold: true
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: choice.modelData.amount
                                 color: "#e6ecff"
@@ -479,7 +500,7 @@ Rectangle {
                         Layout.preferredHeight: d.unit * 3.4
                         radius: d.unit * 0.6
                         color: otherTap.pressed ? "#3a414f" : "#2a313d"
-                        Text { anchors.centerIn: parent; text: other.modelData.label; color: "white"; font.pixelSize: d.unit * 1.3 }
+                        Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: other.modelData.label; color: "white"; font.pixelSize: d.unit * 1.3 }
                         TapHandler {
                             id: otherTap
                             onTapped: other.modelData.custom
@@ -510,13 +531,13 @@ Rectangle {
             anchors.centerIn: parent
             width: Math.min(parent.width * 0.6, d.unit * 26)
             spacing: d.unit * 0.5
-            Text { Layout.alignment: Qt.AlignHCenter; text: keypad.title; color: "white"; font.pixelSize: d.unit * 1.6; font.bold: true }
+            Text { textFormat: Text.PlainText; Layout.alignment: Qt.AlignHCenter; text: keypad.title; color: "white"; font.pixelSize: d.unit * 1.6; font.bold: true }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: d.unit * 3
                 radius: d.unit * 0.4
                 color: "#1b222c"
-                Text { anchors.centerIn: parent; text: keypad.shown || " "; color: "white"; font.pixelSize: d.unit * 1.8 }
+                Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: keypad.shown || " "; color: "white"; font.pixelSize: d.unit * 1.8 }
             }
             GridLayout {
                 Layout.fillWidth: true
@@ -533,7 +554,7 @@ Rectangle {
                         Layout.preferredHeight: d.unit * 3.2
                         radius: d.unit * 0.4
                         color: keyTap.pressed ? Qt.lighter(d.accent, 1.3) : modelData === "OK" ? d.accent : "#2a313d"
-                        Text { anchors.centerIn: parent; text: key.modelData; color: "white"; font.pixelSize: d.unit * 1.5 }
+                        Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: key.modelData; color: "white"; font.pixelSize: d.unit * 1.5 }
                         // TapHandler: every tap counts ("555" is not a double-click).
                         TapHandler {
                             id: keyTap
@@ -554,6 +575,7 @@ Rectangle {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: qsTr("Cancel")
                 color: "#9aa4b5"

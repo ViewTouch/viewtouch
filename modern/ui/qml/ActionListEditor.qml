@@ -72,6 +72,7 @@ ColumnLayout {
     }
 
     Label {
+        textFormat: Text.PlainText
         visible: ale.actions.length === 0
         text: qsTr("Nothing happens when this is touched.")
         color: EditorStyle.muted
@@ -103,6 +104,7 @@ ColumnLayout {
                 RowLayout {
                     Layout.fillWidth: true
                     Label {
+                        textFormat: Text.PlainText
                         text: (card.index + 1) + "."
                         color: EditorStyle.muted
                     }

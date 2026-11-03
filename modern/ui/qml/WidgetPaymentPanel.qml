@@ -21,6 +21,7 @@ Item {
         property color tint: w.ink
         Layout.fillWidth: true
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: parent.name
             color: parent.tint
@@ -30,6 +31,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             text: parent.value
             color: parent.tint
             font.family: w.face
@@ -44,6 +46,7 @@ Item {
         spacing: w.unit * 0.35
 
         Text {
+            textFormat: Text.PlainText
             text: w.pos && w.pos.hasCheck ? w.pos.check.label + "  #" + w.pos.check.id : qsTr("No check open")
             color: w.ink
             font.family: w.face
@@ -98,6 +101,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.payments.length > 0
             text: qsTr("Payments")
             color: Ui.muted
@@ -136,6 +140,7 @@ Item {
             Layout.fillHeight: false   // nested layouts fill by default
             spacing: w.unit * 0.3
             Text {
+                textFormat: Text.PlainText
                 text: w.zone.keyText("tips", qsTr("Tip"))
                 color: w.ink
                 font.family: w.face
@@ -195,6 +200,7 @@ Item {
             Layout.fillHeight: false
             spacing: w.unit * 0.3
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: parent.hold.card ? qsTr("Card held: %1 · %2").arg(parent.hold.card).arg(parent.hold.amount)
                                        : qsTr("No card held for this tab")
@@ -248,6 +254,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             objectName: "surchargeNotice"
             visible: w.owing && !!w.totals.surchargeNotice
             Layout.fillWidth: true

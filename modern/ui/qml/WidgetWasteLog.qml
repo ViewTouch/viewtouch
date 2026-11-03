@@ -123,7 +123,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    Label { text: qsTr("How much"); font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: qsTr("How much"); font.pixelSize: 15 }
                     PosButton {
                         objectName: "wasteLess"
                         text: "−"
@@ -150,7 +150,7 @@ Item {
                         font.pixelSize: 20
                         onClicked: qty.text = String((Number(qty.text) || 0) + 1)
                     }
-                    Label { text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: 15 }
                     PosButton {
                         objectName: "logWaste"
                         Layout.fillWidth: true
@@ -173,7 +173,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: 17 }
                 ListView {
                     id: today
                     Layout.fillWidth: true
@@ -187,12 +187,14 @@ Item {
                         width: ListView.view.width - todayBar.room
                         spacing: 0
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.qty + " " + modelData.what + "  ·  " + modelData.value
                             font.bold: true
                             elide: Text.ElideRight
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.when + "  ·  " + modelData.reason + "  ·  " + modelData.by
                             opacity: 0.6
@@ -202,6 +204,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.info.today ?? []).length === 0
                     text: qsTr("Nothing thrown away today.")
                     opacity: 0.6

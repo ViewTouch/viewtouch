@@ -39,6 +39,7 @@ Dialog {
         anchors.fill: parent
         spacing: 8
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.8
@@ -55,6 +56,7 @@ Dialog {
             }
         }
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             visible: severalDialog.preview.length > 0

@@ -13,6 +13,7 @@ Item {
         spacing: w.height * 0.03
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             text: w.zone.label || qsTr("Enter your PIN")

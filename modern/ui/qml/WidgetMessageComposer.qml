@@ -43,7 +43,7 @@ Item {
                 Layout.fillWidth: w.narrow
                 Layout.fillHeight: true
                 spacing: 8
-                Label { text: qsTr("To"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("To"); font.bold: true; font.pixelSize: 17 }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -62,7 +62,7 @@ Item {
                         }
                     }
                 }
-                Label { text: qsTr("Message"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Message"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -85,7 +85,7 @@ Item {
                     placeholderText: qsTr("Type a message…")
                     onAccepted: send.clicked()
                 }
-                Label { text: qsTr("Show it"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Show it"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -128,7 +128,7 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Label { text: qsTr("Posted, and the last hour"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Posted, and the last hour"); font.bold: true; font.pixelSize: 17 }
                 ListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -140,6 +140,7 @@ Item {
                         required property var modelData
                         width: ListView.view.width - listBar.room
                         Label {
+                            textFormat: Text.PlainText
                             text: (modelData.posted ? qsTr("until %1").arg(modelData.until) : modelData.time)
                                   + "  ·  " + modelData.from + " → "
                                   + (({ all: qsTr("everyone"), kitchen: qsTr("kitchen"), floor: qsTr("floor") })[modelData.to] ?? modelData.to)
@@ -147,7 +148,7 @@ Item {
                         }
                         RowLayout {
                             width: parent.width
-                            Label { text: modelData.text; font.pixelSize: 17; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: modelData.text; font.pixelSize: 17; wrapMode: Text.WordWrap; Layout.fillWidth: true }
                             PosButton {
                                 visible: modelData.posted === true
                                 objectName: "takeDown-" + modelData.id

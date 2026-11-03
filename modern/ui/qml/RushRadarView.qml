@@ -49,6 +49,7 @@ Item {
         anchors.fill: parent
         spacing: r.unit * 0.35
         Text {
+            textFormat: Text.PlainText
             id: head
             objectName: "rushHeadline"
             Layout.fillWidth: true
@@ -70,6 +71,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: r.unit * 0.5
                 Text {
+                    textFormat: Text.PlainText
                     Layout.preferredWidth: r.unit * 6
                     text: row.modelData.name
                     color: "white"
@@ -79,6 +81,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.preferredWidth: r.unit * 10
                     text: qsTr("%1 min now · %2 ahead").arg(row.modelData.waitNow).arg(row.modelData.queue)
                     color: r.muted
@@ -111,6 +114,7 @@ Item {
                             }
                             // Its wait, and when (now, then every 5 minutes).
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 1
@@ -123,6 +127,7 @@ Item {
                             }
                             // Short bars: the number above them.
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.bottom: bar.top
                                 visible: bar.height < r.unit * 0.8
@@ -135,6 +140,7 @@ Item {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.preferredWidth: r.unit * 6.5
                     horizontalAlignment: Text.AlignRight
                     text: row.modelData.peakMinute > 0 ? qsTr("%1 min at %2").arg(row.modelData.peakWait).arg(row.modelData.peakAt)
@@ -147,6 +153,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: !r.compact && !(r.radar.history ?? true)
             Layout.fillWidth: true
             wrapMode: Text.WordWrap

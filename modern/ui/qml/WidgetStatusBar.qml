@@ -6,6 +6,7 @@ Item {
     property ZoneItem zone
 
     Text {
+        textFormat: Text.PlainText
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16

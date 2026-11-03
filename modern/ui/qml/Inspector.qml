@@ -86,7 +86,7 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.leftMargin: 12
                     Layout.rightMargin: 12
-                    Label { text: qsTr("Type"); color: EditorStyle.muted; font.pixelSize: 12 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Type"); color: EditorStyle.muted; font.pixelSize: 12 }
                     ComboBox {
                         Layout.fillWidth: true
                         readonly property var kinds: inspector.editor.basicKinds.concat(inspector.editor.widgetKinds)
@@ -109,7 +109,7 @@ Rectangle {
                     Layout.leftMargin: 12
                     Layout.rightMargin: 12
                     spacing: 0
-                    Label { text: qsTr("Show on"); color: EditorStyle.muted; font.pixelSize: 12; Layout.rightMargin: 8 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Show on"); color: EditorStyle.muted; font.pixelSize: 12; Layout.rightMargin: 8 }
                     Repeater {
                         model: [{ v: "", t: qsTr("Both") }, { v: "standard", t: qsTr("Standard") }, { v: "phone", t: qsTr("Phone") }]
                         delegate: Button {
@@ -147,6 +147,7 @@ Rectangle {
                         anchors.margins: 8
                         spacing: 2
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             font.pixelSize: 12
@@ -168,6 +169,7 @@ Rectangle {
                 }
 
                 Label {
+                    textFormat: Text.PlainText
                     visible: inspector.mode === "page"
                     Layout.fillWidth: true
                     Layout.leftMargin: 12
@@ -179,6 +181,7 @@ Rectangle {
                 }
 
                 Label {
+                    textFormat: Text.PlainText
                     visible: inspector.mode === "theme"
                     Layout.fillWidth: true
                     Layout.leftMargin: 12
@@ -191,6 +194,7 @@ Rectangle {
 
                 // Ready-made looks: one touch recolors the theme (Undo takes it back).
                 Label {
+                    textFormat: Text.PlainText
                     visible: inspector.mode === "theme"
                     Layout.leftMargin: 12
                     text: qsTr("Looks")
@@ -229,6 +233,7 @@ Rectangle {
                                 }
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 x: 8
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 8
@@ -310,6 +315,7 @@ Rectangle {
                                         Component {
                                             id: multiNote
                                             Label {
+                                                textFormat: Text.PlainText
                                                 text: qsTr("Select a single zone to edit what it does.")
                                                 color: EditorStyle.muted
                                                 wrapMode: Text.WordWrap
@@ -331,8 +337,9 @@ Rectangle {
                     spacing: 4
 
                     Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border }
-                    Label { text: qsTr("Used by"); font.bold: true }
+                    Label { textFormat: Text.PlainText; text: qsTr("Used by"); font.bold: true }
                     Label {
+                        textFormat: Text.PlainText
                         visible: inspector.editor.references.length === 0
                         text: qsTr("No buttons lead here.")
                         color: EditorStyle.muted
@@ -341,6 +348,7 @@ Rectangle {
                     Repeater {
                         model: inspector.editor.references
                         delegate: Label {
+                            textFormat: Text.PlainText
                             required property string modelData
                             text: "• " + modelData
                             color: EditorStyle.muted
@@ -359,6 +367,7 @@ Rectangle {
 
                     Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border }
                     Label {
+                        textFormat: Text.PlainText
                         text: qsTr("Problems (%1)").arg(inspector.editor.issues.length)
                         font.bold: true
                         color: EditorStyle.warning
@@ -366,6 +375,7 @@ Rectangle {
                     Repeater {
                         model: inspector.editor.issues
                         delegate: Label {
+                            textFormat: Text.PlainText
                             required property string modelData
                             text: "• " + modelData
                             color: EditorStyle.warning

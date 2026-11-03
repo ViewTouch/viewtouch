@@ -94,6 +94,7 @@ Item {
             Layout.fillWidth: true
             visible: w.pos && w.pos.hasCheck
             Text {
+                textFormat: Text.PlainText
                 readonly property var mine: (w.pos ? w.pos.tableChecks : []).find(c => c.current)
                 text: (w.check.label ?? "") + (mine && w.pos.tableChecks.length > 1 ? "  ·  " + qsTr("Check %1").arg(mine.number) : "")
                 color: w.ink
@@ -127,6 +128,7 @@ Item {
                 onClicked: w.whole ? (w.whole = false) : w.openWhole()
             }
             Text {
+                textFormat: Text.PlainText
                 // (A food truck's order is called by its own number, in the label: not this one too.)
                 visible: !w.folded && !((w.check.orderNumber ?? 0) > 0)
                 text: qsTr("#%1").arg(w.check.id ?? "")
@@ -136,6 +138,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.hasCheck && !w.folded
             text: (w.check.server ?? "") + "  ·  "
                   + ((w.check.guests ?? 1) === 1 ? qsTr("1 guest") : qsTr("%1 guests").arg(w.check.guests))
@@ -285,6 +288,7 @@ Item {
         }
         // When it'll be ready: quoted from how busy the kitchen is, or what they were told.
         Text {
+            textFormat: Text.PlainText
             objectName: "readyQuote"
             visible: who.visible && !w.check.due && ((w.check.quote ?? 0) > 0 || !!w.check.promised)
             text: w.check.promised
@@ -298,6 +302,7 @@ Item {
         }
         // A regular: how often they come, and their note (allergies...).
         Text {
+            textFormat: Text.PlainText
             objectName: "regularInfo"
             visible: w.pos && w.pos.hasCheck && !!w.check.regular && !w.folded
             text: "★ " + (w.check.regular ?? "")
@@ -331,6 +336,7 @@ Item {
             Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             spacing: w.unit * 0.25
             Text {
+                textFormat: Text.PlainText
                 text: qsTr("Often added:")
                 color: "#aab3c2"
                 font.family: w.face
@@ -351,6 +357,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             readonly property var customer: w.check.customer ?? ({})
             visible: w.pos && w.pos.hasCheck && !who.visible && !!(customer.name || customer.phone) && !w.folded
             text: (customer.name ?? "") + (customer.phone ? "  ·  " + customer.phone : "")
@@ -432,6 +439,7 @@ Item {
                 height: parent.height
                 spacing: bar.key * 0.15
                 Text {
+                    textFormat: Text.PlainText
                     visible: w.zone.keyShown("course")
                     anchors.verticalCenter: parent.verticalCenter
                     text: w.zone.keyText("course", qsTr("Course"))
@@ -535,6 +543,7 @@ Item {
                     color: row.slide < 0 ? (row.slide <= -row.swipeAt ? "#c0393f" : "#5a2a2d")
                                          : (row.slide >= row.swipeAt ? Ui.go : "#22402f")
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: row.slide < 0 ? parent.right : undefined
                         anchors.left: row.slide > 0 ? parent.left : undefined
@@ -560,6 +569,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
+                            textFormat: Text.PlainText
                             // ● not yet sent to the kitchen; ‖ held for a later course
                             text: row.modelData.held ? "‖" : row.modelData.sent ? " " : "●"
                             color: "#f5b940"
@@ -568,6 +578,7 @@ Item {
                             Layout.preferredWidth: w.unit * 0.8
                         }
                         Text {
+                            textFormat: Text.PlainText
                             // S2 / C2: seat and (later) course
                             visible: text !== ""
                             text: (row.modelData.seat > 0 ? "S" + row.modelData.seat : "")
@@ -579,6 +590,7 @@ Item {
                             font.bold: true
                         }
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1   // what's left after Choose and the price (big text)
                             text: (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
@@ -596,6 +608,7 @@ Item {
                         // A phone: the key on the touched line (a finger tall), the others
                         // just say so (so every line stays one line).
                         Text {
+                            textFormat: Text.PlainText
                             visible: row.modelData.choices && w.tapH > 0 && !row.modelData.selected && row.modelData.needsChoice
                             text: qsTr("Choose ›")
                             color: "#f5b940"
@@ -613,6 +626,7 @@ Item {
                             onClicked: w.zone.controller.chooseLine(row.modelData.id)
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: row.modelData.voided ? qsTr("VOID") : row.waiting ? qsTr("waiting…") : row.modelData.price
                             color: row.modelData.voided ? "#ff6369" : row.waiting ? "#f5b940" : w.ink
                             font.family: w.face
@@ -621,6 +635,7 @@ Item {
                     }
                     // Has what its guest is allergic to.
                     Text {
+                        textFormat: Text.PlainText
                         visible: (row.modelData.allergy ?? []).length > 0
                         Layout.fillWidth: true
                         Layout.leftMargin: w.unit * 1.6
@@ -638,6 +653,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.leftMargin: w.unit * 1.6
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.name
                                 color: Ui.textSoft
@@ -646,6 +662,7 @@ Item {
                                 elide: Text.ElideRight
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 text: modelData.price
                                 color: Ui.textSoft
                                 font.family: w.face
@@ -675,6 +692,7 @@ Item {
                             onClicked: w.pos.lineLess(row.modelData.id)
                         }
                         Text {
+                            textFormat: Text.PlainText
                             visible: !row.modelData.sent
                             width: qtyBar.key * 1.1
                             height: qtyBar.keyH
@@ -736,6 +754,7 @@ Item {
                     anchors.leftMargin: w.unit * 0.5
                     anchors.rightMargin: w.unit * 0.25
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: undoBar.text
                         color: "white"
@@ -756,6 +775,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 width: parent.width * 0.8
                 visible: list.count === 0
@@ -779,6 +799,7 @@ Item {
             rowSpacing: 0
 
             component Cell: Text {
+                textFormat: Text.PlainText
                 property bool strong: false
                 color: w.ink
                 font.family: w.face
@@ -868,6 +889,7 @@ Item {
             width: parent.width * (sheet.big > 1 ? 0.94 : 0.85)
             spacing: w.unit * 0.4
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap

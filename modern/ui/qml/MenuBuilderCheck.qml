@@ -18,6 +18,7 @@ Dialog {
         anchors.fill: parent
         spacing: 8
         Label {
+            textFormat: Text.PlainText
             visible: checkDialog.problems.length === 0
             Layout.fillWidth: true
             wrapMode: Text.WordWrap

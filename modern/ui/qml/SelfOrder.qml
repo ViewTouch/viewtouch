@@ -157,6 +157,7 @@ Rectangle {
             width: Math.min(parent.width - 2 * k.u, 44 * k.u)
             spacing: k.u
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -191,6 +192,7 @@ Rectangle {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -239,6 +241,7 @@ Rectangle {
         Accessible.onPressAction: big.clicked()
         implicitHeight: k.u * 3.4
         Text {
+            textFormat: Text.PlainText
             font.family: k.face
             anchors.fill: parent
             anchors.margins: k.u * 0.4
@@ -286,6 +289,7 @@ Rectangle {
                 height: parent.height * (k.portrait ? 0.58 : 0.5)
                 color: Qt.darker(k.accent, 2.2)
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     anchors.centerIn: parent
                     visible: !card.modelData.image || picture.status !== Image.Ready
@@ -315,6 +319,7 @@ Rectangle {
                 anchors.margins: k.u * 0.5
                 spacing: k.u * 0.15
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     text: card.modelData.name
@@ -324,6 +329,7 @@ Rectangle {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -335,6 +341,7 @@ Rectangle {
                     maximumLineCount: 2
                 }
                 Text {
+                    textFormat: Text.PlainText
                     visible: (card.modelData.contains ?? []).length > 0
                     font.family: k.face
                     Layout.fillWidth: true
@@ -344,6 +351,7 @@ Rectangle {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     text: card.modelData.price + ((card.modelData.left ?? -1) >= 0 ? "  ·  " + qsTr("%1 left").arg(card.modelData.left) : "")
                     color: Qt.lighter(k.accent, 1.5)
@@ -357,6 +365,7 @@ Rectangle {
                 visible: !card.modelData.available
                 color: "#c0141820"
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     anchors.centerIn: parent
                     text: qsTr("SOLD OUT")
@@ -403,6 +412,7 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 0
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     text: row.modelData.name
@@ -411,6 +421,7 @@ Rectangle {
                     wrapMode: Text.WordWrap
                 }
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     visible: text !== ""
@@ -420,7 +431,7 @@ Rectangle {
                     wrapMode: Text.WordWrap
                 }
             }
-            Text { font.family: k.face; text: row.modelData.price; color: k.ink; font.pixelSize: k.u * 0.95 }
+            Text { textFormat: Text.PlainText; font.family: k.face; text: row.modelData.price; color: k.ink; font.pixelSize: k.u * 0.95 }
             Big {
                 objectName: "kioskRemove"
                 Layout.preferredWidth: k.u * 2.6
@@ -499,6 +510,7 @@ Rectangle {
                 fillMode: Image.PreserveAspectFit
             }
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 visible: k.logo === ""
                 Layout.fillWidth: true
@@ -517,6 +529,7 @@ Rectangle {
             anchors.margins: k.u * 2
             spacing: k.u * 1.5
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 Layout.fillWidth: true
                 visible: attract.caption !== ""
@@ -541,6 +554,7 @@ Rectangle {
                     NumberAnimation { from: 1.05; to: 1; duration: 900; easing.type: Easing.InOutQuad }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     id: welcomeWords
                     font.family: k.face
                     anchors.centerIn: parent
@@ -581,6 +595,7 @@ Rectangle {
             anchors.bottomMargin: k.portrait ? parent.height * 0.18 : k.u * 4
             spacing: k.u * 1.5
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -662,6 +677,7 @@ Rectangle {
                     anchors.margins: k.u * 0.7
                     spacing: k.u * 0.4
                     Text {
+                        textFormat: Text.PlainText
                         font.family: k.face
                         Layout.fillWidth: true
                         text: k.info.toGo ? qsTr("Your order · to go") : qsTr("Your order · for here")
@@ -672,6 +688,7 @@ Rectangle {
                     }
                     OrderList { Layout.fillWidth: true; Layout.fillHeight: true }
                     Text {
+                        textFormat: Text.PlainText
                         font.family: k.face
                         visible: k.lines.length === 0
                         Layout.fillWidth: true
@@ -682,8 +699,8 @@ Rectangle {
                     }
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { font.family: k.face; text: qsTr("Total"); color: k.ink; font.pixelSize: k.u * 1.2; font.bold: true; Layout.fillWidth: true }
-                        Text { font.family: k.face; text: k.total; color: k.ink; font.pixelSize: k.u * 1.4; font.bold: true }
+                        Text { textFormat: Text.PlainText; font.family: k.face; text: qsTr("Total"); color: k.ink; font.pixelSize: k.u * 1.2; font.bold: true; Layout.fillWidth: true }
+                        Text { textFormat: Text.PlainText; font.family: k.face; text: k.total; color: k.ink; font.pixelSize: k.u * 1.4; font.bold: true }
                     }
                     Big {
                         objectName: "kioskAccess"
@@ -741,6 +758,7 @@ Rectangle {
                 Layout.fillHeight: false   // nested layouts fill by default
                 visible: !k.easyReach
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     text: k.pos ? k.pos.storeName : ""
@@ -750,6 +768,7 @@ Rectangle {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     text: k.info.toGo ? qsTr("To Go") : qsTr("For Here")
                     color: k.muted
@@ -870,6 +889,7 @@ Rectangle {
                     anchors.margins: k.u
                     spacing: k.u * 0.5
                     Text {
+                        textFormat: Text.PlainText
                         font.family: k.face
                         text: k.info.toGo ? qsTr("Your order · to go") : qsTr("Your order · for here")
                         color: k.ink
@@ -879,8 +899,8 @@ Rectangle {
                     OrderList { Layout.fillWidth: true; Layout.fillHeight: true }
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { font.family: k.face; text: qsTr("Total"); color: k.ink; font.pixelSize: k.u * 1.3; font.bold: true; Layout.fillWidth: true }
-                        Text { font.family: k.face; text: k.total; color: k.ink; font.pixelSize: k.u * 1.5; font.bold: true }
+                        Text { textFormat: Text.PlainText; font.family: k.face; text: qsTr("Total"); color: k.ink; font.pixelSize: k.u * 1.3; font.bold: true; Layout.fillWidth: true }
+                        Text { textFormat: Text.PlainText; font.family: k.face; text: k.total; color: k.ink; font.pixelSize: k.u * 1.5; font.bold: true }
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -913,6 +933,7 @@ Rectangle {
             spacing: k.u * 0.8
             Item { Layout.fillHeight: true; visible: k.portrait && !k.easyReach }   // in reach: at the bottom
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 text: qsTr("Almost done: %1").arg(k.total)
                 color: k.ink
@@ -920,6 +941,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 Layout.fillWidth: true
                 text: k.lines.map(l => l.name).join(" · ")
@@ -929,7 +951,7 @@ Rectangle {
                 maximumLineCount: 2
                 elide: Text.ElideRight
             }
-            Text { font.family: k.face; visible: k.lookSet.askName !== false; text: qsTr("Your name, so we can call your order"); color: k.ink; font.pixelSize: k.u * 1.2 }
+            Text { textFormat: Text.PlainText; font.family: k.face; visible: k.lookSet.askName !== false; text: qsTr("Your name, so we can call your order"); color: k.ink; font.pixelSize: k.u * 1.2 }
             TextField {
                 id: nameField
                 objectName: "kioskName"
@@ -979,6 +1001,7 @@ Rectangle {
             width: Math.min(parent.width * 0.85, k.u * 50)
             spacing: k.u
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -988,8 +1011,9 @@ Rectangle {
                 font.bold: true
                 wrapMode: Text.WordWrap
             }
-            Text { font.family: k.face; Layout.alignment: Qt.AlignHCenter; text: qsTr("Your order number"); color: k.soft; font.pixelSize: k.u * 1.4 }
+            Text { textFormat: Text.PlainText; font.family: k.face; Layout.alignment: Qt.AlignHCenter; text: qsTr("Your order number"); color: k.soft; font.pixelSize: k.u * 1.4 }
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 objectName: "kioskNumber"
                 Layout.alignment: Qt.AlignHCenter
@@ -999,6 +1023,7 @@ Rectangle {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 font.family: k.face
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -1011,6 +1036,7 @@ Rectangle {
                 wrapMode: Text.WordWrap
             }
             Text {
+                textFormat: Text.PlainText
                 objectName: "kioskTakeSlip"
                 font.family: k.face
                 visible: k.lastOrder.slip ?? false
@@ -1052,6 +1078,7 @@ Rectangle {
                     anchors.margins: k.u
                     spacing: k.u * 0.6
                     Text {
+                        textFormat: Text.PlainText
                         font.family: k.face
                         text: k.choosing.item ?? ""
                         color: k.ink
@@ -1076,6 +1103,7 @@ Rectangle {
                                 Layout.fillWidth: true
                                 spacing: k.u * 0.3
                                 Text {
+                                    textFormat: Text.PlainText
                                     font.family: k.face
                                     text: group.modelData.onlyIncluded ? group.modelData.name
                                                                        : group.modelData.name + "  ·  " + group.modelData.rule
@@ -1085,6 +1113,7 @@ Rectangle {
                                 }
                                 // What comes on it: each No, Light, as it comes, Extra or on the side.
                                 Text {
+                                    textFormat: Text.PlainText
                                     visible: group.modelData.included && !group.modelData.onlyIncluded
                                     font.family: k.face
                                     text: qsTr("What's on it")
@@ -1101,6 +1130,7 @@ Rectangle {
                                         Layout.fillWidth: true
                                         spacing: k.u * 0.3
                                         Text {
+                                            textFormat: Text.PlainText
                                             font.family: k.face
                                             Layout.preferredWidth: k.u * 7
                                             text: onIt.modelData.name
@@ -1128,6 +1158,7 @@ Rectangle {
                                     }
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     visible: group.modelData.included && !group.modelData.onlyIncluded
                                     font.family: k.face
                                     text: qsTr("Add")
@@ -1167,6 +1198,7 @@ Rectangle {
                                         Layout.fillWidth: true
                                         spacing: k.u * 0.3
                                         Text {
+                                            textFormat: Text.PlainText
                                             font.family: k.face
                                             Layout.preferredWidth: k.u * 7
                                             text: added.modelData.name
@@ -1232,6 +1264,7 @@ Rectangle {
                 anchors.bottomMargin: parent.height * 0.2
                 spacing: k.u
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
@@ -1241,6 +1274,7 @@ Rectangle {
                     font.bold: true
                 }
                 Text {
+                    textFormat: Text.PlainText
                     font.family: k.face
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
@@ -1263,6 +1297,7 @@ Rectangle {
 
     // Easy Reach: the top of the screen just shows who we are.
     Text {
+        textFormat: Text.PlainText
         font.family: k.face
         visible: k.easyReach && k.ordering
         anchors.horizontalCenter: parent.horizontalCenter

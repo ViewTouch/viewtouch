@@ -93,6 +93,7 @@ Item {
                         contentItem: ColumnLayout {
                             spacing: 0
                             Label {
+                                textFormat: Text.PlainText
                                 text: row.modelData.name || row.modelData.phone
                                 font.bold: true
                                 font.pixelSize: 17
@@ -100,6 +101,7 @@ Item {
                                 Layout.fillWidth: true
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 opacity: 0.75
@@ -111,6 +113,7 @@ Item {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: list.count === 0
                         text: search.text ? qsTr("No one matches.") : qsTr("No customers yet.")
@@ -157,6 +160,7 @@ Item {
                         onClicked: { w.creating = false; w.pos.selectCustomer("") }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         text: w.creating ? qsTr("New customer") : (w.chosen.name || w.chosen.phone || "")
                         font.bold: true
                         font.pixelSize: 22
@@ -166,6 +170,7 @@ Item {
                         visible: !w.creating && (w.pos ? (w.pos.customerPrompt.loyalty ?? {}).enabled ?? false : false)
                         spacing: 8
                         Label {
+                            textFormat: Text.PlainText
                             text: qsTr("%1 points").arg(w.chosen.points ?? 0)
                             font.pixelSize: 18
                             font.bold: true
@@ -181,12 +186,14 @@ Item {
                             }
                         }
                         Label {
+                            textFormat: Text.PlainText
                             visible: !(w.chosen.onCheck ?? false)
                             text: qsTr("Put them on the check to use rewards")
                             opacity: 0.6
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         visible: !w.creating
                         opacity: 0.75
                         text: ((w.chosen.visits ?? 0) === 1 ? qsTr("1 visit") : qsTr("%1 visits").arg(w.chosen.visits ?? 0)) + "  ·  " + qsTr("spent %1").arg(w.chosen.spent ?? "")
@@ -200,7 +207,7 @@ Item {
                         property int hints: Qt.ImhNone
                         Layout.fillWidth: true
                         spacing: 2
-                        Label { id: caption; opacity: 0.8 }
+                        Label { textFormat: Text.PlainText; id: caption; opacity: 0.8 }
                         TextField {
                             Layout.fillWidth: true
                             text: w.draft[entry.key] ?? ""
@@ -234,7 +241,7 @@ Item {
                                     enabled: w.manager
                                     onToggled: w.setField("houseAccount", checked)
                                 }
-                                Label { text: qsTr("Limit $"); visible: w.draft.houseAccount ?? false }
+                                Label { textFormat: Text.PlainText; text: qsTr("Limit $"); visible: w.draft.houseAccount ?? false }
                                 TextField {
                                     visible: w.draft.houseAccount ?? false
                                     enabled: w.manager
@@ -246,6 +253,7 @@ Item {
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label {
+                                    textFormat: Text.PlainText
                                     visible: w.chosen.houseAccount ?? false
                                     text: qsTr("Owes %1").arg(w.chosen.balance ?? "")
                                     font.bold: true
@@ -255,7 +263,7 @@ Item {
                             }
                             RowLayout {
                                 visible: (w.chosen.balanceCents ?? 0) > 0
-                                Label { text: qsTr("Payment $") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Payment $") }
                                 TextField {
                                     id: payAmount
                                     implicitWidth: 120
@@ -276,9 +284,9 @@ Item {
                                 delegate: RowLayout {
                                     required property var modelData
                                     Layout.fillWidth: true
-                                    Label { text: modelData.at; opacity: 0.6; Layout.preferredWidth: 140 }
-                                    Label { text: modelData.what; Layout.fillWidth: true; elide: Text.ElideRight }
-                                    Label { text: modelData.amount }
+                                    Label { textFormat: Text.PlainText; text: modelData.at; opacity: 0.6; Layout.preferredWidth: 140 }
+                                    Label { textFormat: Text.PlainText; text: modelData.what; Layout.fillWidth: true; elide: Text.ElideRight }
+                                    Label { textFormat: Text.PlainText; text: modelData.amount }
                                 }
                             }
                         }
@@ -320,6 +328,7 @@ Item {
                 }
 
                 Label {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     visible: !details.visible
                     text: qsTr("Find a customer on the left, or add a new one.")

@@ -108,6 +108,7 @@ Item {
         rotation: -w.zone.rotation
         spacing: 2
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             text: w.name !== "" ? w.name : qsTr("(no name)")
@@ -119,6 +120,7 @@ Item {
             minimumPixelSize: 8
         }
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: w.status.open ?? false
@@ -130,6 +132,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             objectName: "tableNudge"
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
@@ -142,6 +145,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: w.floorState !== ""
@@ -154,6 +158,7 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: !(w.status.open ?? false) && w.floorState === "" && w.seats > 0

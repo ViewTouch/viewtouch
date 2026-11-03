@@ -24,6 +24,7 @@ Item {
             spacing: 10
 
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: qsTr("Start over as a fresh install")
@@ -32,6 +33,7 @@ Item {
                 color: "#ff9a9e"
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.pixelSize: 16
@@ -65,6 +67,7 @@ Item {
                         contentItem: ColumnLayout {
                             spacing: 4
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: (choice.chosen ? "✓ " : "") + modelData.title
                                 font.pixelSize: 18
@@ -73,6 +76,7 @@ Item {
                                 wrapMode: Text.WordWrap
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.text
                                 font.pixelSize: 14
@@ -91,6 +95,7 @@ Item {
                 }
             }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.pixelSize: 16
@@ -98,7 +103,7 @@ Item {
                 text: qsTr("A backup is taken first (backups/…-before-reset.db), so it can be undone with --restore. "
                            + "Earlier backups and saved report files are kept.")
             }
-            Label { text: qsTr("Type RESET to confirm"); font.pixelSize: 17; Layout.topMargin: 10 }
+            Label { textFormat: Text.PlainText; text: qsTr("Type RESET to confirm"); font.pixelSize: 17; Layout.topMargin: 10 }
             TextField {
                 implicitHeight: 56
                 id: confirm
@@ -109,6 +114,7 @@ Item {
             }
             // Erasing the store is the maintainer's (the code set on its computer).
             Label {
+                textFormat: Text.PlainText
                 objectName: "resetWhose"
                 visible: !(w.zone && w.zone.pos && w.zone.pos.can("maintain"))
                 Layout.fillWidth: true

@@ -47,6 +47,7 @@ Item {
                 Layout.fillWidth: true
                 PosButton { text: "‹"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) - 1) } }
                 Label {
+                    textFormat: Text.PlainText
                     text: w.info.title ?? ""
                     font.pixelSize: 22
                     font.bold: true
@@ -56,6 +57,7 @@ Item {
                 PosButton { text: "›"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) + 1) } }
                 Item { Layout.fillWidth: true }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.info.required ?? false
                     text: qsTr("Staff clock in only on their schedule")
                     opacity: 0.7
@@ -88,6 +90,7 @@ Item {
                             anchors.margins: 6
                             spacing: 4
                             Label {
+                                textFormat: Text.PlainText
                                 text: dayBox.modelData.label
                                 font.bold: true
                                 font.pixelSize: 15
@@ -106,9 +109,10 @@ Item {
                                         id: chipText
                                         anchors.fill: parent
                                         anchors.margins: 5
-                                        Label { text: chip.modelData.name; font.bold: true; width: parent.width; elide: Text.ElideRight }
-                                        Label { text: chip.modelData.time; font.pixelSize: 12; width: parent.width; elide: Text.ElideRight }
+                                        Label { textFormat: Text.PlainText; text: chip.modelData.name; font.bold: true; width: parent.width; elide: Text.ElideRight }
+                                        Label { textFormat: Text.PlainText; text: chip.modelData.time; font.pixelSize: 12; width: parent.width; elide: Text.ElideRight }
                                         Label {
+                                            textFormat: Text.PlainText
                                             visible: chip.modelData.shortRest ?? false
                                             text: qsTr("Short rest")
                                             font.pixelSize: 11
@@ -118,6 +122,7 @@ Item {
                                             elide: Text.ElideRight
                                         }
                                         Label {
+                                            textFormat: Text.PlainText
                                             visible: chip.modelData.note !== ""
                                             text: chip.modelData.note
                                             font.pixelSize: 11
@@ -140,6 +145,7 @@ Item {
                 visible: w.chosen !== null
                 Layout.fillWidth: true
                 Label {
+                    textFormat: Text.PlainText
                     text: w.chosen ? w.chosen.name + "  ·  " + w.chosen.time : ""
                     font.pixelSize: 17
                     font.bold: true
@@ -179,7 +185,7 @@ Item {
                     Component.onCompleted: w.who = currentValue ?? ""
                     onModelChanged: if (w.who === "") w.who = currentValue ?? ""
                 }
-                Label { Layout.columnSpan: w.narrow ? 2 : 1; text: w.days[w.dayIndex] ? w.days[w.dayIndex].label : "" ; font.bold: true }
+                Label { textFormat: Text.PlainText; Layout.columnSpan: w.narrow ? 2 : 1; text: w.days[w.dayIndex] ? w.days[w.dayIndex].label : "" ; font.bold: true }
                 TextField {
                     Layout.minimumHeight: w.narrow ? 40 : 0
                     implicitWidth: 110
@@ -190,7 +196,7 @@ Item {
                     inputMethodHints: Qt.ImhPreferNumbers
                     onTextEdited: w.start = text
                 }
-                Label { text: "–" }
+                Label { textFormat: Text.PlainText; text: "–" }
                 TextField {
                     Layout.minimumHeight: w.narrow ? 40 : 0
                     implicitWidth: 110
@@ -225,6 +231,7 @@ Item {
                 Repeater {
                     model: w.info.totals ?? []
                     delegate: Label {
+                        textFormat: Text.PlainText
                         required property var modelData
                         text: modelData.name + " " + Number(modelData.hours).toFixed(1) + "h"
                         color: modelData.over ? "#ff9a9e" : palette.text

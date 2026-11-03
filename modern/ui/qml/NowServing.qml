@@ -56,6 +56,7 @@ Rectangle {
             source: b.logo
         }
         Text {
+            textFormat: Text.PlainText
             visible: b.logo === ""
             anchors { left: parent.left; leftMargin: b.unit; verticalCenter: parent.verticalCenter }
             text: b.pos ? b.pos.storeName : ""
@@ -64,6 +65,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             id: clock
             anchors { right: parent.right; rightMargin: b.unit; verticalCenter: parent.verticalCenter }
             color: "white"
@@ -96,6 +98,7 @@ Rectangle {
                 Layout.preferredWidth: modelData.share
                 spacing: b.unit * 0.6
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: column.modelData.title
@@ -106,6 +109,7 @@ Rectangle {
                 Rectangle { Layout.fillWidth: true; height: 4; radius: 2; color: column.modelData.color; opacity: 0.6 }
                 // Which page of them (more than fit at once).
                 Text {
+                    textFormat: Text.PlainText
                     objectName: column.modelData.big ? "boardReadyPages" : "boardPreparingPages"
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
@@ -146,6 +150,7 @@ Rectangle {
                             border.color: column.modelData.big ? "#3fbf74" : "#2a313c"
                             border.width: justCalled ? 4 : 1
                             Text {
+                                textFormat: Text.PlainText
                                 anchors { fill: parent; leftMargin: b.unit * 0.6; rightMargin: b.unit * 0.6 }
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
@@ -195,6 +200,7 @@ Rectangle {
             source: !idle.picture || !b.pos ? "" : (b.pos.imageRevision < 0 ? "" : b.pos.imageUrl(idle.current.slice(6)))
         }
         Text {
+            textFormat: Text.PlainText
             anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; verticalCenterOffset: -b.unit }
             visible: !idle.picture && idle.current !== ""
             horizontalAlignment: Text.AlignHCenter
@@ -205,6 +211,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap

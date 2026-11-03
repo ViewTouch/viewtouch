@@ -48,6 +48,7 @@ Rectangle {
             visible: !banner.compact
             Layout.fillWidth: true
             Text {
+                textFormat: Text.PlainText
                 text: !banner.shown ? ""
                     : banner.shown.posted ? qsTr("From %1 · until %2").arg(banner.shown.from).arg(banner.shown.until)
                     : qsTr("From %1 · %2").arg(banner.shown.from).arg(banner.shown.time)
@@ -55,6 +56,7 @@ Rectangle {
                 font.pixelSize: 14
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: banner.shown ? banner.shown.text : ""
                 color: "white"
@@ -64,6 +66,7 @@ Rectangle {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: banner.waiting.length > 1
             text: qsTr("+%1 more").arg(banner.waiting.length - 1)
             color: "white"

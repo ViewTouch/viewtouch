@@ -39,6 +39,7 @@ Item {
                 anchors.centerIn: parent
                 width: parent.width - 32
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: cell.modelData.name
@@ -49,6 +50,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: (w.pos ? w.pos.roleName(cell.modelData.role) : cell.modelData.role) + (cell.modelData.clockedIn ? qsTr(" · on the clock") : "")
@@ -67,6 +69,7 @@ Item {
             }
         }
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: grid.count === 0
             text: qsTr("Nobody else is set up")

@@ -43,6 +43,7 @@ Item {
                 anchors.centerIn: parent
                 width: parent.width - 28
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: cell.modelData.name
                     color: "white"
@@ -54,6 +55,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: (cell.modelData.available ? qsTr("Available") : qsTr("SOLD OUT (86)"))
                           + (cell.modelData.family ? "  ·  " + (cell.modelData.familyName || cell.modelData.family) : "")

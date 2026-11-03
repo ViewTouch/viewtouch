@@ -60,6 +60,7 @@ Item {
             spacing: 10
 
             Label {
+                textFormat: Text.PlainText
                 objectName: "laterDue"
                 Layout.fillWidth: true
                 text: w.dueAt > 0 ? qsTr("Ready %1").arg(w.check.due ?? "") : qsTr("As soon as possible")
@@ -68,7 +69,7 @@ Item {
                 color: w.dueAt > 0 ? "#7ec8ff" : Ui.text
             }
 
-            Label { text: qsTr("Day"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Day"); opacity: 0.7; font.pixelSize: 16 }
             GridLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -91,7 +92,7 @@ Item {
                 }
             }
 
-            Label { text: qsTr("Hour"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Hour"); opacity: 0.7; font.pixelSize: 16 }
             GridLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -120,7 +121,7 @@ Item {
                 }
             }
 
-            Label { text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: 16 }
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false

@@ -120,6 +120,7 @@ Item {
                         contentItem: RowLayout {
                             spacing: 10
                             Label {
+                                textFormat: Text.PlainText
                                 text: w.showBooked ? row.modelData.time : row.modelData.position + "."
                                 font.pixelSize: 17
                                 font.bold: true
@@ -130,6 +131,7 @@ Item {
                                 Layout.fillWidth: true
                                 spacing: 0
                                 Label {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
                                     font.pixelSize: 17
@@ -138,6 +140,7 @@ Item {
                                           + (row.modelData.reservation && !w.showBooked ? "  ·  " + qsTr("reserved") : "")
                                 }
                                 Label {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
                                     opacity: 0.75
@@ -146,6 +149,7 @@ Item {
                                 }
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 visible: !w.showBooked
                                 font.pixelSize: 16
                                 horizontalAlignment: Text.AlignRight
@@ -157,6 +161,7 @@ Item {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: list.count === 0
                         text: w.showBooked ? qsTr("No reservations.") : qsTr("No one is waiting.")
@@ -164,6 +169,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     opacity: 0.7
                     text: qsTr("Seated today %1  ·  average wait %2 min  ·  no-shows %3")
@@ -193,6 +199,7 @@ Item {
                     onClicked: w.adding = false
                 }
                 Label {
+                    textFormat: Text.PlainText
                     text: w.reservation ? qsTr("Book a table") : qsTr("Add to the waitlist")
                     font.pixelSize: 20
                     font.bold: true
@@ -201,9 +208,9 @@ Item {
                     Layout.fillWidth: true
                     columns: 2
                     columnSpacing: 10
-                    Label { text: qsTr("Name") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Name") }
                     TextField { implicitHeight: 48; Layout.fillWidth: true; text: w.newName; onTextEdited: w.newName = text }
-                    Label { text: qsTr("Phone") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Phone") }
                     TextField {
                         implicitHeight: 48
                         Layout.fillWidth: true
@@ -212,17 +219,17 @@ Item {
                         placeholderText: qsTr("for the text when the table is ready")
                         onTextEdited: w.newPhone = text
                     }
-                    Label { text: qsTr("Party") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Party") }
                     RowLayout {
                         PosButton { text: "−"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.max(1, w.newSize - 1) }
-                        Label { text: w.newSize; font.pixelSize: 24; font.bold: true; horizontalAlignment: Text.AlignHCenter; Layout.preferredWidth: 50 }
+                        Label { textFormat: Text.PlainText; text: w.newSize; font.pixelSize: 24; font.bold: true; horizontalAlignment: Text.AlignHCenter; Layout.preferredWidth: 50 }
                         PosButton { text: "+"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.min(99, w.newSize + 1) }
                     }
-                    Label { text: w.reservation ? qsTr("When") : qsTr("Quote") }
+                    Label { textFormat: Text.PlainText; text: w.reservation ? qsTr("When") : qsTr("Quote") }
                     RowLayout {
                         visible: !w.reservation
                         PosButton { text: "−5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote = Math.max(0, w.quote - 5) } }
-                        Label { text: qsTr("%1 min").arg(w.quote); font.pixelSize: 20; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
+                        Label { textFormat: Text.PlainText; text: qsTr("%1 min").arg(w.quote); font.pixelSize: 20; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
                         PosButton { text: "+5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote += 5 } }
                     }
                     ColumnLayout {
@@ -249,7 +256,7 @@ Item {
                             onTextEdited: w.time = text
                         }
                     }
-                    Label { text: qsTr("Note") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Note") }
                     TextField {
                         implicitHeight: 48
                         Layout.fillWidth: true
@@ -282,16 +289,18 @@ Item {
                     onClicked: w.chosenId = null
                 }
                 Label {
+                    textFormat: Text.PlainText
                     text: w.chosen ? w.chosen.name + "  ·  " + (w.chosen.size === 1 ? qsTr("1 person") : qsTr("%1 people").arg(w.chosen.size)) : ""
                     font.pixelSize: 22
                     font.bold: true
                 }
                 Label {
+                    textFormat: Text.PlainText
                     opacity: 0.75
                     text: !w.chosen ? "" : w.chosen.status === "booked" ? qsTr("Reserved for %1").arg(w.chosen.time)
                                        : qsTr("Waiting %1 min (quoted %2)").arg(w.chosen.waited).arg(w.chosen.quoted)
                 }
-                Label { visible: w.chosen && w.chosen.note !== ""; text: w.chosen ? w.chosen.note : "" }
+                Label { textFormat: Text.PlainText; visible: w.chosen && w.chosen.note !== ""; text: w.chosen ? w.chosen.note : "" }
 
                 GridLayout {
                     visible: !w.seating
@@ -344,7 +353,7 @@ Item {
                 // Seating: the server, then a free table (best fit first).
                 RowLayout {
                     visible: w.seating
-                    Label { text: qsTr("Server") }
+                    Label { textFormat: Text.PlainText; text: qsTr("Server") }
                     ComboBox {
                         id: server
                         Layout.fillWidth: true
@@ -381,6 +390,7 @@ Item {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: tables.count === 0
                         text: qsTr("No table is free.")

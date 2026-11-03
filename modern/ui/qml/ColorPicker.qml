@@ -28,6 +28,7 @@ Item {
         border.color: StoreColors.same(cp.color, swatch) ? "white" : Qt.darker(swatch, 1.4)
         border.width: StoreColors.same(cp.color, swatch) ? 3 : 1
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: StoreColors.same(cp.color, parent.swatch)
             text: "✓"
@@ -171,6 +172,7 @@ Item {
                     radius: 10
                     color: mixer.mixed
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: qsTr("Tacos")
                         color: StoreColors.ink(mixer.hex)
@@ -187,7 +189,7 @@ Item {
                     onEditingFinished: mixer.take(text)
                 }
             }
-            Label { text: qsTr("Color"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Color"); opacity: 0.75 }
             Strip {
                 objectName: "colorHue"
                 value: mixer.hue
@@ -203,7 +205,7 @@ Item {
                 }
                 onMoved: v => mixer.hue = Math.min(v, 0.999)
             }
-            Label { text: qsTr("Dark or light"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Dark or light"); opacity: 0.75 }
             Strip {
                 objectName: "colorLight"
                 value: (mixer.light - 0.1) / 0.8
@@ -215,7 +217,7 @@ Item {
                 }
                 onMoved: v => mixer.light = 0.1 + v * 0.8
             }
-            Label { text: qsTr("Soft or strong"); opacity: 0.75 }
+            Label { textFormat: Text.PlainText; text: qsTr("Soft or strong"); opacity: 0.75 }
             Strip {
                 objectName: "colorStrength"
                 value: mixer.strength

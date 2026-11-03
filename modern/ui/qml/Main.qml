@@ -357,6 +357,7 @@ ApplicationWindow {
         onAboutToShow: DialogWords.apply(this)
 
         Label {
+            textFormat: Text.PlainText
             width: parent.width
             wrapMode: Text.WordWrap
             text: qsTr("You changed pages in this session. Save them before leaving edit mode?")
@@ -394,6 +395,7 @@ ApplicationWindow {
             anchors.centerIn: parent
             spacing: 16
             Text {
+                textFormat: Text.PlainText
                 color: "white"
                 font.pixelSize: 18
                 font.bold: true
@@ -463,6 +465,7 @@ ApplicationWindow {
             columnSpacing: 12
             rowSpacing: 8
             Text {
+                textFormat: Text.PlainText
                 Layout.columnSpan: updateStrip.narrow ? 2 : 1
                 Layout.maximumWidth: updateStrip.narrow ? root.width - 56 : root.width * 0.55
                 wrapMode: Text.WordWrap
@@ -541,6 +544,7 @@ ApplicationWindow {
             width: Math.min(parent.width - 2 * allergySheet.u, 46 * allergySheet.u)
             spacing: allergySheet.u
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -599,6 +603,7 @@ ApplicationWindow {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -650,6 +655,7 @@ ApplicationWindow {
             width: Math.min(parent.width - 2 * couponSheet.u, 34 * couponSheet.u)
             spacing: couponSheet.u * 0.8
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -689,6 +695,7 @@ ApplicationWindow {
                     width: parent.width
                     spacing: couponSheet.u / 2
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: modelData.name + "  ·  " + (modelData.working ? qsTr("%1 off").arg(modelData.off)
                                                                             : qsTr("takes nothing off now"))
@@ -745,6 +752,7 @@ ApplicationWindow {
             width: Math.min(parent.width - 2 * exemptSheet.u, 34 * exemptSheet.u)
             spacing: exemptSheet.u * 0.8
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -754,6 +762,7 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 wrapMode: Text.WordWrap
                 text: qsTr("The buyer's exemption certificate: its number and who it's for (12-3456789, St. Mary's School). It's kept with the check and printed on the receipt; keep a copy of the certificate.")
@@ -834,6 +843,7 @@ ApplicationWindow {
             width: Math.min(parent.width - 2 * holdSheet.u, 36 * holdSheet.u)
             spacing: holdSheet.u * 0.7
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: holdSheet.held ? holdSheet.hold.card : qsTr("Hold the guest's card")
@@ -842,6 +852,7 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -865,6 +876,7 @@ ApplicationWindow {
                 onClicked: { holdSheet.open = false; root.controller.command("holdCard") }
             }
             Text {
+                textFormat: Text.PlainText
                 visible: holdSheet.held
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -969,6 +981,7 @@ ApplicationWindow {
                     anchors.centerIn: parent
                     spacing: 12
                     Text {
+                        textFormat: Text.PlainText
                         Layout.maximumWidth: root.width * 0.6
                         wrapMode: Text.WordWrap
                         color: "white"
@@ -1011,6 +1024,7 @@ ApplicationWindow {
                 radius: Math.min(height / 2, 24)
                 color: modelData.urgent ? "#e8b83232" : "#e8a86a12"
                 Text {
+                    textFormat: Text.PlainText
                     id: alertText
                     objectName: "printerAlert-" + parent.modelData.id
                     anchors.centerIn: parent
@@ -1037,6 +1051,7 @@ ApplicationWindow {
         color: "#f5b940"
         z: 50
         Text {
+            textFormat: Text.PlainText
             id: practiceText
             anchors.centerIn: parent
             text: qsTr("PRACTICE - nothing here is a real sale")
@@ -1110,6 +1125,7 @@ ApplicationWindow {
                 asynchronous: true
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: root.controller.pos ? root.controller.pos.storeName : ""
                 color: "white"
@@ -1117,6 +1133,7 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 id: saverClock
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#c9d1de"
@@ -1130,6 +1147,7 @@ ApplicationWindow {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Touch to wake")
                 color: Ui.muted
@@ -1157,12 +1175,14 @@ ApplicationWindow {
             width: Math.min(parent.width * 0.86, cardWait.u * 30)
             spacing: cardWait.u
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: "💳"
                 font.pixelSize: cardWait.u * 4
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: cardWait.reader.amount
@@ -1171,6 +1191,7 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 objectName: "cardKinds"
                 visible: text !== ""
                 width: parent.width
@@ -1181,6 +1202,7 @@ ApplicationWindow {
                 font.pixelSize: cardWait.u * 0.9
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -1253,6 +1275,7 @@ ApplicationWindow {
             width: Math.min(parent.width * 0.9, receiptSheet.u * 30)
             spacing: receiptSheet.u * 0.6
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -1262,6 +1285,7 @@ ApplicationWindow {
                 font.bold: true
             }
             Text {
+                textFormat: Text.PlainText
                 visible: (receiptSheet.offer.printers ?? []).length > 0
                 text: qsTr("Print on")
                 color: "#c8cfda"
@@ -1285,6 +1309,7 @@ ApplicationWindow {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 visible: !(receiptSheet.offer.printers ?? []).length
                 width: parent.width
                 wrapMode: Text.WordWrap
@@ -1294,6 +1319,7 @@ ApplicationWindow {
             }
             // A card from a Stripe reader: Stripe emails its receipt.
             Text {
+                textFormat: Text.PlainText
                 visible: !!receiptSheet.offer.canEmail
                 text: qsTr("Or email it")
                 color: "#c8cfda"
@@ -1399,6 +1425,7 @@ ApplicationWindow {
         visible: opacity > 0
 
         Text {
+            textFormat: Text.PlainText
             id: toastText
             anchors.centerIn: parent
             width: parent.width - 40
@@ -1440,6 +1467,7 @@ ApplicationWindow {
         opacity: 0
         visible: opacity > 0
         Text {
+            textFormat: Text.PlainText
             id: addedText
             anchors.centerIn: parent
             width: Math.min(implicitWidth, root.width - 80)
@@ -1477,6 +1505,7 @@ ApplicationWindow {
             width: parent.width - 40
             spacing: 6
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: explainCard.info.title ?? ""
                 color: "white"
@@ -1485,6 +1514,7 @@ ApplicationWindow {
                 wrapMode: Text.WordWrap
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: explainCard.info.text ?? ""
                 color: "#d7dde8"
@@ -1492,6 +1522,7 @@ ApplicationWindow {
                 wrapMode: Text.WordWrap
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: qsTr("Hold any button to see what it does. Touch here to close.")
                 color: Ui.muted
@@ -1524,6 +1555,7 @@ ApplicationWindow {
             width: parent.width - 40
             spacing: 12
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: qsTr("Nothing has the code %1.").arg(root.controller.unknownCode)
                 color: "white"

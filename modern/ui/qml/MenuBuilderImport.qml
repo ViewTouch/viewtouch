@@ -49,6 +49,7 @@ Dialog {
         anchors.fill: parent
         spacing: 8
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: importDialog.read.error
@@ -62,6 +63,7 @@ Dialog {
                          ? " " + qsTr("Choice groups: %1.").arg(importDialog.read.groups.map(g => g.name).join(", ")) : "")
         }
         Label {
+            textFormat: Text.PlainText
             visible: (importDialog.read.problems ?? []).length > 0
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -69,6 +71,7 @@ Dialog {
             text: qsTr("Left out: %1").arg((importDialog.read.problems ?? []).join("; "))
         }
         Label {
+            textFormat: Text.PlainText
             visible: importDialog.added !== ""
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -79,7 +82,7 @@ Dialog {
         RowLayout {
             visible: importDialog.picking && importDialog.items.some(i => !i.category)
             Layout.fillWidth: true
-            Label { text: qsTr("Rows without a category go in") }
+            Label { textFormat: Text.PlainText; text: qsTr("Rows without a category go in") }
             ComboBox {
                 id: into
                 objectName: "builderImportInto"
@@ -133,33 +136,35 @@ Dialog {
                     onToggled: importDialog.tick([parent.modelData], checked)
                 }
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: (row.photoData || row.photo ? "📷 " : "") + row.name
                           + (importDialog.isOn(row.name) ? "  ·  " + qsTr("on the menu") : "")
                     elide: Text.ElideRight
                 }
                 Label {
+                    textFormat: Text.PlainText
                     opacity: 0.7
                     visible: text !== ""
                     text: row.sizes ? qsTr("%n size(s)", "", row.sizes.length)
                                     : row.groups ? qsTr("%n choice group(s)", "", row.groups.length) : ""
                 }
-                Label { text: (row.sizes ? qsTr("from") + " " : "") + menu.pos.currencySymbol + Number(row.price).toFixed(2) }
-                Label { Layout.preferredWidth: 180; text: row.category || into.editText; opacity: 0.7; elide: Text.ElideRight }
+                Label { textFormat: Text.PlainText; text: (row.sizes ? qsTr("from") + " " : "") + menu.pos.currencySymbol + Number(row.price).toFixed(2) }
+                Label { textFormat: Text.PlainText; Layout.preferredWidth: 180; text: row.category || into.editText; opacity: 0.7; elide: Text.ElideRight }
             }
         }
         RowLayout {
             visible: !importDialog.read.menuFile
             Layout.fillWidth: true
             Switch { id: updatePrices; objectName: "builderImportPrices" }
-            Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's price (otherwise they're left as they are)") }
+            Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's price (otherwise they're left as they are)") }
         }
         // A sheet with stock (On Hand, Cost, Low At): for items already on the menu too.
         RowLayout {
             visible: !importDialog.read.menuFile && ["onHand", "cost", "lowAt", "par"].some(c => (importDialog.read.columns ?? []).includes(c))
             Layout.fillWidth: true
             Switch { id: updateStock; objectName: "builderImportStock" }
-            Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's stock and cost (how many on hand, low at)") }
+            Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Items already on the menu get the file's stock and cost (how many on hand, low at)") }
         }
         RowLayout {
             Layout.fillWidth: true

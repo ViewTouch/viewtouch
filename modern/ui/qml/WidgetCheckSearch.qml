@@ -115,6 +115,7 @@ Item {
                 Layout.fillWidth: true
                 visible: w.searched
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: w.info.loading ? qsTr("Looking…")
                         : w.found.length === 0 ? (w.info.query ? qsTr("No checks match \"%1\" on this page.").arg(w.info.query)
@@ -169,10 +170,11 @@ Item {
                             spacing: 0
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "#" + row.modelData.id + "  " + row.modelData.label; font.bold: true; font.pixelSize: 15; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { text: row.modelData.total; font.bold: true; font.pixelSize: 15 }
+                                Label { textFormat: Text.PlainText; text: "#" + row.modelData.id + "  " + row.modelData.label; font.bold: true; font.pixelSize: 15; Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { textFormat: Text.PlainText; text: row.modelData.total; font.bold: true; font.pixelSize: 15 }
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: row.modelData.when + "  ·  " + row.modelData.server
                                       + (row.modelData.customer ? "  ·  " + row.modelData.customer : "")
@@ -193,6 +195,7 @@ Item {
                     radius: 8
                     color: "#1d232c"
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: !w.check
                         text: w.found.length ? qsTr("Touch a check to see it.") : ""
@@ -208,8 +211,9 @@ Item {
                             text: qsTr("‹ Results")
                             onClicked: w.pos.selectFoundCheck(0)
                         }
-                        Label { text: w.check ? "#" + w.check.id + "  " + w.check.label : ""; font.bold: true; font.pixelSize: 20 }
+                        Label { textFormat: Text.PlainText; text: w.check ? "#" + w.check.id + "  " + w.check.label : ""; font.bold: true; font.pixelSize: 20 }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: w.check ? w.check.server + "  ·  " + qsTr("%n guest(s)", "", w.check.guests ?? 1)
                                             + (w.check.customer ? "  ·  " + w.check.customer : "") : ""
@@ -217,6 +221,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: w.check ? qsTr("Opened %1").arg(w.check.opened) + (w.check.closed ? "  ·  " + qsTr("closed %1").arg(w.check.closed) : "") : ""
                             opacity: 0.6
@@ -259,6 +264,7 @@ Item {
                                 spacing: 0
                                 readonly property string type: modelData.type
                                 Label {
+                                    textFormat: Text.PlainText
                                     visible: detailRow.type === "header"
                                     Layout.topMargin: 8
                                     text: detailRow.modelData.name ?? ""
@@ -269,6 +275,7 @@ Item {
                                     visible: detailRow.type === "line" || detailRow.type === "payment" || detailRow.type === "refund"
                                     Layout.fillWidth: true
                                     Label {
+                                        textFormat: Text.PlainText
                                         Layout.fillWidth: true
                                         text: detailRow.type === "refund"
                                               ? qsTr("%1 · %2 · %3").arg(detailRow.modelData.when).arg(detailRow.modelData.tender).arg(detailRow.modelData.reason)
@@ -278,6 +285,7 @@ Item {
                                         elide: Text.ElideRight
                                     }
                                     Label {
+                                        textFormat: Text.PlainText
                                         text: detailRow.type === "line" ? (detailRow.modelData.price ?? "")
                                             : detailRow.type === "refund" ? "−" + detailRow.modelData.amount
                                             : (detailRow.modelData.amount ?? "")
@@ -293,6 +301,7 @@ Item {
                                     }
                                 }
                                 Label {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     visible: text !== ""
                                     text: detailRow.type === "line" ? (detailRow.modelData.modifiers ?? "")
@@ -313,12 +322,14 @@ Item {
                                     visible: detailRow.type === "event"
                                     Layout.fillWidth: true
                                     Label {
+                                        textFormat: Text.PlainText
                                         text: detailRow.modelData.when ?? ""
                                         opacity: 0.55
                                         font.pixelSize: 12
                                         Layout.preferredWidth: 150
                                     }
                                     Label {
+                                        textFormat: Text.PlainText
                                         Layout.fillWidth: true
                                         text: (detailRow.modelData.who ? detailRow.modelData.who + ": " : "") + (detailRow.modelData.what ?? "")
                                         font.pixelSize: 13
@@ -329,8 +340,8 @@ Item {
                         }
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { text: qsTr("Total"); font.bold: true; font.pixelSize: 18; Layout.fillWidth: true }
-                            Label { text: w.check ? w.check.total : ""; font.bold: true; font.pixelSize: 18 }
+                            Label { textFormat: Text.PlainText; text: qsTr("Total"); font.bold: true; font.pixelSize: 18; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: w.check ? w.check.total : ""; font.bold: true; font.pixelSize: 18 }
                         }
                         PosButton {
                             objectName: "reprint"
@@ -363,6 +374,7 @@ Item {
             width: Math.min(parent.width / w.zoom - 40, 520)
             spacing: 10
             Label {
+                textFormat: Text.PlainText
                 text: w.refunding ? qsTr("Refund %1").arg(w.refunding.name) : ""
                 font.bold: true
                 font.pixelSize: 20
@@ -370,6 +382,7 @@ Item {
                 wrapMode: Text.WordWrap
             }
             Label {
+                textFormat: Text.PlainText
                 text: !w.refunding ? ""
                     : w.refunding.how === "stripe" ? qsTr("Back to the guest's card through Stripe (5–10 business days to show).")
                     : w.refunding.how === "cash" ? qsTr("Cash out of this drawer (or your bank), as a refund.")
@@ -379,6 +392,7 @@ Item {
                 wrapMode: Text.WordWrap
             }
             Label {
+                textFormat: Text.PlainText
                 text: w.refunding ? qsTr("Amount (up to %1)").arg(w.refunding.left)
                                     + (w.refunding.tip ? "  ·  " + qsTr("the %1 tip stays with the staff").arg(w.refunding.tip) : "")
                                   : ""
@@ -393,7 +407,7 @@ Item {
                 font.pixelSize: 20
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
             }
-            Label { text: qsTr("Why") }
+            Label { textFormat: Text.PlainText; text: qsTr("Why") }
             Flow {
                 Layout.fillWidth: true
                 spacing: 6

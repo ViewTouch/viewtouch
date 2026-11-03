@@ -44,6 +44,7 @@ Popup {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Preview")
                 font.pixelSize: 22
@@ -55,6 +56,7 @@ Popup {
             }
         }
         Label {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: EditorStyle.muted
@@ -105,12 +107,14 @@ Popup {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         text: col.modelData.name
                         font.bold: true
                     }
                     Label {
+                        textFormat: Text.PlainText
                         objectName: "previewSize-" + col.modelData.id
                         visible: (pv.info.smallest ?? 0) > 0
                         Layout.fillWidth: true

@@ -53,6 +53,7 @@ Item {
             spacing: 8
 
             Label {
+                textFormat: Text.PlainText
                 text: w.pos && w.pos.hasCheck ? w.check.label : qsTr("No check open")
                 font.bold: true
                 font.pixelSize: 20
@@ -74,7 +75,7 @@ Item {
                 }
                 Layout.fillWidth: true
                 spacing: 2
-                Label { id: caption; opacity: 0.8 }
+                Label { textFormat: Text.PlainText; id: caption; opacity: 0.8 }
                 TextField {
                     visible: !entry.multiline
                     Layout.fillWidth: true
@@ -122,6 +123,7 @@ Item {
             Item { Layout.fillHeight: true }
 
             Label {
+                textFormat: Text.PlainText
                 text: w.dirty ? qsTr("Saving…") : qsTr("Saved to the check")
                 opacity: 0.7
             }

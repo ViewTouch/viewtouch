@@ -474,6 +474,7 @@ Item {
                 anchors.margins: 10
                 spacing: 12
                 Label {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     font.pixelSize: 15
@@ -591,8 +592,9 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
+                                    textFormat: Text.PlainText
                                     text: (foundRow.cat ? foundRow.cat.name + "  ·  " : "")
                                           + (modelData.availableSet ? modelData.price : qsTr("sold out"))
                                           + (modelData.number !== "" ? "  ·  #" + modelData.number : "")
@@ -612,6 +614,7 @@ Item {
                         }
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: w.found.length === 0
                         text: qsTr("Nothing on the menu by that name.")
@@ -639,8 +642,9 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 10
                             spacing: 0
-                            Label { text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                             Label {
+                                textFormat: Text.PlainText
                                 text: modelData.rule + "  ·  " + qsTr("%n option(s)", "", modelData.options.length)
                                       + "  ·  " + qsTr("used by %n", "", modelData.usedBy.length)
                                 font.pixelSize: 13
@@ -691,8 +695,9 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
+                                    textFormat: Text.PlainText
                                     text: qsTr("%n item(s)", "", modelData.count) + "  ·  "
                                           + (modelData.periods.length === 0 ? qsTr("all day")
                                              : modelData.periods.map(p => (w.periods.find(x => x.id === p) ?? { name: p }).name).join(", "))
@@ -879,6 +884,7 @@ Item {
                     text: w.category ? w.category.name : ""
                 }
                 Label {
+                    textFormat: Text.PlainText
                     objectName: "builderCategoryNameAbove"
                     visible: !categoryHeader.nameFits && text !== ""
                     Layout.fillWidth: true
@@ -894,6 +900,7 @@ Item {
                     Layout.fillWidth: true
                     TouchButton { id: backKey; visible: w.narrow; text: qsTr("‹ Categories"); onClicked: w.stage = "categories" }
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: categoryHeader.nameFits ? categoryName.text : ""
                         font.pixelSize: 22
@@ -926,6 +933,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         text: w.selecting ? qsTr("Touch the items to change together.")
@@ -994,6 +1002,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 6
                     Label {
+                        textFormat: Text.PlainText
                         height: 44
                         verticalAlignment: Text.AlignVCenter
                         text: qsTr("%n chosen", "", w.selected.length)
@@ -1143,6 +1152,7 @@ Item {
                                 anchors.centerIn: parent
                                 width: parent.width - 16
                                 Label {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
                                     text: modelData.add ? qsTr("+ Add Item") : modelData.name
@@ -1152,6 +1162,7 @@ Item {
                                     elide: Text.ElideRight
                                 }
                                 Label {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
                                     visible: !modelData.add
@@ -1238,7 +1249,7 @@ Item {
                                 anchors.margins: 6
                                 width: 30; height: 30; radius: 15
                                 color: "#f5b940"
-                                Label { anchors.centerIn: parent; text: "✓"; color: Ui.deep; font.bold: true; font.pixelSize: 18 }
+                                Label { textFormat: Text.PlainText; anchors.centerIn: parent; text: "✓"; color: Ui.deep; font.bold: true; font.pixelSize: 18 }
                             }
                         }
                     }
@@ -1253,6 +1264,7 @@ Item {
                 radius: 10
                 color: "#1c2129"
                 Label {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     visible: !w.editingItem && !w.editingCategory && !w.editingGroup
                     width: parent.width - 40
@@ -1295,7 +1307,7 @@ Item {
                             spacing: 10
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { Layout.fillWidth: true; text: w.draft.id ? qsTr("Item") : qsTr("New item"); font.pixelSize: 22; font.bold: true }
+                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: w.draft.id ? qsTr("Item") : qsTr("New item"); font.pixelSize: 22; font.bold: true }
                                 // Most new tacos are like the other tacos.
                                 TouchButton {
                                     objectName: "builderLike"
@@ -1310,7 +1322,7 @@ Item {
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("Name") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Name") }
                                 TextField {
                                     objectName: "builderName"
                                     Layout.fillWidth: true
@@ -1318,7 +1330,7 @@ Item {
                                     placeholderText: qsTr("e.g. Fish Tacos")
                                     onTextEdited: w.set("name", text)
                                 }
-                                Label { text: qsTr("Price") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Price") }
                                 TextField {
                                     objectName: "builderPrice"
                                     Layout.fillWidth: true
@@ -1328,12 +1340,13 @@ Item {
                                     onTextEdited: w.set("price", text)
                                 }
                                 // Sizes (Small, Large…): asked first when it's ordered.
-                                Label { text: qsTr("Sizes") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Sizes") }
                                 RowLayout {
                                     Layout.fillWidth: true
                                     spacing: 8
                                     readonly property var sizes: w.savedItem ? (w.savedItem.sizes ?? []) : []
                                     Label {
+                                        textFormat: Text.PlainText
                                         objectName: "builderSizesText"
                                         Layout.fillWidth: true
                                         wrapMode: Text.WordWrap
@@ -1353,7 +1366,7 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Category") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Category") }
                                 ComboBox {
                                     Layout.fillWidth: true
                                     model: w.categories.map(c => c.name)
@@ -1370,7 +1383,7 @@ Item {
                                     }
                                 }
                                 // Under a heading on the order screen ("Tacos", "Burritos").
-                                Label { text: qsTr("Section") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Section") }
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 4
@@ -1402,7 +1415,7 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Photo") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Photo") }
                                 FieldEditor {
                                     Layout.fillWidth: true
                                     field: ({ path: "image", label: "", type: "image" })
@@ -1424,6 +1437,7 @@ Item {
                                         onClicked: pictureDialog.open()
                                     }
                                     Label {
+                                        textFormat: Text.PlainText
                                         visible: !!w.draft.image && !!w.category && w.category.photos !== true
                                         Layout.fillWidth: true
                                         wrapMode: Text.WordWrap
@@ -1433,12 +1447,12 @@ Item {
                                               .arg(w.category ? w.category.name : "")
                                     }
                                 }
-                                Label { text: qsTr("Sold out") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Sold out") }
                                 Switch {
                                     checked: !(w.draft.available ?? true)
                                     onToggled: w.set("available", !checked)
                                 }
-                                Label { text: qsTr("★ Favorite") }
+                                Label { textFormat: Text.PlainText; text: qsTr("★ Favorite") }
                                 Switch {
                                     objectName: "builderFavorite"
                                     checked: w.draft.favorite ?? false
@@ -1446,13 +1460,13 @@ Item {
                                     ToolTip.visible: hovered
                                     ToolTip.text: qsTr("Always in the order screen's ★ Favorites, with today's best sellers.")
                                 }
-                                Label { text: qsTr("On the kiosk") }
+                                Label { textFormat: Text.PlainText; text: qsTr("On the kiosk") }
                                 Switch {
                                     checked: !(w.draft.kioskHide ?? false)
                                     onToggled: w.set("kioskHide", !checked)
                                 }
                                 // Its own stock: counted down as it sells, sold out at none.
-                                Label { text: qsTr("Track stock") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Track stock") }
                                 Switch {
                                     objectName: "builderStockTrack"
                                     checked: w.draft.stockTrack ?? false
@@ -1460,7 +1474,7 @@ Item {
                                     ToolTip.visible: hovered
                                     ToolTip.text: qsTr("Count how many are left: one less for each sold, sold out at none, and in Count Stock, deliveries and the Stock report.")
                                 }
-                                Label { visible: !!w.draft.stockTrack; text: qsTr("On hand") }
+                                Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("On hand") }
                                 TextField {
                                     objectName: "builderStockOnHand"
                                     visible: !!w.draft.stockTrack
@@ -1470,7 +1484,7 @@ Item {
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     onTextEdited: w.set("stockOnHand", text)
                                 }
-                                Label { visible: !!w.draft.stockTrack; text: qsTr("Low at") }
+                                Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Low at") }
                                 TextField {
                                     objectName: "builderStockLowAt"
                                     visible: !!w.draft.stockTrack
@@ -1480,7 +1494,7 @@ Item {
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     onTextEdited: w.set("stockLowAt", text)
                                 }
-                                Label { visible: !!w.draft.stockTrack; text: qsTr("Order up to") }
+                                Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Order up to") }
                                 TextField {
                                     objectName: "builderStockPar"
                                     visible: !!w.draft.stockTrack
@@ -1490,7 +1504,7 @@ Item {
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     onTextEdited: w.set("stockPar", text)
                                 }
-                                Label { visible: !!w.draft.stockTrack; text: qsTr("Cost") }
+                                Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Cost") }
                                 RowLayout {
                                     visible: !!w.draft.stockTrack
                                     Layout.fillWidth: true
@@ -1504,6 +1518,7 @@ Item {
                                     }
                                     // What's left of the price once it's paid for.
                                     Label {
+                                        textFormat: Text.PlainText
                                         readonly property real cost: parseFloat(String(w.draft.cost ?? "").replace(",", "."))
                                         readonly property real price: parseFloat(String(w.draft.price ?? "").replace(",", "."))
                                         visible: cost > 0 && price > 0
@@ -1514,8 +1529,9 @@ Item {
                             }
 
                             // What's on it.
-                            Label { text: qsTr("What's on it"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: 18; font.bold: true }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.7
@@ -1531,7 +1547,7 @@ Item {
                             }
 
                             // Allergens: guests and the kitchen are warned.
-                            Label { text: qsTr("Contains"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Contains"); font.pixelSize: 18; font.bold: true }
                             Flow {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1557,7 +1573,7 @@ Item {
                                 visible: pages.length > 0
                                 Layout.fillWidth: true
                                 spacing: 8
-                                Label { text: qsTr("Also a button on") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Also a button on") }
                                 ComboBox {
                                     id: alsoOn
                                     objectName: "builderAlsoOn"
@@ -1573,7 +1589,7 @@ Item {
                             }
 
                             // Its choices, from the list.
-                            Label { text: qsTr("Choices it asks for"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Choices it asks for"); font.pixelSize: 18; font.bold: true }
                             Flow {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1621,7 +1637,7 @@ Item {
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("On the kiosk"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("On the kiosk"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderDescription"
                                     Layout.fillWidth: true
@@ -1629,7 +1645,7 @@ Item {
                                     placeholderText: qsTr("A line guests read, e.g. Grilled steak, onion, cilantro")
                                     onTextEdited: w.set("description", text)
                                 }
-                                Label { text: qsTr("Kitchen name"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Kitchen name"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderKitchenName"
                                     Layout.fillWidth: true
@@ -1637,7 +1653,7 @@ Item {
                                     placeholderText: qsTr("Shorter, on tickets: e.g. ASADA")
                                     onTextEdited: w.set("kitchenName", text)
                                 }
-                                Label { text: qsTr("Number"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Number"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderNumber"
                                     Layout.fillWidth: true
@@ -1646,7 +1662,7 @@ Item {
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     onTextEdited: w.set("number", text)
                                 }
-                                Label { text: qsTr("Barcodes"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Barcodes"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderBarcodes"
                                     Layout.fillWidth: true
@@ -1657,7 +1673,7 @@ Item {
                                     // A scanner ends with Enter: ready for another (commas between).
                                     onAccepted: if (text.trim() !== "" && !text.trim().endsWith(",")) { text = text.trim() + ", "; w.set("barcodes", text) }
                                 }
-                                Label { text: qsTr("Kitchen time"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Kitchen time"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderPrepMinutes"
                                     Layout.fillWidth: true
@@ -1666,7 +1682,7 @@ Item {
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     onTextEdited: w.set("prepMinutes", text)
                                 }
-                                Label { text: qsTr("Takeout price"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Takeout price"); Layout.preferredWidth: 110 }
                                 TextField {
                                     objectName: "builderTakeoutPrice"
                                     Layout.fillWidth: true
@@ -1682,7 +1698,7 @@ Item {
                                         Layout.columnSpan: 2
                                         Layout.fillWidth: true
                                         spacing: 10
-                                        Label { text: qsTr("At %1").arg(modelData.name); Layout.preferredWidth: 110; elide: Text.ElideRight }
+                                        Label { textFormat: Text.PlainText; text: qsTr("At %1").arg(modelData.name); Layout.preferredWidth: 110; elide: Text.ElideRight }
                                         TextField {
                                             objectName: "builderPeriodPrice-" + modelData.id
                                             Layout.fillWidth: true
@@ -1693,7 +1709,7 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Before it"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Before it"); Layout.preferredWidth: 110 }
                                 RowLayout {
                                     Layout.fillWidth: true
                                     spacing: 4
@@ -1714,7 +1730,7 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Button color"); Layout.columnSpan: 2 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Button color"); Layout.columnSpan: 2 }
                                 ColorPicker {
                                     objectName: "builderButtonColor"
                                     Layout.columnSpan: 2
@@ -1725,7 +1741,7 @@ Item {
                                     onPicked: c => w.set("buttonColor", c)
                                 }
                                 // Its name's size on the order screen.
-                                Label { text: qsTr("Text size"); Layout.columnSpan: 2 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Text size"); Layout.columnSpan: 2 }
                                 Flow {
                                     Layout.columnSpan: 2
                                     Layout.fillWidth: true
@@ -1744,7 +1760,7 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Kitchen ticket"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Kitchen ticket"); Layout.preferredWidth: 110 }
                                 ComboBox {
                                     objectName: "builderItemPrinter"
                                     Layout.fillWidth: true
@@ -1752,7 +1768,7 @@ Item {
                                     currentIndex: w.printers.findIndex(p => p.id === w.draft.printer)
                                     onActivated: i => w.set("printer", w.printers[i].id)
                                 }
-                                Label { text: qsTr("Made at"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Made at"); Layout.preferredWidth: 110 }
                                 ComboBox {
                                     Layout.fillWidth: true
                                     readonly property var opts: [{ id: "", name: qsTr("(anywhere)") }].concat(w.stations)
@@ -1760,7 +1776,7 @@ Item {
                                     currentIndex: Math.max(0, opts.findIndex(s => s.id === (w.draft.station ?? "")))
                                     onActivated: i => w.set("station", opts[i].id)
                                 }
-                                Label { text: qsTr("Tax"); Layout.preferredWidth: 110 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Tax"); Layout.preferredWidth: 110 }
                                 ComboBox {
                                     objectName: "builderItemTax"
                                     Layout.fillWidth: true
@@ -1777,13 +1793,13 @@ Item {
                             visible: w.editingGroup
                             Layout.fillWidth: true
                             spacing: 10
-                            Label { text: w.draft.id ? qsTr("Choice group") : qsTr("New choice group"); font.pixelSize: 22; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Choice group") : qsTr("New choice group"); font.pixelSize: 22; font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("Name") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Name") }
                                 TextField {
                                     objectName: "builderGroupName"
                                     Layout.fillWidth: true
@@ -1791,7 +1807,7 @@ Item {
                                     placeholderText: qsTr("e.g. Salsa, Size, Toppings")
                                     onTextEdited: w.set("name", text)
                                 }
-                                Label { text: qsTr("Guests pick") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Guests pick") }
                                 Flow {
                                     Layout.fillWidth: true
                                     spacing: 6
@@ -1813,32 +1829,33 @@ Item {
                                         onValueModified: w.set("upTo", value)
                                     }
                                 }
-                                Label { text: qsTr("Required") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Required") }
                                 Switch {
                                     objectName: "builderRequired"
                                     checked: w.draft.required ?? false
                                     onToggled: w.set("required", checked)
                                 }
-                                Label { text: qsTr("Light, Extra, On the side") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Light, Extra, On the side") }
                                 Switch {
                                     checked: w.draft.askHow ?? false
                                     onToggled: w.set("askHow", checked)
                                 }
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.7
                                 font.pixelSize: 14
                                 text: qsTr("Required: the order can't go without a choice. Light, Extra, On the side: guests can ask for a choice that way (dressing on the side), not for temperatures or sizes.")
                             }
-                            Label { text: qsTr("Options"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Options"); font.pixelSize: 18; font.bold: true }
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 6
-                                Label { Layout.fillWidth: true; text: qsTr("Name"); opacity: 0.7; font.pixelSize: 13 }
-                                Label { Layout.preferredWidth: 90; text: qsTr("Adds"); opacity: 0.7; font.pixelSize: 13 }
-                                Label { Layout.preferredWidth: 110; text: qsTr("Comes on it"); opacity: 0.7; font.pixelSize: 13 }
+                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: qsTr("Name"); opacity: 0.7; font.pixelSize: 13 }
+                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 90; text: qsTr("Adds"); opacity: 0.7; font.pixelSize: 13 }
+                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 110; text: qsTr("Comes on it"); opacity: 0.7; font.pixelSize: 13 }
                                 Item { Layout.preferredWidth: 3 * 52 + 12 }
                             }
                             // Counted: typing changes the draft, not the rows.
@@ -1902,8 +1919,9 @@ Item {
                                 visible: w.sizeNames.length > 0 && (w.draft.options ?? []).some(o => (o.name ?? "").trim() !== "")
                                 Layout.fillWidth: true
                                 spacing: 6
-                                Label { text: qsTr("Prices by size"); font.pixelSize: 18; font.bold: true }
+                                Label { textFormat: Text.PlainText; text: qsTr("Prices by size"); font.pixelSize: 18; font.bold: true }
                                 Label {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     opacity: 0.7
@@ -1917,6 +1935,7 @@ Item {
                                     Repeater {
                                         model: w.sizeNames
                                         delegate: Label {
+                                            textFormat: Text.PlainText
                                             required property string modelData
                                             Layout.preferredWidth: 84
                                             text: modelData
@@ -1936,7 +1955,7 @@ Item {
                                         visible: (option.name ?? "").trim() !== "" && !option.included
                                         Layout.fillWidth: true
                                         spacing: 6
-                                        Label { Layout.fillWidth: true; text: sizedRow.option.name ?? ""; elide: Text.ElideRight }
+                                        Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: sizedRow.option.name ?? ""; elide: Text.ElideRight }
                                         Repeater {
                                             model: w.sizeNames
                                             delegate: TextField {
@@ -1953,6 +1972,7 @@ Item {
                                 }
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 visible: !!w.editedGroup
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
@@ -1970,13 +1990,13 @@ Item {
                             visible: w.editingCategory
                             Layout.fillWidth: true
                             spacing: 10
-                            Label { text: w.draft.id ? qsTr("Category") : qsTr("New category"); font.pixelSize: 22; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Category") : qsTr("New category"); font.pixelSize: 22; font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("Name") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Name") }
                                 TextField {
                                     objectName: "builderCategoryName"
                                     Layout.fillWidth: true
@@ -1984,7 +2004,7 @@ Item {
                                     placeholderText: qsTr("e.g. Tacos")
                                     onTextEdited: w.set("name", text)
                                 }
-                                Label { text: qsTr("Color"); Layout.columnSpan: 2 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Color"); Layout.columnSpan: 2 }
                                 ColorPicker {
                                     objectName: "builderCategoryColor"
                                     Layout.columnSpan: 2
@@ -1993,7 +2013,7 @@ Item {
                                     color: w.draft.color ?? ""
                                     onPicked: c => w.set("color", c)
                                 }
-                                Label { text: qsTr("On the menu") }
+                                Label { textFormat: Text.PlainText; text: qsTr("On the menu") }
                                 Flow {
                                     Layout.fillWidth: true
                                     spacing: 6
@@ -2018,13 +2038,13 @@ Item {
                                 }
                             }
                             // How its items look on the order screen.
-                            Label { text: qsTr("Its buttons on the order screen"); font.pixelSize: 16; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Its buttons on the order screen"); font.pixelSize: 16; font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("Size") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Size") }
                                 RowLayout {
                                     Layout.fillWidth: true
                                     spacing: 4
@@ -2046,6 +2066,7 @@ Item {
                                     }
                                 }
                                 Label {
+                                    textFormat: Text.PlainText
                                     Layout.columnSpan: 2
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
@@ -2055,7 +2076,7 @@ Item {
                                         : qsTr("Many small ones for drinks, a few large ones for plates; more scroll.")
                                 }
                                 // Its items' names' size (an item can have its own).
-                                Label { text: qsTr("Text size"); Layout.columnSpan: 2 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Text size"); Layout.columnSpan: 2 }
                                 Flow {
                                     Layout.columnSpan: 2
                                     Layout.fillWidth: true
@@ -2074,13 +2095,13 @@ Item {
                                         }
                                     }
                                 }
-                                Label { text: qsTr("Photos") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Photos") }
                                 Switch {
                                     objectName: "builderCategoryPhotos"
                                     checked: w.draft.photos === true
                                     onToggled: w.set("photos", checked)
                                 }
-                                Label { text: qsTr("Shades") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Shades") }
                                 Switch {
                                     objectName: "builderCategoryShades"
                                     checked: w.draft.shades === true
@@ -2088,27 +2109,27 @@ Item {
                                     ToolTip.visible: hovered
                                     ToolTip.text: qsTr("Its items take shades of its color, each a little different (an item's own color still wins).")
                                 }
-                                Label { text: qsTr("Prices") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Prices") }
                                 Switch {
                                     objectName: "builderCategoryPrices"
                                     checked: w.draft.hidePrice !== true
                                     onToggled: w.set("hidePrice", !checked)
                                 }
                             }
-                            Label { text: qsTr("New items in it start with"); font.pixelSize: 16; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("New items in it start with"); font.pixelSize: 16; font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
                                 columnSpacing: 10
                                 rowSpacing: 8
-                                Label { text: qsTr("Kitchen ticket") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Kitchen ticket") }
                                 ComboBox {
                                     Layout.fillWidth: true
                                     model: w.printers.map(p => p.name)
                                     currentIndex: w.printers.findIndex(p => p.id === w.draft.printer)
                                     onActivated: i => w.set("printer", w.printers[i].id)
                                 }
-                                Label { text: qsTr("Made at") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Made at") }
                                 ComboBox {
                                     Layout.fillWidth: true
                                     readonly property var opts: [{ id: "", name: qsTr("(anywhere)") }].concat(w.stations)
@@ -2116,7 +2137,7 @@ Item {
                                     currentIndex: Math.max(0, opts.findIndex(s => s.id === (w.draft.station ?? "")))
                                     onActivated: i => w.set("station", opts[i].id)
                                 }
-                                Label { text: qsTr("Tax") }
+                                Label { textFormat: Text.PlainText; text: qsTr("Tax") }
                                 ComboBox {
                                     Layout.fillWidth: true
                                     model: w.taxes.map(t => t.name)
@@ -2135,6 +2156,7 @@ Item {
                     visible: w.editingItem || w.editingCategory || w.editingGroup
                     height: visible ? implicitHeight : 0
                     Label {
+                        textFormat: Text.PlainText
                         objectName: "builderNotSaved"
                         visible: w.unsaved()
                         text: qsTr("● Not saved yet")
@@ -2271,6 +2293,7 @@ Item {
         border.color: "#f5b940"
         border.width: 3
         Label {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             width: parent.width - 12
             horizontalAlignment: Text.AlignHCenter
@@ -2320,7 +2343,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 6
-            Label { text: qsTr("Move %n item(s) to", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Move %n item(s) to", "", w.selected.length); font.pixelSize: 20; font.bold: true }
             Repeater {
                 model: w.categories
                 delegate: TouchButton {
@@ -2362,7 +2385,7 @@ Item {
         }
         contentItem: ColumnLayout {
             spacing: 8
-            Label { text: qsTr("Price of %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Price of %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 6
@@ -2393,6 +2416,7 @@ Item {
             Repeater {
                 model: w.allItems.filter(i => w.selected.includes(i.id)).slice(0, 4)
                 delegate: Label {
+                    textFormat: Text.PlainText
                     required property var modelData
                     readonly property var p: priceSeveral.after(modelData)
                     visible: p !== null
@@ -2439,8 +2463,9 @@ Item {
         onOpened: copies = 1
         contentItem: ColumnLayout {
             spacing: 10
-            Label { text: qsTr("Price tags for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Price tags for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
             Label {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 opacity: 0.7
@@ -2451,6 +2476,7 @@ Item {
                 spacing: 12
                 TouchButton { text: "−"; implicitWidth: 64; onClicked: tagsSeveral.copies = Math.max(1, tagsSeveral.copies - 1) }
                 Label {
+                    textFormat: Text.PlainText
                     objectName: "builderTagsCopies"
                     text: qsTr("%n of each", "", tagsSeveral.copies)
                     font.pixelSize: 20
@@ -2486,7 +2512,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 6
-            Label { text: qsTr("Tax for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Tax for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
             Repeater {
                 model: w.taxes
                 delegate: TouchButton {
@@ -2530,7 +2556,7 @@ Item {
         modal: true
         standardButtons: Dialog.Yes | Dialog.Cancel
         onAboutToShow: DialogWords.apply(this)
-        Label { text: qsTr("They come off every menu screen. Checks they're already on keep them.") }
+        Label { textFormat: Text.PlainText; text: qsTr("They come off every menu screen. Checks they're already on keep them.") }
         onAccepted: {
             const ids = w.selected
             w.pos.removeMenuItems(ids)
@@ -2587,6 +2613,7 @@ Item {
         standardButtons: Dialog.Yes | Dialog.Cancel
         onAboutToShow: DialogWords.apply(this)
         Label {
+            textFormat: Text.PlainText
             text: w.editedGroup && w.editedGroup.usedBy.length
                   ? qsTr("%1 stop asking for it.").arg(w.editedGroup.usedBy.join(", ")) : qsTr("No item asks for it.")
             wrapMode: Text.WordWrap
@@ -2606,7 +2633,7 @@ Item {
         modal: true
         standardButtons: Dialog.Yes | Dialog.Cancel
         onAboutToShow: DialogWords.apply(this)
-        Label { text: qsTr("It comes off every menu screen. Checks it's already on keep it.") }
+        Label { textFormat: Text.PlainText; text: qsTr("It comes off every menu screen. Checks it's already on keep it.") }
         onAccepted: {
             w.pos.deleteMenuItemCard(w.draft.id)
             w.zone.controller.removeItemButtons(w.draft.id)

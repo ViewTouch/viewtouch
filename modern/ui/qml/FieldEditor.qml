@@ -64,6 +64,7 @@ ColumnLayout {
     Layout.fillWidth: true
 
     Label {
+        textFormat: Text.PlainText
         visible: fe.section !== ""
         text: fe.section
         color: EditorStyle.accent
@@ -73,6 +74,7 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         Label {
+            textFormat: Text.PlainText
             text: fe.field.label
             color: fe.inline ? palette.windowText : EditorStyle.muted
             font.pixelSize: fe.inline ? 14 : 12
@@ -81,6 +83,7 @@ ColumnLayout {
             wrapMode: fe.inline ? Text.WordWrap : Text.NoWrap
         }
         Label {
+            textFormat: Text.PlainText
             visible: fe.changed
             text: qsTr("changed")
             color: EditorStyle.warning
@@ -88,12 +91,14 @@ ColumnLayout {
             font.bold: true
         }
         Label {
+            textFormat: Text.PlainText
             visible: fe.mixed
             text: qsTr("mixed")
             color: EditorStyle.warning
             font.pixelSize: 11
         }
         Label {
+            textFormat: Text.PlainText
             visible: fe.inheritable && !fe.isSet && !fe.mixed
             text: qsTr("inherited")
             color: EditorStyle.muted
@@ -128,6 +133,7 @@ ColumnLayout {
     }
 
     Label {
+        textFormat: Text.PlainText
         visible: !!fe.field.hint
         text: fe.field.hint ?? ""
         color: EditorStyle.muted
@@ -593,6 +599,7 @@ ColumnLayout {
                 Repeater {
                     model: rowsBox.cols
                     Label {
+                        textFormat: Text.PlainText
                         required property var modelData
                         text: modelData.label ?? ""
                         color: EditorStyle.muted

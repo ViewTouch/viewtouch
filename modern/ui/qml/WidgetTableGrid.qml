@@ -44,6 +44,7 @@ Item {
                 anchors.centerIn: parent
                 width: parent.width - 24
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: cell.modelData.name
@@ -54,6 +55,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: cell.status.open ? (cell.status.total ?? "")

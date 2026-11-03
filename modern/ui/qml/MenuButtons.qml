@@ -145,6 +145,7 @@ Flickable {
                 required property var modelData
                 width: mb.width
                 Text {
+                    textFormat: Text.PlainText
                     visible: block.modelData.title !== ""
                     objectName: "menuSection-" + block.modelData.title
                     width: parent.width
@@ -209,6 +210,7 @@ Flickable {
                                     radius: height / 2
                                     color: "#c62828"
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: hitText
                                         anchors.centerIn: parent
                                         width: Math.min(implicitWidth, parent.parent.width - 22)
@@ -238,6 +240,7 @@ Flickable {
                                     border.color: parent.slow && parent.slow.level === "late" ? "#ff8a8f" : "#f5b940"
                                     border.width: 2
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: busyLabel
                                         anchors.centerIn: parent
                                         text: parent.parent.slow ? qsTr("≈%1 min").arg(parent.parent.slow.wait) : ""
@@ -262,6 +265,7 @@ Flickable {
                                     border.color: "#f5b940"
                                     border.width: 2
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: leftLabel
                                         anchors.centerIn: parent
                                         text: qsTr("%1 left").arg(parent.parent.itemsLeft)
@@ -272,6 +276,7 @@ Flickable {
                                     }
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     visible: !!cell.modelData.number && !mb.compact   // too small to read on a phone
                                     z: 2
                                     anchors.top: parent.top
@@ -307,6 +312,7 @@ Flickable {
                                     spacing: 2
                                     Item { width: 1; height: Math.max(0, (parent.height - name.height - (price.visible ? price.height : 0)) / 2 - 2) }
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: name
                                         width: parent.width
                                         horizontalAlignment: Text.AlignHCenter
@@ -329,6 +335,7 @@ Flickable {
                                         font.bold: true
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: price
                                         objectName: cell.isGap ? "" : "menuPrice-" + cell.modelData.id
                                         visible: !mb.hidePrice || !cell.modelData.available

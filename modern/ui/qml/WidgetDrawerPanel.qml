@@ -44,8 +44,8 @@ Item {
         property bool strong: false
         property color tint: w.ink
         Layout.fillWidth: true
-        Text { Layout.fillWidth: true; text: parent.name; color: parent.tint; font.family: w.face; font.pixelSize: w.unit; font.bold: parent.strong }
-        Text { text: parent.value; color: parent.tint; font.family: w.face; font.pixelSize: w.unit; font.bold: parent.strong }
+        Text { textFormat: Text.PlainText; Layout.fillWidth: true; text: parent.name; color: parent.tint; font.family: w.face; font.pixelSize: w.unit; font.bold: parent.strong }
+        Text { textFormat: Text.PlainText; text: parent.value; color: parent.tint; font.family: w.face; font.pixelSize: w.unit; font.bold: parent.strong }
     }
 
     ColumnLayout {
@@ -54,6 +54,7 @@ Item {
         spacing: w.unit * 0.4
 
         Text {
+            textFormat: Text.PlainText
             text: w.d.name ?? qsTr("Drawer 1")
             color: w.ink
             font.family: w.face
@@ -61,6 +62,7 @@ Item {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             text: w.noDrawer ? qsTr("This terminal has no cash drawer")
                  : !w.d.exists ? (w.bank ? qsTr("Starts with your first cash sale") : qsTr("Not started today"))
                  : w.d.open ? qsTr("Open since %1 (%2)").arg(w.d.opened).arg(w.d.openedBy)
@@ -113,6 +115,7 @@ Item {
 
         // Manager: other people's open banks / other terminals' drawers.
         Text {
+            textFormat: Text.PlainText
             visible: (w.d.others ?? []).length > 0
             text: w.bank ? qsTr("Other open banks") : qsTr("Other open drawers")
             color: Ui.muted
@@ -129,6 +132,7 @@ Item {
                 Layout.fillHeight: false
                 spacing: w.unit * 0.4
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: other.modelData.name
                     color: w.ink
@@ -137,6 +141,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: other.modelData.expected
                     color: w.ink
                     font.family: w.face
@@ -155,6 +160,7 @@ Item {
         Item { Layout.fillHeight: true }
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: w.noDrawer ? qsTr("Take cash on a terminal with a drawer, or have a manager give you your own bank (Manager → Employees → Cash handling).")
@@ -167,6 +173,7 @@ Item {
             font.pixelSize: w.unit * 0.8
         }
         Text {
+            textFormat: Text.PlainText
             visible: w.pos && w.pos.entry !== ""
             text: qsTr("Entered: %1").arg(w.pos ? w.pos.entryAmount : "")
             color: "#f5b940"
@@ -174,6 +181,7 @@ Item {
             font.pixelSize: w.unit
         }
         Text {
+            textFormat: Text.PlainText
             visible: (w.d.open ?? false) && w.pos && w.pos.textEntry !== ""
             text: qsTr("Reason: %1").arg(w.pos ? w.pos.textEntry : "")
             color: "#f5b940"

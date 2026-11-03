@@ -219,6 +219,7 @@ Item {
         return Qt.point(best.x + 16 * c + 10 * s, best.y - 16 * s + 10 * c)
     }
     Text {
+        textFormat: Text.PlainText
         objectName: "decorWords"
         visible: w.words !== ""
         anchors.centerIn: w.sort === "area" ? undefined : parent

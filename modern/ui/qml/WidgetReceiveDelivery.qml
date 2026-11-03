@@ -85,7 +85,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Label { text: qsTr("Invoice #"); font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Invoice #"); font.pixelSize: 15 }
                     TextField {
                         id: invoice
                         objectName: "deliveryInvoice"
@@ -98,11 +98,11 @@ Item {
                 RowLayout {   // headings
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Label { text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
-                    Label { visible: !w.narrow; text: qsTr("On hand"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { text: qsTr("Received"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { text: qsTr("Cost each"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { text: qsTr("Total"); opacity: 0.6; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignRight }
+                    Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
+                    Label { textFormat: Text.PlainText; visible: !w.narrow; text: qsTr("On hand"); opacity: 0.6; Layout.preferredWidth: 110 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Received"); opacity: 0.6; Layout.preferredWidth: 110 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Cost each"); opacity: 0.6; Layout.preferredWidth: 110 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Total"); opacity: 0.6; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignRight }
                 }
                 ListView {
                     id: list
@@ -118,6 +118,7 @@ Item {
                         width: ListView.view.width - listBar.room
                         height: 48
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: row.modelData.name
                             font.pixelSize: 16
@@ -130,6 +131,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Label {
+                            textFormat: Text.PlainText
                             visible: !w.narrow
                             Layout.preferredWidth: 110
                             text: Number(row.modelData.onHand).toLocaleString(Qt.locale(), "f", 1).replace(/\.0$/, "") + " " + row.modelData.unit
@@ -156,6 +158,7 @@ Item {
                             onTextEdited: { w.cost[row.modelData.id] = text; ++w.typed }
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.preferredWidth: 90
                             horizontalAlignment: Text.AlignRight
                             text: { if (w.typed < 0) return ""; const q = Number(w.qty[row.modelData.id] ?? 0)
@@ -164,6 +167,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: w.shown.length === 0
                     text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
                                                                   : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
@@ -175,7 +179,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
                     spacing: 10
-                    Label { text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
+                    Label { textFormat: Text.PlainText; text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
                     PosButton {
                         text: qsTr("Clear")
                         implicitHeight: 52
@@ -203,7 +207,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { text: qsTr("Received lately"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Received lately"); font.bold: true; font.pixelSize: 17 }
                 ListView {
                     id: recent
                     Layout.fillWidth: true
@@ -217,12 +221,14 @@ Item {
                         width: ListView.view.width - recentBar.room
                         spacing: 0
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (modelData.vendor || qsTr("Delivery")) + "  ·  " + modelData.total
                             font.bold: true
                             elide: Text.ElideRight
                         }
                         Label {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.when + "  ·  " + qsTr("%n item(s)", "", modelData.items)
                                   + (modelData.invoice ? "  ·  #" + modelData.invoice : "") + "  ·  " + modelData.by
@@ -233,6 +239,7 @@ Item {
                     }
                 }
                 Label {
+                    textFormat: Text.PlainText
                     visible: (w.info.recent ?? []).length === 0
                     text: qsTr("Nothing received yet.")
                     opacity: 0.6

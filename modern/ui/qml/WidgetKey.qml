@@ -38,6 +38,7 @@ Rectangle {
     border.width: 2
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         width: parent.width - 8
         height: parent.height   // a name shrunk to fit its width stays in the middle

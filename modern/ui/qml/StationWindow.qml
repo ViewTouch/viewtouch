@@ -177,6 +177,7 @@ ApplicationWindow {
                 Layout.preferredHeight: Layout.preferredWidth
             }
             Label {
+                textFormat: Text.PlainText
                 text: tile.label
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -188,6 +189,7 @@ ApplicationWindow {
                 elide: Text.ElideRight
             }
             Label {
+                textFormat: Text.PlainText
                 visible: tile.detail !== ""
                 text: tile.detail
                 Layout.fillWidth: true
@@ -220,6 +222,7 @@ ApplicationWindow {
             color: !big.enabled ? "#262b33" : big.down ? Qt.darker(big.tint, 1.3) : big.tint
         }
         contentItem: Label {
+            textFormat: Text.PlainText
             text: big.text
             font: big.font
             color: big.enabled ? "white" : "#6b7585"
@@ -230,6 +233,7 @@ ApplicationWindow {
     }
 
     component Heading: Label {
+        textFormat: Text.PlainText
         font.pixelSize: root.u * 1.8
         font.bold: true
         color: "white"
@@ -238,6 +242,7 @@ ApplicationWindow {
     }
 
     component Note: Label {
+        textFormat: Text.PlainText
         font.pixelSize: root.u * 1.05
         color: "#aab3c2"
         wrapMode: Text.WordWrap
@@ -245,6 +250,7 @@ ApplicationWindow {
     }
 
     component Section: Label {
+        textFormat: Text.PlainText
         font.pixelSize: root.u * 0.95
         font.bold: true
         font.capitalization: Font.AllUppercase
@@ -298,12 +304,14 @@ ApplicationWindow {
             anchors { fill: parent; leftMargin: root.u * 1.4; rightMargin: root.u * 1.4 }
             spacing: root.u
             Label {
+                textFormat: Text.PlainText
                 text: "ViewTouch"
                 font.pixelSize: root.u * 1.6
                 font.bold: true
                 color: "white"
             }
             Label {
+                textFormat: Text.PlainText
                 text: root.station.role === "" ? qsTr("New computer")
                       : root.station.computerName + "  ·  " + (root.roleNames[root.station.role] ?? "")
                 font.pixelSize: root.u * 1.05
@@ -313,6 +321,7 @@ ApplicationWindow {
             }
             // At a glance: what to look at (amber), or the last backup.
             Label {
+                textFormat: Text.PlainText
                 objectName: "stationStatus"
                 readonly property var problems: root.station.status.problems ?? []
                 readonly property real backupAt: root.station.status.lastBackupAt ?? 0
@@ -334,6 +343,7 @@ ApplicationWindow {
                 Layout.preferredHeight: root.u * 1.8
             }
             Label {
+                textFormat: Text.PlainText
                 text: root.station.network.online
                       ? (root.station.network.wifi ? root.station.network.wifi + "  " : "") + (root.station.network.address ?? "")
                       : qsTr("No network")
@@ -341,6 +351,7 @@ ApplicationWindow {
                 color: root.station.network.online ? "#c4cbd6" : "#eb8a7a"
             }
             Label {
+                textFormat: Text.PlainText
                 id: clock
                 font.pixelSize: root.u * 1.5
                 font.bold: true
@@ -544,8 +555,8 @@ ApplicationWindow {
                     RowLayout {
                         anchors { fill: parent; leftMargin: root.u; rightMargin: root.u }
                         StationIcon { name: "wifi"; color: modelData.signal > 60 ? "#6fcf97" : modelData.signal > 30 ? "#e8c46a" : "#eb8a7a"; Layout.preferredWidth: root.u * 2; Layout.preferredHeight: root.u * 2 }
-                        Label { text: modelData.name; font.pixelSize: root.u * 1.2; color: "white"; Layout.fillWidth: true; elide: Text.ElideRight }
-                        Label { visible: modelData.connected; text: qsTr("Connected"); color: "#6fcf97"; font.pixelSize: root.u }
+                        Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: root.u * 1.2; color: "white"; Layout.fillWidth: true; elide: Text.ElideRight }
+                        Label { textFormat: Text.PlainText; visible: modelData.connected; text: qsTr("Connected"); color: "#6fcf97"; font.pixelSize: root.u }
                         StationIcon { visible: modelData.secure; name: "lock"; color: "#9aa3b2"; Layout.preferredWidth: root.u * 1.4; Layout.preferredHeight: root.u * 1.4 }
                     }
                     TapHandler {
@@ -687,6 +698,7 @@ ApplicationWindow {
             clip: true
             onContentHeightChanged: contentY = Math.max(0, contentHeight - height)
             Label {
+                textFormat: Text.PlainText
                 id: logText
                 width: logView.width
                 text: root.station.output + (root.station.busy ? "\n…" : "")
@@ -747,12 +759,13 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignTop
                     spacing: root.u
                     Label {
+                        textFormat: Text.PlainText
                         text: mp.confirming ? qsTr("Type the same code again") : qsTr("Type the new code")
                         color: "white"
                         font.pixelSize: root.u * 1.3
                         font.bold: true
                     }
-                    Label { text: "●".repeat(mp.confirming ? mp.again.length : mp.code.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                    Label { textFormat: Text.PlainText; text: "●".repeat(mp.confirming ? mp.again.length : mp.code.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
                     Note {
                         visible: mp.confirming && mp.again.length >= mp.code.length && mp.again !== mp.code
                         text: qsTr("The two don't match. Touch Clear and type it again.")
@@ -848,8 +861,8 @@ ApplicationWindow {
                     delegate: RowLayout {
                         required property var modelData
                         Layout.columnSpan: 2
-                        Label { text: modelData[0]; color: "#9aa3b2"; font.pixelSize: root.u * 1.1; Layout.preferredWidth: root.u * 12 }
-                        Label { text: modelData[1]; color: "white"; font.pixelSize: root.u * 1.1 }
+                        Label { textFormat: Text.PlainText; text: modelData[0]; color: "#9aa3b2"; font.pixelSize: root.u * 1.1; Layout.preferredWidth: root.u * 12 }
+                        Label { textFormat: Text.PlainText; text: modelData[1]; color: "white"; font.pixelSize: root.u * 1.1 }
                     }
                 }
             }
@@ -1012,7 +1025,7 @@ ApplicationWindow {
                         implicitHeight: root.u * 2.2
                         radius: height / 2
                         color: index === wiz.step ? Ui.accent : index < wiz.step ? "#24426e" : "#232a34"
-                        Label { id: stepLabel; anchors.centerIn: parent; text: modelData; color: "white"; font.pixelSize: root.u * 0.85 }
+                        Label { textFormat: Text.PlainText; id: stepLabel; anchors.centerIn: parent; text: modelData; color: "white"; font.pixelSize: root.u * 0.85 }
                     }
                 }
             }
@@ -1055,6 +1068,7 @@ ApplicationWindow {
                                 wiz.step = 2
                             }
                             Label {
+                                textFormat: Text.PlainText
                                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: root.u * 0.6 }
                                 text: modelData[2]
                                 wrapMode: Text.WordWrap
@@ -1129,7 +1143,7 @@ ApplicationWindow {
                 Heading { text: qsTr("Where is the store? Touch its time zone.") }
                 Note {
                     text: qsTr("Now: %1, where it's %2.").arg(root.zoneName(root.station.timeZone)).arg(zoneClock.text)
-                    Label { id: zoneClock; visible: false; text: Qt.locale().toString(new Date(), "h:mm AP")
+                    Label { id: zoneClock; textFormat: Text.PlainText; visible: false; text: Qt.locale().toString(new Date(), "h:mm AP")
                             Timer { interval: 5000; running: true; repeat: true; onTriggered: zoneClock.text = Qt.locale().toString(new Date(), "h:mm AP") }
                             Connections { target: root.station; function onTimeZoneChanged() { zoneClock.text = Qt.locale().toString(new Date(), "h:mm AP") } } }
                 }
@@ -1190,6 +1204,7 @@ ApplicationWindow {
                         Layout.alignment: Qt.AlignTop
                         spacing: root.u
                         Label {
+                            textFormat: Text.PlainText
                             text: wiz.confirming ? qsTr("Type the same code again") : qsTr("Type the code")
                             color: "white"
                             font.pixelSize: root.u * 1.3
@@ -1198,13 +1213,13 @@ ApplicationWindow {
                         RowLayout {
                             spacing: root.u * 2
                             ColumnLayout {
-                                Label { text: qsTr("Code"); color: "#9aa3b2"; font.pixelSize: root.u }
-                                Label { text: "●".repeat(wiz.pin.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Code"); color: "#9aa3b2"; font.pixelSize: root.u }
+                                Label { textFormat: Text.PlainText; text: "●".repeat(wiz.pin.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
                             }
                             ColumnLayout {
                                 visible: wiz.confirming
-                                Label { text: qsTr("Again"); color: "#9aa3b2"; font.pixelSize: root.u }
-                                Label { text: "●".repeat(wiz.pinAgain.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                                Label { textFormat: Text.PlainText; text: qsTr("Again"); color: "#9aa3b2"; font.pixelSize: root.u }
+                                Label { textFormat: Text.PlainText; text: "●".repeat(wiz.pinAgain.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
                             }
                         }
                         Note {
@@ -1290,6 +1305,7 @@ ApplicationWindow {
             spacing: root.u
             Heading { text: qsTr("This computer's PIN"); horizontalAlignment: Text.AlignHCenter }
             Label {
+                textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: pinPad.wrong ? (root.station.pinWait() > 0 ? qsTr("Too many wrong PINs: wait %1 s").arg(root.station.pinWait())
                                                                   : qsTr("Not that one"))
@@ -1377,6 +1393,7 @@ ApplicationWindow {
         radius: root.u * 0.6
         color: good ? "#1f5a3a" : "#6a2a2a"
         Label {
+            textFormat: Text.PlainText
             id: toastText
             anchors.centerIn: parent
             width: Math.min(implicitWidth, root.width - root.u * 7)

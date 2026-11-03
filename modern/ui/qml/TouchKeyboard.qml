@@ -135,6 +135,7 @@ Rectangle {
                              : modelData === "shift" && kb.shifted ? "#4a5672"
                              : special ? "#2a313d" : Ui.key
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             width: key.width - 6
                             horizontalAlignment: Text.AlignHCenter

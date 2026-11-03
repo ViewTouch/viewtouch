@@ -11,6 +11,7 @@ Button {
                                   : b.down ? Qt.lighter(b.highlighted || b.checked ? Ui.accent : b.palette.button, 1.35)
                                   : b.highlighted || b.checked ? Ui.accent : b.palette.button
     contentItem: Text {
+        textFormat: Text.PlainText
         text: b.text
         font: b.font
         color: b.enabled ? (b.highlighted || b.checked ? "white" : b.palette.buttonText) : Qt.rgba(1, 1, 1, 0.4)

@@ -42,6 +42,7 @@ Popup {
         RowLayout {
             spacing: 10
             Label {
+                textFormat: Text.PlainText
                 text: picker.title
                 font.pixelSize: 22
                 font.bold: true
@@ -81,6 +82,7 @@ Popup {
             }
         }
         Label {
+            textFormat: Text.PlainText
             visible: picker.files.length === 0
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -116,6 +118,7 @@ Popup {
                         asynchronous: true
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors { left: parent.left; right: parent.right; top: thumb.bottom; margins: 6 }
                         text: modelData.name
                         elide: Text.ElideMiddle
@@ -124,6 +127,7 @@ Popup {
                         font.pixelSize: 13
                     }
                     Label {
+                        textFormat: Text.PlainText
                         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 4 }
                         text: modelData.folder
                         elide: Text.ElideRight

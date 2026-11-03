@@ -28,6 +28,7 @@ Rectangle {
             anchors.margins: 20
             spacing: 10
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr("Which job today, %1?").arg(chooser.info.who ?? "")

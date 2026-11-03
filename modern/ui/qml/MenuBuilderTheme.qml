@@ -19,7 +19,7 @@ Popup {
     function colorFor(index) { return chosen ? chosen.colors[index % chosen.colors.length] : menu.categories[index].color }
     contentItem: ColumnLayout {
         spacing: 10
-        Label { text: qsTr("Colors for every category"); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("Colors for every category"); font.pixelSize: 20; font.bold: true }
         Flow {
             Layout.fillWidth: true
             spacing: 8
@@ -37,7 +37,7 @@ Popup {
                     Column {
                         anchors.centerIn: parent
                         spacing: 6
-                        Label { anchors.horizontalCenter: parent.horizontalCenter; text: modelData.name; font.pixelSize: 15; font.bold: true }
+                        Label { textFormat: Text.PlainText; anchors.horizontalCenter: parent.horizontalCenter; text: modelData.name; font.pixelSize: 15; font.bold: true }
                         Row {
                             spacing: 3
                             Repeater {
@@ -65,6 +65,7 @@ Popup {
                 radius: 6
                 color: themeDialog.colorFor(index) || "#4a5260"
                 Label {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     x: 12
                     text: modelData.name

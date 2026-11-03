@@ -43,6 +43,7 @@ Item {
                     border.width: modelData.edge ? Math.max(2, w.px * (modelData.color === "transparent" ? 0.18 : 0.08)) : 1
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: modelData.name
                     color: w.ink
