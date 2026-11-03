@@ -19,8 +19,10 @@ mkdir -p "$work"
 cd "$work"
 for m in qtbase qtshadertools qtdeclarative qtsvg; do
     [ -d "$m-everywhere-src-$version" ] && continue
+    # The newest versions are in official_releases, older ones move to archive.
     [ -f "$m-everywhere-src-$version.tar.xz" ] ||
-        curl -fsSL -O "https://download.qt.io/official_releases/qt/$series/$version/submodules/$m-everywhere-src-$version.tar.xz"
+        curl -fsSL -O "https://download.qt.io/official_releases/qt/$series/$version/submodules/$m-everywhere-src-$version.tar.xz" ||
+        curl -fsSL -O "https://download.qt.io/archive/qt/$series/$version/submodules/$m-everywhere-src-$version.tar.xz"
     tar xf "$m-everywhere-src-$version.tar.xz"
 done
 flags="-fsanitize=thread -fno-omit-frame-pointer -O1 -g1"
