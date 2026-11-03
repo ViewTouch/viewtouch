@@ -83,6 +83,8 @@ jobs:
         run: |
           mkdir -p files
           find artifacts -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.apk' \) -exec cp -t files {} +
+          # What it's made of (SPDX): ViewTouch, the commit, and what each package needs.
+          python3 modern/tools/sbom.py files/ViewTouch.spdx.json files/*.deb
           (cd files && sha256sum * > SHA256SUMS)
           version=$(cd files && ls vtmodern_*~debian13_arm64*.deb | sed -n 's/^vtmodern_\([0-9.]*\)-.*/\1/p' | head -1)
           build=${version##*.}
@@ -96,7 +98,7 @@ jobs:
             echo "- Ubuntu 26.04: the \`.ubuntu26.04\` .deb"
             echo "- Fedora 44: the \`.fc44\` .rpm"
             echo
-            echo "\`SHA256SUMS\` has each file's checksum."
+            echo "\`SHA256SUMS\` has each file's checksum, and \`ViewTouch.spdx.json\` what the packages are made of and need (an SPDX bill of materials). The packages are reproducible: the same commit built on the same system gives the same files."
           } > notes.md
           gh release create "$TAG" --verify-tag --title "ViewTouch Modern ${version%.*} (build $build)" --notes-file notes.md --latest files/*
           gh release edit modern-packages --latest=false \
