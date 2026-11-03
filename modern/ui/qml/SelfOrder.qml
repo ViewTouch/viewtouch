@@ -475,7 +475,7 @@ Rectangle {
         Item {
             id: slide
             anchors.fill: parent
-            Image {
+            StorePicture {   // an animated GIF plays
                 anchors.fill: parent
                 visible: attract.picture !== ""
                 source: attract.picture

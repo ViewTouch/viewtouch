@@ -10481,3 +10481,44 @@ TEST_CASE("UI: the screen's keyboard rests above a phone's gesture bar (the safe
     CHECK(r.left() == Catch::Approx(20));
     CHECK(r.right() == Catch::Approx(window->width() - 20));
 }
+
+TEST_CASE("UI: a store's animated GIF plays on the guest screens; a still picture stays an image", "[flow][ui][display][pictures]")
+{
+    QTemporaryDir dir;
+    // Two frames of 2 by 2 pixels, black then white, looping (made with
+    // ImageMagick: magick -size 2x2 xc:black -size 2x2 xc:white -set delay 10
+    // -loop 0; Qt reads GIFs but doesn't write them).
+    const QByteArray gif = QByteArray::fromHex(
+        "47494638396102000200f0000000000000000021ff0b4e45545343415045322e300301000000"
+        "21f904000a0000002c000000000200020000020284510021f904000a0000002c00000000020002"
+        "0080ffffff00000002028451003b");
+    const QString gifFile = dir.filePath(u"welcome.gif"_s), pngFile = dir.filePath(u"menu.png"_s);
+    {
+        QFile f(gifFile);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(gif);
+    }
+    QImage still(4, 4, QImage::Format_RGB32);
+    still.fill(Qt::red);
+    REQUIRE(still.save(pngFile));
+    for (const auto &[file, animated] : {std::pair{gifFile, true}, std::pair{pngFile, false}}) {
+        INFO(file.toStdString());
+        QQmlEngine engine;
+        QQmlComponent component(&engine);
+        component.setData("import QtQuick\nimport ViewTouch\nStorePicture { width: 100; height: 100 }",
+                          QUrl(u"qrc:/picture-test.qml"_s));
+        std::unique_ptr<QObject> root(component.createWithInitialProperties({{u"source"_s, QUrl::fromLocalFile(file)}}));
+        INFO(component.errorString().toStdString());
+        REQUIRE(root);
+        CHECK(root->property("animated").toBool() == animated);
+        auto *player = root->findChild<QObject *>(u"animatedPicture"_s);
+        REQUIRE(player);
+        CHECK(player->property("visible").toBool() == animated);
+        if (animated) {
+            for (int i = 0; i < 50 && player->property("frameCount").toInt() < 2; ++i)
+                QTest::qWait(10);
+            CHECK(player->property("frameCount").toInt() == 2);
+            CHECK(player->property("playing").toBool());
+        }
+    }
+}

@@ -174,7 +174,7 @@ Rectangle {
                 anchors.margins: d.unit * 2
                 readonly property string current: idle.slides.length ? idle.slides[idle.index % idle.slides.length] : ""
                 readonly property bool picture: current.startsWith("image:")
-                Image {
+                StorePicture {   // an animated GIF plays
                     anchors.fill: parent
                     visible: slide.picture
                     fillMode: Image.PreserveAspectFit

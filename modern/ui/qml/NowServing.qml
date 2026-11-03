@@ -193,7 +193,7 @@ Rectangle {
         }
         readonly property string current: slides.length ? slides[index % slides.length] : ""
         readonly property bool picture: current.startsWith("image:")
-        Image {
+        StorePicture {   // an animated GIF plays
             anchors { fill: parent; bottomMargin: b.unit * 3 }
             visible: idle.picture
             fillMode: Image.PreserveAspectFit

@@ -155,6 +155,7 @@ if(Qt6_FOUND)
             ui/qml/PageView.qml
             ui/qml/ZoneItem.qml
             ui/qml/ZoneShape.qml
+            ui/qml/StorePicture.qml
             ui/qml/EditorStyle.qml
             ui/qml/StoreColors.qml
             ui/qml/Ui.qml
