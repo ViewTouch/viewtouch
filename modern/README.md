@@ -813,6 +813,19 @@ ctest --test-dir modern/build
 
 Tests run headless (offscreen). They include UI tests that drag, resize and type in the real editor.
 
+### Checking the code
+
+Besides the tests, each of these runs in CI or on demand; [docs/REVIEW-CHECKLIST.md](docs/REVIEW-CHECKLIST.md) is what to look at in a change before it ships.
+
+- **Sanitizers:** `-DVTM_SANITIZE=address,undefined` (memory used after it's freed, leaks, undefined behavior; suppressions in `tools/sanitizers/lsan.supp`) and `-DVTM_SANITIZE=thread` for data races, against a Qt built with ThreadSanitizer (`tools/build-qt-tsan.sh 6.8.2 /opt/qt-tsan`, then `-DCMAKE_PREFIX_PATH=/opt/qt-tsan`; suppressions in `tools/sanitizers/tsan.supp`). The Modern sanitizers workflow runs both on every push.
+- **Static analysis:** `tools/static-analysis.sh BUILD-DIR` runs clang-tidy (`.clang-tidy`) and shellcheck; a finding not in `tools/static-analysis-baseline.txt` fails. The Modern static analysis workflow runs it, and CodeQL.
+- **Fuzzing and property tests:** `[fuzz]` (random commands, network lines, imports, backups, saved JSON) and `[properties]` (random work on checks; each must add up, the day's report be their sum). Fixed seeds; `VTM_FUZZ_ROUNDS=2000` for more.
+- **Mutation testing:** `tools/mutate.py` changes the money code one small thing at a time (a `+` for a `-`, `<` for `<=`...) and runs the tests: each change no test notices is a line the tests don't really check. Slow (an hour or more).
+- **Coverage:** `-DVTM_COVERAGE=ON`, run the tests, then `tools/coverage.py BUILD-DIR --functions`.
+- **Performance:** `[perf]` works a month of days on a real database and fails if End of Day, startup, a month's report or the database's size go past their budgets; it prints `perf: ...` in CI's log.
+- **Longer words:** `[pseudo]` shows the main screens in a pseudo-language (every phrase 40% longer, accented, in `[ ]`) and lists text that no longer fits; `i18n::setLanguage(i18n::PseudoLanguage)` turns it on anywhere.
+- **Time, a long run, old stores:** `[time]` (daylight saving, clocks jumping), `[soak]` (four months without a restart), `[oldstore]` (stores saved by earlier releases, `tools/make-store-fixture.sh` at each release).
+
 If Qt6 is not found, only the core library and tests are built. To build it from the legacy root project instead, pass `-DVT_BUILD_MODERN=ON`.
 
 ## Signed packages
