@@ -201,6 +201,20 @@ Check &PosService::splitOff(qint64 fromId)
     n.serverName = from.serverName;
     n.openedAt = now();
     n.training = from.training;
+    // What the whole check was sold with goes with each piece: its service
+    // charge and tax exemption (else a split dropped the party's gratuity
+    // and taxed a school's order), the guests' allergies, and how the
+    // kitchen takes it.
+    n.gratuityBp = from.gratuityBp;
+    n.autoGratuity = from.autoGratuity;
+    n.taxExempt = from.taxExempt;
+    n.allergies = from.allergies;
+    n.seatAllergies = from.seatAllergies;
+    n.rush = from.rush;
+    n.vip = from.vip;
+    n.firedCourse = from.firedCourse;
+    n.dueAt = from.dueAt;
+    n.kiosk = from.kiosk;
     const auto id = n.id;
     return s_->open.emplace(id, std::move(n)).first->second;
 }

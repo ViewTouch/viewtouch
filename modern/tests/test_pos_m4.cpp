@@ -395,6 +395,53 @@ TEST_CASE("Split check: one at a time, shared items, evenly", "[m4][split]")
         CHECK(std::abs(a - whole / 3) <= 2);
 }
 
+TEST_CASE("Split check: each piece keeps the party's gratuity, a tax exemption and the allergies", "[m4][split]")
+{
+    // Found by the property tests: the new pieces had none of these, so the
+    // server lost the gratuity on all but one, and a school's order was taxed.
+    Pos t;
+    t.login("1234");   // a manager (tax exempt is theirs)
+    REQUIRE(t.pos.startCheck(core::CheckType::Takeout));
+    t.pos.addItem(u"cobb"_s);
+    t.pos.addItem(u"cobb"_s);
+    t.pos.addItem(u"coffee"_s);
+    REQUIRE(t.pos.setGratuity(1800));
+    REQUIRE(t.pos.setAllergies({u"fish"_s}));
+    REQUIRE(t.pos.setTaxExempt(u"EX-1234 Lincoln School"_s));
+    const app::PosShared &s = *t.pos.shared();
+    const qint64 first = t.pos.checkInfo()[u"id"_s].toLongLong();
+    const core::Totals whole = s.open.at(first).totals(s.settings.tax);
+    REQUIRE(whole.gratuity.cents() > 0);
+    REQUIRE(whole.tax.cents() == 0);
+
+    REQUIRE(t.pos.splitEvenly(3));
+    std::int64_t total = 0, gratuity = 0;
+    int pieces = 0;
+    for (const auto &[id, c] : s.open) {
+        INFO("check " << id);
+        CHECK(c.gratuityBp == 1800);
+        CHECK(c.taxExempt == "EX-1234 Lincoln School");
+        CHECK(c.allergies == std::vector<std::string>{"fish"});
+        const core::Totals tt = c.totals(s.settings.tax);
+        CHECK(tt.tax.cents() == 0);
+        total += tt.total.cents();
+        gratuity += tt.gratuity.cents();
+        ++pieces;
+    }
+    CHECK(pieces == 3);
+    CHECK(std::abs(total - whole.total.cents()) <= 3);       // a cent each, at most
+    CHECK(std::abs(gratuity - whole.gratuity.cents()) <= 3);
+
+    // One item moved to a new check: the same.
+    REQUIRE(t.pos.openCheck(first));
+    t.pos.selectLine(s.open.at(first).lines.front().id);
+    REQUIRE(t.pos.splitLine(0));
+    for (const auto &[id, c] : s.open) {
+        CHECK(c.gratuityBp == 1800);
+        CHECK(c.taxExempt == "EX-1234 Lincoln School");
+    }
+}
+
 TEST_CASE("Admin: menu items", "[m4][admin]")
 {
     Pos t;
