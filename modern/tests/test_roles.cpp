@@ -19,6 +19,7 @@
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QTest>
 
 #include <functional>
@@ -627,6 +628,92 @@ TEST_CASE("Station: a new ViewTouch looked for twice a day, installed at night o
     // Not by day.
     REQUIRE(station.newVersion().isEmpty());
     qunsetenv("VTM_STATION_HELPER");
+}
+
+TEST_CASE("Station: a new ViewTouch not yet this computer's turn, paused or held isn't offered", "[station][helper][updates]")
+{
+    for (const char *said : {"SOON 9.9 2026-11-05T03:00", "PAUSED 9.9 0.15", "HELD 9.9 0.15"}) {
+        INFO(said);
+        QTemporaryDir dir;
+        const QString helper = dir.filePath(u"helper.sh"_s);
+        {
+            QFile f(helper);
+            REQUIRE(f.open(QIODevice::WriteOnly));
+            f.write("#!/bin/sh\necho '" + QByteArray(said) + "'\n");
+            f.setPermissions(f.permissions() | QFile::ExeOwner);
+        }
+        qputenv("VTM_STATION_HELPER", helper.toLocal8Bit());
+        StationController station(dir.path(), {}, false);
+        QSignalSpy finished(&station, &StationController::finished);
+        station.checkOnline();
+        REQUIRE(finished.wait(10000));
+        CHECK(finished.first().at(1).toBool());
+        CHECK(station.newVersion().isEmpty());
+        qunsetenv("VTM_STATION_HELPER");
+    }
+}
+
+TEST_CASE("Updates: the program copies its store for an update to go back to, and says when it came up", "[updates][program]")
+{
+    QTemporaryDir dir;
+    const auto run = [&](const QStringList &args) {
+        QProcess p;
+        p.start(QString::fromLocal8Bit(VTM_PROGRAM), QStringList{u"--data-dir"_s, dir.path()} + args);
+        REQUIRE(p.waitForFinished(60000));
+        INFO(p.readAllStandardError().toStdString());
+        REQUIRE(p.exitCode() == 0);
+    };
+    run({u"--demo-data"_s});
+    const QString copy = dir.filePath(u"snapshot.db"_s);
+    run({u"--snapshot"_s, copy});
+    {
+        storage::PosStore store(copy);
+        REQUIRE(store.open());
+        const std::optional<app::PosData> data = store.load();
+        REQUIRE(data);
+        CHECK(data->menu.size() > 20);
+        CHECK(data->employees.size() > 5);
+    }
+    // Running: its version in <data>/healthy once it has run a while (two minutes; here half a second).
+    const QString mark = dir.filePath(u"healthy"_s);
+    CHECK_FALSE(QFile::exists(mark));
+    QProcess server;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(u"VTM_HEALTHY_AFTER_MS"_s, u"500"_s);
+    server.setProcessEnvironment(env);
+    server.start(QString::fromLocal8Bit(VTM_PROGRAM), {u"--data-dir"_s, dir.path(), u"--headless"_s, u"--serve"_s, u"--port"_s, u"47391"_s});
+    for (int i = 0; i < 300 && !QFile::exists(mark); ++i)
+        QTest::qWait(50);
+    server.terminate();
+    server.waitForFinished(10000);
+    QFile f(mark);
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    CHECK(QRegularExpression(u"^\\d+\\.\\d+\\.\\d+\n$"_s).match(QString::fromUtf8(f.readAll())).hasMatch());
+}
+
+TEST_CASE("Station: an update that didn't start properly and was undone shows at a glance for a week", "[station][updates]")
+{
+    QTemporaryDir dir;
+    const auto said = [&](const QByteArray &line) {
+        QFile f(dir.filePath(u"update-result"_s));
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write(line);
+    };
+    StationController station(dir.path(), {}, false);
+    const QByteArray now = QByteArray::number(QDateTime::currentSecsSinceEpoch());
+    said("ROLLED-BACK 0.16.1600 0.15.1571 " + now + "\n");
+    station.refreshStatus();
+    CHECK(station.status()[u"problems"_s].toStringList().contains(
+        u"ViewTouch 0.16.1600 didn't start properly, so this computer went back to 0.15.1571"_s));
+    said("FAILED 0.16.1600 0.15.1571 " + now + "\n");
+    station.refreshStatus();
+    CHECK(station.status()[u"problems"_s].toStringList().contains(
+        u"ViewTouch 0.16.1600 didn't start properly (no copy of 0.15.1571 here to go back to)"_s));
+    // A week later: not any more.
+    said("ROLLED-BACK 0.16.1600 0.15.1571 " + QByteArray::number(QDateTime::currentSecsSinceEpoch() - 8 * 86400) + "\n");
+    station.refreshStatus();
+    for (const QString &p : station.status()[u"problems"_s].toStringList())
+        CHECK_FALSE(p.contains(u"didn't start properly"_s));
 }
 
 // The manual's pictures of the home screen and the first-time setup

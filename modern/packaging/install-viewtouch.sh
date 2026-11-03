@@ -199,6 +199,11 @@ case "$package" in
     *) package=$(pwd)/$package ;;
 esac
 pkg_install "$package"
+# Kept: what the first online update can go back to if it doesn't start
+# properly (vtmodern-device update-verify).
+case "$package" in
+    *.deb) install -d -m 700 /var/lib/vtmodern-updates && cp "$package" /var/lib/vtmodern-updates/installed.deb || true ;;
+esac
 # cage runs ViewTouch full screen on a touch screen (not needed for a server
 # without a screen, but small).
 command -v cage >/dev/null 2>&1 || pkg_install cage || echo "Couldn't install cage: screens need it (install it later)."

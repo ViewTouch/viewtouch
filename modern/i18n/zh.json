@@ -4240,6 +4240,8 @@
  "Vendors": "供应商",
  "Vendors…": "供应商…",
  "ViewTouch": "ViewTouch",
+ "ViewTouch %1 didn't start properly (no copy of %2 here to go back to)": "ViewTouch %1 未能正常启动（本机没有 %2 的副本可以退回）",
+ "ViewTouch %1 didn't start properly, so this computer went back to %2": "ViewTouch %1 未能正常启动，因此本电脑已退回到 %2",
  "ViewTouch %1 is installed. Starting it again…": "ViewTouch %1 已安装。正在重新启动…",
  "ViewTouch %1 is out. On the store computer: close ViewTouch, then Updates → Check for a New ViewTouch.": "ViewTouch %1 已发布。在门店电脑上：关闭 ViewTouch，然后 更新 → 查找新版 ViewTouch。",
  "ViewTouch %1 is ready (this computer has %2).": "ViewTouch %1 已就绪（本机为 %2）。",

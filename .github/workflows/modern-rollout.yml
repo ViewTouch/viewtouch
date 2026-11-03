@@ -1,0 +1,54 @@
+# The newest ViewTouch reaches stores in turns (Modern release publishes it
+# with a rollout: beta-channel computers at once, the rest over the next
+# days). Run this from the Actions tab to change that without a new build:
+#
+#   pause   nobody else takes it (a problem was found); stores that have it keep it
+#   resume  the turns go on
+#   now     every store may take it from tonight
+#
+# It signs latest.json again, so it waits in the "release" environment for
+# approval like a release does.
+name: Modern rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do with the newest release's rollout
+        type: choice
+        options: [pause, resume, now]
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modern-release
+  cancel-in-progress: false
+
+jobs:
+  rollout:
+    name: Rollout ${{ inputs.action }}
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write   # upload latest.json to the release
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Sign and publish latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          if [ -z "$UPDATE_SIGNING_KEY" ]; then
+            echo "::error::No UPDATE_SIGNING_KEY secret in the release environment."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/update-signing-key.pem"
+          umask 077
+          printf '%s\n' "$UPDATE_SIGNING_KEY" > "$key"
+          VTM_SIGNING_KEY="$key" sh modern/packaging/publish.sh --rollout "$ACTION"
+          rm -f "$key"

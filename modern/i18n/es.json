@@ -4333,6 +4333,8 @@
  "Vendors": "Proveedores",
  "Vendors…": "Proveedores…",
  "ViewTouch": "ViewTouch",
+ "ViewTouch %1 didn't start properly (no copy of %2 here to go back to)": "ViewTouch %1 no arrancó bien (no hay copia de %2 aquí para volver a ella)",
+ "ViewTouch %1 didn't start properly, so this computer went back to %2": "ViewTouch %1 no arrancó bien, así que esta computadora volvió a %2",
  "ViewTouch %1 is installed. Starting it again…": "ViewTouch %1 está instalado. Reiniciando…",
  "ViewTouch %1 is out. On the store computer: close ViewTouch, then Updates → Check for a New ViewTouch.": "Salió ViewTouch %1. En la computadora de la tienda: cierre ViewTouch, luego Actualizaciones → Buscar un ViewTouch nuevo.",
  "ViewTouch %1 is ready (this computer has %2).": "ViewTouch %1 está listo (esta computadora tiene %2).",

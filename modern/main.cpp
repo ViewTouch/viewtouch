@@ -152,6 +152,9 @@ struct Options {
     QCommandLineOption exportDir{u"export-dir"_s,
         u"Where reports are saved as CSV / PDF (default: <data dir>/exports)."_s, u"dir"_s};
     QCommandLineOption backup{u"backup"_s, u"Back up the database now (safe while ViewTouch runs) and exit."_s};
+    QCommandLineOption snapshot{u"snapshot"_s,
+        u"Copy the database to <file> now (safe while ViewTouch runs), never encrypted, and exit: what an update "
+         "goes back to if the new ViewTouch doesn't start properly (vtmodern-device)."_s, u"file"_s};
     QCommandLineOption maintainerPin{u"maintainer-pin"_s,
         u"Set this store's maintainer code (4 to 8 digits; \"off\" removes it; \"-\": read from the input) and exit: the store's "
         "technician logs in with it, for what managers and the owner can't do (erasing the store, updates, "
@@ -550,6 +553,23 @@ std::optional<vt::net::Credentials> joinStore(const Args &cli, const Options &o,
 }
 
 // The home screen of a ViewTouch computer: ViewTouch runs as its child.
+// After an update the updater checks this version came up (vtmodern-device
+// update-verify): two minutes running without falling over, it says so in
+// <data dir>/healthy (its version). A version that never writes it is
+// taken off this computer again.
+void markHealthyLater(const QString &dataDir)
+{
+    const int after = qEnvironmentVariableIsSet("VTM_HEALTHY_AFTER_MS") ? qEnvironmentVariableIntValue("VTM_HEALTHY_AFTER_MS")
+                                                                         : 2 * 60'000;   // tests: sooner
+    QTimer::singleShot(after, qApp, [dataDir] {
+        QSaveFile file(QDir(dataDir).filePath(u"healthy"_s));
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(QCoreApplication::applicationVersion().toUtf8() + '\n');
+            file.commit();
+        }
+    });
+}
+
 int runStation(const Args &cli, const Options &o)
 {
     const QString dataDir = dataDirOf(cli, o);
@@ -574,7 +594,9 @@ int runStation(const Args &cli, const Options &o)
             QCoreApplication::exit(0);
         });
     } else if (!station.role().isEmpty()) {
-        station.startPos();   // set up already: straight into ViewTouch
+        station.startPos();   // set up already: straight into ViewTouch (which says it's healthy)
+    } else {
+        markHealthyLater(dataDir);
     }
     return QCoreApplication::exec();
 }
@@ -1715,6 +1737,20 @@ int runBackup(const Args &cli, const Options &o)
     return 0;
 }
 
+// The database as it is now, for an update to go back to: a plain copy
+// (the updater keeps it where only root reads it).
+int runSnapshot(const Args &cli, const Options &o)
+{
+    const QString target = cli.value(o.snapshot);
+    QString error;
+    if (!vt::storage::backupDatabase(dbPathOf(cli, o), target, &error)) {
+        qCritical().noquote() << "Snapshot failed:" << error;
+        return 1;
+    }
+    qInfo().noquote() << "Snapshot in" << target;
+    return 0;
+}
+
 // --- the standby server --------------------------------------------------------------------
 
 // The store's main server answering for `storeId` on the network, if any.
@@ -2006,7 +2042,7 @@ void prepareEnvironment(int argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i) {
         const QByteArrayView arg(argv[i]);
-        const bool command = arg == "--backup" || arg == "--restore" || arg.startsWith("--restore=")
+        const bool command = arg == "--backup" || arg == "--snapshot" || arg.startsWith("--snapshot=") || arg == "--restore" || arg.startsWith("--restore=")
                              || arg == "--factory-reset" || arg == "--demo-data"
                              || arg == "--pairing-code" || arg == "--maintainer-pin" || arg.startsWith("--maintainer-pin=") || arg == "-h"
                              || arg == "--help" || arg == "--help-all" || arg == "-v" || arg == "--version";
@@ -2078,7 +2114,7 @@ int main(int argc, char *argv[])
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
         o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
-        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
+        o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.snapshot, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
     cli.process(app);
@@ -2114,12 +2150,16 @@ int main(int argc, char *argv[])
         return runDemoData(args, o);
     if (args.isSet(o.backup))
         return runBackup(args, o);
+    if (args.isSet(o.snapshot))
+        return runSnapshot(args, o);
     if (args.isSet(o.restore))
         return runRestore(args, o);
     if (args.isSet(o.pairingCode))
         return runPairingCode(args, o);
     if (args.isSet(o.maintainerPin))
         return runMaintainerPin(args, o);
+    if (!args.isSet(o.stress) && !args.isSet(o.screenshot))
+        markHealthyLater(dataDirOf(args, o));
     if (args.isSet(o.connect))
         return runTerminal(args, o);
     // The store's servers hand over to each other: a standby that took over

@@ -54,3 +54,33 @@ jobs:
             modern/dist/*.deb
             modern/dist/*.rpm
           if-no-files-found: error
+
+  # What stores go through: the version they run now (the one published on
+  # modern-packages) upgraded to this build, back down again (what an update
+  # that didn't start properly does), and up again; each serves the store.
+  upgrade:
+    name: Upgrade and downgrade (Debian 13)
+    needs: package
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 30
+    steps:
+      - name: Install tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ca-certificates curl git
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vtmodern-debian-x86_64
+          path: new
+
+      - name: Upgrade, downgrade, upgrade
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          curl -fsSL -o old.deb "https://github.com/$REPO/releases/download/modern-packages/vtmodern-debian13-amd64.deb"
+          new=$(ls new/vtmodern_*~debian13_amd64*.deb | head -1)
+          sh modern/packaging/tests/upgrade-test.sh old.deb "$new"

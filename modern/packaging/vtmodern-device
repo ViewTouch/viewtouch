@@ -12,6 +12,7 @@
 #   vtmodern-device update-usb                          install the newest ViewTouch package on a USB stick
 #   vtmodern-device online-check                        is there a newer ViewTouch online? (last line: READY version | CURRENT version)
 #   vtmodern-device online-update                       download it (signed), install it, and the newest tablet apps
+#   vtmodern-device update-verify                       did the update come up? if not, back to the version before
 #   vtmodern-device usb-open                            the USB sticks plugged in, read-only, for pictures
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
 #   vtmodern-device brightness PERCENT                  the screen's backlight, 5 to 100
@@ -75,6 +76,79 @@ set_hostname() {
     else
         printf '127.0.1.1\t%s\n' "$name" >> /etc/hosts
     fi
+}
+
+# Updates: the release page and channel (beta: new versions first), from
+# this computer's /etc/viewtouch/updates.conf, else the one built in.
+conf_value() {
+    for conf in /etc/viewtouch/updates.conf /usr/share/vtmodern/release-channel.conf; do
+        [ -f "$conf" ] || continue
+        grep -q "^$1=" "$conf" || continue
+        sed -n "s/^$1=//p" "$conf" | tail -1 | tr -d '[:space:]'
+        return 0
+    done
+}
+build_of() { printf '%s' "$1" | sed -n 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/p'; }
+now() { date +%s; }
+# When this computer may take the version in latest.json FILE: when it was
+# published, plus (not on the beta channel) betaHours, plus its place in
+# spreadHours. No rollout in it (older releases): at once.
+rollout_due() {
+    published=$(sed -n 's/.*"published" *: *"\([^"]*\)".*/\1/p' "$1" | head -1)
+    at=$(date -d "$published" +%s 2>/dev/null || echo 0)
+    [ "$(conf_value channel)" = beta ] && { echo "$at"; return 0; }
+    beta=$(sed -n 's/.*"betaHours" *: *\([0-9]*\).*/\1/p' "$1" | head -1)
+    spread=$(sed -n 's/.*"spreadHours" *: *\([0-9]*\).*/\1/p' "$1" | head -1)
+    id=$(cat /etc/machine-id 2>/dev/null || hostname)
+    place=$(printf '%s %s' "$id" "$2" | sha256sum | cut -c1-6)
+    place=$(( 0x$place % 1000 ))
+    echo $(( at + ${beta:-0} * 3600 + ${spread:-0} * 3600 * place / 1000 ))
+}
+# Before installing: what to go back to if the new one doesn't come up (the
+# package installed now, kept from its own install, and the store's database
+# as it is: copied by ViewTouch's account, so its files stay its own).
+roll=/var/lib/vtmodern-updates
+data=/var/lib/viewtouch
+prepare_rollback() {
+    install -d -m 700 "$roll"
+    rm -f "$roll/pending" "$roll/previous.deb" "$roll/snapshot.db"
+    if [ -f "$roll/installed.deb" ] && [ "$(dpkg-deb --field "$roll/installed.deb" Version 2>/dev/null)" = "$1" ]; then
+        mv "$roll/installed.deb" "$roll/previous.deb"
+    else
+        rm -f "$roll/installed.deb"
+        echo "(No copy of ViewTouch ${1%%-*} kept here: if the new one doesn't start, it can't go back on its own.)"
+    fi
+    if [ -f "$data/viewtouch.db" ] && id viewtouch >/dev/null 2>&1; then
+        tmp=$(mktemp -d)
+        chown viewtouch "$tmp"
+        if runuser -u viewtouch -- /usr/bin/vtmodern --snapshot "$tmp/snapshot.db" --data-dir "$data" >/dev/null 2>&1; then
+            mv "$tmp/snapshot.db" "$roll/snapshot.db"
+        else
+            echo "(Couldn't copy the store's data before the update.)"
+        fi
+        rm -rf "$tmp"
+    fi
+}
+# After installing FROM -> TO: if ViewTouch was running, check in 15 minutes
+# that the new one came up (update-verify).
+expect_healthy() {
+    units=
+    for u in vtmodern.service vtmodern-kiosk.service vtmodern-station.service; do
+        systemctl is-active -q "$u" 2>/dev/null && units="$units $u"
+    done
+    if [ -z "$units" ] || ! command -v systemd-run >/dev/null 2>&1; then
+        rm -f "$roll/previous.deb" "$roll/snapshot.db"
+        return 0
+    fi
+    printf 'from=%s\nto=%s\nunits=%s\nat=%s\n' "$1" "$2" "$units" "$(now)" > "$roll/pending"
+    systemd-run --quiet --collect --unit="vtmodern-update-verify-$(now)" --on-active=15min \
+        /usr/libexec/vtmodern/vtmodern-device update-verify || true
+}
+pending_value() { sed -n "s/^$1=//p" "$roll/pending" | head -1; }
+# What the home screen shows about the last update (it reads <data>/update-result).
+tell_store() {
+    printf '%s %s\n' "$1" "$(now)" > "$data/update-result"
+    chown viewtouch:viewtouch "$data/update-result" 2>/dev/null || true
 }
 
 case "$action" in
@@ -196,6 +270,8 @@ update-usb)
     fi
     echo "Installing $found..."
     apt-get install -y --allow-downgrades /tmp/vtmodern-update.deb
+    install -d -m 700 "$roll"
+    cp /tmp/vtmodern-update.deb "$roll/installed.deb"   # what a later update can go back to
     rm -f /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig
     echo "Installed $found. Restart the computer to use it."
     ;;
@@ -203,13 +279,7 @@ online-check|online-update)
     # The release page: /etc/viewtouch/updates.conf (this computer's choice),
     # else the one this ViewTouch was built for (release-channel.conf). Its
     # latest.json and each file signed by a trusted key.
-    url=
-    for conf in /etc/viewtouch/updates.conf /usr/share/vtmodern/release-channel.conf; do
-        [ -f "$conf" ] || continue
-        grep -q '^url=' "$conf" || continue
-        url=$(sed -n 's/^url=//p' "$conf" | tail -1 | tr -d '[:space:]')
-        break
-    done
+    url=$(conf_value url)
     [ -n "$url" ] || die "Online updates aren't set up (no release page in /etc/viewtouch/updates.conf)."
     case "$url" in https://*) url=${url%/} ;; *) die "The release page must start with https:// ($url)." ;; esac
     work=/run/vtmodern-online
@@ -222,7 +292,6 @@ online-check|online-update)
         signed_by_trusted "$work/$1" "$work/$1.sig" ||
             die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
     }
-    build_of() { printf '%s' "$1" | sed -n 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/p'; }
     echo "Looking at $url ..."
     fetch latest.json
     latest=$(sed -n 's/.*"version" *: *"\([0-9.]*\)".*/\1/p' "$work/latest.json" | head -1)
@@ -232,6 +301,27 @@ online-check|online-update)
     [ -n "$want" ] || die "latest.json: no build number in $latest."
     if [ "${have:-0}" -ge "$want" ]; then
         echo "CURRENT ${installed%%-*}"
+        exit 0
+    fi
+    # A build that didn't come up here once (update-verify went back): not again.
+    if grep -qxF "$want" "$roll/skip" 2>/dev/null; then
+        echo "ViewTouch $latest didn't start properly on this computer, so it stays on ${installed%%-*}."
+        echo "HELD $latest ${installed%%-*}"
+        exit 0
+    fi
+    # Stores take a new ViewTouch in turns, not all on the same night: those
+    # on the beta channel first, then the rest spread over the next days,
+    # each computer at its own place (from its machine id). A rollout can
+    # be paused (a problem found) by publishing latest.json again.
+    if grep -q '"paused" *: *true' "$work/latest.json"; then
+        echo "ViewTouch $latest is on hold for now (its makers paused it)."
+        echo "PAUSED $latest ${installed%%-*}"
+        exit 0
+    fi
+    due=$(rollout_due "$work/latest.json" "$latest")
+    if [ "$(now)" -lt "$due" ]; then
+        echo "ViewTouch $latest comes to this computer from $(date -d "@$due" '+%Y-%m-%d %H:%M') (stores update in turns)."
+        echo "SOON $latest $(date -d "@$due" +%Y-%m-%dT%H:%M)"
         exit 0
     fi
     if [ "$action" = online-check ]; then
@@ -249,9 +339,12 @@ online-check|online-update)
     got=$(dpkg-deb --field "$work/$pkg" Version)
     [ "$(build_of "$got")" = "$want" ] || die "The package is $got, not $latest: not installed."
     case "$got" in *~"$tag") ;; *) die "The package is $got, not the one for $(os_name): not installed." ;; esac
+    prepare_rollback "$installed"
     export DEBIAN_FRONTEND=noninteractive
     echo "Installing ViewTouch $latest ..."
     apt-get install -y "$work/$pkg"
+    cp "$work/$pkg" "$roll/installed.deb"
+    expect_healthy "$installed" "$got"
     # The tablets' app too: the store offers it to tablets that are behind.
     updates=/var/lib/viewtouch/updates
     for abi in arm64-v8a armeabi-v7a; do
@@ -269,6 +362,45 @@ online-check|online-update)
     done
     rm -rf "$work"
     echo "INSTALLED $latest"
+    ;;
+update-verify)
+    # Some minutes after an update (online-update asks systemd to run this):
+    # ViewTouch marks <data>/healthy with its version once it has run two
+    # minutes. No mark from the new version: the version before goes back
+    # on, with the store's database as it was before the update (the new
+    # one's set aside with the backups), and this build is skipped from now on.
+    [ -f "$roll/pending" ] || { echo "No update to check."; exit 0; }
+    from=$(pending_value from); to=$(pending_value to); units=$(pending_value units)
+    healthy=$(head -1 "$data/healthy" 2>/dev/null || true)
+    if [ -n "$healthy" ] && [ "$(build_of "$healthy")" = "$(build_of "$to")" ]; then
+        rm -f "$roll/pending" "$roll/previous.deb" "$roll/snapshot.db"
+        echo "OK ${to%%-*}"
+        exit 0
+    fi
+    rm -f "$roll/pending"
+    if [ ! -f "$roll/previous.deb" ]; then
+        tell_store "FAILED ${to%%-*} ${from%%-*}"
+        die "ViewTouch ${to%%-*} didn't start properly, and there's no copy of ${from%%-*} here to go back to."
+    fi
+    echo "ViewTouch ${to%%-*} didn't start properly: going back to ${from%%-*}."
+    for u in $units; do systemctl stop "$u" || true; done
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get install -y --allow-downgrades "$roll/previous.deb"
+    if [ -f "$roll/snapshot.db" ]; then
+        aside=$data/backups/viewtouch-$(date +%Y%m%d-%H%M%S)-after-failed-update.db
+        install -d -o viewtouch -g viewtouch -m 750 "$data/backups"
+        for end in "" -wal -shm; do
+            [ -f "$data/viewtouch.db$end" ] && mv "$data/viewtouch.db$end" "$aside$end"
+        done
+        install -o viewtouch -g viewtouch -m 640 "$roll/snapshot.db" "$data/viewtouch.db"
+        rm -f "$roll/snapshot.db"
+        echo "The store's data is as it was before the update (the other copy: $(basename "$aside"))."
+    fi
+    echo "$(build_of "$to")" >> "$roll/skip"
+    mv "$roll/previous.deb" "$roll/installed.deb"
+    tell_store "ROLLED-BACK ${to%%-*} ${from%%-*}"
+    for u in $units; do systemctl start "$u" || true; done
+    echo "BACK ${from%%-*}"
     ;;
 usb-open)
     # Each USB stick's partitions under /run/vtmodern-usb/<name>, read-only
@@ -369,7 +501,7 @@ poweroff)
     systemctl poweroff
     ;;
 *)
-    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' >&2
+    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//' >&2
     exit 1
     ;;
 esac

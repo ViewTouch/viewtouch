@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include "qt_catch.hh"
 #include "storage/async_writer.hh"
 #include "storage/layout_store.hh"
@@ -13,10 +14,11 @@
 using namespace Qt::StringLiterals;
 using namespace vt;
 
-// A store saved by an older ViewTouch: a business day of its own pretend
-// staff (vtmodern --stress, 0.13), closed with End of Day. Today's
-// ViewTouch opens it with nothing lost, and its reports still add up to
-// what that day's End of Day froze.
+// Stores saved by older ViewTouch releases: a business day of its own
+// pretend staff (vtmodern --stress; tools/make-store-fixture.sh at each
+// release), closed with End of Day. Today's ViewTouch opens each with
+// nothing lost, and its reports still add up to what that day's End of Day
+// froze.
 namespace {
 
 QString fixture(const char *name)
@@ -38,11 +40,13 @@ std::map<QString, QString> lines(const QVariantList &rows)
 
 } // namespace
 
-TEST_CASE("A store saved by ViewTouch 0.13: opened, nothing lost, its day's books the same", "[upgrade][oldstore]")
+TEST_CASE("A store saved by an older ViewTouch: opened, nothing lost, its day's books the same", "[upgrade][oldstore]")
 {
+    const char *const saved = GENERATE("store-0.13.db", "store-0.15.db");
+    INFO(saved);
     QTemporaryDir dir;
     const QString path = dir.filePath(u"viewtouch.db"_s);
-    REQUIRE(QFile::copy(fixture("store-0.13.db"), path));
+    REQUIRE(QFile::copy(fixture(saved), path));
     QFile(path).setPermissions(QFile::ReadOwner | QFile::WriteOwner);
 
     storage::PosStore store(path);
@@ -59,12 +63,15 @@ TEST_CASE("A store saved by ViewTouch 0.13: opened, nothing lost, its day's book
     REQUIRE(data->pastDays.size() == 1);
     const app::PastDay day = data->pastDays.front();
     const auto frozen = lines(day.reports[u"sales"_s].toObject()[u"rows"_s].toArray().toVariantList());
-    REQUIRE(frozen.at(u"Checks"_s) == u"159"_s);
-    REQUIRE(frozen.at(u"Total with tax"_s) == u"$6988.46"_s);
+    if (std::string_view(saved) == "store-0.13.db") {   // the file itself unchanged
+        REQUIRE(frozen.at(u"Checks"_s) == u"159"_s);
+        REQUIRE(frozen.at(u"Total with tax"_s) == u"$6988.46"_s);
+    }
+    REQUIRE(frozen.at(u"Checks"_s).toInt() > 50);
 
     // Every closed check came back.
     const std::vector<core::Check> closed = storage::closedChecksBetween(path, day.day.openedAt, day.day.closedAt + 1);
-    CHECK(closed.size() == 159);
+    CHECK(closed.size() == std::size_t(frozen.at(u"Checks"_s).toInt()));
 
     // The same day as a range report, worked out again by today's code.
     storage::AsyncWriter writer(path);

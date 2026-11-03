@@ -2,13 +2,19 @@
 # Publish ViewTouch to the release page that store computers check for
 # updates (Home screen -> Updates -> Check for a New ViewTouch):
 #
-#   packaging/publish.sh [--apk-arm64 FILE] [--apk-armv7 FILE] [--dry-run]
+#   packaging/publish.sh [--apk-arm64 FILE] [--apk-armv7 FILE] [--beta-hours N] [--spread-hours N] [--dry-run]
+#   packaging/publish.sh --rollout pause|resume|now [--dry-run]
 #
 # Takes the newest Debian 13 package for each architecture in modern/dist
 # (built and signed by build-packages.sh), the Ubuntu 26.04 and Fedora 44
 # ones there (for new installs), and the tablet apps if given;
 # signs the apps and latest.json (what's newest, and its files) with the key
 # on this computer; uploads them all, each with its .sig and .sha256.
+#
+# Stores take it in turns: computers on the beta channel at once, the rest
+# after --beta-hours (default 24), spread over --spread-hours (default 72).
+# --rollout changes only the published latest.json (signed again): pause
+# (nobody takes it any more: a problem found), resume, or now (everyone).
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -16,20 +22,28 @@ modern=$(dirname "$here")
 dist=$modern/dist
 release=${VTM_RELEASE:-modern-packages}
 key=${VTM_SIGNING_KEY:-$HOME/.config/viewtouch/signing/update-signing-key.pem}
-pub=$here/update-signing-key.pub.pem
+pub=${VTM_SIGNING_PUB:-$here/update-signing-key.pub.pem}
 apk64=
 apk32=
 dry=no
+beta=24
+spread=72
+rollout=
 while [ $# -gt 0 ]; do
     case "$1" in
         --apk-arm64) apk64=$2; shift ;;
         --apk-armv7) apk32=$2; shift ;;
+        --beta-hours) beta=$2; shift ;;
+        --spread-hours) spread=$2; shift ;;
+        --rollout) rollout=$2; shift ;;
         --dry-run) dry=yes ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
     shift
 done
 [ -f "$key" ] || { echo "No signing key at $key" >&2; exit 1; }
+
+case "$beta$spread" in *[!0-9]*) echo "--beta-hours and --spread-hours are whole hours." >&2; exit 1 ;; esac
 
 out=$(mktemp -d)
 trap 'rm -rf "$out"' EXIT
@@ -38,6 +52,38 @@ sign() {   # file: its .sig (checked) and .sha256
     openssl pkeyutl -verify -pubin -inkey "$pub" -rawin -in "$1" -sigfile "$1.sig" >/dev/null
     (cd "$(dirname "$1")" && sha256sum "$(basename "$1")" > "$(basename "$1").sha256")
 }
+
+if [ -n "$rollout" ]; then
+    case "$rollout" in pause|resume|now) ;; *) echo "--rollout pause, resume or now" >&2; exit 1 ;; esac
+    if [ -n "${VTM_LATEST_JSON:-}" ]; then
+        cp "$VTM_LATEST_JSON" "$out/latest.json"
+    else
+        gh release download "$release" --pattern latest.json --dir "$out"
+    fi
+    python3 - "$out/latest.json" "$rollout" <<'PY2'
+import json, sys
+path, what = sys.argv[1], sys.argv[2]
+doc = json.load(open(path))
+r = doc.setdefault("rollout", {"betaHours": 0, "spreadHours": 0, "paused": False})
+if what == "pause":
+    r["paused"] = True
+elif what == "resume":
+    r["paused"] = False
+else:
+    r.update(betaHours=0, spreadHours=0, paused=False)
+json.dump(doc, open(path, "w"), indent=2)
+open(path, "a").write("\n")
+PY2
+    sign "$out/latest.json"
+    cat "$out/latest.json"
+    if [ "$dry" = yes ]; then
+        echo "(dry run: nothing uploaded)"
+        exit 0
+    fi
+    gh release upload "$release" "$out/latest.json" "$out/latest.json.sig" "$out/latest.json.sha256" --clobber
+    echo "Rollout: $rollout."
+    exit 0
+fi
 
 version=
 packages=
@@ -114,6 +160,11 @@ $packages
   },
   "apps": {
 $apps
+  },
+  "rollout": {
+    "betaHours": $beta,
+    "spreadHours": $spread,
+    "paused": false
   }
 }
 JSON

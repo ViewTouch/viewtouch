@@ -669,6 +669,18 @@ void StationController::refreshStatus()
         problems << tr("ViewTouch isn't running");
     if (!network_.value(u"online"_s).toBool())
         problems << tr("No network");
+    // An update that didn't come up, in the last week (vtmodern-device
+    // update-verify: "ROLLED-BACK 0.16.1600 0.15.1571 <when>").
+    if (QFile result(QDir(dataDir_).filePath(u"update-result"_s)); result.open(QIODevice::ReadOnly)) {
+        const QStringList words = QString::fromUtf8(result.readLine()).split(u' ', Qt::SkipEmptyParts);
+        const qint64 at = words.value(3).toLongLong() * 1000;
+        if (words.size() >= 4 && now - at < 7 * 86'400'000LL) {
+            if (words[0] == u"ROLLED-BACK")
+                problems << tr("ViewTouch %1 didn't start properly, so this computer went back to %2").arg(words[1], words[2]);
+            else if (words[0] == u"FAILED")
+                problems << tr("ViewTouch %1 didn't start properly (no copy of %2 here to go back to)").arg(words[1], words[2]);
+        }
+    }
     s.insert(u"problems"_s, problems);
     if (s != status_) {
         status_ = s;
