@@ -659,7 +659,7 @@ TEST_CASE("Updates: the program copies its store for an update to go back to, an
     const auto run = [&](const QStringList &args) {
         QProcess p;
         p.start(QString::fromLocal8Bit(VTM_PROGRAM), QStringList{u"--data-dir"_s, dir.path()} + args);
-        REQUIRE(p.waitForFinished(60000));
+        REQUIRE(p.waitForFinished(180000));   // demo data under the sanitizers on a slow machine: over a minute
         INFO(p.readAllStandardError().toStdString());
         REQUIRE(p.exitCode() == 0);
     };
