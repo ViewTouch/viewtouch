@@ -35,7 +35,7 @@ jobs:
             qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qttest \
             libqt6sql6-sqlite qt6-qpa-plugins fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # every commit: the build number and version history come from them
 
