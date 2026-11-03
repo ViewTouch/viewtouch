@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
 
 // Draws a zone's body for any shape: drop shadow, bevel frame, and face
@@ -101,14 +102,27 @@ Item {
         hideSource: true
     }
 
+    // A rectangle's or rounded rectangle's shadow, soft: Qt 6.9's
+    // RectangularShadow, one quick pass on the GPU. Other shapes, and
+    // computers drawing without a GPU, keep the hard one below.
+    readonly property bool softShadow: shadow > 0 && (shape === "rect" || shape === "rounded") && !softwareRenderer
+    RectangularShadow {
+        visible: root.softShadow
+        anchors.fill: parent
+        radius: root.radius
+        offset: Qt.vector2d(root.shadow * 0.5, root.shadow)
+        blur: root.shadow * 2.5
+        color: Qt.rgba(0, 0, 0, 0.45)
+    }
+
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
 
-        // Drop shadow
+        // Drop shadow (hard)
         ShapePath {
             strokeWidth: -1
-            fillColor: root.shadow > 0 ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
+            fillColor: root.shadow > 0 && !root.softShadow ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
             PathPolyline { path: root.outline(root.shadow, root.shadow, root.width, root.height, root.radius) }
         }
 
