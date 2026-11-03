@@ -95,7 +95,8 @@ Item {
         readonly property int columns: Math.max(1, Math.floor((width - gridBar.width - 4) / 320))
         cellWidth: Math.max(280, (width - gridBar.room) / columns)
         cellHeight: 170
-        model: w.checks
+        // Only the checks that changed drawn again (any screen's change reaches every list).
+        model: LiveList { rows: w.checks }
 
         delegate: Item {
             id: card

@@ -276,7 +276,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                model: d.lines
+                model: LiveList { rows: d.lines }   // only the lines that changed drawn again
                 spacing: d.unit * 0.35
                 onCountChanged: positionViewAtEnd()   // the newest item stays in view
                 delegate: Column {

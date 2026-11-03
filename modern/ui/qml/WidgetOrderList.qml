@@ -22,6 +22,18 @@ Item {
     readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(40) : 0
     readonly property var check: pos ? pos.check : ({})
     // A swiped line: from here, since selecting it rebuilds the lines (and the row).
+    // Whether scene point `at` is on a visible key (a WidgetKey) inside `item`.
+    function onAKey(item, at) {
+        for (const c of item.children) {
+            if (!c.visible)
+                continue
+            if (c.takesTouch !== undefined && c.contains(c.mapFromItem(null, at.x, at.y)))
+                return true
+            if (onAKey(c, at))
+                return true
+        }
+        return false
+    }
     function swipeOff(lineId) {
         pos.selectedLine = lineId
         pos.voidItem()
@@ -497,7 +509,9 @@ Item {
             Layout.fillHeight: true
             clip: true
             spacing: 2
-            model: w.pos ? w.pos.lines : []
+            // Only the lines that changed are drawn again (an item added to a
+            // long check doesn't redo the others).
+            model: LiveList { rows: w.pos ? w.pos.lines : [] }
             onCountChanged: positionViewAtEnd()
 
             delegate: Rectangle {
@@ -512,7 +526,22 @@ Item {
                 objectName: waiting ? "waitingLine" : ""
                 opacity: waiting ? 0.55 : 1
 
-                TapHandler { enabled: !row.waiting; onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedLine = row.modelData.id } }
+                // A tap on one of the line's own keys (Choose, −, +, Again) is the
+                // key's, not a touch on the line (it chose the line again after
+                // Again had chosen the new one; hidden while every change made
+                // the rows anew).
+                // (Decided on the press: by the release the key may be gone, its
+                // line no longer the chosen one.)
+                TapHandler {
+                    enabled: !row.waiting
+                    property bool onKey: false
+                    onPressedChanged: if (pressed) onKey = w.onAKey(row, point.scenePressPosition)
+                    onTapped: {
+                        if (onKey || TouchGuard.covered(point.scenePressPosition))
+                            return
+                        w.pos.selectedLine = row.modelData.id
+                    }
+                }
                 // Swipe left: off the check (a void once sent). Swipe right: one more.
                 readonly property real swipeAt: width * 0.28
                 DragHandler {
