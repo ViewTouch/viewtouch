@@ -55,7 +55,7 @@ ApplicationWindow {
                                                                      : root.height - keysHeight)
                                   : root.height
     property real lift: 0
-    Behavior on lift { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+    Behavior on lift { enabled: !Ui.reduceMotion; NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
     function inside(item, container) {
         for (let p = item; p; p = p.parent)
             if (p === container) return true
@@ -291,6 +291,7 @@ ApplicationWindow {
         contentItem: Item {
             TouchKeyboard {
                 id: keyboard
+                objectName: "screenKeyboard"
                 anchors {
                     fill: parent
                     leftMargin: root.leftPadding
@@ -1447,7 +1448,7 @@ ApplicationWindow {
             font.pixelSize: 16
         }
 
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on opacity { enabled: !Ui.reduceMotion; NumberAnimation { duration: 150 } }
         Timer { id: toastTimer; interval: 2600; onTriggered: toastBox.opacity = 0 }
     }
 
@@ -1489,7 +1490,7 @@ ApplicationWindow {
             font.bold: true
             text: addedFlash.text + (addedFlash.waiting ? "  " + qsTr("(waiting)") : "")
         }
-        Behavior on opacity { NumberAnimation { duration: 180 } }
+        Behavior on opacity { enabled: !Ui.reduceMotion; NumberAnimation { duration: 180 } }
         Timer { id: addedTimer; interval: 900; onTriggered: addedFlash.opacity = 0 }
     }
 

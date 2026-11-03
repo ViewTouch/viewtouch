@@ -164,9 +164,9 @@ Rectangle {
             }
             SequentialAnimation {
                 id: fade
-                NumberAnimation { target: slide; property: "opacity"; to: 0; duration: 350 }
+                NumberAnimation { target: slide; property: "opacity"; to: 0; duration: Ui.reduceMotion ? 0 : 350 }
                 ScriptAction { script: idle.index = (idle.index + 1) % Math.max(1, idle.slides.length) }
-                NumberAnimation { target: slide; property: "opacity"; to: 1; duration: 350 }
+                NumberAnimation { target: slide; property: "opacity"; to: 1; duration: Ui.reduceMotion ? 0 : 350 }
             }
             Item {
                 id: slide

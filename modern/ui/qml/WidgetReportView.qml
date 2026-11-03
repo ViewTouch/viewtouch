@@ -200,7 +200,7 @@ Item {
                 id: daysRow
                 Layout.fillWidth: true
                 property real shown: w.folded ? 0 : 1
-                Behavior on shown { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                Behavior on shown { enabled: !Ui.reduceMotion; NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
                 Layout.preferredHeight: shown * w.keyH
                 Layout.fillHeight: false
                 visible: shown > 0.01

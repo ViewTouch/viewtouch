@@ -163,7 +163,7 @@ Rectangle {
                                 font.bold: true
                             }
                             SequentialAnimation on opacity {
-                                running: card.justCalled
+                                running: card.justCalled && !Ui.reduceMotion   // less motion: the bright border says it
                                 loops: 5
                                 NumberAnimation { to: 0.35; duration: 350 }
                                 NumberAnimation { to: 1; duration: 350 }

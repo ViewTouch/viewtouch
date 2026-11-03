@@ -5399,7 +5399,10 @@ TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad f
     QTest::qWait(150);
     auto *keys = s.window->findChild<QObject *>(u"touchKeys"_s);
     REQUIRE(keys);
-    const auto keyboard = [&] { return qvariant_cast<QObject *>(keys->property("contentItem")); };
+    const auto keyboard = [&] {   // (inside the popup, in from the safe area's edges)
+        return static_cast<QObject *>(Screen::findBy(qvariant_cast<QQuickItem *>(keys->property("contentItem")), "objectName",
+                                                     u"screenKeyboard"_s));
+    };
     CHECK_FALSE(keys->property("visible").toBool());
 
     // + Name: the letters.

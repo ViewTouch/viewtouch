@@ -468,9 +468,9 @@ Rectangle {
         }
         SequentialAnimation {
             id: fade
-            NumberAnimation { target: slide; property: "opacity"; to: 0; duration: 400 }
+            NumberAnimation { target: slide; property: "opacity"; to: 0; duration: Ui.reduceMotion ? 0 : 400 }
             ScriptAction { script: attract.index = (attract.index + 1) % Math.max(1, attract.slides.length) }
-            NumberAnimation { target: slide; property: "opacity"; to: 1; duration: 400 }
+            NumberAnimation { target: slide; property: "opacity"; to: 1; duration: Ui.reduceMotion ? 0 : 400 }
         }
         Item {
             id: slide
@@ -546,7 +546,7 @@ Rectangle {
                 radius: height / 2
                 color: k.accent
                 SequentialAnimation on scale {   // a gentle pulse: touch me
-                    running: attract.visible
+                    running: attract.visible && !Ui.reduceMotion
                     loops: Animation.Infinite
                     NumberAnimation { from: 1; to: 1.05; duration: 900; easing.type: Easing.InOutQuad }
                     NumberAnimation { from: 1.05; to: 1; duration: 900; easing.type: Easing.InOutQuad }
@@ -581,7 +581,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: k.easyReach ? parent.height * 0.6 : parent.height
-        Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on height { enabled: !Ui.reduceMotion; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
         // --- For Here / To Go ---
         ColumnLayout {

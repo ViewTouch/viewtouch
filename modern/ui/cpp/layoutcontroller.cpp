@@ -4,7 +4,9 @@
 #include <QJniObject>
 #endif
 
+#include <QAccessibilityHints>
 #include <QGuiApplication>
+#include <QStyleHints>
 
 #include "net/build_info.hh"
 
@@ -116,6 +118,11 @@ LayoutController::LayoutController(Layout layout, QObject *parent)
     , layout_(std::move(layout))
     , nav_(layout_)
 {
+    // The device asking for high contrast (its accessibility settings): a
+    // screen without a look of its own takes High Contrast, and follows it.
+    if (QGuiApplication::styleHints())
+        connect(QGuiApplication::styleHints()->accessibility(), &QAccessibilityHints::contrastPreferenceChanged, this,
+                [this] { updateTerminalLook(); });
     // The card reader asks the store for its connection token, and says how a card went.
     connect(&cardReader_, &CardReader::needToken, this, [this] {
         if (pos_)
@@ -683,7 +690,10 @@ const Layout &LayoutController::activeLayout() const
 
 void LayoutController::updateTerminalLook()
 {
-    const QString id = pos_ ? pos_->terminalLook() : QString();
+    QString id = pos_ ? pos_->terminalLook() : QString();
+    if (id.isEmpty() && QGuiApplication::styleHints()
+        && QGuiApplication::styleHints()->accessibility()->contrastPreference() == Qt::ContrastPreference::HighContrast)
+        id = u"contrast"_s;   // the device asks for it (Qt 6.10's accessibility hints)
     std::optional<Layout> next;
     if (!id.isEmpty()) {
         const QList<vt::app::Look> looks = allLooks(pos_);

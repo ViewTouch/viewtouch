@@ -534,7 +534,7 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             onHeightChanged: w.relayout()
 
-            Behavior on contentX { enabled: !board.moving; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on contentX { enabled: !board.moving && !Ui.reduceMotion; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
             Row {
                 id: columnsRow
                 spacing: 12

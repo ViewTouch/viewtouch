@@ -22,4 +22,9 @@ QtObject {
     readonly property color go: theme.go ?? "#1f8a4c"                // OK, done, start
     readonly property color goDark: theme.goDark ?? "#1f6b40"        // the same, quieter
     readonly property string font: theme.font ?? "DejaVu Sans"
+
+    // The device asks for less motion (its accessibility settings, Qt 6.12):
+    // what only decorates stands still (flashes, slides, glides); what says
+    // something (a timer, a progress bar) still moves.
+    readonly property bool reduceMotion: Application.styleHints.accessibility.motionPreference === Qt.ReducedMotion
 }
