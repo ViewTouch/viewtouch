@@ -13,6 +13,8 @@ Item {
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(w.width / 26, w.height / 20))
+    // A phone: each task a finger tall at least (it's the box to tick).
+    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(48) : 0
 
     Rectangle {
         anchors.fill: parent
@@ -60,7 +62,7 @@ Item {
                 required property int index
                 objectName: "task-" + w.list + "-" + index
                 Layout.fillWidth: true
-                Layout.preferredHeight: w.unit * 2.4
+                Layout.preferredHeight: Math.max(w.unit * 2.4, w.tapH)
                 radius: 8
                 color: tap.pressed ? "#2b3340" : modelData.done ? "#1f3a2b" : "#262c36"
                 RowLayout {

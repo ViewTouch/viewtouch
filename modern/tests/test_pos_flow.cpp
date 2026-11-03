@@ -10533,3 +10533,27 @@ TEST_CASE("UI: a store's animated GIF plays on the guest screens; a still pictur
         }
     }
 }
+
+TEST_CASE("Phone: a note typed with the phone's own keyboard, not forty tiny keys", "[flow][ui][phone][keyboard]")
+{
+    // The page's keyboard (keys 24 pixels wide on a phone) gives way to a
+    // field that opens the phone's keyboard; what's typed reaches the check.
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(s.pos.addItem(u"cobb"_s));
+    REQUIRE(s.c.jumpTo(u"note"_s));
+    QTest::qWait(120);
+    QQuickItem *field = Screen::findBy(s.window->contentItem(), "objectName", u"noteField"_s);
+    REQUIRE(field);
+    CHECK(field->hasActiveFocus());   // the phone's keyboard comes up by itself
+    CHECK_FALSE(Screen::findBy(s.window->contentItem(), "text", u"Q"_s));   // no tiny keys
+    CHECK((field->property("inputMethodHints").toInt() & Qt::ImhNoFullscreen) != 0);
+    for (const char *ch = "No onion"; *ch; ++ch)
+        QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+    QTest::qWait(60);
+    CHECK(s.pos.textEntry() == u"No onion"_s);
+    QTest::keyClick(s.window, Qt::Key_Backspace);
+    QTest::qWait(40);
+    CHECK(s.pos.textEntry() == u"No onio"_s);
+}

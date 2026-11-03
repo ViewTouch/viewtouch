@@ -73,6 +73,8 @@ Item {
                     Layout.fillWidth: true
                     placeholderText: qsTr("Phone or name…")
                     font.pixelSize: 18
+                    // A phone: a finger tall, not shrunk with the page.
+                    implicitHeight: zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(48, zone.touch(48)) : 48
                     onTextEdited: searchTimer.restart()
                 }
                 ListView {

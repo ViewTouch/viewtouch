@@ -14,6 +14,8 @@ Item {
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(30, w.width * 0.045))
+    // A phone: its keys a finger tall at least.
+    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(48) : 0
     readonly property bool bank: (d.mode ?? "") === "serverBank"
     // Drawer users on a terminal set up without a cash drawer (one left
     // open from before can still be counted).
@@ -128,7 +130,7 @@ Item {
                 id: other
                 required property var modelData
                 Layout.fillWidth: true
-                Layout.preferredHeight: w.unit * 2.2
+                Layout.preferredHeight: Math.max(w.unit * 2.2, w.tapH)
                 Layout.fillHeight: false
                 spacing: w.unit * 0.4
                 Text {
@@ -193,7 +195,7 @@ Item {
         RowLayout {
             visible: !w.noDrawer
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 3
+            Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
             Layout.fillHeight: false   // nested layouts fill by default
             spacing: w.unit * 0.4
             layoutDirection: w.zone.keyOrder("drawer", ["drawer", "noSale"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight
@@ -240,7 +242,7 @@ Item {
         RowLayout {
             visible: w.d.open ?? false
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 3
+            Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
             Layout.fillHeight: false
             spacing: w.unit * 0.4
             layoutDirection: w.zone.keyOrder("payOut", ["payOut", "paidIn"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight

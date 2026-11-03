@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
 // On-screen keyboard for notes; types into the POS text entry.
@@ -17,6 +18,48 @@ Item {
         ["clear", "space", "."],
     ]
 
+    // On a phone: the phone's own keyboard (bigger keys, the language its
+    // owner types in) into a field, instead of forty keys a few pixels wide.
+    readonly property bool phone: zone !== null && zone.shownScreen === "phone"
+    readonly property string hint: w.zone && w.zone.props && w.zone.props.placeholder
+                                   ? qsTranslate("Page", w.zone.props.placeholder) : qsTr("Type a note…")
+    // What the field holds, sent as the keys the store knows: removed
+    // letters as back, added ones as typed.
+    function typeTo(text) {
+        if (!pos)
+            return
+        const was = pos.textEntry
+        let same = 0
+        while (same < was.length && same < text.length && was[same] === text[same])
+            ++same
+        for (let n = was.length - same; n > 0; --n)
+            pos.textKey("back")
+        for (const ch of text.slice(same))
+            pos.textKey(ch === " " ? "space" : ch)
+    }
+
+    TextField {
+        id: phoneField
+        objectName: "noteField"
+        visible: w.phone
+        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 8 }
+        height: Math.max(48, w.height * 0.25)
+        font.pixelSize: 18
+        placeholderText: w.hint
+        // Qt 6.12: a phone held sideways keeps the page in view, not a
+        // full-screen box over it.
+        inputMethodHints: Qt.ImhNoFullscreen
+        onTextEdited: w.typeTo(text)
+        // The store's text while not typing (a handheld waits for the
+        // store: its answer mustn't take back what's being typed).
+        Binding on text {
+            when: !phoneField.activeFocus
+            value: w.pos ? w.pos.textEntry : ""
+        }
+        onVisibleChanged: if (visible) forceActiveFocus()
+        Component.onCompleted: if (visible) forceActiveFocus()
+    }
+
     function press(k) {
         if (k === "shift") { shifted = !shifted; return }
         if (k === "back" || k === "clear" || k === "space") {
@@ -28,6 +71,7 @@ Item {
     }
 
     ColumnLayout {
+        visible: !w.phone
         anchors.fill: parent
         anchors.margins: w.height * 0.03
         spacing: w.height * 0.02

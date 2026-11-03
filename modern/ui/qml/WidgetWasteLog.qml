@@ -8,6 +8,11 @@ import QtQuick.Layouts
 // apart from what goes missing without a word.
 Item {
     id: w
+    // A phone: a control as tall as it says in screen pixels (a finger's
+    // worth), not shrunk with the page.
+    function fingers(px) {
+        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+    }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var info: pos ? pos.wasteLog : ({})
@@ -71,7 +76,7 @@ Item {
                         checkable: true
                         checked: !w.byIngredient
                         highlighted: checked
-                        implicitHeight: 46
+                        implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         onClicked: w.byIngredient = false
                     }
@@ -81,14 +86,14 @@ Item {
                         checkable: true
                         checked: w.byIngredient
                         highlighted: checked
-                        implicitHeight: 46
+                        implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         onClicked: w.byIngredient = true
                     }
                     TextField {
                         objectName: "wasteSearch"
                         Layout.fillWidth: true
-                        implicitHeight: 46
+                        implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         placeholderText: qsTr("Find…")
                         onTextEdited: w.search = text
@@ -132,7 +137,7 @@ Item {
                             checkable: true
                             checked: w.reason === modelData
                             highlighted: checked
-                            implicitHeight: 44
+                            implicitHeight: w.fingers(44)
                             font.pixelSize: 14
                             onClicked: w.reason = modelData
                         }
@@ -146,7 +151,7 @@ Item {
                         objectName: "wasteLess"
                         text: "−"
                         implicitWidth: 52
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 20
                         onClicked: qty.text = String(Math.max(1, (Number(qty.text) || 1) - 1))
                     }
@@ -155,7 +160,7 @@ Item {
                         objectName: "wasteQty"
                         text: "1"
                         implicitWidth: 100
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         inputMethodHints: Qt.ImhDecimalNumbersOnly
@@ -164,7 +169,7 @@ Item {
                         objectName: "wasteMore"
                         text: "+"
                         implicitWidth: 52
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 20
                         onClicked: qty.text = String((Number(qty.text) || 0) + 1)
                     }
@@ -176,7 +181,7 @@ Item {
                         text: w.chosenOne ? qsTr("Log Waste: %1 %2").arg(qty.text).arg(w.chosenOne.name) : qsTr("Log Waste")
                         highlighted: true
                         enabled: w.chosen !== "" && w.reason !== "" && Number(qty.text) > 0
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 17
                         onClicked: w.log()
                     }

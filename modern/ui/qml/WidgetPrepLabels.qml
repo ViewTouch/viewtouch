@@ -8,6 +8,11 @@ import QtQuick.Layouts
 // ingredient (Inventory: Keeps for), or the time chosen here.
 Item {
     id: w
+    // A phone: a control as tall as it says in screen pixels (a finger's
+    // worth), not shrunk with the page.
+    function fingers(px) {
+        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+    }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var info: pos ? pos.prepLabels : ({})
@@ -73,7 +78,7 @@ Item {
                         objectName: "labelSearch"
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
-                        implicitHeight: 46
+                        implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         placeholderText: qsTr("Find…")
                         onTextEdited: w.search = text
@@ -83,7 +88,7 @@ Item {
                         objectName: "labelOther"
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
-                        implicitHeight: 46
+                        implicitHeight: w.fingers(46)
                         font.pixelSize: 15
                         placeholderText: qsTr("Or type what it is")
                     }
@@ -172,7 +177,7 @@ Item {
                             checked: w.hours === modelData.h
                             highlighted: checked
                             Layout.fillWidth: true
-                            implicitHeight: 42
+                            implicitHeight: w.fingers(42)
                             font.pixelSize: 14
                             onClicked: w.hours = modelData.h
                         }
@@ -182,7 +187,7 @@ Item {
                     id: note
                     objectName: "labelNote"
                     Layout.fillWidth: true
-                    implicitHeight: 42
+                    implicitHeight: w.fingers(42)
                     font.pixelSize: 14
                     placeholderText: qsTr("Note (batch, amount…)")
                 }
@@ -193,7 +198,7 @@ Item {
                         objectName: "labelsLess"
                         text: "−"
                         implicitWidth: 52
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 20
                         onClicked: w.count = Math.max(1, w.count - 1)
                     }
@@ -210,7 +215,7 @@ Item {
                         objectName: "labelsMore"
                         text: "+"
                         implicitWidth: 52
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 20
                         onClicked: w.count = Math.min(50, w.count + 1)
                     }
@@ -220,7 +225,7 @@ Item {
                         text: qsTr("Print %n label(s)", "", w.count)
                         highlighted: true
                         enabled: w.name !== "" && (w.info.printer ?? "") !== ""
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         font.pixelSize: 16
                         onClicked: w.pos.printPrepLabels({ ingredient: other.text.trim() === "" ? w.chosen : "",
                                                            name: other.text.trim(), hours: w.hours, count: w.count,

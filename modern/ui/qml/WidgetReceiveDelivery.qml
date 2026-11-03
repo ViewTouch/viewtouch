@@ -7,6 +7,11 @@ import QtQuick.Layouts
 // and the delivery is kept for the Purchases report.
 Item {
     id: w
+    // A phone: a control as tall as it says in screen pixels (a finger's
+    // worth), not shrunk with the page.
+    function fingers(px) {
+        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+    }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var info: pos ? pos.receiving : ({})
@@ -76,7 +81,7 @@ Item {
                             checkable: true
                             checked: w.vendor === modelData.id
                             highlighted: checked
-                            implicitHeight: 44
+                            implicitHeight: w.fingers(44)
                             font.pixelSize: 15
                             onClicked: w.vendor = modelData.id
                         }
@@ -90,7 +95,7 @@ Item {
                         id: invoice
                         objectName: "deliveryInvoice"
                         Layout.preferredWidth: 220
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 15
                     }
                     Item { Layout.fillWidth: true }
@@ -140,7 +145,7 @@ Item {
                         TextField {
                             objectName: "qty-" + row.modelData.id
                             Layout.preferredWidth: 110
-                            implicitHeight: 44
+                            implicitHeight: w.fingers(44)
                             font.pixelSize: 16
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.qty[row.modelData.id] ?? "") : ""
@@ -150,7 +155,7 @@ Item {
                         TextField {
                             objectName: "cost-" + row.modelData.id
                             Layout.preferredWidth: 110
-                            implicitHeight: 44
+                            implicitHeight: w.fingers(44)
                             font.pixelSize: 16
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.cost[row.modelData.id] ?? "") : ""

@@ -8,6 +8,11 @@ import QtQuick.Layouts
 // sales and deliveries say should be there.
 Item {
     id: w
+    // A phone: a control as tall as it says in screen pixels (a finger's
+    // worth), not shrunk with the page.
+    function fingers(px) {
+        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+    }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property var info: pos ? pos.stockCounting : ({})
@@ -62,7 +67,7 @@ Item {
                             checkable: true
                             checked: w.vendor === modelData.id
                             highlighted: checked
-                            implicitHeight: 44
+                            implicitHeight: w.fingers(44)
                             font.pixelSize: 15
                             onClicked: w.vendor = modelData.id
                         }
@@ -118,7 +123,7 @@ Item {
                         TextField {
                             objectName: "counted-" + row.modelData.id
                             Layout.preferredWidth: 140
-                            implicitHeight: 46
+                            implicitHeight: w.fingers(46)
                             font.pixelSize: 17
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.counted[row.modelData.id] ?? "") : ""
