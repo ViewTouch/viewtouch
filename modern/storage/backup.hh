@@ -18,8 +18,11 @@ namespace vt::storage {
 bool backupDatabase(const QString &db, const QString &target, QString *error = nullptr);
 
 // SQLite's quick check of the database in use (WAL included); `error`
-// says what is wrong.
-bool databaseIntact(const QString &file, QString *error = nullptr);
+// says what is wrong. full: its whole integrity check (slower: indexes too).
+bool databaseIntact(const QString &file, QString *error = nullptr, bool full = false);
+// A restore drill: a copy of the plain backup `file` opened and loaded as a
+// store, the way a restore would (the backup itself untouched).
+bool backupLoads(const QString &file, QString *error = nullptr);
 // Whether `file` is a ViewTouch database that SQLite can read in full.
 bool verifyDatabase(const QString &file, QString *error = nullptr);
 
@@ -71,6 +74,9 @@ public:
 signals:
     // copy: what happened to the second copy ("" when there is none).
     void finished(bool ok, const QString &file, const QString &error, const QString &copy, bool copyOk);
+    // After each backup: the backup opened as a store (drill), and the
+    // database in use checked in full (integrity); empty when fine.
+    void checked(const QString &drillError, const QString &integrityError);
 
 private:
     void check();

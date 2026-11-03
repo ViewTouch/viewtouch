@@ -57,6 +57,12 @@
 #include <termios.h>
 #include <unistd.h>
 #endif
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#include <execinfo.h>   // the crash handler's backtrace
+#include <fcntl.h>
+#endif
+#include <csignal>
+#include <cstring>
 #include <QTemporaryDir>
 #include <QtQml/qqmlextensionplugin.h>
 
@@ -553,6 +559,63 @@ std::optional<vt::net::Credentials> joinStore(const Args &cli, const Options &o,
 }
 
 // The home screen of a ViewTouch computer: ViewTouch runs as its child.
+// A crash: where in the code, for whoever fixes it. Written to
+// <data dir>/crashes/crash-<started>-<pid>.txt (and the journal), then
+// ViewTouch stops as it would have (systemd or the home screen starts it
+// again; Store Check says it closed by itself). Only what a signal handler
+// may do: the file's name is made beforehand, and write() it.
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(__SANITIZE_ADDRESS__) && !defined(__SANITIZE_THREAD__)
+namespace {
+char g_crashFile[1024];
+char g_crashHeader[256];
+
+void onCrash(int sig)
+{
+    const char *name = sig == SIGSEGV ? "SIGSEGV (bad memory access)" : sig == SIGABRT ? "SIGABRT (aborted)"
+                       : sig == SIGBUS ? "SIGBUS" : sig == SIGFPE ? "SIGFPE" : sig == SIGILL ? "SIGILL" : "a signal";
+    void *frames[64];
+    const int n = backtrace(frames, 64);
+    const int fd = ::open(g_crashFile, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0640);
+    for (const int out : {fd, int(STDERR_FILENO)}) {
+        if (out < 0)
+            continue;
+        [[maybe_unused]] auto w = ::write(out, g_crashHeader, std::strlen(g_crashHeader));
+        w = ::write(out, name, std::strlen(name));
+        w = ::write(out, "\n", 1);
+        backtrace_symbols_fd(frames, n, out);
+    }
+    if (fd >= 0)
+        ::close(fd);
+    std::signal(sig, SIG_DFL);
+    std::raise(sig);
+}
+} // namespace
+
+void installCrashHandler(const QString &dataDir)
+{
+    const QDir dir(QDir(dataDir).filePath(u"crashes"_s));
+    if (!dir.mkpath(u"."_s))
+        return;
+    // The newest ten are plenty.
+    const QFileInfoList old = dir.entryInfoList({u"crash-*.txt"_s}, QDir::Files, QDir::Time);
+    for (qsizetype i = 10; i < old.size(); ++i)
+        QFile::remove(old[i].filePath());
+    const QByteArray file = dir.filePath(u"crash-%1-%2.txt"_s.arg(QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s))
+                                             .arg(QCoreApplication::applicationPid())).toLocal8Bit();
+    const QByteArray header = u"ViewTouch %1 crashed: "_s.arg(QCoreApplication::applicationVersion()).toUtf8();
+    if (file.size() >= qsizetype(sizeof g_crashFile) || header.size() >= qsizetype(sizeof g_crashHeader))
+        return;
+    std::memcpy(g_crashFile, file.constData(), file.size() + 1);
+    std::memcpy(g_crashHeader, header.constData(), header.size() + 1);
+    void *warm[1];
+    backtrace(warm, 1);   // loads what it needs now, not in the handler
+    for (const int sig : {SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL})
+        std::signal(sig, onCrash);
+}
+#else
+void installCrashHandler(const QString &) {}
+#endif
+
 // After an update the updater checks this version came up (vtmodern-device
 // update-verify): two minutes running without falling over, it says so in
 // <data dir>/healthy (its version). A version that never writes it is
@@ -1170,6 +1233,13 @@ int runStore(const Args &cli, const Options &o)
                 say(pos, QCoreApplication::translate("main", "The backup worked, but %1").arg(copy));
                 shared->noteProblem("backupCopy", {}, copy.toStdString());
             }
+        });
+        QObject::connect(backups.get(), &vt::storage::BackupScheduler::checked, &pos,
+                         [shared](const QString &drill, const QString &damage) {
+            if (!drill.isEmpty())
+                shared->noteProblem("drill", {}, drill.toStdString());
+            if (!damage.isEmpty())
+                shared->noteProblem("integrity", {}, damage.toStdString());
         });
         shared->backupKeyFor = [](const QString &password) {
             QString why;
@@ -2135,8 +2205,10 @@ int main(int argc, char *argv[])
     for (const char *font : {":/fonts/DejaVuSans.ttf", ":/fonts/DejaVuSans-Bold.ttf"})
         QFontDatabase::addApplicationFont(QString::fromLatin1(font));
 #endif
-    if (args.isSet(o.station))
+    if (args.isSet(o.station)) {
+        installCrashHandler(dataDirOf(args, o));
         return runStation(args, o);
+    }
     // A stress test never touches a real store: a folder of its own.
     if (args.isSet(o.stress))
         args.setDefault(o.dataDir, QDir(Options::defaultDataDir()).filePath(
@@ -2158,8 +2230,10 @@ int main(int argc, char *argv[])
         return runPairingCode(args, o);
     if (args.isSet(o.maintainerPin))
         return runMaintainerPin(args, o);
-    if (!args.isSet(o.stress) && !args.isSet(o.screenshot))
+    if (!args.isSet(o.stress) && !args.isSet(o.screenshot)) {
+        installCrashHandler(dataDirOf(args, o));
         markHealthyLater(dataDirOf(args, o));
+    }
     if (args.isSet(o.connect))
         return runTerminal(args, o);
     // The store's servers hand over to each other: a standby that took over

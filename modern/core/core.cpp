@@ -717,4 +717,18 @@ void applyStateRules(PosSettings &s, const std::string &code)
     s.restBreakEveryHours = r->restBreakEvery;
 }
 
+std::string booksProblem(const Totals &t)
+{
+    const auto m = [](Money v) { return v.toString(); };
+    if (t.subtotal != t.items - t.discounts)
+        return "subtotal " + m(t.subtotal) + " isn't items - discounts " + m(t.items - t.discounts);
+    if (t.total != t.subtotal + t.tax + t.gratuity)
+        return "total " + m(t.total) + " isn't subtotal + tax + gratuity " + m(t.subtotal + t.tax + t.gratuity);
+    if (t.balance != t.total + t.rounding - t.paid)
+        return "balance " + m(t.balance) + " isn't total + rounding - paid " + m(t.total + t.rounding - t.paid);
+    if (t.change != (t.balance.cents() < 0 ? Money() - t.balance : Money()))
+        return "change " + m(t.change) + " for a balance of " + m(t.balance);
+    return {};
+}
+
 } // namespace vt::core

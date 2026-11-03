@@ -488,6 +488,12 @@ logs-usb)
         df -h / 2>/dev/null
         echo
         journalctl --no-pager --since "-7 days" -u 'vtmodern*' 2>&1 | tail -n 20000
+        # Where in the code each recent crash was (ViewTouch writes them).
+        for f in $(ls -t /var/lib/viewtouch/crashes/crash-*.txt 2>/dev/null | head -5); do
+            echo
+            echo "== $(basename "$f")"
+            head -c 20000 "$f"
+        done
     } > "$file" 2>&1 || { umount "$dir"; die "Couldn't write on the USB stick."; }
     sync
     umount "$dir"

@@ -1292,6 +1292,9 @@ bool PosService::endOfDay()
         ++s_->adminRevision;
         emit s_->adminChanged();
     }
+    // The day's checks, each adding up still (refunds and changes since they closed).
+    for (const Check &c : s_->closedToday)
+        s_->checkBooks(c);
     // Event tickets sold today stay sold (their checks leave closedToday).
     for (int i = 0; i < int(s_->menu.size()); ++i) {
         MenuItem &m = s_->menu[i];

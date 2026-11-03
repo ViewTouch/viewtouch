@@ -347,6 +347,9 @@ public:
     std::int64_t lastProblemId = 0;
     // Kept, unless the same thing was noted in the last 10 minutes.
     void noteProblem(const std::string &kind, const std::string &subject, const std::string &detail = {});
+    // A closed check whose totals don't add up (core::booksProblem): logged
+    // and kept for Store Check.
+    void checkBooks(const core::Check &c);
     // Guessing PINs: wrong ones in a row on each screen, and the store's
     // lately. After 5 in a row a screen waits (30 seconds, doubling to 15
     // minutes); 30 in the store within 10 minutes and every screen waits a minute.

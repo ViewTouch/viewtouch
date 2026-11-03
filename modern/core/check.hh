@@ -407,4 +407,10 @@ struct Check {
     bool operator==(const Check &) const = default;
 };
 
+// What doesn't add up in a check's totals ("total 12.50 isn't subtotal +
+// tax + gratuity 12.40"); empty when every part agrees. Checked as each
+// check closes and again at End of Day: a mismatch is a bug, never the
+// staff's doing, and goes to Store Check.
+std::string booksProblem(const Totals &t);
+
 } // namespace vt::core

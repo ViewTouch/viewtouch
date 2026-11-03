@@ -47,6 +47,12 @@ QString PosService::problemText(const Problem &p) const
     if (p.kind == "wrongPins")
         return p.subject == "store" ? tr("Many wrong PINs across the store (%1 in 10 minutes): someone may be guessing").arg(detail)
                                     : tr("%1 wrong PINs in a row on %2: someone may be guessing").arg(detail, qs(p.subject));
+    if (p.kind == "books")
+        return tr("Check %1's totals don't add up (%2): please tell ViewTouch's makers").arg(qs(p.subject), detail);
+    if (p.kind == "integrity")
+        return tr("The database is damaged (%1): restore last night's backup, or call whoever helps you").arg(detail);
+    if (p.kind == "drill")
+        return tr("Last night's backup couldn't be opened as a store (%1): back up again, and check the disk").arg(detail);
     if (p.kind == "crash")
         return tr("ViewTouch closed without being told to (a crash, or the power went off)");
     return detail.isEmpty() ? qs(p.subject) : qs(p.subject) + u": "_s + detail;

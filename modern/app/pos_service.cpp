@@ -552,6 +552,17 @@ QVariantMap PosService::userPrefs() const
             {u"sendToTables"_s, s_->settings.sendToTables}};
 }
 
+void PosShared::checkBooks(const Check &c)
+{
+    if (c.training || c.status != CheckStatus::Closed)
+        return;
+    const std::string why = booksProblem(c.totals(c.closedRates.value_or(settings.tax)));
+    if (why.empty())
+        return;
+    qCritical().noquote() << "Check" << c.id << "doesn't add up:" << QString::fromStdString(why);
+    noteProblem("books", "#" + std::to_string(c.id), why);
+}
+
 void PosShared::noteProblem(const std::string &kind, const std::string &subject, const std::string &detail)
 {
     const std::int64_t at = now();
@@ -1961,6 +1972,7 @@ bool PosService::closeCheck()
     c->businessDay = s_->day.id;
     c->closedRates = s_->settings.tax;   // its totals from now on, whatever the rates become
     applyCloseEffects(*c);
+    s_->checkBooks(*c);
     if (cash)
         c->drawerSession = drawer->id;
     if (s_->sink)

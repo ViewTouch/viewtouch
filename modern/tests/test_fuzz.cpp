@@ -107,7 +107,11 @@ void booksBalance(PosService &pos)
         INFO("check " << c.id);
         CHECK(t.balance.cents() <= 0);
         CHECK(t.total == t.subtotal + t.tax + t.gratuity);
+        CHECK(core::booksProblem(t).empty());
     }
+    // And the program's own check as each closed found nothing either.
+    for (const core::Problem &p : pos.shared()->problems)
+        CHECK(p.kind != "books");
 }
 
 QByteArray json(const QJsonObject &o) { return QJsonDocument(o).toJson(QJsonDocument::Compact); }

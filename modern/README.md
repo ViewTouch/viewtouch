@@ -188,6 +188,8 @@ On a ViewTouch computer, stop the home screen first (`sudo systemctl stop vtmode
 
 **Power cuts and damage.** Each sale is synced to disk as soon as it is saved, on a background thread, so a power cut loses nothing that was already on the screen. At start ViewTouch checks the database. If it is damaged, ViewTouch won't run on it: it names the newest good backup and the command to restore it. The tests cover a power cut in the middle of a check, and a busy service of 1,000 checks on four terminals (every step under a millisecond, nothing lost).
 
+**ViewTouch checks itself while it runs.** After every backup (at End of Day and once a day) the backup is opened as a store, the way a restore would (a *restore drill*: a copy of it, so the backup is untouched), and the database in use gets SQLite's full integrity check, not only the quick one at start: a register left on for months is checked too. Each check's totals are checked as it closes, and the day's again at End of Day (subtotal, tax, gratuity, total, balance and change agreeing). Anything wrong goes to **Store Check**. If ViewTouch crashes, where in the code it was goes to `crashes/crash-<time>-<pid>.txt` beside the database (the newest ten are kept) and to the journal, and **Save Logs to USB** includes them.
+
 Each backup is a complete SQLite copy. Checks, pages, menu, staff, settings and past days are all in it.
 
 ## Finding any check

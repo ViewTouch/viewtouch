@@ -1,6 +1,7 @@
 #include "storage/backup.hh"
 
 #include "storage/sealed.hh"
+#include "storage/pos_store.hh"
 
 #include <QAtomicInt>
 #include <QJsonDocument>
@@ -165,10 +166,10 @@ bool backupDatabase(const QString &db, const QString &target, QString *error)
     return true;
 }
 
-bool databaseIntact(const QString &file, QString *error)
+bool databaseIntact(const QString &file, QString *error, bool full)
 {
     return withConnection(file, false, error, [&](QSqlQuery &q) {
-        if (!q.exec(u"PRAGMA quick_check"_s) || !q.next()) {
+        if (!q.exec(full ? u"PRAGMA integrity_check"_s : u"PRAGMA quick_check"_s) || !q.next()) {
             setError(error, q.lastError().text().isEmpty() ? u"not a database"_s : q.lastError().text());
             return false;
         }
@@ -178,6 +179,35 @@ bool databaseIntact(const QString &file, QString *error)
         }
         return true;
     });
+}
+
+bool backupLoads(const QString &file, QString *error)
+{
+    const QString copy = file + u".drill"_s;
+    QFile::remove(copy);
+    if (!QFile::copy(file, copy)) {
+        setError(error, u"cannot copy %1"_s.arg(QFileInfo(file).fileName()));
+        return false;
+    }
+    bool ok = false;
+    {
+        PosStore store(copy);
+        QString why;
+        QStringList problems;
+        if (!store.open(&why))
+            setError(error, why);
+        else if (const auto data = store.load(&problems); !data)
+            setError(error, problems.isEmpty() ? u"it doesn't load"_s : problems.join(u"; "_s));
+        else if (!problems.isEmpty())
+            setError(error, problems.join(u"; "_s));
+        else if (data->employees.empty())
+            setError(error, u"it has no staff"_s);
+        else
+            ok = true;
+    }
+    for (const QString &end : {u""_s, u"-wal"_s, u"-shm"_s})
+        QFile::remove(copy + end);
+    return ok;
 }
 
 bool verifyDatabase(const QString &file, QString *error)
@@ -311,6 +341,7 @@ void BackupScheduler::backupNow()
     pool_.start([this, db = db_, dir = dir_, copyDir = copyDir_, keep = keep_, key = sealKey_, salt = sealSalt_] {
         QString error;
         QString target;
+        QString drill;   // the backup didn't open as a store
         bool ok = QDir().mkpath(dir);
         if (!ok) {
             error = u"Cannot create %1."_s.arg(dir);
@@ -320,6 +351,8 @@ void BackupScheduler::backupNow()
             for (int n = 2; QFile::exists(target); ++n)
                 target = QDir(dir).filePath(backupFileName(now).replace(u".db"_s, u"-%1.db"_s.arg(n)));
             ok = backupDatabase(db, target, &error);
+            if (ok && key.isEmpty() && !backupLoads(target, &drill))
+                drill = QFileInfo(target).fileName() + u": "_s + drill;
             if (ok && !key.isEmpty()) {
                 // Encrypted: sealed, opened again and checked, then the plain copy goes.
                 QString sealed = target;
@@ -328,6 +361,8 @@ void BackupScheduler::backupNow()
                 QFile::remove(check);
                 ok = sealFile(target, sealed, key, salt, &error) && openSealedFileWithKey(sealed, check, key, &error)
                      && verifyDatabase(check, &error);
+                if (ok && !backupLoads(check, &drill))
+                    drill = QFileInfo(sealed).fileName() + u": "_s + drill;
                 QFile::remove(check);
                 QFile::remove(target);
                 if (!ok)
@@ -344,8 +379,18 @@ void BackupScheduler::backupNow()
             if (copyOk)
                 pruneBackups(copyDir, keep);
         }
-        QMetaObject::invokeMethod(this, [this, ok, target, error, copy, copyOk] {
+        // The database in use, checked in full while it's quiet (after a
+        // backup: at End of Day or once a day), not only at startup.
+        QString damage;
+        if (QFile::exists(db) && !databaseIntact(db, &damage, true) && damage.isEmpty())
+            damage = u"the integrity check failed"_s;
+        QMetaObject::invokeMethod(this, [this, ok, target, error, copy, copyOk, drill, damage] {
             running_ = false;
+            if (!drill.isEmpty())
+                qCWarning(lcBackup).noquote() << "The backup doesn't open as a store:" << drill;
+            if (!damage.isEmpty())
+                qCCritical(lcBackup).noquote() << "The database is damaged:" << damage;
+            emit checked(drill, damage);
             if (ok)
                 qCInfo(lcBackup).noquote() << "Backed up the database to" << target;
             else
