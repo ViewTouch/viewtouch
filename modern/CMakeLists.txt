@@ -266,7 +266,7 @@ if(Qt6_FOUND)
     target_include_directories(vtm_ui PUBLIC ui/cpp)
     target_link_libraries(vtm_ui PUBLIC vtm_layout vtm_editor vtm_storage vtm_pos vtm_print vtm_net Qt6::Gui Qt6::Quick Qt6::QuickControls2)
 
-    qt_add_executable(vtmodern main.cpp)
+    qt_add_executable(vtmodern main.cpp main_cli.cpp main_commands.cpp)
     target_link_libraries(vtmodern PRIVATE vtm_ui vtm_uiplugin)
 
     if(ANDROID)
@@ -359,6 +359,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(TARGET vtm_ui)
         file(GLOB VTM_UI_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ui/cpp/*.cpp)
         set_source_files_properties(${VTM_UI_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                                    ${CMAKE_CURRENT_SOURCE_DIR}/main_cli.cpp ${CMAKE_CURRENT_SOURCE_DIR}/main_commands.cpp
                                     PROPERTIES COMPILE_OPTIONS "${VTM_WARNINGS}")
     endif()
 endif()
