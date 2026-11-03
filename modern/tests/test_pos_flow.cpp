@@ -10557,3 +10557,35 @@ TEST_CASE("Phone: a note typed with the phone's own keyboard, not forty tiny key
     QTest::qWait(40);
     CHECK(s.pos.textEntry() == u"No onio"_s);
 }
+
+TEST_CASE("UI: a store's Lottie animation is a picture: taken in, and playing on the guest screens", "[flow][ui][display][pictures][lottie]")
+{
+    // One red square, 30 frames at 30 a second (Lottie's JSON, by hand).
+    const QByteArray lottie = R"({"v":"5.7.4","fr":30,"ip":0,"op":30,"w":100,"h":100,"layers":[{"ty":4,"ind":1,"ip":0,"op":30,"st":0,
+        "ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":0,"k":[100,100,100]}},
+        "shapes":[{"ty":"rc","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[40,40]},"r":{"a":0,"k":0}},
+                  {"ty":"fl","c":{"a":0,"k":[1,0,0,1]},"o":{"a":0,"k":100}}]}]})";
+    // The store takes it as a picture; JSON that isn't Lottie's, not.
+    Session s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    CHECK(s.pos.addStoreImage(u"welcome.json"_s, QString::fromLatin1(lottie.toBase64())));
+    CHECK_FALSE(s.pos.addStoreImage(u"menu.json"_s, QString::fromLatin1(QByteArray(R"({"items":[1,2]})").toBase64())));
+    const QString url = s.pos.imageUrl(u"store:welcome.json"_s);
+    REQUIRE_FALSE(url.isEmpty());
+
+    QQmlEngine engine;
+    QQmlComponent component(&engine);
+    component.setData("import QtQuick\nimport ViewTouch\nStorePicture { width: 300; height: 200 }", QUrl(u"qrc:/lottie-test.qml"_s));
+    std::unique_ptr<QObject> root(component.createWithInitialProperties({{u"source"_s, QUrl(url)}}));
+    INFO(component.errorString().toStdString());
+    REQUIRE(root);
+    CHECK(root->property("lottie").toBool());
+    auto *player = root->findChild<QObject *>(u"lottiePicture"_s);
+    REQUIRE(player);
+    for (int i = 0; i < 100 && player->property("status").toInt() < 2; ++i)
+        QTest::qWait(10);
+    CHECK(player->property("status").toInt() == 2);        // Ready
+    CHECK(player->property("frameRate").toInt() == 30);
+    CHECK(player->property("endFrame").toInt() >= 29);
+    CHECK(player->property("scale").toDouble() == Catch::Approx(2.0));   // 100 x 100 fitted to 300 x 200
+}

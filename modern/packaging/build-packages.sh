@@ -31,6 +31,11 @@ check_bundle() {
         echo "$outside" >&2
         exit 1
     fi
+    # Every Qt QML module the screens import is in it (Qt/labs/lottieqt...).
+    for module in $(sed -n 's/.*RELATIVEPATH;\([^;]*\);TYPE;module.*/\1/p' "$1/.qt/qml_imports/vtmodern_build.cmake" | sort -u); do
+        case "$module" in ViewTouch*|QML) continue ;; esac   # ours, and the built-in QML
+        [ -d "$home/qml/$module" ] || { echo "The package lacks the QML module $module." >&2; exit 1; }
+    done
     QT_QPA_PLATFORM=offscreen "$stage/usr/bin/vtmodern" --version || { echo "The bundled program doesn't start." >&2; exit 1; }
     rm -rf "$stage"
 }
@@ -53,6 +58,9 @@ build_here() {
     sh "$modern/tools/get-qt.sh" "$(cat "$modern/tools/qt-version")" "$qt"
     cmake -S "$modern" -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
           -DCMAKE_PREFIX_PATH="$qt" -DVTM_BUILD_TESTS=OFF
+    # Which QML modules the screens import is scanned once and not again when
+    # a screen imports a new one: scanned afresh, or the package lacks it.
+    rm -f "${build:?}/.qt/qml_imports/vtmodern_build.cmake"
     cmake --build "$build"
     check_bundle "$build"
     mkdir -p "$dist"

@@ -12,6 +12,8 @@
 #include <QProcess>
 #include <QSet>
 #include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QUrl>
@@ -23,7 +25,8 @@ namespace vt::app {
 
 namespace {
 constexpr qint64 kMaxImageBytes = 8 * 1024 * 1024;
-const QStringList kImageTypes = {u"png"_s, u"jpg"_s, u"jpeg"_s, u"webp"_s, u"gif"_s, u"svg"_s, u"bmp"_s};
+// (json: a Lottie animation, for the guest screens)
+const QStringList kImageTypes = {u"png"_s, u"jpg"_s, u"jpeg"_s, u"webp"_s, u"gif"_s, u"svg"_s, u"bmp"_s, u"json"_s};
 const QStringList kFontTypes = {u"ttf"_s, u"otf"_s};
 
 bool isFont(const QString &name)
@@ -32,12 +35,21 @@ bool isFont(const QString &name)
 }
 
 // By the first bytes: PNG, JPEG, GIF, WebP, BMP or SVG.
+// A Lottie animation: JSON with its frame rate and layers (not just any JSON).
+bool isLottie(const QByteArray &d)
+{
+    if (!d.trimmed().startsWith('{'))
+        return false;
+    const QJsonObject o = QJsonDocument::fromJson(d).object();
+    return o.value(u"layers").isArray() && o.value(u"fr").isDouble() && o.value(u"w").isDouble();
+}
+
 bool looksLikePicture(const QByteArray &d)
 {
     return d.startsWith(QByteArray("\x00\x01\x00\x00", 4)) || d.startsWith("OTTO") || d.startsWith("true")   // fonts
            || d.startsWith("\x89PNG") || d.startsWith("\xff\xd8") || d.startsWith("GIF8") || d.startsWith("BM")
            || (d.startsWith("RIFF") && d.mid(8, 4) == "WEBP")
-           || d.left(512).contains("<svg");
+           || d.left(512).contains("<svg") || isLottie(d);
 }
 
 QString contentHash(const QByteArray &data)
@@ -98,7 +110,7 @@ bool PosService::addStoreImage(const QString &fileName, const QString &base64)
         return false;
     const QString ref = storeImageRef(fileName);
     if (ref.isEmpty())
-        return fail(tr("Pictures can be PNG, JPEG, WebP, GIF, BMP or SVG files; fonts TTF or OTF."));
+        return fail(tr("Pictures can be PNG, JPEG, WebP, GIF, BMP, SVG or Lottie (JSON) files; fonts TTF or OTF."));
     const QString name = ref.mid(6);
     const QString suffix = QFileInfo(name).suffix();
     const QByteArray data = QByteArray::fromBase64(base64.toLatin1());

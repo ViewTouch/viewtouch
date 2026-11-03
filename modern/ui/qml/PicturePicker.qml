@@ -151,7 +151,7 @@ Popup {
     FileDialog {
         id: browse
         title: picker.title
-        nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.gif *.bmp *.svg)")]
+        nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.gif *.bmp *.svg *.json)")]
         onAccepted: {
             picker.close()
             picker.picked(selectedFile.toString())
