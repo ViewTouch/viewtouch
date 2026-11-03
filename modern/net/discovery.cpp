@@ -41,6 +41,9 @@ void DiscoveryResponder::onReadyRead()
     }
 }
 
+// The most stores a search lists (a real network has a few).
+constexpr qsizetype kMaxFound = 32;
+
 // --- terminal side -----------------------------------------------------------------------
 
 ServerFinder::ServerFinder(QObject *parent)
@@ -104,6 +107,8 @@ void ServerFinder::onReadyRead()
         // The same server can answer on several networks: keep one entry
         // each (a store's main and its standby share the id).
         auto it = std::ranges::find_if(servers_, [&](const FoundServer &x) { return x.id == s.id && x.role == s.role; });
+        if (it == servers_.end() && servers_.size() >= kMaxFound)
+            continue;   // anyone on the network can answer: a flood of made-up stores stops here
         if (it == servers_.end())
             servers_.append(s);
         else

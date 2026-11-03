@@ -1,7 +1,8 @@
 # Security review, November 2026
 
 What an attacker could reach in a store running ViewTouch Modern 0.15, what
-stops them, and what's left. Done by reading the code (and the tests that
+stops them, and what's left. Two passes: the second (findings 4 to 6) went
+file by file through the network server, storage, printing and the screens. Done by reading the code (and the tests that
 attack it: tests/test_fuzz.cpp, tests/test_net.cpp, tests/test_safety.cpp).
 **A review by someone who didn't write the code is still worth having**,
 before ViewTouch takes cards itself or runs outside a store's own network.
@@ -51,7 +52,38 @@ it gets nowhere (no key), but the terminal shows "Reconnecting…" until the
 real one answers. A store with guests on its network should give them
 their own Wi-Fi.
 
-**4. Nothing else found** in: the TLS setup (no fallback to plain TCP),
+**4. Names and notes were shown as markup.** (Fixed.) Qt's `Text` treats a
+string that looks like HTML as HTML unless told otherwise, and none of the
+766 texts on the screens said otherwise. A guest typing
+`<font size=7 color=red>…` as their name at the self-order kiosk took over
+the kitchen screen and the Now Serving board on the dining room's TV, and an
+`<img src="http://…">` made the screen fetch that address (telling someone
+outside when orders come in). Every text is plain now (the one message
+banner that uses bold escapes what was typed), and a test puts such a
+string in a menu item, a customer, a waitlist party and a message and walks
+the staff screens and the board (`[security][ui]`).
+
+**5. Files readable by other accounts, the updater's account, discovery.**
+(Fixed.) ViewTouch now creates its files for its own account only
+(`umask 077`: the database, backups and crash reports on a shared desktop
+computer). The updater's snapshot and rollback used the `viewtouch` account
+by name, but on a computer where that's someone's login ViewTouch runs as
+`vtpos`: they use the data folder's owner now. A search for the store lists
+at most 32 answers (anyone on the network can answer).
+
+**6. Checked and fine in the second pass:** SQL (values always bound; table
+and column names checked, the standby's too), what reaches printers
+(control characters dropped, label languages' command characters removed,
+barcodes held to 40 characters), the texting service (https only, checked
+when saved and when sent), PIN guessing (the device's paired name, not one
+it chooses, so a device can't reset its count), page edits from a device
+(checked against who's logged in there), unauthenticated connections (Qt
+drops a TLS handshake that doesn't finish in 5 seconds; nothing is read
+before it does). LAN printers speak raw TCP with no encryption (as every
+ESC/POS printer does): a receipt carries no card number, and the printers
+belong on the store's own network.
+
+**7. Nothing else found** in: the TLS setup (no fallback to plain TCP),
 pairing (one code, one device, ten minutes), the update path (signature
 before anything is installed, `apt-get` given a local file whose version
 was checked), the root helper's argument checks, or the backup

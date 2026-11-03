@@ -109,6 +109,9 @@ rollout_due() {
 # as it is: copied by ViewTouch's account, so its files stay its own).
 roll=/var/lib/vtmodern-updates
 data=/var/lib/viewtouch
+# The account ViewTouch runs as: viewtouch, or vtpos where viewtouch is
+# someone's login (vtmodern-lockdown): whoever owns its data folder.
+owner() { stat -c %U "$data" 2>/dev/null || echo viewtouch; }
 prepare_rollback() {
     install -d -m 700 "$roll"
     rm -f "$roll/pending" "$roll/previous.deb" "$roll/snapshot.db"
@@ -118,10 +121,10 @@ prepare_rollback() {
         rm -f "$roll/installed.deb"
         echo "(No copy of ViewTouch ${1%%-*} kept here: if the new one doesn't start, it can't go back on its own.)"
     fi
-    if [ -f "$data/viewtouch.db" ] && id viewtouch >/dev/null 2>&1; then
+    if [ -f "$data/viewtouch.db" ] && id "$(owner)" >/dev/null 2>&1; then
         tmp=$(mktemp -d)
-        chown viewtouch "$tmp"
-        if runuser -u viewtouch -- /usr/bin/vtmodern --snapshot "$tmp/snapshot.db" --data-dir "$data" >/dev/null 2>&1; then
+        chown "$(owner)" "$tmp"
+        if runuser -u "$(owner)" -- /usr/bin/vtmodern --snapshot "$tmp/snapshot.db" --data-dir "$data" >/dev/null 2>&1; then
             mv "$tmp/snapshot.db" "$roll/snapshot.db"
         else
             echo "(Couldn't copy the store's data before the update.)"
@@ -148,7 +151,7 @@ pending_value() { sed -n "s/^$1=//p" "$roll/pending" | head -1; }
 # What the home screen shows about the last update (it reads <data>/update-result).
 tell_store() {
     printf '%s %s\n' "$1" "$(now)" > "$data/update-result"
-    chown viewtouch:viewtouch "$data/update-result" 2>/dev/null || true
+    chown "$(owner):" "$data/update-result" 2>/dev/null || true
 }
 
 case "$action" in
@@ -388,11 +391,11 @@ update-verify)
     apt-get install -y --allow-downgrades "$roll/previous.deb"
     if [ -f "$roll/snapshot.db" ]; then
         aside=$data/backups/viewtouch-$(date +%Y%m%d-%H%M%S)-after-failed-update.db
-        install -d -o viewtouch -g viewtouch -m 750 "$data/backups"
+        install -d -o "$(owner)" -g "$(owner)" -m 750 "$data/backups"
         for end in "" -wal -shm; do
             [ -f "$data/viewtouch.db$end" ] && mv "$data/viewtouch.db$end" "$aside$end"
         done
-        install -o viewtouch -g viewtouch -m 640 "$roll/snapshot.db" "$data/viewtouch.db"
+        install -o "$(owner)" -g "$(owner)" -m 640 "$roll/snapshot.db" "$data/viewtouch.db"
         rm -f "$roll/snapshot.db"
         echo "The store's data is as it was before the update (the other copy: $(basename "$aside"))."
     fi

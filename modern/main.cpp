@@ -55,6 +55,7 @@
 #include <QTimer>
 
 #ifdef Q_OS_UNIX
+#include <sys/stat.h>   // umask
 #include <termios.h>
 #include <unistd.h>
 #endif
@@ -1646,6 +1647,12 @@ void quitOnSignals(QCoreApplication &app)
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_UNIX
+    // What ViewTouch writes (the database, backups, crash reports, exports)
+    // is its account's only, whatever folder it's in: a store on a shared
+    // desktop computer isn't readable by the computer's other users.
+    ::umask(0077);
+#endif
     prepareEnvironment(argc, argv);
     QGuiApplication app(argc, argv);
     QGuiApplication::setApplicationVersion(vt::net::appBuild().version);   // 0.9.1283

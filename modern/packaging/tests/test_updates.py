@@ -43,7 +43,7 @@ for u in $(cat "$ROOT/state/active" 2>/dev/null); do [ "$u" = "$3" ] && exit 0; 
 exit 3
 ''',
     "systemd-run": '#!/bin/sh\necho "systemd-run $*" >> "$ROOT/state/log"\n',
-    "runuser": '#!/bin/sh\nshift 3\nexec "$@"\n',   # runuser -u viewtouch -- CMD...
+    "runuser": '#!/bin/sh\necho "runuser $1 $2" >> "$ROOT/state/log"\nshift 3\nexec "$@"\n',   # runuser -u ACCOUNT -- CMD...
     "vtmodern": r'''#!/bin/sh
 while [ $# -gt 0 ]; do case "$1" in --snapshot) cp "$ROOT/var/lib/viewtouch/viewtouch.db" "$2" ;; esac; shift; done
 ''',
@@ -232,6 +232,11 @@ class Rollback(unittest.TestCase):
         self.assertIn("to=0.16.1600-1~debian13", pending)
         self.assertIn("vtmodern-kiosk.service", pending)
         self.assertIn("--on-active=15min", s.read("state/log"))
+        # The copy is made by whoever owns the data folder (viewtouch, or vtpos
+        # where viewtouch is someone's login), so its files stay that account's.
+        import pwd
+        owner = pwd.getpwuid(os.stat(os.path.join(s.root, "var/lib/viewtouch")).st_uid).pw_name
+        self.assertIn(f"runuser -u {owner}", s.read("state/log"))
         self.assertIn("update-verify", s.read("state/log"))
 
     def test_the_new_one_came_up_nothing_undone(self):
