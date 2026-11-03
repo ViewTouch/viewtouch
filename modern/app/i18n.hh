@@ -27,6 +27,12 @@ struct Language {
 // English first.
 QList<Language> languages();
 
+// Not a language for stores: every phrase made longer and accented, in [ ],
+// to see on the screens what won't fit once translated, and what isn't
+// translated at all (no brackets). setLanguage(PseudoLanguage) turns it on.
+inline const QString PseudoLanguage = QStringLiteral("qps");
+QString pseudo(const QString &english);
+
 // Install the translator on the application (once), with the built-in
 // phrase files and the store's own from `overridesDir` (may be empty).
 void install(const QString &overridesDir = {});

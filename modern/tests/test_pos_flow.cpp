@@ -10183,3 +10183,54 @@ TEST_CASE("Table side on a phone: seat chips, what was added flashes, the tables
     CHECK(s.pos.hasCheck());
     CHECK(s.pos.checkInfo()[u"label"_s].toString() == u"T1"_s);
 }
+
+// Pseudo-localization: every phrase 40% longer and accented, the main
+// screens at 1280 x 800, and each text that no longer fits listed (cut
+// short, or wider than its place). Hidden: run with "[pseudo]" to see what
+// a longer language would break, before a translator finds it.
+TEST_CASE("Pseudo-localization: what doesn't fit once the words are longer", "[.pseudo]")
+{
+    REQUIRE(i18n::pseudo(u"Close %1 checks"_s).contains(u"%1"_s));
+    REQUIRE(i18n::pseudo(u"<b>Total</b> &amp; tax"_s).contains(u"<b>"_s));
+    REQUIRE(i18n::pseudo(u"Store Check {problems}"_s).contains(u"{problems}"_s));
+    i18n::setLanguage(i18n::PseudoLanguage);
+    struct Back {
+        ~Back() { i18n::setLanguage(u"en"_s); }
+    } back;
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QStringList cut;
+    int texts = 0, pseudoTexts = 0;
+    const auto look = [&](const QString &page) {
+        if (!s.c.showPage(page))
+            return;
+        QTest::qWait(150);
+        std::function<void(QQuickItem *)> walk = [&](QQuickItem *it) {
+            if (!it->isVisible() || it->opacity() == 0)
+                return;
+            if (QByteArray(it->metaObject()->className()).startsWith("QQuickText")) {
+                const QString text = it->property("text").toString();
+                if (!text.trimmed().isEmpty() && it->width() > 0) {
+                    ++texts;
+                    pseudoTexts += text.contains(u'[');
+                    const bool truncated = it->property("truncated").toBool();
+                    const bool wider = it->property("wrapMode").toInt() == 0 && it->property("elide").toInt() == 0
+                                       && it->implicitWidth() > it->width() + 1;
+                    if (truncated || wider)
+                        cut << page + u": "_s + text.left(60);
+                }
+            }
+            for (QQuickItem *c : it->childItems())
+                walk(c);
+        };
+        walk(s.window->contentItem());
+        s.shot(qPrintable(u"pseudo-"_s + page));
+    };
+    for (const QString &page : {u"tables"_s, u"manager"_s, u"check-list"_s, u"logout"_s})
+        look(page);
+    s.c.activate(u"quick"_s);
+    look(s.c.pageId());
+    INFO(cut.size() << " of " << texts << " texts don't fit:\n" << cut.join(u'\n').toStdString());
+    CHECK(pseudoTexts > texts / 2);   // the screens are in the pseudo language
+    WARN(cut.size() << " of " << texts << " texts don't fit once longer:\n" << cut.join(u'\n').toStdString());
+}

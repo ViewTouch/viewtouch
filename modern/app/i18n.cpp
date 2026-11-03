@@ -196,8 +196,50 @@ Scope::~Scope()
     scoped() = previous_;
 }
 
+QString pseudo(const QString &english)
+{
+    static const QHash<QChar, QChar> accented = {
+        {u'a', u'á'}, {u'e', u'é'}, {u'i', u'í'}, {u'o', u'ó'}, {u'u', u'ú'}, {u'y', u'ý'}, {u'c', u'ç'},
+        {u'n', u'ñ'}, {u's', u'š'}, {u'z', u'ž'}, {u'A', u'Á'}, {u'E', u'É'}, {u'I', u'Í'}, {u'O', u'Ó'},
+        {u'U', u'Ú'}, {u'C', u'Ç'}, {u'N', u'Ñ'}, {u'S', u'Š'}};
+    QString out;
+    out.reserve(english.size() * 2);
+    int letters = 0;
+    for (qsizetype i = 0; i < english.size(); ++i) {
+        const QChar c = english[i];
+        // Left as they are: %1, %n, %L2, {name} (filled in later), <tags> and &entities;.
+        if (c == u'%' && i + 1 < english.size()) {
+            qsizetype j = i + 1;
+            if (english[j] == u'L')
+                ++j;
+            while (j < english.size() && (english[j].isDigit() || english[j] == u'n'))
+                ++j;
+            out += english.mid(i, j - i);
+            i = j - 1;
+            continue;
+        }
+        if (c == u'<' || c == u'&' || c == u'{') {
+            const qsizetype end = english.indexOf(c == u'<' ? u'>' : c == u'{' ? u'}' : u';', i);
+            if (end > i) {
+                out += english.mid(i, end - i + 1);
+                i = end;
+                continue;
+            }
+        }
+        if (c.isLetter())
+            ++letters;
+        out += accented.value(c, c);
+    }
+    // About 40% longer, as German or French often are.
+    return u"["_s + out + QString((letters * 2 + 4) / 5, u'~') + u"]"_s;
+}
+
 QString lookup(const QString &code, const QString &english, int n)
 {
+    if (code == PseudoLanguage) {
+        const QString plural = lookup(u"en"_s, english, n);
+        return pseudo(plural.isEmpty() ? english : plural);
+    }
     const auto d = dictionaries().constFind(code);
     if (d == dictionaries().cend())
         return {};
