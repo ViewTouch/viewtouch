@@ -10435,3 +10435,46 @@ TEST_CASE("UI: a tax rate's spin box: + a quarter point, saved; typed exactly", 
     REQUIRE(spin);
     CHECK(spin->property("displayText").toString() == u"8.875"_s);
 }
+
+TEST_CASE("UI: the screen's keyboard rests above a phone's gesture bar (the safe area)", "[flow][ui][keyboard][safearea]")
+{
+    // On a phone the window's padding is its safe area (Qt 6.9's
+    // ApplicationWindow), there from the start; the keyboard, a popup over the
+    // whole window, keeps its keys above it. Here a 34-pixel gesture bar and
+    // 20-pixel side edges.
+    Session s;
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&s.c)}, {u"width"_s, 1280}, {u"height"_s, 800},
+                                 {u"touchKeyboard"_s, true}, {u"bottomPadding"_s, 34}, {u"leftPadding"_s, 20},
+                                 {u"rightPadding"_s, 20}});
+    engine.loadFromModule("ViewTouch", "Main");
+    REQUIRE_FALSE(engine.rootObjects().isEmpty());
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    s.c.activate(u"takeout"_s);
+    QTest::qWait(80);
+    QQuickItem *name = Screen::findBy(window->contentItem(), "objectName", u"who-name"_s);
+    REQUIRE(name);
+    QTest::mouseClick(window, Qt::LeftButton, {}, name->mapToScene(QPointF(name->width() / 2, name->height() / 2)).toPoint());
+    QTest::qWait(150);
+    QObject *popup = window->findChild<QObject *>(u"touchKeys"_s);
+    REQUIRE(popup);
+    REQUIRE(popup->property("visible").toBool());
+    // The keys themselves: above the bar, in from the edges.
+    QQuickItem *keys = nullptr;
+    std::function<void(QQuickItem *)> find = [&](QQuickItem *it) {
+        if (!keys && QByteArray(it->metaObject()->className()).contains("TouchKeyboard"))
+            keys = it;
+        for (QQuickItem *c : it->childItems())
+            find(c);
+    };
+    find(qvariant_cast<QQuickItem *>(popup->property("contentItem")));
+    REQUIRE(keys);
+    const QRectF r = keys->mapRectToScene(QRectF(0, 0, keys->width(), keys->height()));
+    CHECK(r.bottom() == Catch::Approx(window->height() - 34));
+    CHECK(r.left() == Catch::Approx(20));
+    CHECK(r.right() == Catch::Approx(window->width() - 20));
+}

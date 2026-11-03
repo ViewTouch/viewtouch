@@ -12,7 +12,15 @@ Window {
     title: qsTr("ViewTouch — Customer Display")
     // Manager -> Terminals: the Now Serving board instead of their order.
     Loader {
-        anchors.fill: parent
+        // Inside the safe area (a guest-facing tablet's notch or rounded
+        // corners); the window's color still fills it all.
+        anchors {
+            fill: parent
+            topMargin: parent.SafeArea.margins.top
+            bottomMargin: parent.SafeArea.margins.bottom
+            leftMargin: parent.SafeArea.margins.left
+            rightMargin: parent.SafeArea.margins.right
+        }
         sourceComponent: (win.pos?.terminalGuestScreen ?? "") === "board" ? guestBoard : guestOrder
         Component { id: guestOrder; CustomerDisplay { pos: win.pos } }
         Component { id: guestBoard; NowServing { pos: win.pos } }

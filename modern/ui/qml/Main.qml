@@ -279,15 +279,27 @@ ApplicationWindow {
         closePolicy: Popup.NoAutoClose
         z: 1000
         padding: 0
+        // Popups cover the whole window, so the keys keep clear of a phone's
+        // gesture bar and rounded corners themselves: the window's padding is
+        // its safe area (Qt 6.9's ApplicationWindow). (The popup decides its
+        // own x and width when it opens: the margins go inside it.)
         x: 0
         width: root.posWidth
-        height: Math.min(root.height * 0.42, 420)
+        height: Math.min(root.height * 0.42, 420) + root.bottomPadding
         y: root.height - height
         background: null
-        contentItem: TouchKeyboard {
-            id: keyboard
-            target: touchKeys.visible ? root.typingIn : null
-            onDismissed: pageView.forceActiveFocus()
+        contentItem: Item {
+            TouchKeyboard {
+                id: keyboard
+                anchors {
+                    fill: parent
+                    leftMargin: root.leftPadding
+                    rightMargin: root.rightPadding
+                    bottomMargin: root.bottomPadding
+                }
+                target: touchKeys.visible ? root.typingIn : null
+                onDismissed: pageView.forceActiveFocus()
+            }
         }
     }
 
