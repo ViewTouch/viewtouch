@@ -48,7 +48,7 @@ struct Bits {
         }
         buf = k < 32 ? v >> k : 0;
         count -= k;
-        return int(v & ((1u << k) - 1));
+        return int(v & (k >= 32 ? 0xffffffffu : (1u << k) - 1));   // 1u << 32 is undefined
     }
 };
 

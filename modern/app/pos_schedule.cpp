@@ -305,7 +305,7 @@ bool PosService::removeShift(qint64 id)
     const auto it = std::ranges::find_if(s_->shifts, [&](const Shift &s) { return s.id == id; });
     if (it == s_->shifts.end())
         return fail(tr("That shift is gone."));
-    const Shift gone = *it;
+    const Shift gone = *it;   // NOLINT(performance-unnecessary-copy-initialization): erased next
     s_->shifts.erase(it);
     if (s_->sink)
         s_->sink->deleteShift(id);

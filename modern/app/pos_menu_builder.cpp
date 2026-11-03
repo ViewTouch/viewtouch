@@ -390,7 +390,7 @@ bool PosService::moveCategoryTo(const QString &id, int position)
     const auto it = std::ranges::find_if(list, [&](const MenuCategory &c) { return qs(c.id) == id; });
     if (it == list.end())
         return fail(tr("That category is gone."));
-    MenuCategory c = *it;
+    MenuCategory c = *it;   // NOLINT(performance-unnecessary-copy-initialization): erased next
     list.erase(it);
     list.insert(list.begin() + std::clamp(position, 0, int(list.size())), c);
     s_->settings.menuCategories = list;
@@ -421,7 +421,7 @@ bool PosService::moveMenuItemTo(const QString &id, int position)
     const auto from = std::ranges::find_if(items, [&](const MenuItem &m) { return qs(m.id) == id; });
     if (from == items.end())
         return fail(tr("'%1' is not on the menu.").arg(id));   // a choice, not an item
-    MenuItem moved = *from;
+    MenuItem moved = *from;   // NOLINT(performance-unnecessary-copy-initialization): erased next
     items.erase(from);
     items.insert(items.begin() + std::clamp(position, 0, int(items.size())), moved);
     for (std::size_t k = 0; k < places.size(); ++k) {

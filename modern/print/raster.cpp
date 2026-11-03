@@ -46,7 +46,7 @@ std::shared_ptr<const Raster> rasterize(const QByteArray &picture, int maxWidth,
             const float v = row[std::size_t(x) + 1];
             const bool black = v < 128.f;
             if (black)
-                r->bits[std::size_t(y * r->rowBytes() + x / 8)] |= static_cast<unsigned char>(0x80 >> (x % 8));
+                r->bits[std::size_t(y) * std::size_t(r->rowBytes()) + std::size_t(x / 8)] |= static_cast<unsigned char>(0x80 >> (x % 8));
             const float err = v - (black ? 0.f : 255.f);
             row[std::size_t(x) + 2] += err * 7.f / 16.f;
             next[std::size_t(x)] += err * 3.f / 16.f;

@@ -345,7 +345,7 @@ PosService::RefundStart PosService::refundCardPayment(const Check &c, const Paym
         const auto paid = std::ranges::find(check.payments, paymentId, &Payment::id);
         if (paid == check.payments.end())
             return;
-        const Payment removed = *paid;
+        const Payment removed = *paid;   // NOLINT(performance-unnecessary-copy-initialization): removed next
         check.removePayment(paymentId);
         check.note(shared->now(), who, ss(tr("Card refunded: %1 %2 (%3)").arg(cardText(removed), label, refundId)),
                    "unpay", removed.amount);

@@ -16,7 +16,7 @@ struct Raster {
     std::vector<unsigned char> bits;
 
     int rowBytes() const { return (width + 7) / 8; }
-    bool dot(int x, int y) const { return bits[std::size_t(y * rowBytes() + x / 8)] & (0x80 >> (x % 8)); }
+    bool dot(int x, int y) const { return bits[std::size_t(y) * std::size_t(rowBytes()) + std::size_t(x / 8)] & (0x80 >> (x % 8)); }
 };
 
 struct Document {

@@ -616,7 +616,7 @@ void RemoteSession::invoke(const QString &method, const QVariantList &args, Repl
     if (keep)
         kept_.insert(id, {method, args});
     if (reply)
-        replies_.insert(id, std::move(reply));
+        replies_.insert(id, reply);
     send({{u"t"_s, u"call"_s}, {u"id"_s, id}, {u"m"_s, method}, {u"a"_s, QJsonArray::fromVariantList(args)}});
 }
 

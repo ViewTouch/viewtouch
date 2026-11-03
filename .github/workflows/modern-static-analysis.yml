@@ -1,0 +1,78 @@
+# Bugs found by reading the modern ViewTouch's code instead of running it:
+# clang-tidy (modern/.clang-tidy) and shellcheck, on Ubuntu 26.04 (the same
+# versions as the developers' computers, so the baseline means the same
+# thing), and GitHub's CodeQL. A finding not in
+# modern/tools/static-analysis-baseline.txt fails the job.
+name: Modern static analysis
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: modern-static-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tidy:
+    name: clang-tidy and shellcheck (Ubuntu 26.04)
+    runs-on: ubuntu-24.04
+    container: ubuntu:26.04
+    timeout-minutes: 120
+    steps:
+      - name: Install tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            ca-certificates git python3 g++ cmake ninja-build clang-tidy shellcheck \
+            qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev libssl-dev
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The generated code (moc, QML type registrations) clang-tidy reads with ours.
+      - name: Build
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVTM_BUILD_TESTS=OFF   # as the baseline was made
+          cmake --build build
+
+      - name: Static analysis
+        run: sh modern/tools/static-analysis.sh build
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      security-events: write   # its findings go to the Security tab
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [c-cpp, actions]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-and-quality
+          config: |
+            paths:
+              - modern
+              - .github
+            paths-ignore:
+              - modern/external
+              - modern/tests
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}

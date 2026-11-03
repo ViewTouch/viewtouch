@@ -1,0 +1,6 @@
+# Known static analysis findings (tools/static-analysis.sh): each looked at.
+# Fix one and take it out; never add one without a reason.
+#
+# The analyzer follows a path where `this` is null in AsyncWriter::fail()
+# (it can't be: a member function of a live writer).
+storage/async_writer.cpp: [clang-analyzer-core.NullDereference] Access to field 'retryPending_' results in a dereference of a null pointer

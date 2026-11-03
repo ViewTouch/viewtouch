@@ -1004,7 +1004,6 @@ Report changesReport(const std::vector<Change> &changes, const ReportContext &ct
         r.note("Nothing was changed on the manager screens, the menu or the pages.");
         return r;
     }
-    std::string area;
     for (auto it = changes.rbegin(); it != changes.rend(); ++it) {
         const Change &c = *it;
         const std::string what = c.item.empty() ? c.field

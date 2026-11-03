@@ -8,6 +8,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+#include <cmath>
 #include <functional>
 #include <optional>
 
@@ -703,9 +704,9 @@ public:
     Q_INVOKABLE void mergeCheck(qint64 otherId) { invoke(QStringLiteral("mergeCheck"), {otherId}); }
     Q_INVOKABLE void reopenCheck(qint64 checkId) { invoke(QStringLiteral("reopenCheck"), {checkId}); }
     // percent: 15, 18, 20...; 0 = the keypad amount.
-    Q_INVOKABLE void addTip(double percent) { invoke(QStringLiteral("addTip"), {qint64(percent * 100 + 0.5)}); }
+    Q_INVOKABLE void addTip(double percent) { invoke(QStringLiteral("addTip"), {qint64(std::llround(percent * 100))}); }
     Q_INVOKABLE void setCashTip() { invoke(QStringLiteral("setCashTip"), {}); }
-    Q_INVOKABLE void setGratuity(double percent) { invoke(QStringLiteral("setGratuity"), {qint64(percent * 100 + 0.5)}); }
+    Q_INVOKABLE void setGratuity(double percent) { invoke(QStringLiteral("setGratuity"), {qint64(std::llround(percent * 100))}); }
     // kind: "payout" | "paidIn"
     Q_INVOKABLE void payout(const QString &kind) { invoke(QStringLiteral("payout"), {kind}); }
     Q_INVOKABLE void cashOutTips() { invoke(QStringLiteral("cashOutTips")); }

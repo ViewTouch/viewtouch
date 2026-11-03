@@ -1,0 +1,39 @@
+# clang-tidy: bugs a compiler doesn't warn about (tools/static-analysis.sh,
+# and the Modern static analysis workflow). Only checks that find mistakes;
+# style is left alone (an assignment in an if, a switch without default,
+# and new without a bad_alloc handler are this code's way, as in Qt's). A
+# finding that's fine as written gets a NOLINT(check-name) comment saying
+# why, never a blanket one.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-branch-clone,
+  -bugprone-exception-escape,
+  -bugprone-unchecked-optional-access,
+  -bugprone-crtp-constructor-accessibility,
+  -bugprone-assignment-in-if-condition,
+  -bugprone-unhandled-exception-at-new,
+  -bugprone-switch-missing-default-case,
+  clang-analyzer-core.*,
+  clang-analyzer-cplusplus.*,
+  clang-analyzer-deadcode.DeadStores,
+  clang-analyzer-security.FloatLoopCounter,
+  clang-analyzer-unix.*,
+  concurrency-thread-canceltype-asynchronous,
+  misc-redundant-expression,
+  misc-misplaced-const,
+  misc-throw-by-value-catch-by-reference,
+  misc-unconventional-assign-operator,
+  performance-move-const-arg,
+  performance-unnecessary-copy-initialization,
+  performance-for-range-copy,
+  performance-noexcept-move-constructor,
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*/modern/(app|core|layout|net|print|storage|ui/cpp)/.*'
+CheckOptions:
+  bugprone-suspicious-string-compare.WarnOnImplicitComparison: false
+  performance-unnecessary-copy-initialization.AllowedTypes: 'QString;QVariant;QVariantMap;QVariantList;QStringList;QByteArray;QJsonObject;QJsonArray;QJsonValue'
+  performance-for-range-copy.AllowedTypes: 'QString;QVariant;QVariantMap;QByteArray;QJsonValue'

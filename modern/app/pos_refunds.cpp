@@ -99,7 +99,7 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
     if (s_->refundsUnderway.contains(key))
         return fail(tr("That refund is on its way."));
 
-    const Payment paid = *p;
+    const Payment paid = *p;   // NOLINT(performance-unnecessary-copy-initialization): the check changes after
     Refund r;
     r.at = now();
     r.paymentId = paid.id;

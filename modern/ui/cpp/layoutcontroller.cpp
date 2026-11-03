@@ -2265,10 +2265,10 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
     }
     // Commands that carry arguments.
     if (pos_ && name == u"addTip")   // args.percent: 15, 18...; none = keypad amount
-        return call(u"addTip"_s, {qint64(args.value(u"percent"_s).toDouble() * 100 + 0.5)},
+        return call(u"addTip"_s, {qint64(std::llround(args.value(u"percent"_s).toDouble() * 100))},
                     [done](const QVariant &ok) { done(ok.toBool()); });
     if (pos_ && name == u"gratuity")
-        return call(u"setGratuity"_s, {qint64(args.value(u"percent"_s).toDouble() * 100 + 0.5)},
+        return call(u"setGratuity"_s, {qint64(std::llround(args.value(u"percent"_s).toDouble() * 100))},
                     [done](const QVariant &ok) { done(ok.toBool()); });
     // Send: a required choice missing opens it (not only says so); sent from
     // a table, back to the floor plan if the store wants (Store Settings).
@@ -2401,7 +2401,7 @@ void LayoutController::refresh()
         const QString qualifier = pos_ ? qualifierOf(z) : QString();
         const bool current = !editing()
             && ((!target.isEmpty() && (target == pageId || (onItemPage && target == nav_.lastIndex())))
-                || (!qualifier.isEmpty() && qualifier == pos_->pendingQualifier()));
+                || (pos_ && !qualifier.isEmpty() && qualifier == pos_->pendingQualifier()));
 
         rows.append({
             {ZoneModel::ZoneIdRole, z.id},
