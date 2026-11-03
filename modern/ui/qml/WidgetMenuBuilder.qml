@@ -1337,7 +1337,7 @@ Item {
                                     objectName: "builderPrice"
                                     Layout.fillWidth: true
                                     text: w.draft.price ?? ""
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     placeholderText: "0.00"
                                     onTextEdited: w.set("price", text)
                                 }
@@ -1483,7 +1483,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: w.draft.stockOnHand ?? ""
                                     placeholderText: qsTr("How many there are now, e.g. 24")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     onTextEdited: w.set("stockOnHand", text)
                                 }
                                 Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Low at") }
@@ -1493,7 +1493,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: w.draft.stockLowAt ?? ""
                                     placeholderText: qsTr("Warn when this many are left, e.g. 5")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     onTextEdited: w.set("stockLowAt", text)
                                 }
                                 Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Order up to") }
@@ -1503,7 +1503,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: w.draft.stockPar ?? ""
                                     placeholderText: qsTr("For the Stock report's order list, e.g. 24")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     onTextEdited: w.set("stockPar", text)
                                 }
                                 Label { textFormat: Text.PlainText; visible: !!w.draft.stockTrack; text: qsTr("Cost") }
@@ -1515,7 +1515,7 @@ Item {
                                         Layout.fillWidth: true
                                         text: w.draft.cost ?? ""
                                         placeholderText: qsTr("What one costs you, e.g. 6.50")
-                                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                        inputMethodHints: Qt.ImhDecimalNumbersOnly
                                         onTextEdited: w.set("cost", text)
                                     }
                                     // What's left of the price once it's paid for.
@@ -1690,7 +1690,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: w.draft.takeoutPrice ?? ""
                                     placeholderText: qsTr("Empty: the same")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     onTextEdited: w.set("takeoutPrice", text)
                                 }
                                 Repeater {
@@ -1706,7 +1706,7 @@ Item {
                                             Layout.fillWidth: true
                                             text: (w.draft.periodPrices ?? {})[modelData.id] ?? ""
                                             placeholderText: qsTr("Empty: the same")
-                                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                                             onTextEdited: w.setPeriodPrice(modelData.id, text)
                                         }
                                     }
@@ -1966,7 +1966,7 @@ Item {
                                                 Layout.preferredWidth: 84
                                                 text: (sizedRow.option.sizePrices ?? {})[modelData.toLowerCase()] ?? ""
                                                 placeholderText: sizedRow.option.price || "0.00"
-                                                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                                inputMethodHints: Qt.ImhDecimalNumbersOnly
                                                 onTextEdited: w.setSizePrice(sizedRow.index, modelData, text)
                                             }
                                         }

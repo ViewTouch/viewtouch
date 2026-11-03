@@ -153,7 +153,7 @@ Popup {
                             font.pixelSize: 18
                             text: card.price
                             placeholderText: "0.00"
-                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                             onTextEdited: card.price = text
                         }
                         Label {
@@ -199,7 +199,7 @@ Popup {
                                     implicitHeight: 48
                                     font.pixelSize: 17
                                     placeholderText: "0.00"
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     text: card.sizes[index] ? card.sizes[index].price : ""
                                     onTextEdited: card.setSize(index, "price", text)
                                 }

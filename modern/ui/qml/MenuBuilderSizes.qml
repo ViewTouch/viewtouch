@@ -79,7 +79,7 @@ Popup {
                     font.pixelSize: 16
                     text: sizeRow.modelData.price
                     placeholderText: "0.00"
-                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                     onTextEdited: sizesDialog.setRow(sizeRow.index, "price", text)
                 }
                 MenuTouchButton {

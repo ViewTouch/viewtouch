@@ -142,7 +142,7 @@ Item {
                             Layout.preferredWidth: 110
                             implicitHeight: 44
                             font.pixelSize: 16
-                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.qty[row.modelData.id] ?? "") : ""
                             placeholderText: row.modelData.unit
                             onTextEdited: { w.qty[row.modelData.id] = text; ++w.typed }
@@ -152,7 +152,7 @@ Item {
                             Layout.preferredWidth: 110
                             implicitHeight: 44
                             font.pixelSize: 16
-                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.cost[row.modelData.id] ?? "") : ""
                             placeholderText: Number(row.modelData.cost).toFixed(2)
                             onTextEdited: { w.cost[row.modelData.id] = text; ++w.typed }

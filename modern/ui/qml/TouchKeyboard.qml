@@ -12,7 +12,7 @@ Rectangle {
     signal dismissed()
 
     readonly property bool numeric: target !== null && (target.inputMethodHints
-        & (Qt.ImhDigitsOnly | Qt.ImhFormattedNumbersOnly | Qt.ImhDialableCharactersOnly)) !== 0
+        & (Qt.ImhDigitsOnly | Qt.ImhFormattedNumbersOnly | Qt.ImhDecimalNumbersOnly | Qt.ImhDialableCharactersOnly)) !== 0
     property bool shifted: false
     property bool symbols: false
 
@@ -30,8 +30,15 @@ Rectangle {
         ["abc", "~", "[", "]", "{", "}", "\\", "|", "back"],
         ["abc", "@", "space", ".", "-", "enter", "hide"],
     ]
+    // Only what the field takes: whole numbers have no decimal point, and
+    // amounts that can't be negative (prices, counts) no minus.
+    readonly property int hints: target ? target.inputMethodHints : 0
+    readonly property bool wholeOnly: (hints & Qt.ImhDigitsOnly) !== 0
+    readonly property bool positiveOnly: (hints & (Qt.ImhDigitsOnly | Qt.ImhDecimalNumbersOnly)) !== 0
     readonly property var digits: [
-        ["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "back"], ["-", "enter", "hide"],
+        ["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"],
+        wholeOnly ? ["0", "back"] : [".", "0", "back"],
+        positiveOnly ? ["enter", "hide"] : ["-", "enter", "hide"],
     ]
     // A phone held upright: a bottom row with room for fingers (@ and - are
     // on the symbols page).

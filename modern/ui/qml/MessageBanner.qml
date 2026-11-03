@@ -37,8 +37,9 @@ Rectangle {
         Text {
             visible: banner.compact
             Layout.fillWidth: true
-            function plain(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;") }   // what they typed, as typed
-            text: banner.shown ? "<b>" + plain(banner.shown.from) + ":</b> " + plain(banner.shown.text) : ""
+            // What they typed, as typed (escaped), after who sent it in bold.
+            text: banner.shown ? "<b>" + Qt.escapeHtml(String(banner.shown.from)) + ":</b> "
+                                 + Qt.escapeHtml(String(banner.shown.text)) : ""
             textFormat: Text.StyledText
             color: "white"
             font.pixelSize: 17

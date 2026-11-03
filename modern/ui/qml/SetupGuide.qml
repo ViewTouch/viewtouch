@@ -361,7 +361,7 @@ Rectangle {
                         objectName: "setupFood"
                         Layout.preferredWidth: 220
                         font.pixelSize: 22
-                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        inputMethodHints: Qt.ImhDecimalNumbersOnly
                         validator: DoubleValidator { bottom: 0; top: 50; decimals: 4 }
                         text: g.foodTax
                         onTextEdited: g.foodTax = text
@@ -371,7 +371,7 @@ Rectangle {
                         objectName: "setupAlcohol"
                         Layout.preferredWidth: 220
                         font.pixelSize: 22
-                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        inputMethodHints: Qt.ImhDecimalNumbersOnly
                         validator: DoubleValidator { bottom: 0; top: 50; decimals: 4 }
                         text: g.alcoholTax
                         onTextEdited: g.alcoholTax = text
@@ -418,7 +418,7 @@ Rectangle {
                             Layout.fillWidth: g.narrow
                             font.pixelSize: 20
                             placeholderText: qsTr("Price")
-                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                             validator: DoubleValidator { bottom: 0; top: 100000; decimals: 2 }
                         }
                         ComboBox {

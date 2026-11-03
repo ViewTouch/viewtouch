@@ -120,7 +120,7 @@ Item {
                             Layout.preferredWidth: 140
                             implicitHeight: 46
                             font.pixelSize: 17
-                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.counted[row.modelData.id] ?? "") : ""
                             placeholderText: row.modelData.unit
                             onTextEdited: { w.counted[row.modelData.id] = text; ++w.typed }

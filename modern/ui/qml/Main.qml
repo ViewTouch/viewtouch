@@ -912,7 +912,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 3.2 * holdSheet.u
                     font.pixelSize: 1.2 * holdSheet.u
-                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                     placeholderText: qsTr("Tip amount, e.g. 8.00")
                 }
                 WidgetKey {

@@ -405,7 +405,7 @@ Item {
                 Layout.fillWidth: true
                 implicitHeight: 48
                 font.pixelSize: 20
-                inputMethodHints: Qt.ImhFormattedNumbersOnly
+                inputMethodHints: Qt.ImhDecimalNumbersOnly
             }
             Label { textFormat: Text.PlainText; text: qsTr("Why") }
             Flow {

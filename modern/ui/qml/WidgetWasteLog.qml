@@ -140,7 +140,7 @@ Item {
                         implicitHeight: 48
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
-                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        inputMethodHints: Qt.ImhDecimalNumbersOnly
                     }
                     PosButton {
                         objectName: "wasteMore"

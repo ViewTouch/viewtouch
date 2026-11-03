@@ -82,7 +82,7 @@ Item {
                         implicitHeight: 48
                         id: other
                         Layout.fillWidth: true
-                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        inputMethodHints: Qt.ImhDecimalNumbersOnly
                         onTextEdited: {
                             const v = Number(text.replace(/[^0-9.]/g, ""))
                             w.amountCents = isNaN(v) ? 0 : Math.round(v * 100)

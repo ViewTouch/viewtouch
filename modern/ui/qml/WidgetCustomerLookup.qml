@@ -247,7 +247,7 @@ Item {
                                     enabled: w.manager
                                     implicitWidth: 120
                                     placeholderText: qsTr("none")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     text: w.draft.limit ?? ""
                                     onTextEdited: w.setField("limit", text)
                                 }
@@ -268,7 +268,7 @@ Item {
                                     id: payAmount
                                     implicitWidth: 120
                                     placeholderText: qsTr("all")
-                                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                                    inputMethodHints: Qt.ImhDecimalNumbersOnly
                                 }
                                 PosButton {
                                     text: qsTr("Paid Cash")

@@ -25,6 +25,7 @@
 #include "qt_catch.hh"
 
 #include <QQmlApplicationEngine>
+#include <QQmlComponent>
 #include <functional>
 #include <QFile>
 #include <QJsonDocument>
@@ -10331,4 +10332,34 @@ TEST_CASE("Security: names, notes and messages are shown as typed, never as mark
     };
     look(board->contentItem());
     CHECK(shown);
+}
+
+TEST_CASE("UI: the on-screen keypad has only what the field takes", "[flow][ui][keyboard]")
+{
+    // A price (Qt 6.12's decimal hint): digits and the point, no minus. A
+    // count: no point either. An amount that can be negative: the minus.
+    struct Case {
+        const char *hints;
+        bool point, minus;
+    };
+    for (const Case &k : {Case{"Qt.ImhDecimalNumbersOnly", true, false}, Case{"Qt.ImhDigitsOnly", false, false},
+                          Case{"Qt.ImhFormattedNumbersOnly", true, true}}) {
+        INFO(k.hints);
+        QQmlEngine engine;
+        QQmlComponent component(&engine);
+        component.setData(QByteArray("import QtQuick\nimport QtQuick.Controls.Fusion\nimport ViewTouch\n"
+                                     "Item { width: 600; height: 300\n"
+                                     "  TextField { id: field; inputMethodHints: ") + k.hints + " }\n"
+                                     "  TouchKeyboard { objectName: \"keys\"; anchors.fill: parent; target: field } }",
+                          QUrl(u"qrc:/keypad-test.qml"_s));
+        std::unique_ptr<QObject> root(component.create());
+        INFO(component.errorString().toStdString());
+        REQUIRE(root);
+        auto *keys = root->findChild<QQuickItem *>(u"keys"_s);
+        REQUIRE(keys);
+        CHECK(keys->property("numeric").toBool());
+        CHECK((Screen::findBy(keys, "text", u"."_s) != nullptr) == k.point);
+        CHECK((Screen::findBy(keys, "text", u"-"_s) != nullptr) == k.minus);
+        CHECK(Screen::findBy(keys, "text", u"7"_s));
+    }
 }
