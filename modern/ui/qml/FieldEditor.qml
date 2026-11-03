@@ -40,7 +40,7 @@ ColumnLayout {
         case "page": return pageCombo
         case "pageList": return pageList
         case "money": return numberField
-        case "percent": return numberField
+        case "percent": return fe.mixed ? numberField : percentField   // a spin box can't say "(mixed)"
         case "number": return numberField
         case "pin": return pinField
         case "password": return passwordField
@@ -424,11 +424,85 @@ ColumnLayout {
             placeholderText: fe.mixed ? qsTr("(mixed)") : "0"
             readOnly: fe.readOnly
             selectByMouse: true
-            inputMethodHints: Qt.ImhFormattedNumbersOnly
+            inputMethodHints: Qt.ImhDecimalNumbersOnly   // never below 0 (the validator)
             validator: DoubleValidator { bottom: 0; decimals: numField.decimals; notation: DoubleValidator.StandardNotation }
             onEditingFinished: {
                 const v = Number(text === "" ? 0 : text)
                 if (!isNaN(v) && v !== Number(fe.value)) fe.commit(v)
+            }
+        }
+    }
+
+    // A percent (a tax rate, a discount, the card surcharge): Qt 6.11's
+    // DoubleSpinBox, with − and + as big as the whole-number stepper's (the
+    // style's own arrows are 16 by 11 pixels: no use to a finger), a quarter
+    // point at a time, or typed in between (8.875).
+    Component {
+        id: percentField
+        DoubleSpinBox {
+            id: pct
+            objectName: "percentField"
+            Layout.minimumHeight: fe.minHeight
+            implicitWidth: 216
+            implicitHeight: 44
+            leftPadding: 52
+            rightPadding: 52
+            font.pixelSize: 16
+            from: 0
+            to: fe.field.max ?? 100
+            stepSize: fe.field.step ?? 0.25
+            decimals: 3
+            editable: !fe.readOnly
+            enabled: !fe.readOnly
+            value: fe.value === undefined ? 0 : Number(fe.value)
+            inputMethodHints: Qt.ImhDecimalNumbersOnly
+            // As people write them (18, 4.5, 8.875), not 18.000.
+            textFromValue: (v, locale) => String(parseFloat(Number(v).toFixed(3)))
+            valueFromText: (text, locale) => Number(String(text).replace(",", "."))
+            onValueModified: if (value !== Number(fe.value)) fe.commit(value)
+            contentItem: TextInput {
+                z: 2
+                text: pct.displayText
+                font: pct.font
+                color: pct.palette.text
+                selectionColor: pct.palette.highlight
+                selectedTextColor: pct.palette.highlightedText
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                readOnly: !pct.editable
+                validator: pct.validator
+                inputMethodHints: pct.inputMethodHints
+                selectByMouse: true
+                onActiveFocusChanged: if (activeFocus) selectAll()
+            }
+            background: Rectangle {
+                x: 52
+                width: pct.width - 104
+                radius: 4
+                color: pct.palette.base
+                border.color: pct.activeFocus ? pct.palette.highlight : pct.palette.mid
+            }
+            down.indicator: Rectangle {
+                objectName: "percentDown"
+                x: 0
+                height: pct.height
+                implicitWidth: 48
+                radius: 4
+                color: pct.down.pressed ? pct.palette.mid : pct.palette.button
+                border.color: pct.palette.mid
+                opacity: pct.enabled && pct.value > pct.from ? 1 : 0.4
+                Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: "−"; font.pixelSize: 20; color: pct.palette.buttonText }
+            }
+            up.indicator: Rectangle {
+                objectName: "percentUp"
+                x: pct.width - width
+                height: pct.height
+                implicitWidth: 48
+                radius: 4
+                color: pct.up.pressed ? pct.palette.mid : pct.palette.button
+                border.color: pct.palette.mid
+                opacity: pct.enabled && pct.value < pct.to ? 1 : 0.4
+                Text { textFormat: Text.PlainText; anchors.centerIn: parent; text: "+"; font.pixelSize: 20; color: pct.palette.buttonText }
             }
         }
     }

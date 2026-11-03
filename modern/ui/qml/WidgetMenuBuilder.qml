@@ -1284,9 +1284,10 @@ Item {
                     objectName: "builderCard"
                     Timer {
                         id: moreScroll
-                        property real top: 0
                         interval: 30
-                        onTriggered: cardFlick.contentY = Math.max(0, Math.min(cardFlick.contentHeight - cardFlick.height, top))
+                        property Item target: null
+                        // Once laid out: a smooth scroll to it (Qt 6.11's flickToChild).
+                        onTriggered: if (target) cardFlick.flickToChild(target, Flickable.AlignTop)
                     }
                     anchors { left: parent.left; right: parent.right; top: parent.top; bottom: cardButtons.top; margins: 14 }
                     visible: w.editingItem || w.editingCategory || w.editingGroup
@@ -1620,6 +1621,7 @@ Item {
 
                             // The rest most kitchens set: folded away until wanted.
                             TouchButton {
+                                id: moreButton
                                 objectName: "builderMore"
                                 Layout.fillWidth: true
                                 flat: true
@@ -1628,7 +1630,7 @@ Item {
                                     w.moreOpen = !w.moreOpen
                                     // Opened: scrolled up into view, once laid out.
                                     if (w.moreOpen) {
-                                        moreScroll.top = y - 8
+                                        moreScroll.target = moreButton
                                         moreScroll.restart()
                                     }
                                 }

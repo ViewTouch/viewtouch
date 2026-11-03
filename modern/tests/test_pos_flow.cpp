@@ -10363,3 +10363,75 @@ TEST_CASE("UI: the on-screen keypad has only what the field takes", "[flow][ui][
         CHECK(Screen::findBy(keys, "text", u"7"_s));
     }
 }
+
+TEST_CASE("UI: a tax rate's spin box: + a quarter point, saved; typed exactly", "[flow][ui][fields][percent]")
+{
+    Screen s(true, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-taxes"_s));
+    QTest::qWait(150);
+    const auto foodTax = [&] { return s.pos.adminRecords(u"taxes"_s).value(0).toMap()[u"food"_s].toDouble(); };
+    // The first percent on the page is the food tax. (Made by a Loader in the
+    // form, and made again when the form changes: looked for each time.)
+    const auto named = [&](const QString &name) {
+        QQuickItem *hit = nullptr;
+        std::function<void(QQuickItem *)> find = [&](QQuickItem *it) {
+            if (!hit && it->isVisible() && it->objectName() == name)
+                hit = it;
+            for (QQuickItem *c : it->childItems())
+                find(c);
+        };
+        find(s.window->contentItem());
+        return hit;
+    };
+    const auto tap = [&](QQuickItem *item) {
+        QTest::mouseClick(s.window, Qt::LeftButton, {}, item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        QTest::qWait(80);
+    };
+    const double before = foodTax();
+    QQuickItem *spin = named(u"percentField"_s);
+    REQUIRE(spin);
+    CHECK(spin->property("value").toDouble() == Catch::Approx(before));
+    auto *up = qvariant_cast<QObject *>(spin->property("up"));
+    REQUIRE(up);
+    auto *plus = qvariant_cast<QQuickItem *>(up->property("indicator"));
+    REQUIRE(plus);
+    CHECK(plus->width() >= 44);   // a finger's worth, not the style's 16-pixel arrow
+    // Below the fold: scrolled to, as a finger would.
+    const auto scrollTo = [&](QQuickItem *item) {
+        for (QQuickItem *p = item->parentItem(); p; p = p->parentItem())
+            if (p->inherits("QQuickFlickable")) {
+                const QPointF at = item->mapToItem(p->property("contentItem").value<QQuickItem *>(), QPointF(0, 0));
+                p->setProperty("contentY", std::max(0.0, at.y() - 40));
+                break;
+            }
+        QTest::qWait(80);
+    };
+    scrollTo(spin);
+    tap(plus);
+    REQUIRE(named(u"adminSave"_s));
+    tap(named(u"adminSave"_s));
+    CHECK(foodTax() == Catch::Approx(before + 0.25));
+
+    // Typed: 8.875 exactly (three places), shown as written.
+    spin = named(u"percentField"_s);
+    REQUIRE(spin);
+    scrollTo(spin);   // (saving made the form again, at its top)
+    auto *field = qvariant_cast<QQuickItem *>(spin->property("contentItem"));
+    REQUIRE(field);
+    tap(field);
+    QTest::keyClick(s.window, Qt::Key_A, Qt::ControlModifier);
+    for (const char *ch = "8.875"; *ch; ++ch)
+        QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+    QTest::keyClick(s.window, Qt::Key_Return);
+    QTest::qWait(80);
+    // Done puts the keyboard away (it covers Save), as a manager would.
+    REQUIRE(Screen::findBy(s.window->contentItem(), "text", u"Done"_s));
+    tap(Screen::findBy(s.window->contentItem(), "text", u"Done"_s)->parentItem());
+    QTest::qWait(250);
+    tap(named(u"adminSave"_s));
+    CHECK(foodTax() == Catch::Approx(8.875));
+    spin = named(u"percentField"_s);
+    REQUIRE(spin);
+    CHECK(spin->property("displayText").toString() == u"8.875"_s);
+}

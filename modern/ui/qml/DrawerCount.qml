@@ -121,7 +121,8 @@ Rectangle {
                                 radius: 8
                                 color: current ? Ui.accent : Ui.deep
                                 border.color: current ? "#9cc0ff" : "transparent"
-                                onCurrentChanged: if (current) list.contentY = Math.max(0, Math.min(y - list.height / 2 + height / 2, list.contentHeight - list.height))
+                                // The row being counted, kept in the middle (Qt 6.11's positionViewAtChild).
+                                onCurrentChanged: if (current) list.positionViewAtChild(line, Flickable.AlignVCenter)
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.leftMargin: 14

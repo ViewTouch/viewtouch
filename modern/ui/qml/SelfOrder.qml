@@ -104,14 +104,12 @@ Rectangle {
             event.accepted = true
         }
     }
+    // The item a keyboard or switch moved to, scrolled into view in the
+    // nearest list holding it, moving no more than needed.
     function reveal(item) {
         for (let p = item.parent; p; p = p.parent)
-            if (p.contentY !== undefined && p.contentItem !== undefined && p.height > 0) {
-                const at = item.mapToItem(p.contentItem, 0, 0)
-                if (at.y < p.contentY)
-                    p.contentY = at.y
-                else if (at.y + item.height > p.contentY + p.height)
-                    p.contentY = at.y + item.height - p.height
+            if (p.positionViewAtChild !== undefined && p.height > 0) {
+                p.positionViewAtChild(item, Flickable.Visible)
                 return
             }
     }
