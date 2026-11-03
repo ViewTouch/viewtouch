@@ -457,8 +457,8 @@ TEST_CASE("A network printer, live: the Test Print page", "[.][printerlive]")
     print::PrintSpooler spooler;
     print::TicketPrinter printer(spooler, QDir::tempPath());
     QString result;
-    QObject::connect(&spooler, &print::PrintSpooler::jobPrinted, [&](const QString &, const QString &) { result = u"printed"_s; });
-    QObject::connect(&spooler, &print::PrintSpooler::jobFailed,
+    QObject::connect(&spooler, &print::PrintSpooler::jobPrinted, &spooler, [&](const QString &, const QString &) { result = u"printed"_s; });
+    QObject::connect(&spooler, &print::PrintSpooler::jobFailed, &spooler,
                      [&](const QString &, const QString &, const QString &error) { result = u"failed: "_s + error; });
     REQUIRE(printer.printTestPage(settings, "receipt", false));
     for (int i = 0; i < 300 && result.isEmpty(); ++i)
@@ -701,7 +701,7 @@ TEST_CASE("Printer status: out of paper is seen, then fixed, then unplugged", "[
     PrinterMonitor monitor;
     monitor.setTimings(150, 400);
     QStringList seen;
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged,
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor,
                      [&](const QString &id, const QString &problem) { seen << id + u'=' + problem; });
     const auto waitFor = [&](const QString &what) {
         for (int i = 0; i < 100 && !seen.contains(what); ++i)
@@ -762,7 +762,7 @@ TEST_CASE("A network printer, live: its status", "[.][printerstatuslive]")
     PrinterMonitor monitor;
     monitor.setTimings(1000, 1500);
     QString last = u"(fine)"_s;
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged, [&](const QString &, const QString &problem) {
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor, [&](const QString &, const QString &problem) {
         last = problem.isEmpty() ? u"(fine)"_s : problem;
     });
     monitor.setPrinters({p});
@@ -776,7 +776,7 @@ TEST_CASE("Printer status: one that stops responding while still connected", "[p
     PrinterMonitor monitor;
     monitor.setTimings(150, 200);
     QStringList seen;
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged,
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor,
                      [&](const QString &id, const QString &problem) { seen << id + u'=' + problem; });
     const auto waitFor = [&](const QString &what) {
         for (int i = 0; i < 150 && !seen.contains(what); ++i)
@@ -805,7 +805,7 @@ TEST_CASE("Printer status: paper low, then no connections: probably out of paper
     PrinterMonitor monitor;
     monitor.setTimings(150, 300);
     QStringList seen;
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged,
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor,
                      [&](const QString &id, const QString &problem) { seen << id + u'=' + problem; });
     const auto waitFor = [&](const QString &what) {
         for (int i = 0; i < 150 && !seen.contains(what); ++i)
@@ -826,7 +826,7 @@ TEST_CASE("Printer status: paper low, then printed to the end (connected, silent
     PrinterMonitor monitor;
     monitor.setTimings(150, 200);
     QStringList seen;
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged,
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor,
                      [&](const QString &id, const QString &problem) { seen << id + u'=' + problem; });
     const auto waitFor = [&](const QString &what) {
         for (int i = 0; i < 150 && !seen.contains(what); ++i)
@@ -851,7 +851,7 @@ TEST_CASE("Printer status: learned that it answers; silent from the start after 
     {
         PrinterMonitor monitor;
         monitor.setTimings(150, 200);
-        QObject::connect(&monitor, &PrinterMonitor::answersStatus, [&](const QString &id) { learned << id; });
+        QObject::connect(&monitor, &PrinterMonitor::answersStatus, &monitor, [&](const QString &id) { learned << id; });
         monitor.setPrinters({printer.config()});
         for (int i = 0; i < 50 && learned.isEmpty(); ++i)
             QTest::qWait(20);
@@ -864,7 +864,7 @@ TEST_CASE("Printer status: learned that it answers; silent from the start after 
     known.reportsStatus = true;
     PrinterMonitor monitor;
     monitor.setTimings(150, 200);
-    QObject::connect(&monitor, &PrinterMonitor::statusChanged,
+    QObject::connect(&monitor, &PrinterMonitor::statusChanged, &monitor,
                      [&](const QString &id, const QString &problem) { seen << id + u'=' + problem; });
     monitor.setPrinters({known});
     for (int i = 0; i < 150 && !seen.contains(u"kitchen=silent"_s); ++i)

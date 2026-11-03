@@ -1,7 +1,8 @@
 # The modern ViewTouch's tests built with AddressSanitizer and
 # UndefinedBehaviorSanitizer (memory used after it's freed or past its end,
-# leaks, integer overflow, undefined behavior), on every push to main. Slower
-# than Modern checks, so apart from them (releases don't wait for it).
+# leaks, integer overflow, undefined behavior), and with ThreadSanitizer
+# (two threads touching the same data), on every push to main. Slower than
+# Modern checks, so apart from them (releases don't wait for it).
 name: Modern sanitizers
 
 on:
@@ -54,3 +55,55 @@ jobs:
         run: |
           export LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/lsan.supp"
           timeout 8400 ./build/tests/vtm_tests
+
+  # Data races between threads (the database writer, printers, backups,
+  # reports worked out on the side). ThreadSanitizer only understands Qt's
+  # locks and queued signals in a Qt built with it, so this job builds Qt
+  # (the Debian 13 version) with ThreadSanitizer once and keeps it in the
+  # cache (the first run takes a few hours). The UI tests and the ones that
+  # start the real program are left out: under it they take too long.
+  threads:
+    name: Tests under ThreadSanitizer (Qt 6.8 built with it)
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 360
+    env:
+      QT_VERSION: 6.8.2
+      QT_TSAN: /opt/qt-tsan
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            ca-certificates curl xz-utils git python3 perl g++ cmake ninja-build pkg-config libssl-dev \
+            fonts-dejavu-core
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Qt with ThreadSanitizer (cached)
+        id: qt
+        uses: actions/cache@v4
+        with:
+          path: /opt/qt-tsan
+          key: qt-tsan-${{ env.QT_VERSION }}-trixie-${{ hashFiles('modern/tools/build-qt-tsan.sh') }}
+
+      - name: Build Qt with ThreadSanitizer
+        if: steps.qt.outputs.cache-hit != 'true'
+        run: WORK="$RUNNER_TEMP/qt" sh modern/tools/build-qt-tsan.sh "$QT_VERSION" "$QT_TSAN"
+
+      - name: Build with ThreadSanitizer
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-O1 \
+                -DVTM_SANITIZE=thread -DCMAKE_PREFIX_PATH="$QT_TSAN"
+          cmake --build build
+
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QPA_FONTDIR: /usr/share/fonts/truetype/dejavu
+        run: |
+          export TSAN_OPTIONS="halt_on_error=0 second_deadlock_stack=1 suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/tsan.supp"
+          timeout 14400 ./build/tests/vtm_tests "~[ui]~[program]~[timing]"

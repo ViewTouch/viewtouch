@@ -464,7 +464,7 @@ TEST_CASE("Station: status at a glance, backups to restore, a locked power butto
     CHECK(again.rotation() == 90);
 }
 
-TEST_CASE("Station: a backup made, the store changed, the backup restored by touch", "[station][restore]")
+TEST_CASE("Station: a backup made, the store changed, the backup restored by touch", "[station][restore][program]")
 {
     QTemporaryDir dir;
     {

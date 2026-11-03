@@ -78,16 +78,18 @@ private:
                 continue;
             }
             QString error;
+            // Said first, then no longer pending: once waitIdle() returns,
+            // every job has been reported (it read the count too early before).
             if (deliver(job, &error)) {
-                pending_.fetch_sub(1);
                 hold(job, -1);
                 emit owner_->jobPrinted(QString::fromStdString(job.printer.name), job.description);
+                pending_.fetch_sub(1);
                 continue;
             }
             if (++job.attempts >= MaxAttempts) {
-                pending_.fetch_sub(1);
                 hold(job, -1);
                 emit owner_->jobFailed(QString::fromStdString(job.printer.name), job.description, error);
+                pending_.fetch_sub(1);
                 continue;
             }
             job.notBefore = QDateTime::currentMSecsSinceEpoch() + qint64(retryBaseMs) * job.attempts;

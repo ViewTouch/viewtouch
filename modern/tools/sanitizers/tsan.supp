@@ -1,0 +1,11 @@
+# ThreadSanitizer suppressions (TSAN_OPTIONS=suppressions=...): only what's
+# been looked at and isn't ViewTouch's.
+#
+# SQLite takes its own mutexes in different orders while one thread closes
+# a connection (sqlite3_close: the pager and the shared cache); never two
+# threads at once on one connection, so no deadlock.
+deadlock:pthreadMutexEnter
+#
+# Qt's HTTP thread deletes a request's upload device while the main thread
+# deletes the finished reply (QNetworkAccessManager inside, not our code).
+race:QNonContiguousByteDeviceThreadForwardImpl

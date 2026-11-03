@@ -456,7 +456,7 @@ TEST_CASE("Demo data: months of real service, everything in use, then refuses a 
     CHECK(app::fillDemoData(pos, now).startsWith(u"This store"_s));
 }
 
-TEST_CASE("Factory reset: backed up, then a fresh store", "[demo][backup]")
+TEST_CASE("Factory reset: backed up, then a fresh store", "[demo][backup][program]")
 {
     QTemporaryDir dir;
     const QString exe = QCoreApplication::applicationDirPath() + u"/../vtmodern"_s;
@@ -480,7 +480,7 @@ TEST_CASE("Factory reset: backed up, then a fresh store", "[demo][backup]")
     CHECK(storage::verifyDatabase(backups.first()));
 }
 
-TEST_CASE("Factory reset to an empty store: no menu, tables or sample staff, and it stays empty", "[demo][backup][reset]")
+TEST_CASE("Factory reset to an empty store: no menu, tables or sample staff, and it stays empty", "[demo][backup][reset][program]")
 {
     QTemporaryDir dir;
     const QString exe = QCoreApplication::applicationDirPath() + u"/../vtmodern"_s;

@@ -188,7 +188,7 @@ TEST_CASE("AsyncWriter takes only plain table and column names", "[posstore]")
     CHECK(failed.size() == 3);
 }
 
-TEST_CASE("Queuing writes never blocks the caller", "[posstore]")
+TEST_CASE("Queuing writes never blocks the caller", "[posstore][timing]")
 {
     QTemporaryDir dir;
     const QString path = dir.filePath(u"vt.db"_s);
