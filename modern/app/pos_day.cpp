@@ -345,8 +345,11 @@ bool PosService::splitEvenly(int ways)
             const int rest = quantity % ways;
             if (each > 0) {
                 l->quantity = each;
+                // A copy: adding lines moves them (5 coffees 3 ways read
+                // the line after it had moved).
+                const OrderLine kept = *l;
                 for (int k = 0; k < rest; ++k) {
-                    OrderLine one = *l;
+                    OrderLine one = kept;
                     one.quantity = 1;
                     ones.push_back(c->adoptLine(std::move(one)).id);
                 }

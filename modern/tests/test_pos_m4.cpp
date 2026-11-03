@@ -1,5 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include <set>
+
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
@@ -440,6 +442,31 @@ TEST_CASE("Split check: each piece keeps the party's gratuity, a tax exemption a
         CHECK(c.gratuityBp == 1800);
         CHECK(c.taxExempt == "EX-1234 Lincoln School");
     }
+
+    // 5 coffees 3 ways: one each, the two left in pieces (found by the
+    // property tests under AddressSanitizer: the line was read after it moved).
+    REQUIRE(t.pos.startCheck(core::CheckType::Takeout));
+    t.pos.addItem(u"coffee"_s);
+    const qint64 coffee = t.pos.currentCheck()->lines.front().id;
+    REQUIRE(t.pos.setLineQuantity(coffee, 5));
+    const qint64 coffees = t.pos.currentCheck()->id;
+    const std::int64_t five = t.pos.currentCheck()->totals(s.settings.tax).items.cents();
+    std::set<qint64> before;
+    for (const auto &[id, c] : s.open)
+        before.insert(id);
+    REQUIRE(t.pos.splitEvenly(3));
+    std::int64_t items = 0;
+    int counted = 0;
+    for (const auto &[id, c] : s.open)
+        if (id == coffees || !before.contains(id)) {
+            items += c.totals(s.settings.tax).items.cents();
+            for (const core::OrderLine &l : c.lines) {
+                CHECK(l.itemId == "coffee");
+                counted += l.counted();
+            }
+        }
+    CHECK(items == five);
+    CHECK(counted == 5);   // the kitchen makes five, no more
 }
 
 TEST_CASE("Admin: menu items", "[m4][admin]")
