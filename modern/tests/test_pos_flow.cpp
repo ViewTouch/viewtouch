@@ -3957,9 +3957,20 @@ TEST_CASE("UI: logging waste by touch", "[flow][ui][waste]")
     REQUIRE(s.pos.wasteEntries().size() == 1);
     CHECK(s.pos.wasteEntries().back().qty == 2);
     CHECK(find(u"wasteQty"_s)->property("text").toString() == u"1"_s);   // ready for the next one
-    // An ingredient, by its unit.
+    // An ingredient, by its unit. Found by typing: "let" leaves lettuce, not the buns.
     s.tapItem(find(u"wasteIngredients"_s));
     QTest::qWait(40);
+    REQUIRE(find(u"waste-bun"_s));
+    s.tapItem(find(u"wasteSearch"_s));
+    for (const char *ch = "let"; *ch; ++ch)
+        QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+    QTest::qWait(60);
+    CHECK(find(u"waste-lettuce"_s));
+    CHECK_FALSE(find(u"waste-bun"_s));
+    for (int i = 0; i < 3; ++i)
+        QTest::keyClick(s.window, Qt::Key_Backspace);
+    QTest::qWait(60);
+    CHECK(find(u"waste-bun"_s));   // all again
     s.tapItem(find(u"waste-lettuce"_s));
     s.tapItem(find(u"wasteQty"_s));
     QTest::keyClick(s.window, Qt::Key_End);

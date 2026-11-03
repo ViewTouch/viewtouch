@@ -83,14 +83,31 @@ int LiveList::rowCount(const QModelIndex &parent) const
     return parent.isValid() ? 0 : int(rows_.size());
 }
 
+void LiveList::setRoles(const QStringList &roles)
+{
+    if (roles == roles_)
+        return;
+    beginResetModel();
+    roles_ = roles;
+    endResetModel();
+    emit rolesChanged();
+}
+
 QVariant LiveList::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() >= rows_.size() || role != ModelDataRole)
+    if (!index.isValid() || index.row() >= rows_.size())
         return {};
-    return rows_[index.row()];
+    if (role == ModelDataRole)
+        return rows_[index.row()];
+    if (const int field = role - ModelDataRole - 1; field >= 0 && field < roles_.size())
+        return rows_[index.row()].toMap().value(roles_[field]);
+    return {};
 }
 
 QHash<int, QByteArray> LiveList::roleNames() const
 {
-    return {{ModelDataRole, "modelData"}};
+    QHash<int, QByteArray> names{{ModelDataRole, "modelData"}};
+    for (qsizetype i = 0; i < roles_.size(); ++i)
+        names.insert(ModelDataRole + 1 + int(i), roles_[i].toUtf8());
+    return names;
 }

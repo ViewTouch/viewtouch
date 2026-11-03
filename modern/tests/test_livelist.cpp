@@ -71,3 +71,15 @@ TEST_CASE("LiveList: rows matched by id: added, removed, moved, changed, the res
     m.setRows({});
     CHECK(m.rowCount() == 0);
 }
+
+TEST_CASE("LiveList: a row's fields as roles of their own, for filters that read roles by name", "[livelist]")
+{
+    LiveList m;
+    m.setRoles({u"name"_s});
+    m.setRows({row(1, u"Lettuce"_s), row(2, u"Bun"_s)});
+    const auto names = m.roleNames();
+    const int nameRole = names.key("name");
+    REQUIRE(nameRole > Qt::UserRole + 1);
+    CHECK(m.data(m.index(1), nameRole).toString() == u"Bun"_s);
+    CHECK(m.data(m.index(0), Qt::UserRole + 1).toMap()[u"id"_s].toInt() == 1);   // modelData still
+}

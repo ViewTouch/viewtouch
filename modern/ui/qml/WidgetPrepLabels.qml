@@ -1,4 +1,5 @@
 import QtQuick
+import QtQml.Models
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
@@ -16,8 +17,25 @@ Item {
     property int count: 1
     readonly property var chosenOne: (info.ingredients ?? []).find(i => i.id === chosen)
     readonly property string name: other.text.trim() !== "" ? other.text.trim() : (chosenOne ? chosenOne.name : "")
-    readonly property var choices: (info.ingredients ?? [])
-                                   .filter(i => search === "" || i.name.toLowerCase().includes(search.toLowerCase()))
+    readonly property var all: (info.ingredients ?? [])
+    // What's typed narrows the list (Qt 6.10's SortFilterProxyModel over the
+    // store's list; told again when the words change, as its filter asks).
+    SortFilterProxyModel {
+        id: shown
+        sourceModel: LiveList { rows: w.all; roles: ["name"] }
+        filters: [
+            FunctionFilter {
+                id: typed
+                readonly property string words: w.search.toLowerCase()
+                onWordsChanged: shown.invalidate()   // once the words are the new ones
+                // (Its own properties by name: the filter runs outside this file's ids.)
+                function filter(name: string): bool {
+                    return words === "" || name.toLowerCase().includes(words)
+                }
+            }
+        ]
+    }
+
     readonly property var keeps: [{ h: 0, t: qsTr("No date") }, { h: 24, t: qsTr("1 day") }, { h: 48, t: qsTr("2 days") },
                                   { h: 72, t: qsTr("3 days") }, { h: 120, t: qsTr("5 days") }, { h: 168, t: qsTr("7 days") }]
 
@@ -79,7 +97,7 @@ Item {
                     readonly property int columns: Math.max(2, Math.floor(width / 170))
                     cellWidth: (width - gridBar.room) / columns
                     cellHeight: 58
-                    model: w.choices
+                    model: shown
                     ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
                     delegate: PosButton {
                         required property var modelData

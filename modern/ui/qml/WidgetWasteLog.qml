@@ -1,4 +1,5 @@
 import QtQuick
+import QtQml.Models
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
@@ -14,8 +15,25 @@ Item {
     property string chosen: ""
     property string reason: ""
     property string search: ""
-    readonly property var choices: (byIngredient ? (info.ingredients ?? []) : (info.items ?? []))
-                                   .filter(c => search === "" || c.name.toLowerCase().includes(search.toLowerCase()))
+    readonly property var all: (byIngredient ? (info.ingredients ?? []) : (info.items ?? []))
+    // What's typed narrows the list (Qt 6.10's SortFilterProxyModel over the
+    // store's list; told again when the words change, as its filter asks).
+    SortFilterProxyModel {
+        id: shown
+        sourceModel: LiveList { rows: w.all; roles: ["name"] }
+        filters: [
+            FunctionFilter {
+                id: typed
+                readonly property string words: w.search.toLowerCase()
+                onWordsChanged: shown.invalidate()   // once the words are the new ones
+                // (Its own properties by name: the filter runs outside this file's ids.)
+                function filter(name: string): bool {
+                    return words === "" || name.toLowerCase().includes(words)
+                }
+            }
+        ]
+    }
+
     readonly property var chosenOne: (byIngredient ? (info.ingredients ?? []) : (info.items ?? [])).find(c => c.id === chosen)
     readonly property int loggedCount: (info.today ?? []).length
     onLoggedCountChanged: { chosen = ""; reason = ""; qty.text = "1" }
@@ -85,7 +103,7 @@ Item {
                     readonly property int columns: Math.max(2, Math.floor(width / 170))
                     cellWidth: (width - gridBar.room) / columns
                     cellHeight: 58
-                    model: w.choices
+                    model: shown
                     // From the rows, not contentHeight (that follows cellWidth: a loop).
                     ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * grid.cellHeight > grid.height + 1 }
                     delegate: PosButton {
