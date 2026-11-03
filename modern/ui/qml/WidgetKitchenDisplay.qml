@@ -120,32 +120,32 @@ Item {
     // "waiting on", the guest's allergies, the note. A continued card shows
     // only the allergies again.
     component TicketTop: Column {
-        id: top
+        id: cardTop   // (not "top": it hid the item's own top)
         property var ticket: ({})
         property bool first: true
         spacing: 4
         Text {
             textFormat: Text.PlainText
-            visible: top.first && (top.ticket.rush || top.ticket.vip || !!top.ticket.due)
+            visible: cardTop.first && (cardTop.ticket.rush || cardTop.ticket.vip || !!cardTop.ticket.due)
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            text: [top.ticket.rush ? qsTr("RUSH") : "", top.ticket.vip ? qsTr("VIP") : "",
-                   top.ticket.due ? qsTr("READY %1").arg(top.ticket.due) : ""]
+            text: [cardTop.ticket.rush ? qsTr("RUSH") : "", cardTop.ticket.vip ? qsTr("VIP") : "",
+                   cardTop.ticket.due ? qsTr("READY %1").arg(cardTop.ticket.due) : ""]
                   .filter(s => s).join("  ·  ")
-            color: top.ticket.rush ? "#d62828" : "#9a7b12"
+            color: cardTop.ticket.rush ? "#d62828" : "#9a7b12"
             font.family: w.face
             font.pixelSize: 28 * w.k
             font.bold: true
         }
         Text {
             textFormat: Text.PlainText
-            visible: top.first && w.expo && !top.ticket.ready
+            visible: cardTop.first && w.expo && !cardTop.ticket.ready
             width: parent.width
             wrapMode: Text.WordWrap
-            readonly property bool isArmed: w.armed !== null && w.armed.checkId === top.ticket.checkId
-                                            && w.armed.sentAt === top.ticket.sentAt
+            readonly property bool isArmed: w.armed !== null && w.armed.checkId === cardTop.ticket.checkId
+                                            && w.armed.sentAt === cardTop.ticket.sentAt
             text: isArmed ? qsTr("Not all made. Touch again to send it out anyway.")
-                          : qsTr("Waiting on: %1").arg((top.ticket.waitingOn ?? []).join(", "))
+                          : qsTr("Waiting on: %1").arg((cardTop.ticket.waitingOn ?? []).join(", "))
             color: isArmed ? "#c92a2a" : "#6b6b6b"
             font.family: w.face
             font.pixelSize: 20 * w.k
@@ -154,7 +154,7 @@ Item {
         // The guest's allergies: big, on red, before anything else is read.
         Rectangle {
             objectName: "kdsAllergy"
-            visible: (top.ticket.allergies ?? []).length > 0
+            visible: (cardTop.ticket.allergies ?? []).length > 0
             width: parent.width
             height: allergyText.implicitHeight + 12
             radius: 6
@@ -166,7 +166,7 @@ Item {
                 width: parent.width - 16
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                text: qsTr("ALLERGY: %1").arg((top.ticket.allergies ?? []).join(", ").toUpperCase())
+                text: qsTr("ALLERGY: %1").arg((cardTop.ticket.allergies ?? []).join(", ").toUpperCase())
                 color: "white"
                 font.family: w.face
                 font.pixelSize: 26 * w.k
@@ -175,10 +175,10 @@ Item {
         }
         Text {
             textFormat: Text.PlainText
-            visible: top.first && !!top.ticket.note
+            visible: cardTop.first && !!cardTop.ticket.note
             width: parent.width
             wrapMode: Text.WordWrap
-            text: qsTr("Note: %1").arg(top.ticket.note ?? "")
+            text: qsTr("Note: %1").arg(cardTop.ticket.note ?? "")
             color: "#b83232"
             font.family: w.face
             font.pixelSize: 22 * w.k

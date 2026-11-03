@@ -4,3 +4,33 @@
 # The analyzer follows a path where `this` is null in AsyncWriter::fail()
 # (it can't be: a member function of a live writer).
 storage/async_writer.cpp: [clang-analyzer-core.NullDereference] Access to field 'retryPending_' results in a dereference of a null pointer
+#
+# qmllint, Qt 6.12: properties read through `parent` (typed a plain Item, or a
+# Repeater when a delegate's parent is really its layout) and a source picked
+# by a JavaScript expression; each works (the UI tests would warn otherwise).
+ui/qml/LayoutGallery.qml: [qmllint missing-property] Member "k" not found on type "Repeater"
+ui/qml/Main.qml: [qmllint missing-property] Member "spacing" not found on type "Repeater"
+ui/qml/MenuBuilderCheck.qml: [qmllint missing-property] Member "pos" not found on type "QQuickItem"
+ui/qml/MenuBuilderLike.qml: [qmllint missing-property] Member "allItems" not found on type "QQuickItem"
+ui/qml/MenuBuilderLike.qml: [qmllint missing-property] Member "draft" not found on type "QQuickItem"
+ui/qml/MenuBuilderPrint.qml: [qmllint missing-property] Member "categories" not found on type "QQuickItem"
+ui/qml/MenuBuilderPrint.qml: [qmllint missing-property] Member "pos" not found on type "QQuickItem"
+ui/qml/MenuBuilderSizes.qml: [qmllint missing-property] Member "toFixed" not found on type "QJSPrimitiveValue"
+ui/qml/MenuBuilderTheme.qml: [qmllint missing-property] Member "categories" not found on type "QQuickItem"
+ui/qml/MenuButtons.qml: [qmllint missing-property] Member "hits" not found on type "QQuickItem"
+ui/qml/MenuButtons.qml: [qmllint missing-property] Member "itemsLeft" not found on type "QQuickItem"
+ui/qml/MenuButtons.qml: [qmllint missing-property] Member "slow" not found on type "QQuickItem"
+ui/qml/RushRadarView.qml: [qmllint missing-property] Member "most" not found on type "QQuickItem"
+ui/qml/RushRadarView.qml: [qmllint missing-property] Member "spacing" not found on type "Repeater"
+ui/qml/SetupGuide.qml: [qmllint incompatible-type] Cannot assign binding of type QJSPrimitiveValue to QUrl
+ui/qml/StationWindow.qml: [qmllint missing-property] Member "implicitHeight" not found on type "QObject"
+ui/qml/StressPanel.qml: [qmllint missing-property] Member "report" not found on type "QObject"
+ui/qml/StressPanel.qml: [qmllint missing-property] Member "stats" not found on type "QObject"
+ui/qml/WidgetDashboard.qml: [qmllint missing-property] Member "title" not found on type "QQuickItem"
+ui/qml/WidgetDecor.qml: [qmllint missing-property] Member "across" not found on type "Repeater"
+ui/qml/WidgetDecor.qml: [qmllint missing-property] Member "d" not found on type "Repeater"
+ui/qml/WidgetKey.qml: [qmllint missing-property] Member "st" not found on type "QQuickItem"
+ui/qml/WidgetKey.qml: [qmllint missing-property] Member "styleNormal" not found on type "QQuickItem"
+ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "gap" not found on type "QQuickItem"
+ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "sideW" not found on type "QQuickItem"
+ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "unit" not found on type "QQuickItem"

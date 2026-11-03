@@ -5,7 +5,8 @@
 #
 # - clang-tidy (checks in .clang-tidy) over ViewTouch's own C++, using the
 #   build's compile_commands.json;
-# - shellcheck (warnings and errors) over the packaging and tools scripts.
+# - shellcheck (warnings and errors) over the packaging and tools scripts;
+# - qmllint over the screens' QML (all but its "unqualified" style category).
 #
 # A finding already in tools/static-analysis-baseline.txt doesn't fail (it
 # was looked at and is fine, or waits for its fix); a new one does. Findings
@@ -55,6 +56,14 @@ done > "$out/scripts"
 "$check" -S warning -f gcc $(cat "$out/scripts") 2>/dev/null |
     sed -n 's#^'"$here"'/\([^:]*\):[0-9]*:[0-9]*: \(warning\|error\): \(.*\) \[\(SC[0-9]*\)\]$#\1: [\4] \3#p' |
     sort -u >> "$out/found" || true
+# qmllint (Qt's, through the build's QML module target): what it says about
+# the screens' QML, errors included (a QML file that doesn't compile is one),
+# but not "unqualified" (writing a parent's id before its properties: style).
+echo "qmllint..."
+cmake --build "$build" --target vtm_ui_qmllint > "$out/qmllint.txt" 2>&1 || true
+sed -n 's#^\(Warning\|Error\): .*/ui/qml/\([^:]*\):[0-9]*:[0-9]*: \(.*\) \[\([a-z-]*\)\]$#ui/qml/\2: [qmllint \4] \3#p' "$out/qmllint.txt" |
+    grep -v '\[qmllint unqualified\]' | sort -u >> "$out/found" || true
+grep -q '^Error: ' "$out/qmllint.txt" && grep '^Error: ' "$out/qmllint.txt" | sed 's/^/  /'
 sort -u -o "$out/found" "$out/found"
 
 if [ "$update" = yes ]; then
