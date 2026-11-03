@@ -6,6 +6,15 @@ Pi or a TV. These do. Run them on the release build (the packages the
 Modern release workflow made, installed with `install-viewtouch.sh`), and
 put the results in the release notes. About an hour.
 
+**Qt first.** ViewTouch carries its own Qt, so Qt's security fixes reach
+stores only through a ViewTouch release. Before each release, look at Qt's
+releases and security advisories (qt.io/blog, download.qt.io/official_releases/qt):
+a newer patch release (6.12.1...) or a newer version means changing
+`tools/qt-version` (and `QT_VERSION` in the Android and sanitizer
+workflows), building and running the tests, then this checklist. A
+security advisory for a part of Qt ViewTouch uses (networking, TLS, images,
+SQLite, QML) is a reason for a release of its own.
+
 Mark each: **✓** worked, **✗** didn't (open an issue, and don't approve the
 publish until it's fixed or understood), **–** not available this time.
 

@@ -16,6 +16,25 @@ modern=$(dirname "$here")
 repo=$(dirname "$modern")
 dist=$modern/dist
 
+# The package's Qt is complete: installed into a scratch folder, nothing in
+# it loads a Qt library from anywhere else (the system's Qt once stood in for
+# a missing one), and the program starts.
+check_bundle() {
+    stage=$(mktemp -d)
+    DESTDIR=$stage cmake --install "$1" >/dev/null
+    home=$stage/usr/lib/vtmodern
+    [ -x "$home/bin/vtmodern" ] || { echo "No bundled program in the package." >&2; exit 1; }
+    outside=$(find "$home" -type f \( -name '*.so*' -o -path '*/bin/vtmodern' \) -exec ldd {} \; 2>/dev/null |
+              grep -E 'libQt6|libicu' | grep -v "=> $home/" | sort -u || true)
+    if [ -n "$outside" ]; then
+        echo "The package's Qt isn't complete: these would come from outside it:" >&2
+        echo "$outside" >&2
+        exit 1
+    fi
+    QT_QPA_PLATFORM=offscreen "$stage/usr/bin/vtmodern" --version || { echo "The bundled program doesn't start." >&2; exit 1; }
+    rm -rf "$stage"
+}
+
 build_here() {
     . /etc/os-release
     case " ${ID:-} ${ID_LIKE:-} " in
@@ -29,9 +48,13 @@ build_here() {
     # CPack stamp files with this time instead of the build's.
     SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git -C "$repo" log -1 --format=%ct 2>/dev/null || date +%s)}
     export SOURCE_DATE_EPOCH
+    # The Qt it carries (tools/qt-version), fetched once: VTM_QT names another.
+    qt=${VTM_QT:-/opt/qt/$(cat "$modern/tools/qt-version")}
+    sh "$modern/tools/get-qt.sh" "$(cat "$modern/tools/qt-version")" "$qt"
     cmake -S "$modern" -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
-          -DVTM_BUILD_TESTS=OFF
+          -DCMAKE_PREFIX_PATH="$qt" -DVTM_BUILD_TESTS=OFF
     cmake --build "$build"
+    check_bundle "$build"
     mkdir -p "$dist"
     (cd "$build" && cpack -G "$generator" -B "$dist/.cpack-$$")
     # Named with the build number (viewtouch-...-b1250.deb): the store's
@@ -45,8 +68,18 @@ build_here() {
     ls -l "$dist"
 }
 
-deps_fedora="gcc-c++ cmake ninja-build rpm-build git qt6-qtbase-devel qt6-qtdeclarative-devel"
-deps_debian="g++ cmake ninja-build dpkg-dev file git qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev"
+# The build tools, what tools/get-qt.sh needs (curl, 7z, python3), OpenGL's
+# headers (Qt's CMake files ask for them), and the system libraries the Qt
+# ViewTouch carries uses (dpkg-shlibdeps finds each one's package from them).
+deps_fedora="gcc-c++ cmake ninja-build rpm-build git curl ca-certificates python3 7zip mesa-libGL-devel mesa-libEGL-devel \
+    libxkbcommon-devel libxkbcommon-x11 fontconfig freetype dbus-libs glib2 libwayland-client libwayland-cursor \
+    libwayland-egl xcb-util-cursor xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm libdrm mesa-libgbm \
+    krb5-libs brotli libzstd"
+deps_debian="g++ cmake ninja-build dpkg-dev file git curl ca-certificates python3 7zip libgl-dev libegl-dev \
+    libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1 libfreetype6 libdbus-1-3 libglib2.0-0t64 libwayland-client0 \
+    libwayland-cursor0 libwayland-egl1 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 \
+    libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xkb1 \
+    libdrm2 libgbm1 libgssapi-krb5-2 libbrotli1 libzstd1 libopengl0"
 
 install_deps() {
     . /etc/os-release

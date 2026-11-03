@@ -50,24 +50,16 @@ The packages and the Android app are on the **[latest release](https://github.co
 
 ### Try it on your own computer
 
-You need **Linux with Qt 6.8 or newer**: Fedora 42+, Debian 13 (and Raspberry Pi OS based on it) or Ubuntu 25.04+.
-
-```sh
-# Fedora
-sudo dnf install git gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qtdeclarative-devel
-
-# Debian / Ubuntu / Raspberry Pi OS
-sudo apt install git g++ cmake ninja-build qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev \
-    qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-shapes \
-    qml6-module-qtquick-dialogs qml6-module-qtquick-window qml6-module-qtqml-workerscript libqt6sql6-sqlite
-```
+You need **Linux**: Fedora 44, Debian 13 (and Raspberry Pi OS based on it) or Ubuntu 26.04. ViewTouch builds with the newest Qt (6.12, the version in `modern/tools/qt-version`), fetched from Qt's own downloads rather than the system's:
 
 ```sh
 git clone https://github.com/ViewTouch/viewtouch.git
 cd viewtouch
-cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+sudo modern/packaging/build-packages.sh deps     # compilers, CMake, curl, 7z, OpenGL headers
+sh modern/tools/get-qt.sh "" ~/qt/6.12.0          # Qt 6.12, checked against Qt's checksums
+cmake -S modern -B modern/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=~/qt/6.12.0
 cmake --build modern/build
-ctest --test-dir modern/build -j4      # optional: about 650 tests
+ctest --test-dir modern/build -j4      # optional: about 730 tests
 
 ./modern/build/vtmodern --windowed     # a demo café opens
 ./modern/build/vtmodern --demo-data    # optional, once: two months of sales to look at

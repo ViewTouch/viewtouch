@@ -29,18 +29,27 @@ jobs:
         run: |
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-            ca-certificates git python3 g++ cmake ninja-build clang-tidy shellcheck \
-            qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev libssl-dev
+            ca-certificates git clang-tidy shellcheck
 
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
+      - name: Qt (cached)
+        uses: actions/cache@v6
+        with:
+          path: /opt/qt
+          key: qt-${{ hashFiles('modern/tools/qt-version') }}-ubuntu2604-x64
+
+      - name: Build tools and Qt
+        run: sh modern/tools/ci-setup.sh
+
       # The generated code (moc, QML type registrations) clang-tidy reads with ours.
       - name: Build
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVTM_BUILD_TESTS=OFF   # as the baseline was made
+          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVTM_BUILD_TESTS=OFF \
+                -DCMAKE_PREFIX_PATH="/opt/qt/$(cat modern/tools/qt-version)"   # as the baseline was made
           cmake --build build
 
       - name: Static analysis

@@ -45,10 +45,10 @@ target_include_directories(vtm_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 # core library and its tests can still be built.
 #   Fedora: sudo dnf install qt6-qtbase-devel qt6-qtdeclarative-devel
 # ---------------------------------------------------------------------------
-find_package(Qt6 6.8 QUIET COMPONENTS Core Gui Quick QuickControls2 Sql Network)
+find_package(Qt6 6.12 QUIET COMPONENTS Core Gui Quick QuickControls2 Sql Network)
 
 if(Qt6_FOUND)
-    qt_standard_project_setup(REQUIRES 6.8)
+    qt_standard_project_setup(REQUIRES 6.12)
     qt_policy(SET QTP0004 NEW)
 
     # layout + navigation: QtCore only, unit-testable without a GUI
@@ -338,7 +338,7 @@ if(Qt6_FOUND)
     endif()
 else()
     message(WARNING
-        "Qt6 (Core Gui Quick QuickControls2 Sql >= 6.8) development files not found: "
+        "Qt6 (Core Gui Quick QuickControls2 Sql >= 6.12) development files not found: "
         "building core library and tests only. "
         "Install qt6-qtbase-devel and qt6-qtdeclarative-devel to build vtmodern.")
 endif()

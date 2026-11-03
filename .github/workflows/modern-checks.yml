@@ -1,6 +1,7 @@
 # Builds the modern ViewTouch and runs all its tests on every pull request
-# and every push to main, on Debian 13: the Qt (6.8) the Raspberry Pi store
-# computers run. No secrets: it works for pull requests from forks.
+# and every push to main, on Debian 13 (the Raspberry Pi store computers'
+# system) with the Qt ViewTouch carries (modern/tools/qt-version). No
+# secrets: it works for pull requests from forks.
 name: Modern checks
 
 on:
@@ -19,30 +20,33 @@ permissions:
 
 jobs:
   test:
-    name: Build and test (Debian 13, Qt 6.8)
+    name: Build and test (Debian 13, Qt 6.12)
     runs-on: ubuntu-24.04
     container: debian:trixie
     timeout-minutes: 60
     steps:
-      - name: Install build tools
+      - name: Git (for the checkout)
         run: |
           apt-get update -qq
-          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-            ca-certificates git python3 openssl g++ cmake ninja-build \
-            qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools libgl-dev libssl-dev \
-            qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-templates \
-            qml6-module-qtquick-layouts qml6-module-qtquick-shapes qml6-module-qtquick-dialogs \
-            qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qttest \
-            libqt6sql6-sqlite qt6-qpa-plugins fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ca-certificates git openssl
 
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # every commit: the build number and version history come from them
 
+      - name: Qt (cached)
+        uses: actions/cache@v6
+        with:
+          path: /opt/qt
+          key: qt-${{ hashFiles('modern/tools/qt-version') }}-debian13-x64
+
+      - name: Build tools, fonts and Qt
+        run: sh modern/tools/ci-setup.sh
+
       - name: Build
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/opt/qt/$(cat modern/tools/qt-version)"
           cmake --build build
 
       - name: Tests

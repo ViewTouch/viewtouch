@@ -40,7 +40,7 @@ The full design and milestones are in [docs/PLAN.md](docs/PLAN.md).
 
 ## Installing
 
-Works on Fedora 44, Debian 13 (and Raspberry Pi OS based on it) and Ubuntu 26.04, on x86_64 and aarch64 (64-bit Raspberry Pi). It needs Qt 6.8 or newer, so older releases (Debian 12, Ubuntu 24.04) are not supported.
+Works on Fedora 44, Debian 13 (and Raspberry Pi OS based on it) and Ubuntu 26.04, on x86_64 and aarch64 (64-bit Raspberry Pi). The packages carry their own Qt (the newest, 6.12: the same on every system, in `/usr/lib/vtmodern`), so they don't need the system's; older releases (Debian 12, Ubuntu 24.04) are not supported.
 
 **A new machine, from zero:** one command installs everything.
 
@@ -127,7 +127,7 @@ base64 -w0 viewtouch.keystore      # → secret ANDROID_KEYSTORE_BASE64
 ```
 Also add ANDROID_KEYSTORE_ALIAS (`viewtouch`) and ANDROID_KEYSTORE_PASSWORD. Keep the keystore somewhere safe: an app signed with a lost key can't be updated, only reinstalled. Without these secrets, each build gets a throwaway key.
 
-**Building elsewhere:** the workflow uses Qt 6.11.2 for Android (installed with `aqtinstall`), Android NDK r27c, JDK 17 and KDAB's OpenSSL for Android. Android builds need an x86_64 Linux, Windows or macOS machine: the NDK is not made for ARM64 Linux.
+**Building elsewhere:** the workflow uses Qt 6.12.0 for Android (installed with `aqtinstall`), Android NDK r27c, JDK 21 and KDAB's OpenSSL for Android. Android builds need an x86_64 Linux, Windows or macOS machine: the NDK is not made for ARM64 Linux.
 
 ## Taking orders at the table
 
@@ -793,14 +793,17 @@ tests/    Catch2 unit tests
 
 ## Building
 
-Prerequisites: a C++23 compiler, CMake, Ninja and Qt 6.8 or newer. `sudo modern/packaging/build-packages.sh deps` installs them on Fedora, Debian and Ubuntu, or by hand on Fedora:
+Prerequisites: a C++23 compiler, CMake, Ninja and Qt 6.12 (`modern/tools/qt-version`). `sudo modern/packaging/build-packages.sh deps` installs the tools on Fedora, Debian and Ubuntu, and `modern/tools/get-qt.sh` fetches Qt from Qt's own downloads for this computer's CPU (x86_64 or aarch64), checking each archive against Qt's checksums:
 
 ```sh
-sudo dnf install gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qtdeclarative-devel
+sudo modern/packaging/build-packages.sh deps
+sh modern/tools/get-qt.sh "" ~/qt/6.12.0
 ```
 
+**Which Qt.** ViewTouch builds with the newest Qt and carries it: the packages put that Qt in `/usr/lib/vtmodern` (only what it uses: Qt's libraries, the Wayland, X11, offscreen and EGLFS screens, SQLite's driver, image formats, the QML modules its pages use) and `/usr/bin/vtmodern` is a link to the program there, so every store runs the same Qt whatever its system. `build-packages.sh` checks that nothing in the package loads a Qt library from outside it. Moving to a newer Qt: change `modern/tools/qt-version` (and `QT_VERSION` in the Android and sanitizer workflows), run the tests, release. Qt's security fixes reach stores only through a ViewTouch release now: see the release checklist.
+
 ```sh
-cmake -S modern -B modern/build -G Ninja
+cmake -S modern -B modern/build -G Ninja -DCMAKE_PREFIX_PATH=~/qt/6.12.0
 cmake --build modern/build
 ctest --test-dir modern/build
 ./modern/build/vtmodern                   # data in ~/.local/share/ViewTouch/ViewTouch/
