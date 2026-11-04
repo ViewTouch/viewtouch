@@ -45,7 +45,7 @@ QVariantMap PosService::serviceInfo() const
     return {{u"mode"_s, serviceMode()},
             {u"counter"_s, truck && !userId_.empty() && userId_ == counterUser_},
             {u"steppedIn"_s, truck && !counterUser_.empty() && !userId_.empty() && userId_ != counterUser_},
-            {u"askStaff"_s, s_->settings.truckAskStaff},
+            {u"askStaff"_s, !s_->settings.truckNoLogin},
             {u"person"_s, person && person->id != counterEmployee().id ? nameOf(*person) : QString()},
             {u"needsName"_s, s_->settings.truckNeedsName},
             // Orders called by number: the Orders button, Now Serving.
@@ -72,7 +72,7 @@ void PosService::applyServiceMode()
     }
     // Someone is here already (a manager, who switched it on), or the
     // screen asks who's working: the login page does.
-    if (!userId_.empty() || s_->settings.truckAskStaff) {
+    if (!userId_.empty() || !s_->settings.truckNoLogin) {
         shown();
         return;
     }
@@ -93,7 +93,7 @@ bool PosService::switchCounterPerson()
         logout();   // back to the counter first
     counterUser_.clear();
     logout();
-    if (s_->settings.truckAskStaff)
+    if (!s_->settings.truckNoLogin)
         emit notice(tr("Who's working? Enter your PIN."));
     return true;
 }

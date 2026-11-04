@@ -20,7 +20,7 @@ app::PosData truckData(bool askStaff = false)
 {
     app::PosData d = test::seedPosData();
     d.settings.serviceMode = "foodTruck";
-    d.settings.truckAskStaff = askStaff;
+    d.settings.truckNoLogin = !askStaff;
     return d;
 }
 
@@ -171,14 +171,19 @@ TEST_CASE("Food truck: switched on and off in Store Settings, or for one screen"
     CHECK(truck.serviceMode() == u"restaurant"_s);
     CHECK_FALSE(truck.loggedIn());
 
-    // The whole store: every screen opens as the counter at once.
+    // The whole store: every screen asks who's working (a PIN each shift).
     REQUIRE(front.loginWithPin(u"1234"_s));
     QVariantMap store = front.adminRecords(u"store"_s).first().toMap();
     store[u"serviceMode"_s] = u"foodTruck"_s;
     REQUIRE(front.adminSave(u"store"_s, 0, store));
+    CHECK_FALSE(truck.loggedIn());
+    CHECK(truck.serviceInfo()[u"askStaff"_s].toBool());
+    CHECK(front.userName() == u"Morgan (Manager)"_s);   // the manager here stays
+    // Nobody logs in, if the store says so: every screen opens as the counter.
+    store[u"truckNoLogin"_s] = true;
+    REQUIRE(front.adminSave(u"store"_s, 0, store));
     CHECK(truck.loggedIn());
     CHECK(truck.userName() == u"Counter"_s);
-    CHECK(front.userName() == u"Morgan (Manager)"_s);   // the manager here stays
     store[u"serviceMode"_s] = u"bus"_s;
     CHECK_FALSE(front.adminSave(u"store"_s, 0, store));
 
@@ -199,7 +204,7 @@ TEST_CASE("Food truck: switched on and off in Store Settings, or for one screen"
     t[u"service"_s] = u"foodTruck"_s;
     REQUIRE(front.adminSave(u"terminals"_s, at, t));
     CHECK(truck.serviceMode() == u"foodTruck"_s);
-    CHECK(truck.userName() == u"Counter"_s);
+    CHECK(truck.userName() == u"Counter"_s);   // (nobody logs in, still)
     CHECK(front.serviceMode() == u"restaurant"_s);
 
     // Kept with the settings.
@@ -258,6 +263,7 @@ TEST_CASE("Food truck: its kitchen screen stays on the kitchen", "[truck][ui]")
 
     // The store becomes a food truck: the kitchen screen's session is the counter's now.
     shared.settings.serviceMode = "foodTruck";
+    shared.settings.truckNoLogin = true;
     emit shared.adminChanged();
     REQUIRE(pos.serviceInfo()[u"counter"_s].toBool());
     CHECK(c.pageId() == u"kitchen"_s);
@@ -422,7 +428,8 @@ TEST_CASE("Setup guide: a food truck from the first page", "[truck]")
     CHECK(shared.settings.serviceMode == "foodTruck");
     CHECK(pos.userName() == u"Morgan (Manager)"_s);   // the manager setting it up stays
     pos.logout();
-    CHECK(pos.userName() == u"Counter"_s);           // then the counter, nobody to log in
+    CHECK_FALSE(pos.loggedIn());                     // then the first shift's PIN
+    CHECK(pos.serviceInfo()[u"askStaff"_s].toBool());
     REQUIRE(pos.loginWithPin(u"1234"_s));
     REQUIRE(pos.setupStore(u"Taco Wheels"_s, {}));   // the name only: still a truck
     CHECK(shared.settings.serviceMode == "foodTruck");
@@ -924,4 +931,30 @@ TEST_CASE("Food truck: an order for later waits on Orders with its time", "[truc
     REQUIRE(orders.size() == 1);
     CHECK_FALSE(orders[0].toMap()[u"sent"_s].toBool());
     CHECK(orders[0].toMap()[u"later"_s].toString().contains(u"1:30"_s));
+}
+
+TEST_CASE("Food truck: a PIN each shift; Log Out hands over, the order waits for its cashier", "[truck]")
+{
+    app::PosShared shared(truckData(true), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    CHECK_FALSE(pos.loggedIn());                     // who's working?
+    REQUIRE(pos.loginWithPin(u"1111"_s));            // Sam's shift
+    CHECK(pos.serviceInfo()[u"person"_s].toString() == u"Sam"_s);
+    REQUIRE(pos.addItem(u"soda"_s));
+    const qint64 sams = pos.checkInfo()[u"id"_s].toLongLong();
+
+    // Sam's shift ends: Log Out, and the screen asks the next person.
+    pos.logout();
+    CHECK_FALSE(pos.loggedIn());
+    REQUIRE(pos.loginWithPin(u"1234"_s));            // the next shift
+    CHECK(pos.serviceInfo()[u"person"_s].toString() == u"Morgan (Manager)"_s);
+    CHECK_FALSE(pos.hasCheck());                     // Sam's order isn't theirs
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));            // Sam back: their order again
+    CHECK(pos.checkInfo()[u"id"_s].toLongLong() == sams);
+
+    // Saved with the settings; off unless a store says so.
+    CHECK_FALSE(app::settingsFromJson(QJsonObject{}).truckNoLogin);
+    shared.settings.truckNoLogin = true;
+    CHECK(app::settingsFromJson(app::toJson(shared.settings)).truckNoLogin);
 }

@@ -117,6 +117,7 @@ TEST_CASE("A food truck's screens render cleanly with orders waiting", "[ui][pag
     test::RecordingSink sink;
     app::PosData data = test::seedPosData();
     data.settings.serviceMode = "foodTruck";
+    data.settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     app::PosService pos(std::move(data), &sink);
     LayoutController c(std::move(*layout));
     c.setPos(&pos);
@@ -930,6 +931,7 @@ TEST_CASE("Audit: dialogs, forms, the setup guide, the kiosk and the customer di
                 // A food truck: the order screen with a name and a pager, and Orders.
                 pos.logout();
                 pos.shared()->settings.serviceMode = "foodTruck";
+                pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
                 emit pos.shared()->adminChanged();
                 pos.addItem(u"caesar"_s);
                 pos.setCustomer({{u"name"_s, u"Alexandria"_s}});

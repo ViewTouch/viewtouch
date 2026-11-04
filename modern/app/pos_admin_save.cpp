@@ -315,8 +315,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                 return fail(tr("Choose how the store serves."));
             s_->settings.serviceMode = mode == u"restaurant" ? std::string() : ss(mode);
         }
-        if (record.contains(u"truckAskStaff"_s))
-            s_->settings.truckAskStaff = record.value(u"truckAskStaff"_s).toBool();
+        if (record.contains(u"truckNoLogin"_s))
+            s_->settings.truckNoLogin = record.value(u"truckNoLogin"_s).toBool();
         if (record.contains(u"truckNeedsName"_s))
             s_->settings.truckNeedsName = record.value(u"truckNeedsName"_s).toBool();
         if (record.contains(u"truckSendNew"_s))

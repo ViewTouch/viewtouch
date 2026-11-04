@@ -354,9 +354,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                           "a manager's PIN opens the Manager screens. Retail: logins, the items first, no tables. "
                           "Each screen can say otherwise (Terminals).")),
                  u"options"_s, options({{"", "Restaurant"}, {"foodTruck", "Food truck"}, {"retail", "Retail"}})),
-            field(u"truckAskStaff"_s, tr("Food truck: ask who's working"), u"bool"_s,
-                  tr("The screen asks for a PIN once when it starts (they're clocked in): sales and tips are theirs "
-                     "until someone touches Switch Person. Off: sales are the Counter's, and nobody logs in.")),
+            field(u"truckNoLogin"_s, tr("Food truck: nobody logs in (the Counter)"), u"bool"_s,
+                  tr("Off: each shift starts with a PIN (they're clocked in) and their sales and tips are theirs until "
+                     "Log Out, at the end of their shift. On: the screen opens on the menu, sales are the Counter's.")),
             field(u"truckNeedsName"_s, tr("Food truck: orders need a name"), u"bool"_s,
                   tr("Every order is called by its number (#1, #2... from 1 each day). On: a name too, before Send or Pay.")),
             field(u"orderNumbers"_s, tr("Restaurant: call orders by number"), u"bool"_s,

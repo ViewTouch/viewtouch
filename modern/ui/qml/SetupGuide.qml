@@ -173,14 +173,14 @@ Rectangle {
                         text: g.receiptLines
                         onTextChanged: g.receiptLines = text
                     }
-                    // How it serves: a food truck opens straight to ordering, nobody logs in.
+                    // How it serves: a food truck's shift logs in once, straight to ordering.
                     Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     Flow {
                         Layout.fillWidth: true
                         spacing: 10
                         Repeater {
                             model: [["restaurant", qsTr("Restaurant"), qsTr("Tables, staff log in")],
-                                    ["foodTruck", qsTr("Food truck"), qsTr("No login: straight to ordering and paying")],
+                                    ["foodTruck", qsTr("Food truck"), qsTr("A PIN each shift, then ordering and paying")],
                                     ["retail", qsTr("Retail"), qsTr("Staff log in, the items first")]]
                             delegate: PosButton {
                                 required property var modelData

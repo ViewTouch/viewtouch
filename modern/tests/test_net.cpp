@@ -1477,6 +1477,7 @@ TEST_CASE("Remote terminal: a food truck screen opens as the counter; a manager 
 {
     Store store;
     store.shared.settings.serviceMode = "foodTruck";
+    store.shared.settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     Screen truck(store.terminal(u"Truck"_s));
     REQUIRE(waitFor([&] { return truck.remote->loggedIn(); }));
     truck.settle();
@@ -1526,6 +1527,7 @@ TEST_CASE("Working offline: a food truck's second screen keeps selling as the co
 {
     OfflineSide t;
     t.store.shared.settings.serviceMode = "foodTruck";
+    t.store.shared.settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     t.store.shared.settings.cashMode = core::CashMode::ServerBank;
     // The window (the store's computer) has sold #1 and #2 already.
     PosService window(&t.store.shared, u"Window"_s);

@@ -155,10 +155,11 @@ struct PosSettings {
     // and paying; a manager's PIN for the Manager screens) or "retail"
     // (logins, the items first: no tables, no kitchen).
     std::string serviceMode;
-    // Food truck: ask who's working when the screen starts (their sales and
-    // tips, their clock-in); off: sales are the Counter's. And whether an
-    // order needs a name before Send or Pay (it's called by its number too).
-    bool truckAskStaff = false;
+    // Food truck: each shift starts with a PIN (their sales and tips, their
+    // clock-in) and ends with Log Out; on here, nobody logs in and sales are
+    // the Counter's. And whether an order needs a name before Send or Pay
+    // (it's called by its number too).
+    bool truckNoLogin = false;
     bool truckNeedsName = false;
     // Orders called by number: Send puts the order away (it waits on the
     // Orders page, to open or pay there) and the screen starts the next one.

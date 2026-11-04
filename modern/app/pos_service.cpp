@@ -825,7 +825,7 @@ bool PosService::loginWithPin(const QString &pin)
         return fail(pinRefused(tr("That PIN is not recognized.")));
     userId_ = e->id;
     if (counterMode()) {
-        if (counterUser_.empty() && s_->settings.truckAskStaff && e->id != maintainerEmployee().id) {
+        if (counterUser_.empty() && !s_->settings.truckNoLogin && e->id != maintainerEmployee().id) {
             // Who's working: the truck's sales and tips are theirs until they switch.
             counterUser_ = e->id;
             if (const std::vector<Job> jobs = e->jobs(); !openPunch(e->id) && jobs.size() == 1 && scheduleCheck(*e).isEmpty())

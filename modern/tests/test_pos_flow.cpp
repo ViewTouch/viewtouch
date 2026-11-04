@@ -5407,6 +5407,7 @@ TEST_CASE("UI: a food truck types by touch: letters for the name, a number pad f
 {
     Screen s(true);   // a touch screen: no keyboard, no mouse
     s.pos.shared()->settings.serviceMode = "foodTruck";
+    s.pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     emit s.pos.shared()->adminChanged();
     REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
     REQUIRE(s.pos.addItem(u"soda"_s));
@@ -5465,6 +5466,7 @@ TEST_CASE("UI: a food truck's customer display: now serving, and who's ready whi
 {
     Session s;
     s.pos.shared()->settings.serviceMode = "foodTruck";
+    s.pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     emit s.pos.shared()->adminChanged();
     REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
     QQmlApplicationEngine engine;
@@ -5664,6 +5666,7 @@ TEST_CASE("Manual: a food truck", "[.manual]")
     const auto truck = [](Screen &s) {
         s.pos.shared()->settings.storeName = "Taco Wheels";
         s.pos.shared()->settings.serviceMode = "foodTruck";
+        s.pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
         emit s.pos.shared()->adminChanged();   // the counter, on the menu: nobody logs in
         REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
     };
@@ -8561,8 +8564,11 @@ TEST_CASE("UI: Menu Builder: find an item, its More settings, prices up for a ca
     if (qEnvironmentVariableIsSet("VTM_SHOTS"))
         s.window->grabWindow().save(qEnvironmentVariable("VTM_SHOTS") + u"/builder-more.png"_s);
     CHECK(by(u"builderPeriodPrice-dinner"_s)->property("text").toString() == u"15.00"_s);
+    // (More made the card longer: scrolled to its end again, so the tap
+    // lands on the field; typed once it has the focus.)
+    card->setProperty("contentY", std::max(0.0, card->property("contentHeight").toReal() - card->height()));
+    QTest::qWait(60);
     s.tapItem(by(u"builderKitchenName"_s));
-    // (Typed once it has the focus: under the sanitizers the tap takes a while.)
     CHECK(QTest::qWaitFor([&] { return by(u"builderKitchenName"_s)->hasActiveFocus(); }, 2000));
     type("CHZ");
     CHECK(shown(u"builderNotSaved"_s));
@@ -10325,6 +10331,7 @@ TEST_CASE("Security: names, notes and messages are shown as typed, never as mark
     // The board on the dining room's TV (a food truck's customer display).
     s.pos.releaseCheck();
     s.pos.shared()->settings.serviceMode = "foodTruck";
+    s.pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
     emit s.pos.shared()->adminChanged();
     REQUIRE(s.pos.addItem(u"caesar"_s));   // a counter: the order starts with its first item
     REQUIRE(s.pos.setCustomer({{u"name"_s, kHostile}}));
