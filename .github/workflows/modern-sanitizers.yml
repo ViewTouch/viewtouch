@@ -1,17 +1,21 @@
 # The modern ViewTouch's tests built with AddressSanitizer and
 # UndefinedBehaviorSanitizer (memory used after it's freed or past its end,
-# leaks, integer overflow, undefined behavior), and with ThreadSanitizer
-# (two threads touching the same data), on every push to main. Slower than
-# Modern checks, so apart from them (releases don't wait for it).
+# leaks, integer overflow, undefined behavior) on every push to main, and
+# with ThreadSanitizer (two threads touching the same data) once a week and
+# when started by hand: it runs everything 5 to 15 times slower. Apart from
+# Modern checks (releases don't wait for it).
 name: Modern sanitizers
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * 0'   # Sundays
   workflow_dispatch:
 
 concurrency:
-  group: modern-sanitizers-${{ github.ref }}
+  # (A push doesn't cancel the week's ThreadSanitizer run.)
+  group: modern-sanitizers-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 permissions:
@@ -59,23 +63,21 @@ jobs:
           export LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/lsan.supp"
           timeout 8400 ./build/tests/vtm_tests
 
-  # Data races between threads (the database writer, printers, backups,
-  # reports worked out on the side). ThreadSanitizer only understands Qt's
-  # locks and queued signals in a Qt built with it, so this job builds Qt
-  # (the version ViewTouch carries) with ThreadSanitizer once and keeps it in the
-  # cache (the first run takes a few hours). The UI tests and the ones that
-  # start the real program are left out: under it they take too long.
-  threads:
-    name: Tests under ThreadSanitizer (Qt 6.12 built with it)
+  # Data races between threads. ThreadSanitizer only understands Qt's locks
+  # and queued signals in a Qt built with it: this job builds Qt (the
+  # version ViewTouch carries, its libraries only: the tools are a plain
+  # Qt's) and keeps it, with that plain Qt, in the cache.
+  qt-tsan:
+    name: Qt 6.12 with ThreadSanitizer
+    if: github.event_name != 'push'
     runs-on: ubuntu-24.04
     container: debian:trixie
-    timeout-minutes: 360
+    timeout-minutes: 180
     env:
       QT_VERSION: 6.12.0   # as modern/tools/qt-version
-      QT_TSAN: /opt/qt-tsan
     steps:
       - name: Install build tools
-        run: |
+        run: &tsan-tools |
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
             ca-certificates curl xz-utils 7zip git python3 perl g++ cmake ninja-build pkg-config libssl-dev \
@@ -86,21 +88,66 @@ jobs:
             libfontconfig1 libfreetype6 libxkbcommon0 libdbus-1-3
 
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Qt with ThreadSanitizer (cached)
         id: qt
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
-          path: /opt/qt-tsan
-          key: qt-tsan-${{ env.QT_VERSION }}-trixie-${{ hashFiles('modern/tools/build-qt-tsan.sh') }}
+          path: |
+            /opt/qt-tsan
+            /opt/qt/${{ env.QT_VERSION }}
+          key: qt-tsan-${{ env.QT_VERSION }}-trixie-${{ hashFiles('modern/tools/build-qt-tsan.sh', 'modern/tools/get-qt.sh') }}
 
-      # (Its tools from a plain Qt, tools/get-qt.sh's; a hang fails in 2.5 hours, not 6.)
+      # (About 75 minutes; a hang fails in 2.5 hours.)
       - name: Build Qt with ThreadSanitizer
         if: steps.qt.outputs.cache-hit != 'true'
         timeout-minutes: 150
-        run: WORK="$RUNNER_TEMP/qt" sh modern/tools/build-qt-tsan.sh "$QT_VERSION" "$QT_TSAN"
+        run: WORK="$RUNNER_TEMP/qt" sh modern/tools/build-qt-tsan.sh "$QT_VERSION" /opt/qt-tsan
+
+      # Saved now: kept even when the tests then find something.
+      - name: Keep it
+        if: steps.qt.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            /opt/qt-tsan
+            /opt/qt/${{ env.QT_VERSION }}
+          key: ${{ steps.qt.outputs.cache-primary-key }}
+
+  # The tests of what runs on other threads (the server and the screens
+  # joined to it, backups, the database and its writer, the reports, search,
+  # the forecast and the day worked out on the side), in four parts at
+  # once. The UI tests and those that start the real program are left out:
+  # under it they take too long.
+  threads:
+    name: Tests under ThreadSanitizer (part ${{ matrix.part }} of 4)
+    needs: qt-tsan
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3, 4]
+    env:
+      QT_VERSION: 6.12.0
+      QT_TSAN: /opt/qt-tsan
+    steps:
+      - name: Install build tools
+        run: *tsan-tools
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Qt with ThreadSanitizer
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            /opt/qt-tsan
+            /opt/qt/${{ env.QT_VERSION }}
+          key: qt-tsan-${{ env.QT_VERSION }}-trixie-${{ hashFiles('modern/tools/build-qt-tsan.sh', 'modern/tools/get-qt.sh') }}
+          fail-on-cache-miss: true
 
       - name: Build with ThreadSanitizer
         run: |
@@ -115,4 +162,10 @@ jobs:
           QT_QPA_FONTDIR: /usr/share/fonts/truetype/dejavu
         run: |
           export TSAN_OPTIONS="halt_on_error=0 second_deadlock_stack=1 suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/tsan.supp"
-          timeout 14400 ./build/tests/vtm_tests "~[ui]~[program]~[timing]"
+          not="~[ui]~[program]~[timing]"
+          only=""
+          for tag in net remote offline standby backup restore posstore storage search dashboard forecast day \
+                     endofday customers menu import books; do
+              only="$only${only:+,}[$tag]$not"
+          done
+          timeout 14400 ./build/tests/vtm_tests "$only" --shard-count 4 --shard-index $(( ${{ matrix.part }} - 1 ))
