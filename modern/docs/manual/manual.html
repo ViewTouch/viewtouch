@@ -987,21 +987,33 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 </tr></table>
 <ul>
 <li><b>Restaurant</b> (to start): staff log in, and the floor plan comes first.</li>
-<li><b>Food truck</b>: nobody logs in (below).</li>
-<li><b>Retail</b>: staff still log in, so each sale is the cashier's. After login they start on the menu instead of the floor plan, and the order screen has <b>Log Out</b> where restaurants have Tables.
+<li><b>Food truck</b>: a PIN at the start of each shift, then ordering and paying (below).</li>
+<li><b>Retail</b>: staff log in, so each sale is the cashier's. After login they start on the menu instead of the floor plan.
 <ul>
-<li><b>Manager's pages:</b> when a manager is logged in, the order screen has <b>Manager</b> where restaurants have Send. It opens the Manager menu: the Dashboard, reports and the rest, and <b>Settings</b> → How you serve to switch the store back to restaurant. A cashier doesn't see it: they log out, and the manager logs in.</li>
+<li><b>The shop's own screens:</b> its login (<i>Your PIN opens the register</i>, with Clock In, Clock Out and the Time Clock) and its order screen: a wide <b>Scan or search an item…</b> under the top bar, a big sale list beside the menu, and <b>‹ Menu</b>, <b>Qty +1</b> (one more of the touched item), <b>Void</b>, <b>Discount…</b>, <b>No Sale</b>, <b>Check…</b> and a wide <b>Pay</b> at the bottom.</li>
+<li><b>Log Out</b> (top right) opens End of Shift: Clock Out, Cash Out My Tips, Log Out.</li>
+<li><b>Manager's pages:</b> when a manager is logged in, the order screen has <b>Manager</b> at the top. It opens the Manager menu: the Dashboard, reports and the rest, and <b>Settings</b> → How you serve to switch the store back to restaurant. A cashier doesn't see it: they log out, and the manager logs in.</li>
 <li><b>Scan from anywhere:</b> a barcode scanned on any screen (even Pay, for the item the customer remembers at the last moment) rings the item in and goes back to the sale. An empty check says <i>Scan or touch an item to start a sale.</i></li>
 <li><b>No kitchen:</b> nothing a shop sells goes to a kitchen printer or a kitchen screen, and there's no Send: <b>Pay</b> finishes the sale.</li>
 </ul></li>
 </ul>
-<p>A button can show only for one way of serving: in edit mode, its <b>Show only when → How the store serves</b>.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m180-retail-login.jpg" width="280" height="158"><br><small>A shop's login</small></td>
+<td><img src="shots/m181-retail-order.jpg" width="280" height="158"><br><small>A shop's order screen</small></td>
+</tr></table>
+<p>A food truck's and a shop's screens stay logged in until <b>Log Out</b>: <b>Log out idle screens after</b> (Store Settings → Screens) is for restaurants only.</p>
+<p>The truck's and the shop's order screen and login are pages of their own, versions of the restaurant's (<i>Order Template (food truck)</i>, <i>Login (retail)</i>...). Change them in edit mode like any page: on a truck's or a shop's screen, edit mode opens its own version. A button can also show only for one way of serving: its <b>Show only when → How the store serves</b>.</p>
 
 <h2>A food truck</h2>
+<p class="shot"><img src="shots/m179-truck-login.jpg" width="560" height="315"></p>
+<p class="caption">The truck's login: whoever is working starts their shift with their PIN.</p>
 <p class="shot"><img src="shots/m170-truck-order.jpg" width="560" height="315"></p>
-<p class="caption">The order screen as the truck opens it: no login, order #3 for Maria with pager 12, and Orders where restaurants have Tables.</p>
+<p class="caption">The truck's order screen: Sam working since 8:00 PM, two orders waiting, order #3 for Maria with pager 12.</p>
 <ul>
-<li><b>No login:</b> the screen opens on the menu as the built-in <b>Counter</b>, ready to ring up and take payment. After a sale is paid, or sent to be paid later, it is ready for the next one. Idle time doesn't log it out, and an order in progress stays where it is.</li>
+<li><b>A PIN each shift:</b> the truck's login asks <i>Who's working?</i>; <b>Start My Shift</b> with a PIN clocks them in (when they have one job) and opens the menu. Their sales and tips are theirs. After a sale is paid, or sent to be paid later, the screen is ready for the next one. Idle time never logs them out.</li>
+<li><b>Changing shifts:</b> <b>Log Out</b> (top right) opens End of Shift: <b>Clock Out</b>, <b>Cash Out My Tips</b>, <b>Log Out</b>. The login then waits for the next person's PIN. An order they left open waits for them, and comes back when they log in again.</li>
+<li><b>The order screen:</b> the store, who's working and since when, the clock, <b>Orders</b> (with how many wait) and <b>Log Out</b> along the top; the menu on the left and the check on the right; <b>No</b>, <b>Extra</b>, <b>Side</b>, <b>Void</b>, <b>New Order</b>, <b>Send</b> and a wide <b>Pay</b> along the bottom.</li>
+<li><b>Nobody logs in</b> (optional): with <b>Food truck: nobody logs in (the Counter)</b> on (Store Settings → How you serve), the screen opens on the menu as the built-in <b>Counter</b> and sales are the Counter's; there's no Log Out.</li>
 <li><b>One computer is enough:</b> the main register is the store's computer and the truck's register. A kitchen screen is optional: set one up as a kitchen screen and it stays on the kitchen display.</li>
 <li><b>Order numbers:</b> every order is called by a number, from <b>#1</b> each business day. Touch <b>+ Name</b> on the check to add a name: the order becomes <i>#27 Maria</i> on the screen, the kitchen screen, the tickets and the receipt. With <b>Food truck: orders need a name</b> (Store Settings → How you serve), Send and Pay wait for a name.</li>
 <li><b>Pagers</b> (the buzzers handed to the guest): touch <b>+ Pager</b> on the check and type the number on the pager you hand them. One pager can't be on two waiting orders.</li>
@@ -1050,10 +1062,10 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p>A truck with a second screen (a tablet at the window, say) keeps selling if the cable or Wi-Fi to the main computer is lost: it goes on as the Counter, with names, pagers and cash. Its orders are numbered from 100 above the store's (<i>#103</i>), so they never match the main computer's, which keeps counting. When it's back, its orders reach the main computer with their numbers, names and pagers, and show on Orders. (A truck with one computer has nothing to lose: the register is the store's computer.)</p>
 
 <h3>The Manager screens</h3>
-<p>From the order screen: touch <b>Orders</b>, then <b>Manager</b> (bottom right), and enter a manager's PIN. Reports, End of Day, Store Settings and every manager page work as usual. <b>Log Out</b> goes back to the counter, with the order in progress still open.</p>
+<p>From the order screen: touch <b>Orders</b>, then <b>Manager</b> (bottom right), and enter a manager's PIN. Reports, End of Day, Store Settings and every manager page work as usual. <b>Log Out</b> goes back to whoever is working, with the order in progress still open.</p>
 <ul>
 <li>Voids of sent items and discounts still ask for a manager's approval. Opening the drawer without a sale doesn't, but it is recorded (Exceptions report) as the Counter's.</li>
-<li><b>Who's working</b> (optional): with <b>Food truck: ask who's working</b> on, the screen asks for a PIN once when it starts and clocks that person in. Their sales and tips are theirs until someone touches <b>Switch Person</b> (on the PIN screen) or they log out. Off, sales are the Counter's.</li>
+<li><b>Switch Person</b> (on the login, while someone is working): the next PIN takes over without End of Shift.</li>
 </ul>
 <p class="shot"><img src="shots/m176-truck-phone.jpg" width="200" height="400"></p>
 <p class="caption">On a phone or a small tablet: Orders at the top right.</p>
