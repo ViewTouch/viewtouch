@@ -35,6 +35,9 @@ struct Page {
     // of the page; everything else still refers to the page by its own id.
     QString variantOf;
     QString formFactor;
+    // Or for one way of serving ("foodTruck", "retail"): screens serving
+    // that way show it in place of the page (Layout::forService).
+    QString service;
     // A version's: zones of that page left off this screen on purpose (the
     // rest not placed here are new there, and the page check says so).
     QStringList hiddenZones;

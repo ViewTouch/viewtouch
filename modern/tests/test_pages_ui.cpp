@@ -72,6 +72,47 @@ TEST_CASE("Every seed page renders cleanly, running and editing", "[ui][pages]")
     CHECK(g_warnings == QStringList{});
 }
 
+// A food truck's and a shop's own pages (the order screen, the login) and
+// every page under them: no QML warning either.
+TEST_CASE("Every seed page renders cleanly at a food truck and a shop", "[ui][pages][service]")
+{
+    for (const char *mode : {"foodTruck", "retail"}) {
+        INFO(mode);
+        auto layout = vt::test::loadTestLayout();
+        REQUIRE(layout);
+        QStringList pageIds;
+        for (const auto &p : layout->pages)
+            if (p.variantOf.isEmpty())
+                pageIds << p.id;
+        test::RecordingSink sink;
+        app::PosData data = test::seedPosData();
+        data.settings.serviceMode = mode;
+        app::PosService pos(std::move(data), &sink);
+        LayoutController c(std::move(*layout));
+        c.setPos(&pos);
+
+        QQmlApplicationEngine engine;
+        engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                     {u"width"_s, 1600}, {u"height"_s, 900}});
+        g_warnings.clear();
+        const QtMessageHandler previous = qInstallMessageHandler(collect);
+        engine.loadFromModule("ViewTouch", "Main");
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+        REQUIRE(window);
+        REQUIRE(QTest::qWaitForWindowExposed(window));
+        QTest::qWait(30);   // the login
+        REQUIRE(pos.loginWithPin(u"1234"_s));
+        pos.addItem(u"classic-burger"_s);
+        for (const QString &id : pageIds) {
+            INFO(id.toStdString());
+            c.showPage(id);
+            QTest::qWait(20);
+        }
+        qInstallMessageHandler(previous);
+        CHECK(g_warnings == QStringList{});
+    }
+}
+
 // Qt's RectangularShadow makes its shader effect with no owner, so each
 // button's shadow left one behind when its page went (LeakSanitizer: 81 MB
 // over the suite). ShadowOwner gives it to the shadow.

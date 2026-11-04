@@ -389,9 +389,13 @@ private:
     vt::app::Navigator nav_;
     ZoneModel zones_;
     QString status_;
-    // The pages in this terminal's own look (Manager -> Terminals), when it has one.
+    // The pages as this screen shows them, when not the store's as they are:
+    // its way of serving's versions (a food truck's order screen and login),
+    // in its own look (Manager -> Terminals).
     std::optional<vt::layout::Layout> lookedLayout_;
     QString lookedId_;
+    QString servedAs_;   // "foodTruck", "retail" ("": a restaurant)
+    QString servedMode() const;
     void updateTerminalLook();
     QVariantMap explanation_;
     QString unknownCode_;

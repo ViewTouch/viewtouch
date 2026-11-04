@@ -5663,11 +5663,18 @@ TEST_CASE("Manual: a food truck", "[.manual]")
             toast->setProperty("opacity", 0);
         QTest::qWait(450);
     };
-    const auto truck = [](Screen &s) {
+    // A truck: the shift starts with Sam's PIN on the truck's login page.
+    const auto truck = [&](Screen &s, const char *loginShot = nullptr) {
         s.pos.shared()->settings.storeName = "Taco Wheels";
         s.pos.shared()->settings.serviceMode = "foodTruck";
-        s.pos.shared()->settings.truckNoLogin = true;   // (the Counter: nobody logs in)
-        emit s.pos.shared()->adminChanged();   // the counter, on the menu: nobody logs in
+        emit s.pos.shared()->adminChanged();
+        s.pos.logout();
+        REQUIRE_FALSE(s.pos.loggedIn());
+        if (loginShot) {
+            clean(s);
+            s.shot(loginShot);
+        }
+        REQUIRE(s.pos.loginWithPin(u"1111"_s));
         REQUIRE(s.pos.serviceInfo()[u"counter"_s].toBool());
     };
     const auto choose = [](Screen &s) {
@@ -5696,7 +5703,7 @@ TEST_CASE("Manual: a food truck", "[.manual]")
     };
     {
         Screen s;
-        truck(s);
+        truck(s, "m179-truck-login");
         const qint64 first = sell(s, "Ana", 4, {"classic-burger", "soda"});
         sell(s, "", 9, {"caesar"});
         // The next guest's order on the screen: their name and pager on the check.
@@ -5761,6 +5768,27 @@ TEST_CASE("Manual: a food truck", "[.manual]")
         clean(s);
         s.shot("m176-truck-phone");
     }
+}
+
+TEST_CASE("Manual: a shop", "[.manual]")
+{
+    Screen s;
+    s.pos.shared()->settings.storeName = "Corner Shop";
+    s.pos.shared()->settings.serviceMode = "retail";
+    emit s.pos.shared()->adminChanged();
+    s.pos.logout();
+    REQUIRE_FALSE(s.pos.loggedIn());
+    QTest::qWait(400);
+    s.shot("m180-retail-login");
+    REQUIRE(s.pos.loginWithPin(u"2222"_s));
+    for (const char *item : {"soda", "caesar", "fries"})
+        s.pos.addItem(QString::fromLatin1(item));
+    REQUIRE(s.c.openCategory(u"drinks"_s));
+    QTest::qWait(400);
+    if (QObject *toast = s.window->findChild<QObject *>(u"toast"_s))
+        toast->setProperty("opacity", 0);
+    QTest::qWait(300);
+    s.shot("m181-retail-order");
 }
 
 TEST_CASE("Manual: taking orders at the table on a phone", "[.manual]")

@@ -226,7 +226,8 @@ QVariantList EditorController::pages() const
         out.append(QVariantMap{
             {u"id"_s, p.id}, {u"name"_s, p.name}, {u"kind"_s, p.kind}, {u"role"_s, p.role},
             {u"templateId"_s, p.templateId}, {u"zoneCount"_s, p.zones.size()},
-            {u"variantOf"_s, p.variantOf}, {u"hasPhone"_s, editor_.layout().variantFor(p.id, u"phone"_s) != nullptr},
+            {u"variantOf"_s, p.variantOf}, {u"service"_s, p.service},
+            {u"hasPhone"_s, editor_.layout().variantFor(p.id, u"phone"_s) != nullptr},
         });
     }
     return out;

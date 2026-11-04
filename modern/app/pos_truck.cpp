@@ -1,8 +1,11 @@
 // PosService: how a screen serves (restaurant, food truck, retail), and the
 // food truck's counter - no login, straight to ordering and paying.
 
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
+
+#include <QDateTime>
 
 using namespace Qt::StringLiterals;
 using namespace vt::core;
@@ -42,7 +45,13 @@ QVariantMap PosService::serviceInfo() const
 {
     const bool truck = counterMode();
     const Employee *person = truck ? s_->employee(counterUser_) : nullptr;
+    // When whoever is logged in clocked in ("4:02 PM"), for the top of a truck's or a shop's screen.
+    QString since;
+    for (const TimePunch &p : s_->punches)
+        if (!userId_.empty() && p.employeeId == userId_ && p.open())
+            since = i18n::timeText(QDateTime::fromMSecsSinceEpoch(p.clockIn).time());
     return {{u"mode"_s, serviceMode()},
+            {u"since"_s, since},
             {u"counter"_s, truck && !userId_.empty() && userId_ == counterUser_},
             {u"steppedIn"_s, truck && !counterUser_.empty() && !userId_.empty() && userId_ != counterUser_},
             {u"askStaff"_s, !s_->settings.truckNoLogin},

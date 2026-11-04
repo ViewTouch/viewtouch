@@ -591,3 +591,70 @@ TEST_CASE("Starter pages: one taken for edited only for a starter button it miss
     CHECK(l->page(u"tables"_s)->name == u"Tables v3"_s);
     CHECK(l->page(u"tables"_s)->zone(u"quick"_s)->rect == QRect(1472, 16, 432, 72));   // and in Modern's places
 }
+
+// A food truck's or a shop's own version of a page: shown in its place on
+// screens serving that way, the menu pages moved into its frame.
+TEST_CASE("Layout: a way of serving's versions stand in for their pages", "[layout][service]")
+{
+    using namespace vt::layout;
+    Layout l;
+    Page frame;
+    frame.id = u"order-template"_s;
+    frame.kind = u"template"_s;
+    Zone list;
+    list.id = u"order-list"_s;
+    list.kind = u"orderList"_s;
+    list.rect = QRect(16, 16, 560, 948);
+    frame.zones.append(list);
+    Page menu;
+    menu.id = u"menu-all"_s;
+    menu.templateId = frame.id;
+    Zone grid;
+    grid.id = u"menu"_s;
+    grid.kind = u"menuGrid"_s;
+    grid.rect = QRect(592, 104, 1312, 860);   // the whole default content area
+    menu.zones.append(grid);
+    Page truck;
+    truck.id = u"order-template-truck"_s;
+    truck.kind = u"template"_s;
+    truck.variantOf = frame.id;
+    truck.service = u"foodTruck"_s;
+    truck.contentArea = QRect(16, 200, 1296, 760);
+    Zone newOrder;
+    newOrder.id = u"flow-new"_s;
+    newOrder.kind = u"button"_s;
+    newOrder.rect = QRect(756, 976, 300, 88);
+    truck.zones.append(newOrder);
+    Page login;
+    login.id = u"login"_s;
+    login.role = u"login"_s;
+    l.pages = {frame, menu, truck, login};
+
+    CHECK(l.validate().isEmpty());
+    CHECK(l.variantFor(frame.id, {}, u"foodTruck"_s) == l.page(truck.id));
+    CHECK_FALSE(l.variantFor(frame.id, {}, u"retail"_s));
+
+    // A restaurant: as they are.
+    CHECK(l.forService({}) == l);
+
+    // A truck: the frame is the truck's, under the frame's own id; the menu sits in its content area.
+    const Layout t = l.forService(u"foodTruck"_s);
+    const Page *shown = t.page(frame.id);
+    REQUIRE(shown);
+    CHECK(shown->zone(u"flow-new"_s));
+    CHECK_FALSE(shown->zone(u"order-list"_s));
+    CHECK(shown->variantOf.isEmpty());
+    CHECK(shown->kind == u"template"_s);
+    CHECK(t.page(u"menu-all"_s)->zone(u"menu"_s)->rect == QRect(16, 200, 1296, 760));
+    CHECK(t.page(u"login"_s)->zones.isEmpty());   // no truck version: as it was
+    CHECK(t.pageByRole(u"login"_s)->id == u"login"_s);
+
+    // A shop: nothing of its own here.
+    CHECK(l.forService(u"retail"_s) == l);
+
+    // Two truck versions of one page: the page check says so.
+    Page again = truck;
+    again.id = u"order-template-truck-2"_s;
+    l.pages.append(again);
+    CHECK_FALSE(l.validate().isEmpty());
+}

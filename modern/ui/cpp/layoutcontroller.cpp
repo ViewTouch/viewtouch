@@ -385,8 +385,8 @@ void LayoutController::setPos(PosSession *pos)
         connect(pos_, &PosSession::menuChanged, this, &LayoutController::refresh);
         connect(pos_, &PosSession::adminChanged, this, [this] {
             cardReader_.setKind(pos_->terminalCardReader());   // Manager -> Terminals: this screen's reader
-            if (pos_->terminalLook() != lookedId_)
-                updateTerminalLook();   // Manager -> Terminals: this screen's look
+            if (pos_->terminalLook() != lookedId_ || servedMode() != servedAs_)
+                updateTerminalLook();   // Manager -> Terminals: this screen's look, or how it serves
             restAtLoginPage();      // a terminal just set to (or from) Time Clock
             installStoreFonts();   // before pages and font lists look for them
             updateMealPeriod();
@@ -401,8 +401,8 @@ void LayoutController::setPos(PosSession *pos)
         // deactivated or losing the role closes the editor (unsaved edits
         // are dropped, as in the legacy system).
         connect(pos_, &PosSession::sessionChanged, this, [this] {
-            if (pos_->terminalLook() != lookedId_)
-                updateTerminalLook();   // someone with their own look logged in, or out
+            if (pos_->terminalLook() != lookedId_ || servedMode() != servedAs_)
+                updateTerminalLook();   // someone with their own look logged in, or out; or it serves another way
             cardReader_.setCounter(pos_->counterCharge());   // a reader beside the screen, at work
             // The connection token the reader asked for.
             const QVariantMap token = pos_->readerToken();
@@ -707,23 +707,34 @@ const Layout &LayoutController::activeLayout() const
     return lookedLayout_ ? *lookedLayout_ : layout_;
 }
 
+QString LayoutController::servedMode() const
+{
+    const QString mode = pos_ ? pos_->serviceInfo().value(u"mode"_s).toString() : QString();
+    return mode == u"restaurant" ? QString() : mode;
+}
+
 void LayoutController::updateTerminalLook()
 {
+    const QString served = servedMode();
     QString id = pos_ ? pos_->terminalLook() : QString();
     if (id.isEmpty() && QGuiApplication::styleHints()
         && QGuiApplication::styleHints()->accessibility()->contrastPreference() == Qt::ContrastPreference::HighContrast)
         id = u"contrast"_s;   // the device asks for it (Qt 6.10's accessibility hints)
     std::optional<Layout> next;
+    if (!served.isEmpty())
+        next = layout_.forService(served);
     if (!id.isEmpty()) {
         const QList<vt::app::Look> looks = allLooks(pos_);
         if (const auto it = std::ranges::find_if(looks, [&](const vt::app::Look &l) { return l.id == id; }); it != looks.end()) {
-            next = layout_;
+            if (!next)
+                next = layout_;
             vt::app::applyLook(next->theme, *it);
         }
     }
     const bool was = lookedLayout_.has_value();
     lookedLayout_ = std::move(next);
     lookedId_ = id;
+    servedAs_ = served;
     if (was || lookedLayout_) {
         refresh();
         emit pageChanged();
@@ -1588,6 +1599,12 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     if ((login == u"loggedIn" && !in) || (login == u"loggedOut" && in)
         || (login == u"manager" && !(pos_ && pos_->can(QString::fromLatin1(vt::core::perm::Manager)))))
         return false;
+    // Someone who logged in with their PIN (not a food truck's anonymous Counter): Log Out is theirs.
+    if (login == u"person") {
+        const QVariantMap s = pos_ ? pos_->serviceInfo() : QVariantMap();
+        if (!in || (s.value(u"counter"_s).toBool() && s.value(u"person"_s).toString().isEmpty()))
+            return false;
+    }
     const QString check = rule.value(u"check").toString();
     const bool open = pos_ && pos_->hasCheck();
     if ((check == u"open" && !open) || (check == u"none" && open))
@@ -1650,6 +1667,10 @@ void LayoutController::enterEditMode()
     emit editingChanged();
     refresh();
     emit pageChanged();
+    // A food truck's or a shop's screen: its own version of this page, to edit.
+    if (!servedAs_.isEmpty())
+        if (const vt::layout::Page *v = layout_.variantFor(nav_.current(), {}, servedAs_))
+            showPage(v->id);
 }
 
 bool LayoutController::saveEdits()

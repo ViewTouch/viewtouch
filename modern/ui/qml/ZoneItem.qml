@@ -148,6 +148,7 @@ Item {
             "store.name": p ? p.storeName : "",
             "user.name": p ? p.userName : "",
             "user.role": p ? p.userRole : "",
+            "user.since": p && p.service ? (p.service.since ?? "") : "",
             "terminal": p ? p.terminalName : "",
             "check.label": c.label ?? "",
             "check.number": c.id ?? "",
@@ -165,6 +166,11 @@ Item {
             "time": Qt.locale().toString(zone.now, "h:mm AP"),
             "date": Qt.locale().toString(zone.now, "ddd MMM d"),
             "mealPeriod": controller ? controller.mealPeriod : "",
+        }
+        // Orders waiting at a food truck's window ("3"), or nothing.
+        if (text.indexOf("{orders.waiting}") >= 0) {
+            const n = p && p.truckOrders ? p.truckOrders.length : 0
+            values["orders.waiting"] = n > 0 ? String(n) : ""
         }
         // New problems for the managers (Store Check): "⚠ 2", or nothing.
         if (text.indexOf("{problems}") >= 0) {
@@ -188,6 +194,8 @@ Item {
         if (r.login === "loggedIn" && !loggedIn) return false
         if (r.login === "loggedOut" && loggedIn) return false
         if (r.login === "manager" && !(p && p.permissions.includes("manager"))) return false
+        // Someone who logged in with their PIN (not a food truck's anonymous Counter).
+        if (r.login === "person" && (!loggedIn || (p.service && p.service.counter && !p.service.person))) return false
         const open = !!p && p.hasCheck
         if (r.check === "open" && !open) return false
         if (r.check === "none" && open) return false

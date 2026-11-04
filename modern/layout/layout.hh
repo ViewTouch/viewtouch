@@ -107,8 +107,16 @@ private:
     void enforce(QJsonObject &style, const QString &part) const;   // the style's own look (useStyle)
 
 public:
-    // The version of `pageId` made for `formFactor` screens ("phone"), if any.
-    const Page *variantFor(const QString &pageId, const QString &formFactor) const;
+    // The version of `pageId` made for `formFactor` screens ("phone"), or
+    // for a way of serving (`service`: "foodTruck", "retail"), if any.
+    const Page *variantFor(const QString &pageId, const QString &formFactor, const QString &service = {}) const;
+    // The pages as a screen serving that way shows them: each page with a
+    // version for it takes the version's zones (keeping its id and role),
+    // and the pages a replaced template frames (the menu pages) have their
+    // own zones moved from the old frame's content area into the new one's.
+    Layout forService(const QString &service) const;
+    // The order screen's frame before content areas were kept: where the menu pages' keys sit.
+    static constexpr QRect DefaultContentArea{592, 104, 1312, 860};
 
     // A version's shared zones (Zone::shared) brought in step with the page's
     // zones they show: everything but where they sit and their own fields. A

@@ -28,8 +28,9 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            // A page's phone version is reached by the Standard | Phone switch.
-            readonly property var listed: panel.editor.pages.filter(p => !p.variantOf)
+            // A page's phone version is reached by the Standard | Phone switch;
+            // a food truck's or a shop's version is a page of its own here.
+            readonly property var listed: panel.editor.pages.filter(p => !p.variantOf || p.service)
             readonly property string shownPage: panel.editor.revision >= 0 ? (panel.editor.screens.page ?? panel.editor.pageId) : ""
             model: listed
             currentIndex: listed.findIndex(p => p.id === shownPage)

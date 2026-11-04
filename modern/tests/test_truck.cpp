@@ -4,6 +4,8 @@
 #include "layoutcontroller.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
+#include "editorcontroller.hh"
+#include "zonemodel.hh"
 
 #include <QDeadlineTimer>
 #include <QSignalSpy>
@@ -728,7 +730,9 @@ TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")
         CHECK_FALSE(c.ruleShows(orders));
         CHECK(c.ruleShows(logOut));
         CHECK_FALSE(c.ruleShows(manager));   // a cashier: no way into the manager's pages
-        c.activate(u"flow-logout"_s);
+        c.activate(u"flow-logout"_s);        // End of Shift: Clock Out, tips, Log Out
+        CHECK(c.pageId() == u"logout"_s);
+        c.activate(u"logout"_s);
         CHECK_FALSE(pos.loggedIn());
         CHECK(c.pageId() == u"login"_s);
         // A manager: Manager on the order page, to the manager's pages (and back to restaurant from there).
@@ -957,4 +961,114 @@ TEST_CASE("Food truck: a PIN each shift; Log Out hands over, the order waits for
     CHECK_FALSE(app::settingsFromJson(QJsonObject{}).truckNoLogin);
     shared.settings.truckNoLogin = true;
     CHECK(app::settingsFromJson(app::toJson(shared.settings)).truckNoLogin);
+}
+
+namespace {
+
+bool onScreen(LayoutController &c, const QString &zoneId)
+{
+    ZoneModel *m = c.zones();
+    for (int r = 0; r < m->rowCount(); ++r)
+        if (m->data(m->index(r), ZoneModel::ZoneIdRole).toString() == zoneId)
+            return true;
+    return false;
+}
+
+} // namespace
+
+TEST_CASE("Food truck: its own login and order screen; Log Out ends the shift", "[truck][ui][service]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosShared shared(truckData(true), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+
+    // The truck's login: who's working, Start My Shift.
+    CHECK(c.pageId() == u"login"_s);
+    CHECK(onScreen(c, u"prompt"_s));
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK(pos.serviceInfo()[u"since"_s].toString().isEmpty() == false);   // clocked in
+
+    // The truck's order screen: who's working on top, New Order, the menu beside the check.
+    CHECK(c.pageId() == u"index-lunch"_s);
+    CHECK(onScreen(c, u"top-who"_s));
+    CHECK(onScreen(c, u"flow-new"_s));
+    CHECK(onScreen(c, u"flow-logout"_s));
+    CHECK_FALSE(onScreen(c, u"tab-breakfast"_s));   // no meal tabs on a truck
+    CHECK(c.ruleShows(QJsonObject{{u"login"_s, u"person"_s}}));
+    REQUIRE(pos.addItem(u"soda"_s));
+    const qint64 sams = pos.checkInfo()[u"id"_s].toLongLong();
+
+    // Shift's over: Log Out -> End of Shift -> Log Out; the login for the next person.
+    c.activate(u"flow-logout"_s);
+    CHECK(c.pageId() == u"logout"_s);
+    c.activate(u"logout"_s);
+    CHECK_FALSE(pos.loggedIn());
+    CHECK(c.pageId() == u"login"_s);
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK(pos.checkInfo()[u"id"_s].toLongLong() == sams);   // their order, back
+
+    // Nobody logs in (the Counter): no Log Out on the order screen.
+    pos.logout();
+    shared.settings.truckNoLogin = true;
+    emit shared.adminChanged();
+    REQUIRE(pos.serviceInfo()[u"counter"_s].toBool());
+    CHECK_FALSE(c.ruleShows(QJsonObject{{u"login"_s, u"person"_s}}));
+}
+
+TEST_CASE("Retail: its own login and order screen", "[truck][ui][service]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosData d = test::seedPosData();
+    d.settings.serviceMode = "retail";
+    app::PosShared shared(d, nullptr);
+    app::PosService pos(&shared, u"Shop"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+
+    CHECK(c.pageId() == u"login"_s);
+    CHECK(onScreen(c, u"prompt"_s));
+    REQUIRE(pos.loginWithPin(u"2222"_s));
+    CHECK(c.pageId() == u"index-lunch"_s);
+    CHECK(onScreen(c, u"scan"_s));
+    CHECK(onScreen(c, u"flow-nosale"_s));
+    CHECK_FALSE(onScreen(c, u"flow-send"_s));   // nothing goes to a kitchen
+    CHECK_FALSE(onScreen(c, u"flow-no"_s));
+
+    // Qty +1 on the touched item; Scan or search: the Find page.
+    REQUIRE(pos.addItem(u"soda"_s));
+    c.activate(u"flow-more"_s);
+    CHECK(pos.lines().first().toMap()[u"quantity"_s].toInt() == 2);
+    c.activate(u"scan"_s);
+    CHECK(c.pageId() == u"find-item"_s);
+
+    // The store back to a restaurant: the restaurant's pages again.
+    shared.settings.serviceMode.clear();
+    emit shared.adminChanged();
+    REQUIRE(c.showPage(u"index-lunch"_s));
+    CHECK_FALSE(onScreen(c, u"scan"_s));
+    CHECK(onScreen(c, u"flow-send"_s));
+}
+
+TEST_CASE("Food truck: edit mode on its screen opens the truck's own login to edit", "[truck][ui][service][editor]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosShared shared(truckData(true), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setPos(&pos);
+    REQUIRE(c.pageId() == u"login"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // a manager edits
+    REQUIRE(c.showPage(u"login"_s));
+    REQUIRE(c.requestEditMode());
+    CHECK(c.pageId() == u"login-truck"_s);
+    const QVariantList pages = c.editor()->pages();
+    CHECK(std::ranges::any_of(pages, [](const QVariant &p) { return p.toMap()[u"service"_s] == u"foodTruck"_s; }));
+    c.leaveEditMode(false);
 }

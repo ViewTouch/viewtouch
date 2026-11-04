@@ -308,7 +308,8 @@ QJsonArray zoneFields(const QString &kind)
     const QString when = u"Show only when"_s;
     out.append(with(with(field(u"showWhen.login"_s, u"Who"_s, u"enum"_s, when), u"options"_s,
                          options({{"", "Always"}, {"loggedIn", "Someone is logged in"},
-                                  {"loggedOut", "Nobody is logged in"}, {"manager", "A manager is logged in"}})),
+                                  {"loggedOut", "Nobody is logged in"}, {"manager", "A manager is logged in"},
+                                  {"person", "Someone logged in with their PIN"}})),
                     u"hint"_s, u"In edit mode every zone shows (dimmed when its rules hide it now)."_s));
     out.append(with(field(u"showWhen.check"_s, u"Check"_s, u"enum"_s, when), u"options"_s,
                     options({{"", "Either way"}, {"open", "A check is open"}, {"none", "No check is open"}})));

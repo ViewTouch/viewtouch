@@ -6,6 +6,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <QJsonArray>
 #include <QCryptographicHash>
 #include <QJsonDocument>
@@ -105,7 +106,7 @@ const Page *Layout::pageByRole(const QString &role) const
     if (role.isEmpty())
         return nullptr;
     for (const Page &p : pages) {
-        if (p.role == role)
+        if (p.role == role && p.variantOf.isEmpty())   // (a version stands in for its page, never for the role)
             return &p;
     }
     return nullptr;
@@ -455,13 +456,64 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
     return out;
 }
 
-const Page *Layout::variantFor(const QString &pageId, const QString &formFactor) const
+const Page *Layout::variantFor(const QString &pageId, const QString &formFactor, const QString &service) const
 {
     for (const Page &p : pages) {
-        if (!p.variantOf.isEmpty() && p.variantOf == pageId && p.formFactor == formFactor)
+        if (!p.variantOf.isEmpty() && p.variantOf == pageId && p.formFactor == formFactor && p.service == service)
             return &p;
     }
     return nullptr;
+}
+
+Layout Layout::forService(const QString &service) const
+{
+    Layout out = *this;
+    if (service.isEmpty())
+        return out;
+    // Templates replaced, and where their framed pages' zones go from and to.
+    QHash<QString, std::pair<QRect, QRect>> reframed;
+    for (const Page &v : pages) {
+        if (v.service != service || v.variantOf.isEmpty() || !v.formFactor.isEmpty())
+            continue;
+        Page *base = out.page(v.variantOf);
+        if (!base || !base->variantOf.isEmpty())
+            continue;
+        const QRect from = base->contentArea.isEmpty() ? DefaultContentArea : base->contentArea;
+        Page shown = v;   // its zones, frame and look; the page's name, role and rules
+        shown.id = base->id;
+        shown.name = base->name;
+        shown.kind = base->kind;
+        shown.role = base->role;
+        shown.mealPeriod = base->mealPeriod;
+        shown.permission = base->permission;
+        shown.variantOf.clear();
+        shown.service.clear();
+        shown.hiddenZones.clear();
+        *base = shown;
+        if (!v.contentArea.isEmpty() && v.contentArea != from)
+            reframed.insert(base->id, {from, v.contentArea});
+    }
+    if (reframed.isEmpty())
+        return out;
+    for (Page &p : out.pages) {
+        if (!p.variantOf.isEmpty() || reframed.contains(p.id))
+            continue;
+        const QList<const Page *> chain = templateChain(p.id);   // (as it was)
+        for (qsizetype i = 1; i < chain.size(); ++i) {
+            const auto it = reframed.constFind(chain[i]->id);
+            if (it == reframed.cend())
+                continue;
+            const auto [from, to] = *it;
+            const double sx = double(to.width()) / from.width(), sy = double(to.height()) / from.height();
+            for (Zone &z : p.zones) {
+                const QRect r = z.rect;
+                z.rect = QRect(qRound(to.x() + (r.x() - from.x()) * sx), qRound(to.y() + (r.y() - from.y()) * sy),
+                               qRound(r.width() * sx), qRound(r.height() * sy));
+            }
+            break;
+        }
+    }
+    return out;
 }
 
 Layout::PlacedZone Layout::sourceOf(const Page &variant, const QString &zoneId) const
@@ -562,8 +614,8 @@ QList<Layout::NotShown> Layout::notOnVariant(const QString &variantId) const
 {
     QList<NotShown> out;
     const Page *v = page(variantId);
-    if (!v || v->variantOf.isEmpty() || !page(v->variantOf))
-        return out;
+    if (!v || v->variantOf.isEmpty() || !page(v->variantOf) || !v->service.isEmpty())
+        return out;   // (a way of serving's version is a page of its own: nothing must be on it)
     for (const PlacedZone &pz : effectiveZones(v->variantOf)) {
         const Zone &z = *pz.zone;
         if ((pz.inherited && !v->templateId.isEmpty()) || z.kind == u"comment" || z.kind == u"decor"
@@ -659,8 +711,8 @@ QStringList Layout::validate() const
         if (!p.variantOf.isEmpty()) {
             if (!page(p.variantOf))
                 issues << u"%1: it is a version of '%2', which does not exist"_s.arg(where, p.variantOf);
-            else if (variantFor(p.variantOf, p.formFactor) != &p)
-                issues << u"%1: '%2' has more than one %3 version"_s.arg(where, p.variantOf, p.formFactor);
+            else if (variantFor(p.variantOf, p.formFactor, p.service) != &p)
+                issues << u"%1: '%2' has more than one %3 version"_s.arg(where, p.variantOf, p.formFactor.isEmpty() ? p.service : p.formFactor);
             for (const NotShown &n : notOnVariant(p.id)) {
                 if (!n.hidden)
                     issues << u"%1: '%2' of '%3' is not on it (place it, or hide it there)"_s

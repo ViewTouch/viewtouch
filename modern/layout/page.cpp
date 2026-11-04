@@ -11,7 +11,7 @@ namespace vt::layout {
 namespace {
 const QStringList kPageKeys = {
     u"id"_s, u"name"_s, u"kind"_s, u"role"_s, u"templateId"_s, u"mealPeriod"_s, u"permission"_s,
-    u"variantOf"_s, u"formFactor"_s, u"hiddenZones"_s, u"contentArea"_s,
+    u"variantOf"_s, u"formFactor"_s, u"service"_s, u"hiddenZones"_s, u"contentArea"_s,
     u"canvas"_s, u"grid"_s, u"background"_s, u"style"_s, u"zones"_s,
     u"schemaVersion"_s,
 };
@@ -74,6 +74,7 @@ Page Page::fromJson(const QJsonObject &o)
     p.permission = o.value(u"permission").toString();
     p.variantOf = o.value(u"variantOf").toString();
     p.formFactor = o.value(u"formFactor").toString();
+    p.service = o.value(u"service").toString();
     for (const QJsonValue &v : o.value(u"hiddenZones").toArray())
         p.hiddenZones.append(v.toString());
     if (const QJsonObject a = o.value(u"contentArea").toObject(); !a.isEmpty())
@@ -117,6 +118,7 @@ QJsonObject Page::toJson() const
     if (!permission.isEmpty()) o.insert(u"permission", permission);
     if (!variantOf.isEmpty()) o.insert(u"variantOf", variantOf);
     if (!formFactor.isEmpty()) o.insert(u"formFactor", formFactor);
+    if (!service.isEmpty()) o.insert(u"service", service);
     if (!hiddenZones.isEmpty()) o.insert(u"hiddenZones", QJsonArray::fromStringList(hiddenZones));
     if (!contentArea.isEmpty())
         o.insert(u"contentArea", QJsonObject{{u"x"_s, contentArea.x()}, {u"y"_s, contentArea.y()},

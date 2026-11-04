@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "id": "login-truck",
+  "name": "Login (food truck)",
+  "kind": "login",
+  "variantOf": "login",
+  "service": "foodTruck",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 460,
+        "y": 32,
+        "w": 1000,
+        "h": 100
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "{store.name}",
+      "style": {
+        "normal": {
+          "fontSize": 64
+        }
+      }
+    },
+    {
+      "id": "prompt",
+      "kind": "label",
+      "rect": {
+        "x": 460,
+        "y": 140,
+        "w": 1000,
+        "h": 60
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Who's working? Your PIN starts your shift.",
+      "style": {
+        "normal": {
+          "fontSize": 30
+        }
+      }
+    },
+    {
+      "id": "logo",
+      "kind": "image",
+      "rect": {
+        "x": 60,
+        "y": 240,
+        "w": 540,
+        "h": 420
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "imagePath": "logo:",
+      "style": {
+        "normal": {
+          "fill": "transparent",
+          "frame": "none",
+          "shadow": 0
+        }
+      }
+    },
+    {
+      "id": "login-pad",
+      "kind": "loginPad",
+      "rect": {
+        "x": 660,
+        "y": 220,
+        "w": 600,
+        "h": 640
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "start",
+      "kind": "button",
+      "rect": {
+        "x": 660,
+        "y": 876,
+        "w": 600,
+        "h": 128
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Start My Shift",
+      "actions": [
+        {
+          "type": "command",
+          "name": "login"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "clock",
+      "kind": "clock",
+      "rect": {
+        "x": 1300,
+        "y": 220,
+        "w": 560,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "time-clock",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 320,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Time Clock & My Schedule",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "time-clock"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "clock-out",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 450,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Clock Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "clockOut"
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "kind": "comment",
+      "rect": {
+        "x": 1300,
+        "y": 580,
+        "w": 560,
+        "h": 150
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Demo PINs: 1234 manager, 1111 server, 2222 cashier, 5555 server in Spanish. Remove this note in the editor."
+    },
+    {
+      "id": "back-to-order",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 750,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Back to Ordering",
+      "actions": [
+        {
+          "type": "command",
+          "name": "clearEntry"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      },
+      "showWhen": {
+        "login": "loggedIn"
+      }
+    },
+    {
+      "id": "switch-person",
+      "kind": "button",
+      "rect": {
+        "x": 1300,
+        "y": 880,
+        "w": 560,
+        "h": 110
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Switch Person",
+      "actions": [
+        {
+          "type": "command",
+          "name": "switchCounterPerson"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      },
+      "showWhen": {
+        "login": "loggedIn"
+      }
+    }
+  ]
+}

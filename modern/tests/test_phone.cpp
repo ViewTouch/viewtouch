@@ -341,7 +341,8 @@ TEST_CASE("Phones held upright: every page fits the portrait screen", "[phone][p
     c.setFormFactorOverride(u"phone"_s);
     QStringList over, landscape;
     for (const layout::Page &p : l.pages) {
-        if (p.formFactor == u"phone" || p.kind == u"template" || p.kind == u"library" || !c.jumpTo(p.id))
+        // (A way of serving's version is shown as the page it stands in for.)
+        if (p.formFactor == u"phone" || !p.service.isEmpty() || p.kind == u"template" || p.kind == u"library" || !c.jumpTo(p.id))
             continue;
         const QSize canvas = c.canvasSize();
         if (canvas.width() > canvas.height())
