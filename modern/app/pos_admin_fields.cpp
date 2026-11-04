@@ -362,6 +362,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             field(u"orderNumbers"_s, tr("Restaurant: call orders by number"), u"bool"_s,
                   tr("Counter service: quick orders get a number (#1, #2... from 1 each day), shown on a Now Serving "
                      "board (a TV) and the customer display; Orders marks them Ready and Picked Up.")),
+            field(u"truckSendNew"_s, tr("After Send, start a new order"), u"bool"_s,
+                  tr("Orders called by number (a food truck's): Send puts the order away and the screen is ready for the "
+                     "next guest. It waits on Orders, to open or pay when they come. Off: the screen stays on the order.")),
             with(field(u"language"_s, tr("Language"), u"enum"_s,
                        tr("For screens nobody is logged in to, the customer display, receipts and tickets. "
                           "Each person can have their own (Employees).")),

@@ -125,6 +125,7 @@ TEST_CASE("A food truck's screens render cleanly with orders waiting", "[ui][pag
     // One order called, one being made with its name and pager on the check.
     REQUIRE(pos.addItem(u"classic-burger"_s));
     REQUIRE(pos.setPager(4));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Sam"_s}}));
     REQUIRE(pos.sendOrder());
     const qint64 first = pos.checkInfo()[u"id"_s].toLongLong();
     pos.releaseCheck();
@@ -229,6 +230,7 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
     for (int i = 0; i < 24; ++i) {
         REQUIRE(pos.startCheck(core::CheckType::Quick));
         REQUIRE(pos.addItem(u"soda"_s));
+        REQUIRE(pos.setCustomer({{u"name"_s, u"Guest %1"_s.arg(i + 1)}}));
         REQUIRE(pos.sendOrder());
         pos.releaseCheck();
     }
@@ -246,6 +248,7 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
     REQUIRE(pos.loginWithPin(u"1234"_s));
     REQUIRE(pos.startCheck(core::CheckType::Quick));
     REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Late"_s}}));
     REQUIRE(pos.sendOrder());
     pos.releaseCheck();
     pos.logout();
@@ -256,8 +259,16 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
     // Every order picked up: the store's messages; an hour of that: dark,
     // and the next order lights it again.
     REQUIRE(pos.loginWithPin(u"1234"_s));
-    for (const QVariant &o : pos.truckOrders())
-        REQUIRE(pos.orderPickedUp(o.toMap()[u"id"_s].toLongLong()));
+    pos.openDrawerSession();
+    for (const QVariant &o : pos.truckOrders()) {
+        const qint64 id = o.toMap()[u"id"_s].toLongLong();
+        if (!o.toMap()[u"paid"_s].toBool()) {   // paid when they come for it
+            REQUIRE(pos.openCheck(id));
+            REQUIRE(pos.tender(u"cash"_s));
+            REQUIRE(pos.closeCheck());
+        }
+        REQUIRE(pos.orderPickedUp(id));
+    }
     pos.logout();
     QTest::qWait(100);
     QQuickItem *idle = named(board, u"boardIdle"_s);
@@ -272,6 +283,7 @@ TEST_CASE("Now Serving: the board on a TV, the Orders button at a counter", "[ui
     REQUIRE(pos.loginWithPin(u"1234"_s));
     REQUIRE(pos.startCheck(core::CheckType::Quick));
     REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Next"_s}}));
     REQUIRE(pos.sendOrder());
     pos.releaseCheck();
     pos.logout();
@@ -314,6 +326,7 @@ TEST_CASE("Now Serving: a register's own screen facing the guests can be the boa
     CHECK(pos.terminalGuestScreen() == u"board"_s);
     REQUIRE(pos.startCheck(core::CheckType::Quick));
     REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Ana"_s}}));
     REQUIRE(pos.sendOrder());
     pos.releaseCheck();
 

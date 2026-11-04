@@ -654,6 +654,22 @@ void LayoutController::openCheck(qint64 checkId)
     });
 }
 
+void LayoutController::openOrder(qint64 checkId, bool pay)
+{
+    if (!pos_ || editing() || busy())
+        return;
+    call(u"releaseCheck"_s, {}, [this, checkId, pay](const QVariant &) {
+        call(u"openCheck"_s, {checkId}, [this, pay](const QVariant &ok) {
+            if (!ok.toBool())
+                return;
+            if (const QString settle = rolePage(u"settle"_s); pay && !settle.isEmpty())
+                navigate(Navigator::Mode::Push, settle);
+            else
+                navigate(Navigator::Mode::Index);
+        });
+    });
+}
+
 void LayoutController::login()
 {
     if (pos_ && !editing())
@@ -2294,10 +2310,24 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
                 return done(false);
             }
             const QVariantMap check = pos_->checkInfo();
-            const bool toTables = pos_->userPrefs().value(u"sendToTables"_s).toBool()
+            const QVariantMap prefs = pos_->userPrefs();
+            const bool toTables = prefs.value(u"sendToTables"_s).toBool()
                                   && check.value(u"type"_s).toString() == u"dineIn"
                                   && !check.value(u"label"_s).toString().isEmpty();
+            // An order called by its number (a food truck's): put away, it
+            // waits on Orders (to open or pay when they come); the next guest's
+            // order starts here.
+            const bool nextOrder = prefs.value(u"sendNewOrder"_s, true).toBool()
+                                   && check.value(u"orderNumber"_s).toInt() > 0;
             done(true);
+            if (nextOrder) {
+                const QString label = check.value(u"label"_s).toString();
+                call(u"releaseCheck"_s, {}, [this, label](const QVariant &released) {
+                    if (released.toBool())
+                        setStatus(tr("%1 sent: it waits under Orders. Next order.").arg(label));
+                });
+                return;
+            }
             if (toTables)
                 call(u"releaseCheck"_s, {}, [this](const QVariant &released) {
                     if (!released.toBool())

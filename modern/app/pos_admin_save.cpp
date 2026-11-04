@@ -319,6 +319,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.truckAskStaff = record.value(u"truckAskStaff"_s).toBool();
         if (record.contains(u"truckNeedsName"_s))
             s_->settings.truckNeedsName = record.value(u"truckNeedsName"_s).toBool();
+        if (record.contains(u"truckSendNew"_s))
+            s_->settings.truckSendNew = record.value(u"truckSendNew"_s).toBool();
         if (record.contains(u"orderNumbers"_s))
             s_->settings.orderNumbers = record.value(u"orderNumbers"_s).toBool();
         s_->settings.currencySymbol = ss(record.value(u"currencySymbol"_s).toString());

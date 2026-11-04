@@ -28,6 +28,14 @@ QDate dateOf(std::int64_t ms)
     return QDateTime::fromMSecsSinceEpoch(ms).date();
 }
 
+// An order called by its number, sent before it's paid while Send puts
+// orders away: it waits on Orders for its guest, who's found by name.
+bool waitsNameless(const Check &c, const PosSettings &s)
+{
+    return c.orderNumber > 0 && !c.training && s.truckSendNew && c.customer.name.empty()
+           && c.totals(s.tax).balance.cents() > 0;
+}
+
 } // namespace
 
 PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
@@ -549,7 +557,7 @@ QVariantMap PosService::userPrefs() const
     return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
             {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}, {u"buzz"_s, e->buzz},
             {u"colorSafe"_s, e->colorSafe || screenColorSafe},
-            {u"sendToTables"_s, s_->settings.sendToTables}};
+            {u"sendToTables"_s, s_->settings.sendToTables}, {u"sendNewOrder"_s, s_->settings.truckSendNew}};
 }
 
 void PosShared::checkBooks(const Check &c)
@@ -1718,6 +1726,8 @@ bool PosService::sendOrder()
         return fail(tr("No check is open."));
     if (const QString who = missingWho(*c); !who.isEmpty() && c->unsentCount() > 0)
         return fail(who);
+    if (waitsNameless(*c, s_->settings) && c->unsentCount() > 0)
+        return fail(tr("Who is it for? Add their name (+ Name on the check): it waits under Orders until they pay."));
     if (waitingForLater(*c) && c->unsentCount() > 0) {   // the kitchen gets it in time, by itself
         if (const QString missing = missingChoice(c->sendable(true)); !missing.isEmpty())
             return fail(missing);
@@ -2135,6 +2145,7 @@ QVariantMap PosService::checkInfo() const
                          ? readyQuote(*c) : 0},
         {u"promised"_s, c->promisedAt ? timeOfDay(c->promisedAt) : QString()},
         {u"needsWho"_s, !missingWho(*c).isEmpty()},
+        {u"needsName"_s, waitsNameless(*c, s_->settings)},   // to send it unpaid
         {u"driver"_s, qs(c->driverName)},
         {u"orderNumber"_s, c->orderNumber},   // a food truck's order: called by it
         {u"pager"_s, c->pager},

@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 
-// A food truck's window: the orders sent and not yet picked up, a card each
-// (#27 Maria, pager 12, what's in it, how long). Ready calls it (the screens
-// say which pager to buzz), again to call again; Picked Up takes it off. Without a kitchen
-// screen this is where orders are called; with one, bumping calls them too.
+// A food truck's window: the orders not yet picked up, a card each (#27
+// Maria, pager 12, what's in it, how long). Ready calls it (the screens say
+// which pager to buzz), again to call again; Picked Up takes it off, once it's
+// paid. One not paid yet (a call-in) opens to change it, or Pay. Those put
+// away before they went to the kitchen (New Order, ready later) are here
+// too, on top. Without a kitchen screen this is where orders are called;
+// with one, bumping calls them too.
 Item {
     id: w
     property ZoneItem zone
@@ -97,35 +100,46 @@ Item {
                 }
                 Text {
                     textFormat: Text.PlainText
+                    objectName: "truckOrderStatus"
                     width: parent.width
-                    text: (card.modelData.ready ? qsTr("Ready") : qsTr("Making it"))
-                          + "  ·  " + qsTr("%n min", "", card.modelData.minutes)
+                    text: (card.modelData.later !== "" ? qsTr("For %1").arg(card.modelData.later)
+                           : !card.modelData.sent ? qsTr("Not sent yet")
+                           : (card.modelData.ready ? qsTr("Ready") : qsTr("Making it"))
+                             + "  ·  " + qsTr("%n min", "", card.modelData.minutes))
                           + (card.modelData.paid ? "" : "  ·  " + qsTr("NOT PAID"))
+                          + (card.modelData.openOn !== "" ? "  ·  " + qsTr("open on %1").arg(card.modelData.openOn) : "")
                     color: card.modelData.paid ? Ui.muted : "#ffb4a8"
                     font.family: w.face
                     font.pixelSize: 18 * grid.big
                     elide: Text.ElideRight
                 }
             }
+            // Sent: Ready (Call Again). Not paid: Open and Pay; paid: Picked Up.
             Row {
+                id: keys
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 18 }
                 spacing: 12
-                WidgetKey {
-                    objectName: "truckOrderReady"
-                    width: (parent.width - 12) / 2
-                    height: 64 * grid.big
-                    fontScale: 0.4
-                    text: card.modelData.ready ? qsTr("Call Again") : qsTr("Ready")
-                    accent: !card.modelData.ready
-                    onClicked: w.pos.orderReady(card.modelData.id)
-                }
-                WidgetKey {
-                    objectName: "truckOrderPickedUp"
-                    width: (parent.width - 12) / 2
-                    height: 64 * grid.big
-                    fontScale: 0.4
-                    text: qsTr("Picked Up")
-                    onClicked: w.pos.orderPickedUp(card.modelData.id)
+                readonly property var shown: (card.modelData.sent ? ["ready"] : [])
+                                             .concat(card.modelData.paid ? ["pickedUp"] : ["open", "pay"])
+                Repeater {
+                    model: keys.shown
+                    delegate: WidgetKey {
+                        required property string modelData
+                        objectName: "truckOrder" + modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                        width: (keys.width - 12 * (keys.shown.length - 1)) / keys.shown.length
+                        height: 64 * grid.big
+                        fontScale: 0.4
+                        text: modelData === "ready" ? (card.modelData.ready ? qsTr("Call Again") : qsTr("Ready"))
+                            : modelData === "open" ? qsTr("Open")
+                            : modelData === "pay" ? qsTr("Pay") : qsTr("Picked Up")
+                        accent: (modelData === "ready" && !card.modelData.ready) || modelData === "pay"
+                        onClicked: {
+                            const id = card.modelData.id
+                            if (modelData === "ready") w.pos.orderReady(id)
+                            else if (modelData === "pickedUp") w.pos.orderPickedUp(id)
+                            else w.zone.controller.openOrder(id, modelData === "pay")
+                        }
+                    }
                 }
             }
         }

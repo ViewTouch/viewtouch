@@ -1493,6 +1493,7 @@ TEST_CASE("Remote terminal: a food truck screen opens as the counter; a manager 
     REQUIRE(waitFor([&] { return truck.remote->truckOrders().size() == 1; }));
     const QVariantMap order = truck.remote->truckOrders().first().toMap();
     CHECK(order[u"label"_s].toString() == u"#1 Maria"_s);
+    CHECK(waitFor([&] { return !truck.remote->hasCheck(); }));   // put away: the next guest's order
     CHECK(order[u"pager"_s].toInt() == 12);
 
     // Orders -> Manager asks for a PIN; a manager's opens it.
@@ -1504,15 +1505,14 @@ TEST_CASE("Remote terminal: a food truck screen opens as the counter; a manager 
     REQUIRE(waitFor([&] { return truck.c.pageId() == u"manager"_s; }));
     CHECK(truck.remote->userName() == u"Morgan (Manager)"_s);
 
-    // Log Out: the counter again, Maria's order still open, the menu.
+    // Log Out: the counter again, the menu.
     truck.remote->invoke(u"logout"_s, {});
     REQUIRE(waitFor([&] { return truck.remote->userName() == u"Counter"_s; }));
     CHECK(waitFor([&] { return truck.c.pageId() == u"index-lunch"_s; }));
-    CHECK(truck.remote->checkInfo()[u"label"_s].toString() == u"#1 Maria"_s);
 
     // Ready from the screen: called, its pager named.
     QSignalSpy notices(truck.remote.get(), &net::RemoteSession::notice);
-    truck.remote->orderReady(truck.remote->checkInfo()[u"id"_s].toLongLong());
+    truck.remote->orderReady(order[u"id"_s].toLongLong());
     CHECK(waitFor([&] {
         for (const QList<QVariant> &n : notices)
             if (n.first().toString() == u"#1 Maria is ready: buzz pager 12"_s)
@@ -1630,6 +1630,15 @@ TEST_CASE("Now Serving board on its own computer: nobody logged in, the orders a
         const QVariantList o = tv.remote->truckOrders();
         return std::ranges::any_of(o, [](const QVariant &v) { return v.toMap()[u"ready"_s].toBool(); });
     }));
+    // Paid when Ana comes (Picked Up waits for that), then picked up.
+    reg.remote->invoke(u"orderPickedUp"_s, {ana});
+    reg.settle();
+    CHECK(tv.remote->truckOrders().size() == 2);
+    reg.remote->invoke(u"openCheck"_s, {ana});
+    reg.remote->openDrawerSession();
+    reg.remote->invoke(u"tender"_s, {u"cash"_s});
+    reg.remote->invoke(u"closeCheck"_s, {});
+    reg.settle();
     reg.remote->invoke(u"orderPickedUp"_s, {ana});
     REQUIRE(waitFor([&] { return tv.remote->truckOrders().size() == 1; }));
     CHECK(tv.remote->truckOrders()[0].toMap()[u"label"_s].toString() == u"#2 Lee"_s);

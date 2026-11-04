@@ -279,7 +279,7 @@ Item {
                     fontScale: 0.42
                     readonly property string value: modelData === "pager" ? ((w.check.pager ?? 0) > 0 ? qsTr("Pager %1").arg(w.check.pager) : "")
                                                                           : who.customer[modelData] ?? ""
-                    readonly property bool needed: value === "" && ((modelData === "name" && (!who.truck || (w.pos.service?.needsName ?? false)))
+                    readonly property bool needed: value === "" && ((modelData === "name" && (!who.truck || (w.pos.service?.needsName ?? false) || (w.check.needsName ?? false)))
                                                                     || (modelData === "address" && who.delivery))
                     text: value !== "" ? value
                         : modelData === "name" ? qsTr("+ Name") : modelData === "phone" ? qsTr("+ Phone")

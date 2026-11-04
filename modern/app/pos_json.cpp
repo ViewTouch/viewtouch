@@ -1113,7 +1113,7 @@ QJsonObject toJson(const PosSettings &s)
                  a.append(qs(c));
              return a;
          }()},
-        {u"serviceMode"_s, qs(s.serviceMode)}, {u"truckAskStaff"_s, s.truckAskStaff}, {u"truckNeedsName"_s, s.truckNeedsName}, {u"orderNumbers"_s, s.orderNumbers},
+        {u"serviceMode"_s, qs(s.serviceMode)}, {u"truckAskStaff"_s, s.truckAskStaff}, {u"truckNeedsName"_s, s.truckNeedsName}, {u"truckSendNew"_s, s.truckSendNew}, {u"orderNumbers"_s, s.orderNumbers},
         {u"kioskSendNow"_s, s.kioskSendNow}, {u"kioskIdleSeconds"_s, s.kioskIdleSeconds}, {u"kioskSlip"_s, s.kioskSlip},
         {u"kioskLook"_s, QJsonObject{{u"background"_s, qs(s.kioskLook.background)}, {u"card"_s, qs(s.kioskLook.card)},
                                      {u"go"_s, qs(s.kioskLook.go)}, {u"text"_s, qs(s.kioskLook.text)},
@@ -1401,6 +1401,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.serviceMode = ss(o.value(u"serviceMode").toString());
     s.truckAskStaff = o.value(u"truckAskStaff").toBool(false);
     s.truckNeedsName = o.value(u"truckNeedsName").toBool(false);
+    s.truckSendNew = o.value(u"truckSendNew").toBool(true);
     s.orderNumbers = o.value(u"orderNumbers").toBool(false);
     s.kioskSendNow = o.value(u"kioskSendNow").toBool(false);
     s.kioskSlip = o.value(u"kioskSlip").toBool(true);

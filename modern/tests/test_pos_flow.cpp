@@ -5713,7 +5713,12 @@ TEST_CASE("Manual: a food truck", "[.manual]")
             QTest::keyClick(s.window, Qt::Key_Escape);
             QTest::qWait(100);
         }
-        s.pos.sendOrder();
+        choose(s);   // the soda's
+        REQUIRE(s.pos.sendOrder());
+        s.pos.releaseCheck();
+        // A call-in put away before it went to the kitchen (New Order).
+        REQUIRE(s.pos.addItem(u"caesar"_s));
+        REQUIRE(s.pos.setCustomer({{u"name"_s, u"Lee"_s}}));
         s.pos.releaseCheck();
         // Orders: Ana's is made; Ready says which pager to buzz.
         REQUIRE(s.c.jumpTo(u"truck-orders"_s));

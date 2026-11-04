@@ -129,12 +129,30 @@ Check *truckOrder(PosShared *s, std::int64_t id)
     return nullptr;
 }
 
+bool sentAny(const Check &c)
+{
+    return std::ranges::any_of(c.lines, [](const OrderLine &l) { return l.sent && !l.voided; });
+}
+
 // Waiting at the window: sent to the kitchen (or paid), not picked up yet.
 bool waiting(const Check &c)
 {
     return c.orderNumber > 0 && !c.training && !c.pickedUpAt
-           && (c.status == CheckStatus::Closed || c.status == CheckStatus::Open)
-           && (c.status == CheckStatus::Closed || std::ranges::any_of(c.lines, [](const OrderLine &l) { return l.sent && !l.voided; }));
+           && (c.status == CheckStatus::Closed || (c.status == CheckStatus::Open && sentAny(c)));
+}
+
+// Put away before it went to the kitchen (New Order, or ready later), and
+// on no screen now: on Orders too, to open again.
+bool putAway(const PosShared *s, const Check &c)
+{
+    return c.orderNumber > 0 && !c.training && !c.pickedUpAt && c.status == CheckStatus::Open && !sentAny(c)
+           && std::ranges::any_of(c.lines, [](const OrderLine &l) { return !l.voided && !l.isComment(); })
+           && !s->lockedBy.contains(c.id);
+}
+
+bool unpaid(const Check &c, const PosSettings &s)
+{
+    return c.status == CheckStatus::Open && c.totals(s.tax).balance.cents() > 0;
 }
 
 } // namespace
@@ -194,6 +212,8 @@ bool PosService::orderReady(qint64 checkId)
     Check *c = truckOrder(s_, checkId);
     if (!c || c->pickedUpAt)
         return fail(tr("That order isn't waiting."));
+    if (c->status == CheckStatus::Open && !sentAny(*c))
+        return fail(tr("%1 hasn't gone to the kitchen yet.").arg(qs(c->label)));
     callOrder(*c);   // again: said again
     return true;
 }
@@ -205,6 +225,8 @@ bool PosService::orderPickedUp(qint64 checkId)
     Check *c = truckOrder(s_, checkId);
     if (!c || c->pickedUpAt)
         return fail(tr("That order isn't waiting."));
+    if (unpaid(*c, s_->settings))   // the food goes out when it's paid for
+        return fail(tr("%1 isn't paid yet: Pay first.").arg(qs(c->label)));
     c->pickedUpAt = now();
     if (!c->readyAt)
         c->readyAt = c->pickedUpAt;
@@ -220,12 +242,13 @@ QVariantList PosService::truckOrders() const
 {
     std::vector<const Check *> list;
     for (const auto &[id, c] : s_->open)
-        if (waiting(c))
+        if (waiting(c) || putAway(s_, c))
             list.push_back(&c);
     for (const Check &c : s_->closedToday)
         if (waiting(c))
             list.push_back(&c);
-    // Still being made first (oldest on top), then those called, waiting for their guest.
+    // Not sent yet first (call-ins, for later), then those being made (oldest
+    // on top), then those called, waiting for their guest.
     const auto sentAt = [](const Check *c) {
         std::int64_t first = 0;
         for (const OrderLine &l : c->lines)
@@ -233,7 +256,10 @@ QVariantList PosService::truckOrders() const
                 first = l.sentAt;
         return first ? first : c->closedAt ? c->closedAt : c->openedAt;
     };
+    const auto stage = [](const Check *c) { return c->status == CheckStatus::Open && !sentAny(*c) ? 0 : c->readyAt ? 2 : 1; };
     std::ranges::sort(list, [&](const Check *a, const Check *b) {
+        if (stage(a) != stage(b))
+            return stage(a) < stage(b);
         if ((a->readyAt != 0) != (b->readyAt != 0))
             return a->readyAt == 0;
         return sentAt(a) != sentAt(b) ? sentAt(a) < sentAt(b) : a->orderNumber < b->orderNumber;
@@ -251,7 +277,10 @@ QVariantList PosService::truckOrders() const
                                // Never below 0 (the clock set back after it was sent).
                                {u"minutes"_s, std::max(0, int((t - sentAt(c)) / 60'000))}, {u"ready"_s, c->readyAt != 0},
                                {u"readyMinutes"_s, c->readyAt ? std::max(0, int((t - c->readyAt) / 60'000)) : 0},
-                               {u"paid"_s, c->status == CheckStatus::Closed}});
+                               {u"paid"_s, !unpaid(*c, s_->settings)},
+                               {u"sent"_s, c->status == CheckStatus::Closed || sentAny(*c)},
+                               {u"later"_s, c->dueAt && !sentAny(*c) ? dueText(c->dueAt) : QString()},
+                               {u"openOn"_s, lockHolder(c->id)}});   // being changed on that screen
     }
     return out;
 }

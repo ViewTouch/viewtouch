@@ -132,6 +132,7 @@ TEST_CASE("Time: the clock set back (the internet fixing it): no order waits a n
     REQUIRE(pos.loginWithPin(u"1234"_s));
     REQUIRE(pos.startCheck(core::CheckType::Quick));
     REQUIRE(pos.addItem(u"soda"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Ana"_s}}));
     REQUIRE(pos.sendOrder());
     const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
     pos.releaseCheck();

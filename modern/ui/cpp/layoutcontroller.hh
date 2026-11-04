@@ -303,6 +303,9 @@ public:
     // (several checks there: the list, to pick one).
     Q_INVOKABLE void payTable(const QString &label);
     Q_INVOKABLE void openCheck(qint64 checkId);
+    // An order on the Orders page (a food truck's): the one on the screen is
+    // put away first (it waits there too), then this one, to change or pay.
+    Q_INVOKABLE void openOrder(qint64 checkId, bool pay);
     Q_INVOKABLE void login();
 
     // F1 / "Edit Pages" / --edit: the only way in from the UI. Needs the

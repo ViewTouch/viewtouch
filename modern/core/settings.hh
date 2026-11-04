@@ -160,6 +160,9 @@ struct PosSettings {
     // order needs a name before Send or Pay (it's called by its number too).
     bool truckAskStaff = false;
     bool truckNeedsName = false;
+    // Orders called by number: Send puts the order away (it waits on the
+    // Orders page, to open or pay there) and the screen starts the next one.
+    bool truckSendNew = true;
     // A restaurant at the counter: quick orders called by their number too
     // (#1, #2... each day), shown on the Now Serving board, the Orders page.
     bool orderNumbers = false;

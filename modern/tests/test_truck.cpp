@@ -291,6 +291,8 @@ TEST_CASE("Food truck: pagers, Ready and Picked Up at the window", "[truck]")
     REQUIRE(pos.addItem(u"soda"_s));
     CHECK_FALSE(pos.setPager(12));
     REQUIRE(pos.setPager(7));
+    CHECK_FALSE(pos.sendOrder());   // not paid yet: it needs a name, to be found when they pay
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Lee"_s}}));
     REQUIRE(pos.sendOrder());   // not paid yet: on the list too
 
     QVariantList orders = pos.truckOrders();
@@ -341,6 +343,7 @@ TEST_CASE("Counter service: a restaurant calls quick orders by number", "[truck]
     REQUIRE(pos.startCheck(core::CheckType::Quick));
     REQUIRE(pos.addItem(u"soda"_s));
     CHECK(pos.checkInfo()[u"orderNumber"_s].toInt() == 2);
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Bo"_s}}));
     REQUIRE(pos.sendOrder());
     pos.releaseCheck();
 
@@ -352,6 +355,11 @@ TEST_CASE("Counter service: a restaurant calls quick orders by number", "[truck]
     CHECK(orders.last().toMap()[u"label"_s].toString() == u"#1 Ana"_s);
     CHECK(orders.last().toMap()[u"ready"_s].toBool());
     CHECK(orders.last().toMap()[u"readyMinutes"_s].toInt() == 0);
+    CHECK_FALSE(pos.orderPickedUp(ana));   // not paid yet
+    REQUIRE(pos.openCheck(ana));
+    pos.openDrawerSession();
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
     REQUIRE(pos.orderPickedUp(ana));
     CHECK(pos.truckOrders().size() == 1);
 
@@ -523,6 +531,7 @@ TEST_CASE("Food truck: an order still being rung in isn't on the Orders list", "
     app::PosService pos(&shared, u"Truck"_s);
     REQUIRE(pos.addItem(u"caesar"_s));
     CHECK(pos.truckOrders().isEmpty());          // nothing sent, not paid
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
     REQUIRE(pos.sendOrder());
     REQUIRE(pos.truckOrders().size() == 1);
     CHECK_FALSE(pos.truckOrders().first().toMap()[u"paid"_s].toBool());
@@ -542,6 +551,8 @@ TEST_CASE("Food truck: two screens share the day's numbers and the pagers", "[tr
     CHECK_FALSE(second.setPager(5));             // still out with #1
     REQUIRE(second.setPager(6));
     // Each screen sees every waiting order.
+    REQUIRE(window.setCustomer({{u"name"_s, u"Ana"_s}}));
+    REQUIRE(second.setCustomer({{u"name"_s, u"Bo"_s}}));
     REQUIRE(window.sendOrder());
     REQUIRE(second.sendOrder());
     CHECK(window.truckOrders().size() == 2);
@@ -558,7 +569,9 @@ TEST_CASE("Food truck: the kitchen calls an order only when every station is don
     REQUIRE(pos.addItem(u"soda"_s));     // the bar's
     REQUIRE(pos.setPager(8));
     const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
-    REQUIRE(pos.sendOrder());
+    pos.openDrawerSession();
+    REQUIRE(pos.tender(u"cash"_s));   // paid at the window (it's called by number only)
+    REQUIRE(pos.closeCheck());
     const qint64 sentAt = pos.kitchenTickets().first().toMap()[u"sentAt"_s].toLongLong();
     const auto called = [&] {
         for (const QList<QVariant> &n : notices)
@@ -753,4 +766,147 @@ TEST_CASE("Food truck: a whole day with the store's cash setting as shipped, to 
     REQUIRE(pos.endOfDay());
     pos.logout();
     CHECK(pos.userName() == u"Counter"_s);
+}
+
+// A call-in: rung in, sent, not paid. The screen goes on to the next guest;
+// the order waits on Orders, to open or pay when they come.
+TEST_CASE("Food truck: Send puts a call-in away; Orders opens it and takes the payment", "[truck][ui]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+
+    // Not paid: it needs a name first (to be found when they come).
+    REQUIRE(pos.addItem(u"caesar"_s));
+    CHECK(pos.checkInfo()[u"needsName"_s].toBool());
+    c.activate(u"flow-send"_s);
+    CHECK(pos.hasCheck());
+    CHECK(pos.truckOrders().isEmpty());
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Maria"_s}}));
+    CHECK_FALSE(pos.checkInfo()[u"needsName"_s].toBool());
+    const qint64 maria = pos.checkInfo()[u"id"_s].toLongLong();
+    c.activate(u"flow-send"_s);
+    CHECK_FALSE(pos.hasCheck());                       // the next guest's order
+    CHECK(c.statusText() == u"#1 Maria sent: it waits under Orders. Next order."_s);
+    QVariantList orders = pos.truckOrders();
+    REQUIRE(orders.size() == 1);
+    CHECK(orders[0].toMap()[u"sent"_s].toBool());
+    CHECK_FALSE(orders[0].toMap()[u"paid"_s].toBool());
+
+    // A walk-up meanwhile: #2, paid at the window (no name needed).
+    sell(pos);
+    CHECK(pos.truckOrders().size() == 2);
+
+    // Maria's ready but she isn't here: Picked Up waits for the payment.
+    REQUIRE(pos.orderReady(maria));
+    CHECK_FALSE(pos.orderPickedUp(maria));
+
+    // She calls back to add a drink: Orders, Open, add it, Send again.
+    c.openOrder(maria, false);
+    CHECK(pos.checkInfo()[u"id"_s].toLongLong() == maria);
+    CHECK(c.pageId() == u"index-lunch"_s);
+    REQUIRE(pos.addItem(u"soda"_s));
+    c.activate(u"flow-send"_s);
+    CHECK_FALSE(pos.hasCheck());
+
+    // She arrives: Pay from Orders goes to the Pay screen with her order.
+    c.activate(u"flow-orders"_s);
+    REQUIRE(c.pageId() == u"truck-orders"_s);
+    c.openOrder(maria, true);
+    CHECK(pos.checkInfo()[u"id"_s].toLongLong() == maria);
+    CHECK(c.pageId() == u"settle"_s);
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    orders = pos.truckOrders();
+    const auto it = std::ranges::find_if(orders, [&](const QVariant &o) { return o.toMap()[u"id"_s].toLongLong() == maria; });
+    REQUIRE(it != orders.end());
+    CHECK(it->toMap()[u"paid"_s].toBool());
+    REQUIRE(pos.orderPickedUp(maria));
+}
+
+TEST_CASE("Food truck: with the setting off, Send stays on the order", "[truck][ui]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosData d = truckData();
+    d.settings.truckSendNew = false;
+    app::PosShared shared(std::move(d), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+
+    REQUIRE(pos.addItem(u"caesar"_s));
+    CHECK_FALSE(pos.checkInfo()[u"needsName"_s].toBool());   // paid at the window, after
+    c.activate(u"flow-send"_s);
+    CHECK(pos.hasCheck());
+    CHECK(pos.truckOrders().size() == 1);
+    // (Kept through a save.)
+    CHECK_FALSE(app::settingsFromJson(app::toJson(shared.settings)).truckSendNew);
+    CHECK(app::settingsFromJson(QJsonObject{}).truckSendNew);   // on unless said
+}
+
+TEST_CASE("Food truck: New Order puts away one not sent; it waits on Orders to open again", "[truck][ui]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    app::PosShared shared(truckData(), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    app::PosService other(&shared, u"Window"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+
+    // The guest steps aside to decide: New Order (on Orders) puts it away.
+    REQUIRE(pos.addItem(u"caesar"_s));
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    CHECK(other.truckOrders().isEmpty());   // being rung in there: not listed
+    c.activate(u"flow-orders"_s);
+    REQUIRE(c.pageId() == u"truck-orders"_s);
+    c.activate(u"new-order"_s);
+    CHECK_FALSE(pos.hasCheck());
+    CHECK(c.pageId() == u"index-lunch"_s);
+    QVariantList orders = other.truckOrders();
+    REQUIRE(orders.size() == 1);
+    CHECK_FALSE(orders[0].toMap()[u"sent"_s].toBool());
+    CHECK(orders[0].toMap()[u"later"_s].toString().isEmpty());
+    CHECK_FALSE(pos.orderReady(id));   // the kitchen hasn't got it
+
+    // An empty order put away isn't kept.
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    pos.releaseCheck();
+    CHECK(pos.truckOrders().size() == 1);
+
+    // Back: open it, Pay at the window (sends it), on the list as paid.
+    c.openOrder(id, true);
+    CHECK(pos.checkInfo()[u"id"_s].toLongLong() == id);
+    CHECK(other.truckOrders().isEmpty());   // open on the Truck again
+    pos.openDrawerSession();
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    orders = other.truckOrders();
+    REQUIRE(orders.size() == 1);
+    CHECK(orders[0].toMap()[u"sent"_s].toBool());
+    CHECK(orders[0].toMap()[u"paid"_s].toBool());
+}
+
+TEST_CASE("Food truck: an order for later waits on Orders with its time", "[truck]")
+{
+    app::PosShared shared(truckData(), nullptr);
+    std::int64_t clock = QDateTime(QDate(2026, 11, 4), QTime(11, 0)).toMSecsSinceEpoch();
+    shared.setClock([&clock] { return clock; });
+    app::PosService pos(&shared, u"Truck"_s);
+    REQUIRE(pos.addItem(u"caesar"_s));
+    REQUIRE(pos.setCustomer({{u"name"_s, u"Lee"_s}}));
+    REQUIRE(pos.setDueAt(QDateTime(QDate(2026, 11, 4), QTime(13, 30)).toMSecsSinceEpoch()));
+    REQUIRE(pos.sendOrder());   // saved for later
+    pos.releaseCheck();
+    const QVariantList orders = pos.truckOrders();
+    REQUIRE(orders.size() == 1);
+    CHECK_FALSE(orders[0].toMap()[u"sent"_s].toBool());
+    CHECK(orders[0].toMap()[u"later"_s].toString().contains(u"1:30"_s));
 }
