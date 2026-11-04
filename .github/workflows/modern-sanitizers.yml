@@ -78,7 +78,7 @@ jobs:
         run: |
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-            ca-certificates curl xz-utils git python3 perl g++ cmake ninja-build pkg-config libssl-dev \
+            ca-certificates curl xz-utils 7zip git python3 perl g++ cmake ninja-build pkg-config libssl-dev \
             fonts-dejavu-core
 
       - uses: actions/checkout@v7
@@ -92,15 +92,17 @@ jobs:
           path: /opt/qt-tsan
           key: qt-tsan-${{ env.QT_VERSION }}-trixie-${{ hashFiles('modern/tools/build-qt-tsan.sh') }}
 
+      # (Its tools from a plain Qt, tools/get-qt.sh's; a hang fails in 2.5 hours, not 6.)
       - name: Build Qt with ThreadSanitizer
         if: steps.qt.outputs.cache-hit != 'true'
+        timeout-minutes: 150
         run: WORK="$RUNNER_TEMP/qt" sh modern/tools/build-qt-tsan.sh "$QT_VERSION" "$QT_TSAN"
 
       - name: Build with ThreadSanitizer
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cmake -S modern -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-O1 \
-                -DVTM_SANITIZE=thread -DCMAKE_PREFIX_PATH="$QT_TSAN"
+                -DVTM_SANITIZE=thread -DCMAKE_PREFIX_PATH="$QT_TSAN" -DQT_HOST_PATH="/opt/qt/$QT_VERSION"
           cmake --build build
 
       - name: Tests

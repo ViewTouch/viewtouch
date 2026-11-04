@@ -5,7 +5,7 @@
 #   tools/get-qt.sh [VERSION] [PREFIX]      default: tools/qt-version, /opt/qt/VERSION
 #
 # Fetches only what ViewTouch uses (Qt Base, Declarative, SVG, Wayland,
-# image formats, Lottie, Quick Timeline and ICU), checks each archive against the SHA-1 Qt publishes
+# image formats, Lottie, Quick Timeline, Shader Tools and ICU), checks each archive against the SHA-1 Qt publishes
 # beside it, and unpacks it into PREFIX (PREFIX/lib/cmake/Qt6 is then what
 # CMAKE_PREFIX_PATH points at). Needs curl and 7z (Debian/Ubuntu: 7zip;
 # Fedora: 7zip). Already there: nothing to do.
@@ -35,7 +35,10 @@ wanted = {f"qt.qt6.{v}.{arch}": ("qtbase", "qtdeclarative", "qtsvg", "qtwayland"
           f"qt.qt6.{v}.addons.qtimageformats.{arch}": ("qtimageformats",),
           f"qt.qt6.{v}.addons.qtlottie.{arch}": ("qtlottie",),
           # Lottie plays its animations with Qt Quick Timeline (6.12 and later).
-          f"qt.qt6.{v}.addons.qtquicktimeline.{arch}": ("qtquicktimeline",)}
+          f"qt.qt6.{v}.addons.qtquicktimeline.{arch}": ("qtquicktimeline",),
+          # Its shader compiler (qsb): what a Qt built from source with this
+          # one's tools (tools/build-qt-tsan.sh) compiles Qt Quick's shaders with.
+          f"qt.qt6.{v}.addons.qtshadertools.{arch}": ("qtshadertools",)}
 for block in re.findall(r"<PackageUpdate>(.*?)</PackageUpdate>", xml, re.S):
     name = re.search(r"<Name>(.*?)</Name>", block).group(1)
     if name not in wanted:
