@@ -5,7 +5,7 @@
 #   tools/get-qt.sh [VERSION] [PREFIX]      default: tools/qt-version, /opt/qt/VERSION
 #
 # Fetches only what ViewTouch uses (Qt Base, Declarative, SVG, Wayland,
-# image formats, Lottie and ICU), checks each archive against the SHA-1 Qt publishes
+# image formats, Lottie, Quick Timeline and ICU), checks each archive against the SHA-1 Qt publishes
 # beside it, and unpacks it into PREFIX (PREFIX/lib/cmake/Qt6 is then what
 # CMAKE_PREFIX_PATH points at). Needs curl and 7z (Debian/Ubuntu: 7zip;
 # Fedora: 7zip). Already there: nothing to do.
@@ -33,7 +33,9 @@ import re, sys
 xml, v, arch = open(sys.argv[1]).read(), sys.argv[2], sys.argv[3]
 wanted = {f"qt.qt6.{v}.{arch}": ("qtbase", "qtdeclarative", "qtsvg", "qtwayland", "icu"),
           f"qt.qt6.{v}.addons.qtimageformats.{arch}": ("qtimageformats",),
-          f"qt.qt6.{v}.addons.qtlottie.{arch}": ("qtlottie",)}
+          f"qt.qt6.{v}.addons.qtlottie.{arch}": ("qtlottie",),
+          # Lottie plays its animations with Qt Quick Timeline (6.12 and later).
+          f"qt.qt6.{v}.addons.qtquicktimeline.{arch}": ("qtquicktimeline",)}
 for block in re.findall(r"<PackageUpdate>(.*?)</PackageUpdate>", xml, re.S):
     name = re.search(r"<Name>(.*?)</Name>", block).group(1)
     if name not in wanted:
