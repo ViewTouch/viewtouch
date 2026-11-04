@@ -517,6 +517,7 @@
  "0 = any order.": "0 = 任何订单。",
  "0 = every matching item is off. Otherwise buy this many...": "0 = 所有符合的菜品都打折。否则买这么多...",
  "0 = never. Kitchen, bar and expo screens don't need a login.": "0 = 从不。厨房、吧台和传菜口屏幕不需要登录。",
+ "0 = never. Restaurants only: a food truck's or a shop's screen stays logged in until Log Out. Kitchen, bar and expo screens don't need a login.": "0 = 从不。仅限餐厅：餐车或商店的屏幕会一直保持登录，直到“登出”。厨房、吧台和传菜口屏幕不需要登录。",
  "0 = no daily rule (e.g. 8 in California)": "0 = 无每日规则（例如加州为 8）",
  "0 = no such law here. 14 in New York City, Chicago, Seattle, Philadelphia, San Francisco, Los Angeles and Oregon (for the larger employers each names). Shifts changed inside it are logged in Reports -> Changes: predictability pay may be owed.": "0 = 本地无此法律。纽约市、芝加哥、西雅图、费城、旧金山、洛杉矶和俄勒冈州为 14（适用于各地规定的较大雇主）。在此期限内更改的班次记录在 报表 -> 更改 中：可能需支付可预测性补偿。",
  "0 = no weekly rule (40 under US federal law)": "0 = 无每周规则（美国联邦法为 40）",

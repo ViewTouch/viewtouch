@@ -293,8 +293,11 @@ void LayoutController::screenOn()
 void LayoutController::idleTimeout()
 {
     // Not while a page is being edited (the editor guards its own changes),
-    // nor a food truck's counter (nobody to log out: the order stays).
+    // nor at a food truck or a shop: whoever is working stays logged in
+    // until they log out themselves (at the end of their shift).
     if (!pos_ || !pos_->loggedIn() || editing() || atCounter())
+        return;
+    if (const QString mode = pos_->serviceInfo().value(u"mode"_s).toString(); mode == u"foodTruck" || mode == u"retail")
         return;
     pos_->invoke(u"logout"_s, {});
     setStatus(tr("Logged out after no use"));

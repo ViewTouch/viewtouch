@@ -632,7 +632,7 @@ TEST_CASE("Food truck: the maintainer's code doesn't become who's working", "[tr
     CHECK(pos.serviceInfo()[u"person"_s].toString() == u"Sam"_s);
 }
 
-TEST_CASE("Food truck: idle never logs the counter out; someone who stepped in goes back to it", "[truck][ui]")
+TEST_CASE("Food truck and retail: idle never logs anyone out", "[truck][ui]")
 {
     auto l = test::loadTestLayout();
     REQUIRE(l);
@@ -652,9 +652,24 @@ TEST_CASE("Food truck: idle never logs the counter out; someone who stepped in g
     REQUIRE(pos.loginWithPin(u"1234"_s));        // a manager steps in, then walks away
     c.setIdleTimeoutForTesting(50);
     spin(250);
-    CHECK(pos.userName() == u"Counter"_s);
-    CHECK(pos.hasCheck());
-    CHECK(c.pageId() == u"index-lunch"_s);
+    CHECK(pos.userName() == u"Morgan (Manager)"_s);   // still there: Log Out goes back to the counter
+    CHECK(c.statusText() != u"Logged out after no use"_s);
+
+    // A shop's cashier: still logged in after the store's idle time.
+    pos.logout();
+    shared.settings.serviceMode = "retail";
+    emit shared.adminChanged();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    c.setIdleTimeoutForTesting(50);
+    spin(250);
+    CHECK(pos.loggedIn());
+
+    // A restaurant still logs an idle screen out.
+    shared.settings.serviceMode.clear();
+    emit shared.adminChanged();
+    c.setIdleTimeoutForTesting(50);
+    spin(250);
+    CHECK_FALSE(pos.loggedIn());
 }
 
 TEST_CASE("Restaurant and retail screens keep their own buttons", "[truck][ui]")

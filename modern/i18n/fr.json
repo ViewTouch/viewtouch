@@ -517,6 +517,7 @@
  "0 = any order.": "0 = toute commande.",
  "0 = every matching item is off. Otherwise buy this many...": "0 = chaque article concerné est remisé. Sinon, achetez-en autant...",
  "0 = never. Kitchen, bar and expo screens don't need a login.": "0 = jamais. Les écrans cuisine, bar et passe n'ont pas besoin de connexion.",
+ "0 = never. Restaurants only: a food truck's or a shop's screen stays logged in until Log Out. Kitchen, bar and expo screens don't need a login.": "0 = jamais. Restaurants seulement : l'écran d'un food truck ou d'une boutique reste connecté jusqu'à Déconnexion. Les écrans cuisine, bar et passe n'ont pas besoin de connexion.",
  "0 = no daily rule (e.g. 8 in California)": "0 = pas de règle journalière (ex. 8 en Californie)",
  "0 = no such law here. 14 in New York City, Chicago, Seattle, Philadelphia, San Francisco, Los Angeles and Oregon (for the larger employers each names). Shifts changed inside it are logged in Reports -> Changes: predictability pay may be owed.": "0 = pas de telle loi ici. 14 à New York, Chicago, Seattle, Philadelphie, San Francisco, Los Angeles et en Oregon (pour les grands employeurs que chacune désigne). Les postes modifiés dans ce délai sont notés dans Rapports -> Modifications : une prime de prévisibilité peut être due.",
  "0 = no weekly rule (40 under US federal law)": "0 = pas de règle hebdomadaire (40 selon la loi fédérale US)",
