@@ -1001,7 +1001,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="shot"><img src="shots/m170-truck-order.jpg" width="560" height="315"></p>
 <p class="caption">The order screen as the truck opens it: no login, order #3 for Maria with pager 12, and Orders where restaurants have Tables.</p>
 <ul>
-<li><b>No login:</b> the screen opens on the menu as the built-in <b>Counter</b>, ready to ring up and take payment. After a sale is paid, it is ready for the next one. Idle time doesn't log it out, and an order in progress stays where it is.</li>
+<li><b>No login:</b> the screen opens on the menu as the built-in <b>Counter</b>, ready to ring up and take payment. After a sale is paid, or sent to be paid later, it is ready for the next one. Idle time doesn't log it out, and an order in progress stays where it is.</li>
 <li><b>One computer is enough:</b> the main register is the store's computer and the truck's register. A kitchen screen is optional: set one up as a kitchen screen and it stays on the kitchen display.</li>
 <li><b>Order numbers:</b> every order is called by a number, from <b>#1</b> each business day. Touch <b>+ Name</b> on the check to add a name: the order becomes <i>#27 Maria</i> on the screen, the kitchen screen, the tickets and the receipt. With <b>Food truck: orders need a name</b> (Store Settings → How you serve), Send and Pay wait for a name.</li>
 <li><b>Pagers</b> (the buzzers handed to the guest): touch <b>+ Pager</b> on the check and type the number on the pager you hand them. One pager can't be on two waiting orders.</li>
@@ -1011,13 +1011,24 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="caption">+ Pager: the number on the pager handed to the guest.</p>
 
 <h3>Orders: calling the guest</h3>
-<p class="shot"><img src="shots/m172-truck-ready.jpg" width="560" height="315"></p>
-<p><b>Orders</b> (bottom left of the order screen) lists what's been sent to the kitchen and not picked up yet, oldest first: <i>#2 · Pager 9</i>, what's in it, how long, and <i>NOT PAID</i> if it isn't.</p>
+<p class="shot"><img src="shots/m173-truck-orders.jpg" width="560" height="315"></p>
+<p class="caption">Orders: Lee's call-in put away before it was sent, #2 being made, Maria's sent but not paid (Open, Pay), Ana's called.</p>
+<p><b>Orders</b> (bottom left of the order screen) lists every order not picked up yet: <i>#2 · Pager 9</i>, what's in it, how long, and <i>NOT PAID</i> if it isn't. Those not sent to the kitchen yet come first, then those being made (oldest first), then those called.</p>
 <ul>
 <li><b>Ready</b> calls it: the truck's screens say <i>#1 Ana is ready: buzz pager 4</i>. Key that number in on your pager system's transmitter to buzz the guest. The card turns green.</li>
 <li><b>Call Again</b> says it again, for a guest who didn't come.</li>
-<li><b>Picked Up</b> takes it off the list, and the pager is free for the next guest.</li>
+<li><b>Picked Up</b> takes it off the list, and the pager is free for the next guest. It's there once the order is paid.</li>
+<li><b>Open</b> and <b>Pay</b>, on an order not paid yet: Open brings it back to the order screen to change it (the order on the screen waits on Orders meanwhile); Pay brings it to the Pay screen.</li>
 <li>With a kitchen screen, bumping the last of an order calls it by itself.</li>
+</ul>
+<p class="shot"><img src="shots/m172-truck-ready.jpg" width="560" height="315"></p>
+
+<h3>Call-in orders, and paying later</h3>
+<p>A guest calls ahead: ring it in, touch <b>+ Name</b>, and <b>Send</b>. The kitchen gets it and the screen is ready for the next guest at once; the order waits on <b>Orders</b> marked <i>NOT PAID</i>. When they arrive, touch <b>Pay</b> on its card. An order sent before it's paid needs a name, so it can be found when they come (<i>Who is it for?</i>); an order paid at the window doesn't.</p>
+<ul>
+<li><b>They call back to add something:</b> Orders → <b>Open</b>, add it, Send again.</li>
+<li><b>Not ready to send yet</b> (the guest stepped aside to decide, or it's for later): Orders → <b>New Order</b> puts the order on the screen away without sending it. It waits on Orders as <i>Not sent yet</i>; an order set with <b>Check… → Ready Later</b> shows its time (<i>For 1:30 PM</i>) and goes to the kitchen by itself.</li>
+<li><b>A truck that sends first and takes the money at the window:</b> turn off <b>After Send, start a new order</b> (Store Settings → How you serve). Send then stays on the order, for Pay right after.</li>
 </ul>
 
 <h3>Now serving, on the customer display</h3>
