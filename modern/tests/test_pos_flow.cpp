@@ -4539,7 +4539,16 @@ TEST_CASE("Touch: the phone pages on a phone", "[ui][touch]")
     QStringList report;
     QDir pages(QStringLiteral(VTM_SEED_DIR "/pages"));
     for (const QString &file : pages.entryList({u"*-phone.json"_s})) {
-        const QString id = file.chopped(5).chopped(6);   // the base page; the phone variant shows
+        QString id = file.chopped(5).chopped(6);   // the base page; the phone variant shows
+        // A food truck's or a shop's phone page: on a screen serving that way, around the menu.
+        const vt::layout::Page *base = s.c.layout().page(id);
+        const std::string service = base ? base->service.toStdString() : std::string();
+        s.pos.shared()->settings.serviceMode = service;
+        emit s.pos.shared()->adminChanged();
+        if (!service.empty()) {
+            REQUIRE(s.pos.loginWithPin(u"1234"_s));
+            id = u"index-lunch"_s;
+        }
         if (!s.c.jumpTo(id))
             continue;
         QTest::qWait(60);

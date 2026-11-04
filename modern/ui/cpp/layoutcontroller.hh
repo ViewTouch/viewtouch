@@ -395,6 +395,9 @@ private:
     std::optional<vt::layout::Layout> lookedLayout_;
     QString lookedId_;
     QString servedAs_;   // "foodTruck", "retail" ("": a restaurant)
+    // Edit mode at a truck or a shop: the draft as this screen shows it.
+    std::optional<vt::layout::Layout> editView_;
+    void updateEditView();
     QString servedMode() const;
     void updateTerminalLook();
     QVariantMap explanation_;

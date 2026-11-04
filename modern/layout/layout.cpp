@@ -492,28 +492,57 @@ Layout Layout::forService(const QString &service) const
         *base = shown;
         if (!v.contentArea.isEmpty() && v.contentArea != from)
             reframed.insert(base->id, {from, v.contentArea});
+        // The version's own phone version stands in for the page's on phones.
+        if (const Page *vp = variantFor(v.id, u"phone"_s)) {
+            Page phone = *vp;
+            phone.variantOf = base->id;
+            if (const Page *bp = variantFor(base->id, u"phone"_s)) {
+                phone.id = bp->id;
+                phone.name = bp->name;
+                *out.page(bp->id) = phone;
+            } else {
+                *out.page(vp->id) = phone;
+            }
+        }
     }
     if (reframed.isEmpty())
         return out;
     for (Page &p : out.pages) {
-        if (!p.variantOf.isEmpty() || reframed.contains(p.id))
-            continue;
-        const QList<const Page *> chain = templateChain(p.id);   // (as it was)
-        for (qsizetype i = 1; i < chain.size(); ++i) {
-            const auto it = reframed.constFind(chain[i]->id);
-            if (it == reframed.cend())
-                continue;
-            const auto [from, to] = *it;
-            const double sx = double(to.width()) / from.width(), sy = double(to.height()) / from.height();
-            for (Zone &z : p.zones) {
-                const QRect r = z.rect;
-                z.rect = QRect(qRound(to.x() + (r.x() - from.x()) * sx), qRound(to.y() + (r.y() - from.y()) * sy),
-                               qRound(r.width() * sx), qRound(r.height() * sy));
-            }
-            break;
-        }
+        if (const std::optional<Reframe> f = serviceFrame(p.id, service))   // (as it was)
+            for (Zone &z : p.zones)
+                z.rect = f->map(z.rect);
     }
     return out;
+}
+
+QRect Layout::Reframe::map(const QRect &r) const
+{
+    const double sx = double(to.width()) / from.width(), sy = double(to.height()) / from.height();
+    return QRect(qRound(to.x() + (r.x() - from.x()) * sx), qRound(to.y() + (r.y() - from.y()) * sy),
+                 qRound(r.width() * sx), qRound(r.height() * sy));
+}
+
+QRect Layout::Reframe::unmap(const QRect &r) const
+{
+    return Reframe{to, from}.map(r);
+}
+
+std::optional<Layout::Reframe> Layout::serviceFrame(const QString &pageId, const QString &service) const
+{
+    const Page *p = page(pageId);
+    if (service.isEmpty() || !p || !p->variantOf.isEmpty() || variantFor(pageId, {}, service))
+        return std::nullopt;   // (a page with its own version is shown as that)
+    const QList<const Page *> chain = templateChain(pageId);
+    for (qsizetype i = 1; i < chain.size(); ++i) {
+        const Page *v = variantFor(chain[i]->id, {}, service);
+        if (!v || v->contentArea.isEmpty())
+            continue;
+        const QRect from = chain[i]->contentArea.isEmpty() ? DefaultContentArea : chain[i]->contentArea;
+        if (v->contentArea == from || from.isEmpty())
+            return std::nullopt;
+        return Reframe{from, v->contentArea};
+    }
+    return std::nullopt;
 }
 
 Layout::PlacedZone Layout::sourceOf(const Page &variant, const QString &zoneId) const

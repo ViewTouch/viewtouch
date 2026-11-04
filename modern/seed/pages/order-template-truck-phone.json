@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "id": "order-template-truck-phone",
+  "name": "Order Template (food truck, phone)",
+  "kind": "template",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "order-template-truck",
+  "formFactor": "phone",
+  "contentArea": {
+    "x": 16,
+    "y": 1004,
+    "w": 1048,
+    "h": 988
+  },
+  "hiddenZones": [
+    "top-store",
+    "top-who",
+    "top-clock"
+  ],
+  "zones": [
+    {
+      "id": "tab-categories",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-note",
+      "shared": true,
+      "rect": {
+        "x": 228,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-check",
+      "shared": true,
+      "rect": {
+        "x": 440,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-find",
+      "shared": true,
+      "rect": {
+        "x": 652,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-orders",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 16,
+        "w": 196,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "order-list",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 142,
+        "w": 1048,
+        "h": 846
+      }
+    },
+    {
+      "id": "flow-no",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2008,
+        "w": 196,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-extra",
+      "shared": true,
+      "rect": {
+        "x": 228,
+        "y": 2008,
+        "w": 196,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-side",
+      "shared": true,
+      "rect": {
+        "x": 440,
+        "y": 2008,
+        "w": 196,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-void",
+      "shared": true,
+      "rect": {
+        "x": 652,
+        "y": 2008,
+        "w": 196,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-new",
+      "shared": true,
+      "rect": {
+        "x": 864,
+        "y": 2008,
+        "w": 196,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-logout",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2134,
+        "w": 236,
+        "h": 130
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-send",
+      "shared": true,
+      "rect": {
+        "x": 268,
+        "y": 2134,
+        "w": 380,
+        "h": 130
+      }
+    },
+    {
+      "id": "flow-pay",
+      "shared": true,
+      "rect": {
+        "x": 664,
+        "y": 2134,
+        "w": 400,
+        "h": 130
+      }
+    }
+  ]
+}

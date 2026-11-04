@@ -1072,3 +1072,86 @@ TEST_CASE("Food truck: edit mode on its screen opens the truck's own login to ed
     CHECK(std::ranges::any_of(pages, [](const QVariant &p) { return p.toMap()[u"service"_s] == u"foodTruck"_s; }));
     c.leaveEditMode(false);
 }
+
+TEST_CASE("Food truck and retail on a phone: their own phone order screen, with Log Out", "[truck][ui][service][phone]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    REQUIRE(l->validate().isEmpty());
+    // The truck's phone page stands in for the restaurant's phone page.
+    const layout::Layout truck = l->forService(u"foodTruck"_s);
+    const layout::Page *phone = truck.variantFor(u"order-template"_s, u"phone"_s);
+    REQUIRE(phone);
+    CHECK(phone->zone(u"flow-new"_s));
+    CHECK(phone->zone(u"flow-logout"_s));
+    CHECK_FALSE(phone->zone(u"flow-lite"_s));
+
+    for (const char *mode : {"foodTruck", "retail"}) {
+        INFO(mode);
+        app::PosData d = truckData(true);
+        d.settings.serviceMode = mode;
+        app::PosShared shared(d, nullptr);
+        app::PosService pos(&shared, u"Phone"_s);
+        LayoutController c(*l);
+        c.setMealPeriod(u"lunch"_s);
+        c.setPos(&pos);
+        c.setFormFactorOverride(u"phone"_s);
+        REQUIRE(pos.loginWithPin(u"1111"_s));
+        REQUIRE(c.showPage(u"index-lunch"_s));
+        CHECK(onScreen(c, u"flow-logout"_s));
+        CHECK(onScreen(c, u"categories"_s));   // the menu, in the phone page's frame
+        CHECK(onScreen(c, std::string_view(mode) == "retail" ? u"scan"_s : u"flow-new"_s));
+        c.activate(u"flow-logout"_s);
+        CHECK(c.pageId() == u"logout"_s);
+    }
+}
+
+TEST_CASE("Food truck: edit mode shows a menu page in the truck's frame, and keeps what's moved where the page keeps it", "[truck][ui][service][editor]")
+{
+    auto l = test::loadTestLayout();
+    REQUIRE(l);
+    const QRect kept = l->page(u"index-lunch"_s)->zone(u"categories"_s)->rect;
+    const auto f = l->serviceFrame(u"index-lunch"_s, u"foodTruck"_s);
+    REQUIRE(f);
+    CHECK_FALSE(l->serviceFrame(u"index-lunch"_s, {}));
+    CHECK_FALSE(l->serviceFrame(u"order-template"_s, u"foodTruck"_s));   // it has its own version
+    CHECK(f->unmap(f->map(kept)) == kept);
+
+    app::PosShared shared(truckData(true), nullptr);
+    app::PosService pos(&shared, u"Truck"_s);
+    LayoutController c(*l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(c.showPage(u"index-lunch"_s));
+    REQUIRE(c.requestEditMode());
+    CHECK(c.pageId() == u"index-lunch"_s);
+    EditorController *e = c.editor();
+    REQUIRE(e);
+    // As the truck shows it: in its frame, with the truck's New Order behind.
+    QRect shown;
+    bool truckFrame = false;
+    for (const QVariant &g : e->geometry()) {
+        const QVariantMap m = g.toMap();
+        if (m[u"id"_s] == u"categories"_s)
+            shown = QRect(m[u"x"_s].toInt(), m[u"y"_s].toInt(), m[u"w"_s].toInt(), m[u"h"_s].toInt());
+        truckFrame = truckFrame || m[u"id"_s] == u"flow-new"_s;
+    }
+    CHECK(shown == f->map(kept));
+    CHECK(truckFrame);
+    CHECK(onScreen(c, u"flow-new"_s));
+
+    // Moved 40 down on the truck's screen: kept 40 down in the page's own frame (scaled).
+    e->select(u"categories"_s, false);
+    e->commitRects({{u"categories"_s, QVariantMap{{u"x"_s, shown.x()}, {u"y"_s, shown.y() + 40},
+                                                   {u"w"_s, shown.width()}, {u"h"_s, shown.height()}}}});
+    const QRect now = e->layout().page(u"index-lunch"_s)->zone(u"categories"_s)->rect;
+    CHECK(now == f->unmap(shown.translated(0, 40)));
+    CHECK(now.x() == kept.x());
+
+    // Order Template: edited as the truck's own.
+    REQUIRE(c.showPage(u"order-template"_s));
+    CHECK(c.pageId() == u"order-template-truck"_s);
+    c.leaveEditMode(false);
+    CHECK(c.pageId() == u"order-template"_s);
+}

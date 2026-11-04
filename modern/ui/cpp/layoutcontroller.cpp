@@ -703,7 +703,7 @@ QList<vt::app::Look> allLooks(vt::app::PosSession *pos);
 const Layout &LayoutController::activeLayout() const
 {
     if (editing_ && editor_)
-        return editor_->layout();
+        return editView_ ? *editView_ : editor_->layout();
     return lookedLayout_ ? *lookedLayout_ : layout_;
 }
 
@@ -1586,6 +1586,10 @@ bool LayoutController::showPage(const QString &pageId)
 {
     if (!activeLayout().page(pageId))
         return false;
+    // Editing at a truck or a shop: a page with its own version for it is edited as that.
+    if (editing_ && !servedAs_.isEmpty())
+        if (const vt::layout::Page *v = activeLayout().variantFor(pageId, {}, servedAs_); v && v->id != pageId)
+            return showPage(v->id);
     return navigate(Navigator::Mode::Replace, pageId) || nav_.current() == pageId;
 }
 
@@ -1660,8 +1664,10 @@ void LayoutController::enterEditMode()
         editor_->setMealPeriods(pos_->mealPeriods());
     connect(editor_, &EditorController::layoutChanged, this, &LayoutController::onDraftChanged);
     connect(editor_, &EditorController::showPageRequested, this, &LayoutController::showPage);
+    editor_->setService(servedAs_);   // a truck's screen: its pages as the truck shows them
     emit editorChanged();
     editing_ = true;
+    updateEditView();
     nav_.setLayout(editor_->layout());
     editor_->setPageId(nav_.current());
     emit editingChanged();
@@ -1732,10 +1738,16 @@ bool LayoutController::leaveEditMode(bool save)
         return false;
 
     nav_.setLayout(layout_);
-    // Left on a phone version: the page itself (a phone shows its version by itself).
-    if (const vt::layout::Page *p = layout_.page(nav_.current()); p && !p->variantOf.isEmpty() && layout_.page(p->variantOf))
-        nav_.jump(Navigator::Mode::Replace, p->variantOf);
+    // Left on a version (a phone's, a truck's, a truck's phone's): the page
+    // itself (the screen shows its version by itself).
+    QString at = nav_.current();
+    for (const vt::layout::Page *p = layout_.page(at); p && !p->variantOf.isEmpty() && layout_.page(p->variantOf);
+         p = layout_.page(at))
+        at = p->variantOf;
+    if (at != nav_.current())
+        nav_.jump(Navigator::Mode::Replace, at);
     editing_ = false;
+    editView_.reset();
     emit editingChanged();   // editor panels unload while the editor still exists
 
     EditorController *old = editor_;
@@ -1750,8 +1762,17 @@ bool LayoutController::leaveEditMode(bool save)
     return true;
 }
 
+void LayoutController::updateEditView()
+{
+    if (editing_ && editor_ && !servedAs_.isEmpty())
+        editView_ = editor_->layout().forService(servedAs_);
+    else
+        editView_.reset();
+}
+
 void LayoutController::onDraftChanged()
 {
+    updateEditView();
     nav_.setHome(loginPage());
     ensureCurrentPageExists();
     refresh();

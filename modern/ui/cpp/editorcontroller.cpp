@@ -204,10 +204,27 @@ QString EditorController::selectionKind() const
     return kind;
 }
 
+void EditorController::setService(const QString &service)
+{
+    if (service == service_)
+        return;
+    service_ = service;
+    ++revision_;
+    emit revisionChanged();
+}
+
+std::optional<Layout::Reframe> EditorController::frame() const
+{
+    return editor_.layout().serviceFrame(pageId_, service_);
+}
+
 QVariantList EditorController::geometry() const
 {
     QVariantList out;
-    for (const Layout::PlacedZone &pz : editor_.layout().effectiveZones(pageId_)) {
+    // As the screen shows it: a truck's order screen around a menu page.
+    const std::optional<Layout> shown = service_.isEmpty() ? std::nullopt
+                                                           : std::optional<Layout>(editor_.layout().forService(service_));
+    for (const Layout::PlacedZone &pz : (shown ? *shown : editor_.layout()).effectiveZones(pageId_)) {
         const Zone &z = *pz.zone;
         out.append(QVariantMap{
             {u"id"_s, z.id}, {u"kind"_s, z.kind}, {u"label"_s, z.label},
@@ -350,7 +367,9 @@ void EditorController::selectInRect(qreal x, qreal y, qreal w, qreal h, bool add
     const Page *page = editor_.layout().page(pageId_);
     if (!page)
         return;
-    const QRect band = QRectF(x, y, w, h).normalized().toAlignedRect();
+    QRect band = QRectF(x, y, w, h).normalized().toAlignedRect();
+    if (const auto f = frame())
+        band = f->unmap(band);
     QStringList ids = additive ? selection_ : QStringList();
     for (const Zone &z : page->zones) {
         if (band.intersects(z.rect))
@@ -399,8 +418,15 @@ void EditorController::duplicateSelection()
 
 void EditorController::nudge(int dx, int dy)
 {
-    if (!selection_.isEmpty())
-        editor_.nudgeZones(pageId_, selection_, dx, dy);
+    if (selection_.isEmpty())
+        return;
+    if (const auto f = frame()) {   // a step on the screen, where the page keeps it (at least one)
+        const QRect step = f->unmap(QRect(f->to.topLeft() + QPoint(dx, dy), QSize(1, 1)));
+        const int kx = step.x() - f->from.x(), ky = step.y() - f->from.y();
+        dx = kx != 0 || dx == 0 ? kx : (dx > 0 ? 1 : -1);
+        dy = ky != 0 || dy == 0 ? ky : (dy > 0 ? 1 : -1);
+    }
+    editor_.nudgeZones(pageId_, selection_, dx, dy);
 }
 
 void EditorController::commitRects(const QVariantMap &rects)
@@ -411,6 +437,9 @@ void EditorController::commitRects(const QVariantMap &rects)
         map.insert(it.key(), QRect(qRound(r.value(u"x"_s).toDouble()), qRound(r.value(u"y"_s).toDouble()),
                                    qRound(r.value(u"w"_s).toDouble()), qRound(r.value(u"h"_s).toDouble())));
     }
+    if (const auto f = frame())   // moved on a truck's screen: kept where the page keeps it
+        for (QRect &r : map)
+            r = f->unmap(r);
     editor_.setZoneRects(pageId_, map);
 }
 
@@ -659,7 +688,7 @@ QVariantMap EditorController::screens() const
     const QString base = isPhone ? page->variantOf : page->id;
     const Page *phone = isPhone ? page : l.variantFor(base, u"phone"_s);
     return {{u"page"_s, base}, {u"phone"_s, phone ? phone->id : QString()}, {u"isPhone"_s, isPhone},
-            {u"canPhone"_s, page->variantOf.isEmpty() || isPhone}};
+            {u"canPhone"_s, page->variantOf.isEmpty() || isPhone || !page->service.isEmpty()}};
 }
 
 void EditorController::showScreen(const QString &which)

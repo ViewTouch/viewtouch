@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "order-template-retail-phone",
+  "name": "Order Template (retail, phone)",
+  "kind": "template",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "order-template-retail",
+  "formFactor": "phone",
+  "contentArea": {
+    "x": 16,
+    "y": 1004,
+    "w": 1048,
+    "h": 988
+  },
+  "hiddenZones": [
+    "top-store",
+    "top-who",
+    "top-clock"
+  ],
+  "zones": [
+    {
+      "id": "tab-categories",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 250,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "tab-check",
+      "shared": true,
+      "rect": {
+        "x": 282,
+        "y": 16,
+        "w": 250,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-manager",
+      "shared": true,
+      "rect": {
+        "x": 548,
+        "y": 16,
+        "w": 250,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "flow-logout",
+      "shared": true,
+      "rect": {
+        "x": 814,
+        "y": 16,
+        "w": 250,
+        "h": 110
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "scan",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 142,
+        "w": 1048,
+        "h": 130
+      },
+      "own": {
+        "style.normal.fontSize": 34
+      }
+    },
+    {
+      "id": "order-list",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 288,
+        "w": 1048,
+        "h": 700
+      }
+    },
+    {
+      "id": "flow-more",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2008,
+        "w": 338,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-discount",
+      "shared": true,
+      "rect": {
+        "x": 370,
+        "y": 2008,
+        "w": 338,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-nosale",
+      "shared": true,
+      "rect": {
+        "x": 724,
+        "y": 2008,
+        "w": 340,
+        "h": 110
+      }
+    },
+    {
+      "id": "flow-void",
+      "shared": true,
+      "rect": {
+        "x": 16,
+        "y": 2134,
+        "w": 338,
+        "h": 130
+      }
+    },
+    {
+      "id": "flow-pay",
+      "shared": true,
+      "rect": {
+        "x": 370,
+        "y": 2134,
+        "w": 694,
+        "h": 130
+      }
+    }
+  ]
+}

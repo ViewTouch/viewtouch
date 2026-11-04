@@ -115,6 +115,15 @@ public:
     // and the pages a replaced template frames (the menu pages) have their
     // own zones moved from the old frame's content area into the new one's.
     Layout forService(const QString &service) const;
+    // Where a page's own zones go on a screen serving that way: from the
+    // frame's content area to its version's (a menu page in a truck's order
+    // screen). None: they stay where they are.
+    struct Reframe {
+        QRect from, to;
+        QRect map(const QRect &r) const;     // as it was -> as shown
+        QRect unmap(const QRect &r) const;   // as shown -> as it was
+    };
+    std::optional<Reframe> serviceFrame(const QString &pageId, const QString &service) const;
     // The order screen's frame before content areas were kept: where the menu pages' keys sit.
     static constexpr QRect DefaultContentArea{592, 104, 1312, 860};
 

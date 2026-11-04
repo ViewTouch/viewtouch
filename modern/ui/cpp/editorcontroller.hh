@@ -159,6 +159,11 @@ public:
     Q_INVOKABLE QVariantMap previewInfo() const;
     // The store's pictures and fonts, for page and layout files to carry.
     void setPos(vt::app::PosSession *pos) { pos_ = pos; }
+    // A food truck's or a shop's screen ("foodTruck", "retail"): pages are
+    // shown as it shows them (a menu page in its order screen's frame), and
+    // what's moved there goes back where the page keeps it.
+    void setService(const QString &service);
+    QString service() const { return service_; }
     Q_INVOKABLE bool importLayout(const QUrl &file);
     // Ready-made layouts for the page being edited (by its role, else its id):
     // [{id, name, description, zones, background}].
@@ -191,6 +196,9 @@ private:
 
     vt::app::LayoutEditor editor_;
     QString pageId_;
+    QString service_;
+    // This page's zones shown elsewhere than kept (Layout::serviceFrame).
+    std::optional<vt::layout::Layout::Reframe> frame() const;
     QStringList selection_;
     QString notice_;
     int revision_ = 0;

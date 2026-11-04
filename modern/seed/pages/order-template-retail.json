@@ -160,7 +160,29 @@
         "h": 752
       },
       "shape": "rect",
-      "behavior": "none"
+      "behavior": "none",
+      "props": {
+        "buttons": {
+          "seat": {
+            "hide": true
+          },
+          "course": {
+            "hide": true
+          },
+          "fire": {
+            "hide": true
+          },
+          "round": {
+            "hide": true
+          },
+          "tableChecks": {
+            "hide": true
+          },
+          "guests": {
+            "hide": true
+          }
+        }
+      }
     },
     {
       "id": "tab-categories",

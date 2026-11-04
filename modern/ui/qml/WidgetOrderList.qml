@@ -152,9 +152,11 @@ Item {
         Text {
             textFormat: Text.PlainText
             visible: w.pos && w.pos.hasCheck && !w.folded
+            // (A food truck's or a shop's check has no guests to count: props.buttons.guests.hide.)
             text: (w.check.server ?? "") + "  ·  "
-                  + ((w.check.guests ?? 1) === 1 ? qsTr("1 guest") : qsTr("%1 guests").arg(w.check.guests))
-                  + "  ·  " + (w.check.due ? qsTr("ready %1").arg(w.check.due) : (w.check.opened ?? ""))
+                  + (!w.zone.keyShown("guests") ? ""
+                     : ((w.check.guests ?? 1) === 1 ? qsTr("1 guest") : qsTr("%1 guests").arg(w.check.guests)) + "  ·  ")
+                  + (w.check.due ? qsTr("ready %1").arg(w.check.due) : (w.check.opened ?? ""))
             color: Ui.muted
             font.family: w.face
             font.pixelSize: w.unit * 0.7
@@ -440,7 +442,9 @@ Item {
         // the panel's width so it never pushes the panel wider.
         Item {
             id: bar
+            // (Nothing in it on a food truck's or a shop's check: no row at all.)
             visible: w.controls && w.pos && w.pos.hasCheck && !w.folded
+                     && (w.zone.keyShown("course") || w.zone.keyShown("fire"))
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             Layout.fillHeight: false
