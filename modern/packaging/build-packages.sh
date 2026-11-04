@@ -79,15 +79,16 @@ build_here() {
 # The build tools, what tools/get-qt.sh needs (curl, 7z, python3), OpenGL's
 # headers (Qt's CMake files ask for them), and the system libraries the Qt
 # ViewTouch carries uses (dpkg-shlibdeps finds each one's package from them).
+# (libSM, libICE: the aarch64 Qt 6.12 xcb plugin links them; x86_64's doesn't.)
 deps_fedora="gcc-c++ cmake ninja-build rpm-build git curl ca-certificates python3 7zip mesa-libGL-devel mesa-libEGL-devel \
     libxkbcommon-devel libxkbcommon-x11 fontconfig freetype dbus-libs glib2 libwayland-client libwayland-cursor \
     libwayland-egl xcb-util-cursor xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm libdrm mesa-libgbm \
-    krb5-libs brotli libzstd"
+    krb5-libs brotli libzstd libSM libICE"
 deps_debian="g++ cmake ninja-build dpkg-dev file git curl ca-certificates python3 7zip libgl-dev libegl-dev \
     libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1 libfreetype6 libdbus-1-3 libglib2.0-0t64 libwayland-client0 \
     libwayland-cursor0 libwayland-egl1 libx11-xcb1 libxcb-cursor0 libxcb-glx0 libxcb-icccm4 libxcb-image0 \
     libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xkb1 \
-    libdrm2 libgbm1 libgssapi-krb5-2 libbrotli1 libzstd1 libopengl0"
+    libdrm2 libgbm1 libgssapi-krb5-2 libbrotli1 libzstd1 libopengl0 libsm6 libice6"
 
 install_deps() {
     . /etc/os-release
