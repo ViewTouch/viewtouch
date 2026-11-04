@@ -256,6 +256,7 @@ if(Qt6_FOUND)
         SOURCES
             ui/cpp/zonemodel.hh ui/cpp/zonemodel.cpp
             ui/cpp/livelist.hh ui/cpp/livelist.cpp
+            ui/cpp/shadowowner.hh ui/cpp/shadowowner.cpp
             ui/cpp/layoutcontroller.hh ui/cpp/layoutcontroller.cpp
             ui/cpp/language.hh ui/cpp/language.cpp
             ui/cpp/editorcontroller.hh ui/cpp/editorcontroller.cpp

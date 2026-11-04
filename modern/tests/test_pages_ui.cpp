@@ -72,6 +72,44 @@ TEST_CASE("Every seed page renders cleanly, running and editing", "[ui][pages]")
     CHECK(g_warnings == QStringList{});
 }
 
+// Qt's RectangularShadow makes its shader effect with no owner, so each
+// button's shadow left one behind when its page went (LeakSanitizer: 81 MB
+// over the suite). ShadowOwner gives it to the shadow.
+TEST_CASE("Soft shadows take their shader effect with them", "[ui][pages]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    test::RecordingSink sink;
+    app::PosService pos(test::seedPosData(), &sink);
+    LayoutController c(std::move(*layout));
+    c.setPos(&pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"controller"_s, QVariant::fromValue(&c)},
+                                 {u"width"_s, 1600}, {u"height"_s, 900}});
+    engine.loadFromModule("ViewTouch", "Main");
+    auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
+    REQUIRE(window);
+    REQUIRE(QTest::qWaitForWindowExposed(window));
+
+    QTest::qWait(50);
+    // (By the items on screen: a Repeater's zones aren't QObject children.)
+    int shadows = 0;
+    const std::function<void(QQuickItem *)> look = [&](QQuickItem *item) {
+        if (QByteArray(item->metaObject()->className()).contains("RectangularShadow")) {
+            ++shadows;
+            auto *effect = item->property("material").value<QQuickItem *>();
+            REQUIRE(effect);
+            CHECK(effect->parent() == item);
+        }
+        for (QQuickItem *child : item->childItems())
+            look(child);
+    };
+    look(window->contentItem());
+    CHECK(shadows > 0);
+}
+
 TEST_CASE("A food truck's screens render cleanly with orders waiting", "[ui][pages][truck]")
 {
     auto layout = vt::test::loadTestLayout();

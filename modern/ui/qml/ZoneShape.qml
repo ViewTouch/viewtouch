@@ -107,12 +107,14 @@ Item {
     // computers drawing without a GPU, keep the hard one below.
     readonly property bool softShadow: shadow > 0 && (shape === "rect" || shape === "rounded") && !softwareRenderer
     RectangularShadow {
+        id: soft
         visible: root.softShadow
         anchors.fill: parent
         radius: root.radius
         offset: Qt.vector2d(root.shadow * 0.5, root.shadow)
         blur: root.shadow * 2.5
         color: Qt.rgba(0, 0, 0, 0.45)
+        ShadowOwner { shadow: soft }   // (Qt's own leaks its effect: see shadowowner.hh)
     }
 
     Shape {
