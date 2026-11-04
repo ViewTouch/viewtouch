@@ -80,6 +80,10 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
             ca-certificates curl xz-utils 7zip git python3 perl g++ cmake ninja-build pkg-config libssl-dev \
             fonts-dejavu-core
+          # What the plain Qt's tools (moc, rcc, qmlcachegen, the shader compiler) run with.
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            libglib2.0-0t64 libgssapi-krb5-2 libbrotli1 libzstd1 libatomic1 libegl1 libgl1 libopengl0 \
+            libfontconfig1 libfreetype6 libxkbcommon0 libdbus-1-3
 
       - uses: actions/checkout@v7
         with:
