@@ -8562,6 +8562,8 @@ TEST_CASE("UI: Menu Builder: find an item, its More settings, prices up for a ca
         s.window->grabWindow().save(qEnvironmentVariable("VTM_SHOTS") + u"/builder-more.png"_s);
     CHECK(by(u"builderPeriodPrice-dinner"_s)->property("text").toString() == u"15.00"_s);
     s.tapItem(by(u"builderKitchenName"_s));
+    // (Typed once it has the focus: under the sanitizers the tap takes a while.)
+    CHECK(QTest::qWaitFor([&] { return by(u"builderKitchenName"_s)->hasActiveFocus(); }, 2000));
     type("CHZ");
     CHECK(shown(u"builderNotSaved"_s));
     s.tapItem(by(u"builderSave"_s));
