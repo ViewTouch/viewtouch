@@ -115,9 +115,8 @@ jobs:
           key: ${{ steps.qt.outputs.cache-primary-key }}
 
   # The tests of what runs on other threads (the server and the screens
-  # joined to it, backups, the database and its writer, the reports, search,
-  # the forecast and the day worked out on the side), in four parts at
-  # once. The UI tests and those that start the real program are left out:
+  # joined to it, backups, the database and its writer, search, the
+  # forecast and the day worked out on the side), in four parts at once. The UI tests and those that start the real program are left out:
   # under it they take too long.
   threads:
     name: Tests under ThreadSanitizer (part ${{ matrix.part }} of 4)
@@ -164,8 +163,9 @@ jobs:
           export TSAN_OPTIONS="halt_on_error=0 second_deadlock_stack=1 suppressions=$GITHUB_WORKSPACE/modern/tools/sanitizers/tsan.supp"
           not="~[ui]~[program]~[timing]"
           only=""
-          for tag in net remote offline standby backup restore posstore storage search dashboard forecast day \
-                     endofday customers menu import books; do
+          # (Tags with tests outside the UI ones only: Catch2 fails on a part that matches none.)
+          for tag in net remote offline standby backup posstore storage search forecast day \
+                     customers menu import books; do
               only="$only${only:+,}[$tag]$not"
           done
           timeout 14400 ./build/tests/vtm_tests "$only" --shard-count 4 --shard-index $(( ${{ matrix.part }} - 1 ))

@@ -9,3 +9,8 @@ deadlock:pthreadMutexEnter
 # Qt's HTTP thread deletes a request's upload device while the main thread
 # deletes the finished reply (QNetworkAccessManager inside, not our code).
 race:QNonContiguousByteDeviceThreadForwardImpl
+#
+# Qt's TLS set-up takes QSslSocketPrivate's mutex and then the TLS backends'
+# list mutex (QSslServer's constructor, the first time), and elsewhere the
+# other way round; all inside Qt Network, once, on the main thread (6.12).
+deadlock:QSslSocketPrivate::tlsBackendInUse
