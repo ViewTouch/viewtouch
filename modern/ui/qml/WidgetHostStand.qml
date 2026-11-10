@@ -94,7 +94,7 @@ Item {
         id: key
         property color tint: Ui.button
         Layout.fillWidth: true
-        Layout.preferredHeight: w.unit * 2.6
+        Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
         font.family: w.face
         font.pixelSize: w.unit * 0.9
         font.bold: true
@@ -150,6 +150,12 @@ Item {
             }
             // The floor plan as drawn, the tables colored by what they are.
             FloorPlanView {
+                keyH: w.zone ? w.zone.touch(48) : 0
+                // A phone: the tables as a list first (a plan that small has
+                // tables under a finger's size); Plan shows it as drawn.
+                readonly property bool phone: !!w.zone && !!w.zone.controller && w.zone.controller.formFactor === "phone"
+                listToggle: phone
+                listFirst: phone
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 controller: w.zone ? w.zone.controller : null
@@ -216,7 +222,7 @@ Item {
                     required property var modelData
                     objectName: "hostParty-" + modelData.name
                     width: partyList.width
-                    height: w.unit * 2.6
+                    height: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
                     radius: 8
                     color: w.partyId === modelData.id ? Ui.accent : partyTap.pressed ? Ui.line : "#262b33"
                     RowLayout {
@@ -269,7 +275,7 @@ Item {
                 }
                 Key {
                     text: "−"
-                    Layout.preferredWidth: w.unit * 2.6
+                    Layout.preferredWidth: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
                     Layout.fillWidth: false
                     enabled: w.walkInSize > 1
                     onClicked: { w.walkInSize--; w.partyId = -1 }
@@ -285,7 +291,7 @@ Item {
                 }
                 Key {
                     text: "+"
-                    Layout.preferredWidth: w.unit * 2.6
+                    Layout.preferredWidth: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
                     Layout.fillWidth: false
                     onClicked: { w.walkInSize++; w.partyId = -1 }
                 }
@@ -304,7 +310,7 @@ Item {
                     id: serverBox
                     objectName: "hostServer"
                     Layout.fillWidth: true
-                    Layout.preferredHeight: w.unit * 2.2
+                    Layout.preferredHeight: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
                     font.pixelSize: w.unit * 0.85
                     model: w.servers.map(s => w.nextUp && s.id === w.nextUp.id ? qsTr("%1 (next up)").arg(s.name) : s.name)
                     currentIndex: Math.max(0, w.servers.findIndex(s => s.id === w.seatServer))

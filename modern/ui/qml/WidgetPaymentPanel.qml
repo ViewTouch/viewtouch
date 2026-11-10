@@ -117,7 +117,7 @@ Item {
                 id: pay
                 required property var modelData
                 width: ListView.view.width
-                height: w.unit * 1.8
+                height: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(48) : 0)
                 radius: 6
                 color: modelData.selected ? Ui.accent : "transparent"
                 TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedPayment = pay.modelData.id } }
@@ -136,7 +136,7 @@ Item {
         RowLayout {
             visible: (w.totals.hasCard ?? false) && w.zone.keyShown("tips")
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 2.4
+            Layout.preferredHeight: Math.max(w.unit * 2.4, w.zone ? w.zone.touch(48) : 0)
             Layout.fillHeight: false   // nested layouts fill by default
             spacing: w.unit * 0.3
             Text {
@@ -168,7 +168,7 @@ Item {
         WidgetKey {
             visible: w.pos && w.pos.hasCheck && w.zone.keyShown("gratuity")
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 2
+            Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(48) : 0)
             text: (w.totals.hasGratuity ?? false) ? qsTr("Remove gratuity")
                 : w.zone.keyText("gratuity", qsTr("Add %1% gratuity").arg(w.totals.storeGratuityPercent ?? 18))
             fontScale: 0.4

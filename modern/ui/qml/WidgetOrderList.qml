@@ -17,9 +17,11 @@ Item {
     // Again keys were 6 or 7 pixels there.
     readonly property real unit: Math.max(12, zone.touch(15) * zone.textScale,
                                           Math.min((zone.st.fontSize ?? 28) * zone.textScale, w.width * 0.05 * zone.textScale))
-    // A phone: the check's own keys (Choose, the course, − + Again) a finger
-    // tall, 40 pixels; elsewhere as tall as their text needs.
-    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(40) : 0
+    // The check's own keys (+ Name, Choose, the course, − + Again) and its
+    // lines: a finger tall, 48 screen pixels, on every screen (a page shrunk
+    // to a small screen made them 30).
+    readonly property real tapH: zone ? zone.touch(48) : 0
+    readonly property bool phone: !!zone && !!zone.controller && zone.controller.formFactor === "phone"
     readonly property var check: pos ? pos.check : ({})
     // A swiped line: from here, since selecting it rebuilds the lines (and the row).
     // Whether scene point `at` is on a visible key (a WidgetKey) inside `item`.
@@ -267,7 +269,7 @@ Item {
             readonly property bool truck: (w.check.orderNumber ?? 0) > 0
             visible: w.controls && w.pos && w.pos.hasCheck && (delivery || w.check.type === "takeout" || truck) && !w.folded
             Layout.fillWidth: true
-            Layout.preferredHeight: w.unit * 1.9 * Math.min(sheet.big, 1.5)
+            Layout.preferredHeight: Math.max(w.unit * 1.9 * Math.min(sheet.big, 1.5), w.tapH)
             spacing: w.unit * 0.25
             // Name, phone, (address,) and when it's wanted.
             readonly property int keys: truck ? 2 : delivery ? 4 : 3
@@ -407,7 +409,7 @@ Item {
                      && (guests > 0 || current > 0 || highest > 0)
             Layout.fillWidth: true
             Layout.preferredHeight: chip
-            readonly property real chip: Math.max(w.unit * 1.5, w.zone.touch(44))
+            readonly property real chip: Math.max(w.unit * 1.5, w.zone.touch(48))
             // Wide enough for its count, as many as fit; more scroll sideways.
             readonly property real chipWidth: Math.max(chip, Math.min(chip * 1.5, (width - spacing * (seatCount + 2)) / (seatCount + 2)))
             orientation: ListView.Horizontal
@@ -634,7 +636,7 @@ Item {
                             font.strikeout: row.modelData.voided
                             // A narrow check (a 7" screen): the name on two lines before "…" (a phone keeps one).
                             wrapMode: Text.Wrap
-                            maximumLineCount: w.tapH > 0 ? 1 : 2
+                            maximumLineCount: w.phone ? 1 : 2
                             elide: Text.ElideRight
                         }
                         // Choices for an unsent item: amber while a required one is missing.
@@ -642,7 +644,7 @@ Item {
                         // just say so (so every line stays one line).
                         Text {
                             textFormat: Text.PlainText
-                            visible: row.modelData.choices && w.tapH > 0 && !row.modelData.selected && row.modelData.needsChoice
+                            visible: row.modelData.choices && w.phone && !row.modelData.selected && row.modelData.needsChoice
                             text: qsTr("Choose ›")
                             color: "#f5b940"
                             font.family: w.face
@@ -650,7 +652,7 @@ Item {
                             font.bold: true
                         }
                         WidgetKey {
-                            visible: row.modelData.choices && (w.tapH === 0 || row.modelData.selected)
+                            visible: row.modelData.choices && (!w.phone || row.modelData.selected)
                             Layout.preferredWidth: w.unit * 3.4
                             Layout.preferredHeight: Math.max(w.unit * 1.4, w.tapH)
                             text: qsTr("Choose")

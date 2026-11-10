@@ -15,7 +15,7 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(30, w.width * 0.045))
     // A phone: its keys a finger tall at least.
-    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(48) : 0
+    readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
     readonly property bool bank: (d.mode ?? "") === "serverBank"
     // Drawer users on a terminal set up without a cash drawer (one left
     // open from before can still be counted).
@@ -229,7 +229,7 @@ Item {
                     required property var modelData
                     objectName: "expense-" + modelData.name
                     width: w.unit * 6
-                    height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(46) : 0)
+                    height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
                     text: modelData.name
                     fontScale: 0.32
                     baseColor: modelData.chosen ? Ui.accent : Ui.key

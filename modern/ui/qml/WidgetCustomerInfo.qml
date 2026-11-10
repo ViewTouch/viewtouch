@@ -41,6 +41,8 @@ Item {
 
     // Controls are laid out at a comfortable size, then scaled with the page.
     readonly property real zoom: zone ? zone.formZoom(zone.narrow ? 380 : 560) : 1.6
+    // A finger: 48 screen pixels at least, in this form's zoomed units.
+    function fingers(px) { return zone ? Math.max(px, zone.touch(48) / zoom) : px }
     Item {
         width: w.width / w.zoom
         height: w.height / w.zoom
@@ -77,6 +79,7 @@ Item {
                 spacing: 2
                 Label { textFormat: Text.PlainText; id: caption; opacity: 0.8 }
                 TextField {
+                    Layout.minimumHeight: w.fingers(0)
                     visible: !entry.multiline
                     Layout.fillWidth: true
                     text: w.draft[entry.key] ?? ""

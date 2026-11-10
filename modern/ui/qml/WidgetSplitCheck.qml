@@ -64,7 +64,7 @@ Item {
                     id: line
                     required property var modelData
                     width: ListView.view.width - linesBar.room
-                    height: w.unit * 2.2
+                    height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
                     radius: 8
                     color: modelData.selected ? Ui.accent : Ui.button
                     TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.selectedLine = line.modelData.id } }

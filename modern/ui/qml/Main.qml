@@ -1004,7 +1004,7 @@ ApplicationWindow {
                     }
                     WidgetKey {
                         Layout.preferredWidth: 90
-                        Layout.preferredHeight: 44
+                        Layout.preferredHeight: 48
                         text: qsTr("OK")
                         fontScale: 0.3
                         baseColor: Ui.key

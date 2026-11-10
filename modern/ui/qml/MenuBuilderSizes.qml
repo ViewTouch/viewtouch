@@ -47,7 +47,7 @@ Popup {
                         [qsTr("Regular"), qsTr("Large")]]
                 delegate: MenuTouchButton {
                     required property var modelData
-                    implicitHeight: 44
+                    implicitHeight: 48
                     font.pixelSize: 14
                     text: modelData.join(" / ")
                     onClicked: sizesDialog.preset(modelData)
@@ -90,7 +90,7 @@ Popup {
             }
         }
         MenuTouchButton {
-            implicitHeight: 44
+            implicitHeight: 48
             font.pixelSize: 14
             text: qsTr("+ Size")
             onClicked: sizesDialog.rows = sizesDialog.rows.concat([{ name: "", price: "" }])

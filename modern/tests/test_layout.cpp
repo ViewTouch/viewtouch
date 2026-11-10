@@ -464,7 +464,7 @@ TEST_CASE("Store style: the starter pages' buttons move to Modern's places and b
     const Page *now = l->page(u"order-template"_s);
     const QRect modernPay = now->zone(u"flow-pay"_s)->rect;
     CHECK(modernPay != classicPay);
-    CHECK(modernPay == QRect(1672, 980, 232, 84));
+    CHECK(modernPay == QRect(1672, 972, 232, 98));
     CHECK(Layout::fingerprint(*now) == print);   // only moved for the style: as installed
     CHECK(l->page(u"mine"_s)->zones.first().rect == QRect(10, 20, 30, 40));
     CHECK_FALSE(l->page(u"mine"_s)->extra.contains(u"styleRects"_s));
@@ -528,7 +528,7 @@ TEST_CASE("Store style: the phone order frame's menu area moves with its buttons
     const QRect classic = l->page(u"order-template-phone"_s)->contentArea;
     REQUIRE(l->useStyle(u"modern"_s, Theme{}));
     CHECK(l->page(u"order-template-phone"_s)->contentArea == QRect(16, 718, 1048, 1274));
-    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 560);
+    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 550);
     REQUIRE(l->useStyle(u"classic"_s, Theme{}));
     CHECK(l->page(u"order-template-phone"_s)->contentArea == classic);
 }
@@ -589,7 +589,7 @@ TEST_CASE("Starter pages: one taken for edited only for a starter button it miss
     CHECK(update.updated.contains(u"tables"_s));
     l->arrangePages(update.updated);
     CHECK(l->page(u"tables"_s)->name == u"Tables v3"_s);
-    CHECK(l->page(u"tables"_s)->zone(u"quick"_s)->rect == QRect(1472, 16, 432, 72));   // and in Modern's places
+    CHECK(l->page(u"tables"_s)->zone(u"quick"_s)->rect == QRect(1472, 12, 432, 90));   // and in Modern's places
 }
 
 // A food truck's or a shop's own version of a page: shown in its place on

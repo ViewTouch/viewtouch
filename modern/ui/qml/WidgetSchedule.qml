@@ -32,6 +32,8 @@ Item {
     // Upright (a phone): the week as rows, and adding a shift over three lines.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 380 : 680) : 1
+    // A finger: 48 screen pixels at least, in this form's zoomed units.
+    function fingers(px) { return zone ? Math.max(px, zone.touch(48) / zoom) : px }
     Item {
         width: w.width / w.zoom
         height: w.height / w.zoom
@@ -173,7 +175,7 @@ Item {
                 rowSpacing: 8
                 columnSpacing: 8
                 ComboBox {
-                    Layout.minimumHeight: w.narrow ? 40 : 0
+                    Layout.minimumHeight: w.fingers(0)
                     id: staffBox
                     Layout.columnSpan: w.narrow ? 2 : 1
                     Layout.fillWidth: w.narrow
@@ -187,7 +189,7 @@ Item {
                 }
                 Label { textFormat: Text.PlainText; Layout.columnSpan: w.narrow ? 2 : 1; text: w.days[w.dayIndex] ? w.days[w.dayIndex].label : "" ; font.bold: true }
                 TextField {
-                    Layout.minimumHeight: w.narrow ? 40 : 0
+                    Layout.minimumHeight: w.fingers(0)
                     implicitWidth: 110
                     Layout.preferredWidth: 110
                     Layout.fillWidth: false
@@ -198,7 +200,7 @@ Item {
                 }
                 Label { textFormat: Text.PlainText; text: "–" }
                 TextField {
-                    Layout.minimumHeight: w.narrow ? 40 : 0
+                    Layout.minimumHeight: w.fingers(0)
                     implicitWidth: 110
                     Layout.preferredWidth: 110
                     Layout.fillWidth: false
@@ -208,7 +210,7 @@ Item {
                     onTextEdited: w.end = text
                 }
                 TextField {
-                    Layout.minimumHeight: w.narrow ? 40 : 0
+                    Layout.minimumHeight: w.fingers(0)
                     Layout.fillWidth: true
                     Layout.preferredWidth: 160   // (with no width of its own it got what was left: none)
                     Layout.minimumWidth: 80

@@ -333,7 +333,7 @@ Item {
                     objectName: "adminListFind"
                     visible: w.findable && !w.sectioned
                     Layout.fillWidth: true
-                    implicitHeight: 44
+                    implicitHeight: 48
                     font.pixelSize: 15
                     placeholderText: qsTr("Find…")
                     text: w.listQuery
@@ -529,7 +529,7 @@ Item {
                             model: w.shownFields
                             delegate: FieldEditor {
                                 required property var modelData
-                                minHeight: w.narrow ? 36 : 0
+                                minHeight: w.zone ? w.zone.touch(48) / w.zoom : 0   // a finger, any screen
                                 // A "look" field: an enum of this screen's looks.
                                 field: modelData.type !== "look" || !w.zone ? modelData
                                      : Object.assign({}, modelData, {

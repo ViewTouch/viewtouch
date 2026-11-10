@@ -56,7 +56,7 @@ Item {
                             text: modelData.name
                             checkable: true
                             checked: w.to === modelData.id
-                            implicitHeight: 48
+                            implicitHeight: Math.max(48, finger)
                             font.pixelSize: 16
                             onClicked: w.to = modelData.id
                         }
@@ -71,7 +71,7 @@ Item {
                         delegate: PosButton {
                             required property string modelData
                             text: modelData
-                            implicitHeight: 48
+                            implicitHeight: Math.max(48, finger)
                             font.pixelSize: 16
                             onClicked: { message.text = modelData; message.forceActiveFocus(); message.cursorPosition = message.length }
                         }
@@ -80,7 +80,7 @@ Item {
                 TextField {
                     id: message
                     Layout.fillWidth: true
-                    implicitHeight: 52
+                    implicitHeight: Math.max(52, send.finger)
                     font.pixelSize: 20
                     placeholderText: qsTr("Type a message…")
                     onAccepted: send.clicked()
@@ -98,7 +98,7 @@ Item {
                             text: modelData.name
                             checkable: true
                             checked: w.keepDays === modelData.days
-                            implicitHeight: 48
+                            implicitHeight: Math.max(48, finger)
                             font.pixelSize: 16
                             onClicked: w.keepDays = modelData.days
                         }
@@ -107,7 +107,7 @@ Item {
                 PosButton {
                     id: send
                     Layout.fillWidth: true
-                    implicitHeight: 60
+                    implicitHeight: Math.max(60, finger)
                     highlighted: true
                     font.pixelSize: 19
                     text: qsTr("Send")
@@ -153,7 +153,7 @@ Item {
                                 visible: modelData.posted === true
                                 objectName: "takeDown-" + modelData.id
                                 text: qsTr("Take Down")
-                                implicitHeight: 40
+                                implicitHeight: Math.max(48, finger)
                                 onClicked: w.pos.removeMessage(modelData.id)
                             }
                         }

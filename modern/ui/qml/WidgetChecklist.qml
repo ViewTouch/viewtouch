@@ -14,7 +14,7 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property real unit: Math.max(14, Math.min(w.width / 26, w.height / 20))
     // A phone: each task a finger tall at least (it's the box to tick).
-    readonly property real tapH: zone && zone.controller && zone.controller.formFactor === "phone" ? zone.touch(48) : 0
+    readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
 
     Rectangle {
         anchors.fill: parent

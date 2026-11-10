@@ -168,7 +168,7 @@ Dialog {
                 }
                 PosButton {
                     objectName: "builderPriceChangeCancel-" + modelData.id
-                    implicitHeight: 44
+                    implicitHeight: 48
                     text: qsTr("Cancel It")
                     onClicked: menu.pos.cancelPriceChange(modelData.id)
                 }

@@ -113,7 +113,7 @@ Item {
                         objectName: "problemsSeen"
                         visible: (w.info.unseen ?? 0) > 0
                         text: qsTr("Mark as seen")
-                        implicitHeight: 46
+                        implicitHeight: 48
                         font.pixelSize: 15
                         onClicked: w.pos.problemsSeen()
                     }

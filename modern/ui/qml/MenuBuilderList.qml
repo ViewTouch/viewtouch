@@ -85,7 +85,7 @@ ColumnLayout {
             delegate: MenuTouchButton {
                 required property var modelData
                 objectName: "builderListFilter-" + modelData.id
-                implicitHeight: 44
+                implicitHeight: 48
                 font.pixelSize: 14
                 highlighted: modelData.scope ? list.scope === modelData.id : list.filter === modelData.id
                 text: modelData.label
@@ -102,7 +102,7 @@ ColumnLayout {
     // Headings: touched, sorted by that (again: the other way).
     Rectangle {
         Layout.fillWidth: true
-        implicitHeight: 40
+        implicitHeight: 48
         radius: 6
         color: Ui.sunken
         RowLayout {

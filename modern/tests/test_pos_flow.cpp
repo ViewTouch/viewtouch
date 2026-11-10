@@ -4464,7 +4464,7 @@ TEST_CASE("UI: the expo screen - kitchen names, what's made, ready in blue", "[f
 
 // --- touch targets ------------------------------------------------------------------------
 // Every page on a 1280x800 screen: lists what a finger can touch that is
-// smaller than 40 px (about 7 mm on a 10" screen; widgets aim for 46).
+// smaller than 48 px (about 9 mm: Google's and Apple's guideline).
 
 namespace {
 
@@ -4501,7 +4501,7 @@ void smallTargets(QQuickItem *item, QQuickWindow *window, QStringList *out)
         // The item's box (a text field's boundingRect is just its text).
         const QRectF r = item->mapRectToScene(QRectF(0, 0, item->width(), item->height()));
         const QRectF shown = r.intersected(QRectF(QPointF(), window->size()));
-        if (!shown.isEmpty() && (r.width() < 40 || r.height() < 40))
+        if (!shown.isEmpty() && (r.width() < 47.5 || r.height() < 47.5))
             out->append(u"%1 (%2x%3)"_s.arg(describe(item)).arg(qRound(r.width())).arg(qRound(r.height())));
     }
     for (QQuickItem *child : item->childItems())
@@ -4560,6 +4560,104 @@ TEST_CASE("Touch: the phone pages on a phone", "[ui][touch]")
             report << id + u": "_s + x;
     }
     WARN(report.join(u'\n').toStdString());
+    CHECK(report.isEmpty());
+}
+
+// Finger-sized everywhere: at least 48x48 px (about 9 mm), and no plain
+// button taller than a fifth of the screen or wider than two thirds (a
+// bar: Pay, Scan... says so with props.bar). Every page, in a restaurant,
+// at a food truck and in a shop, on 1280x800, 1024x600 and a phone, in
+// Classic and in Modern.
+QString touchName(QQuickItem *item)
+{
+    // A page's button: its zone; a widget's key: the zone it's in, and its words.
+    QString zone;
+    for (QQuickItem *i = item; i && zone.isEmpty(); i = i->parentItem())
+        zone = i->property("zoneId").toString();
+    QString words;
+    for (const char *p : {"text", "placeholderText", "objectName"})
+        if (words.isEmpty())
+            words = item->property(p).toString().left(30);
+    QString cls = QString::fromLatin1(item->metaObject()->className());
+    cls = cls.section(u"_QML"_s, 0, 0);
+    return u"[%1] %2 \"%3\""_s.arg(zone, cls, words);
+}
+
+void touchReport(QQuickItem *item, QQuickWindow *window, QStringList *out)
+{
+    if (!item->isVisible() || item->opacity() < 0.05)
+        return;
+    // (A phone's scroll bars are slim on purpose: its lists slide under the finger.)
+    const bool phoneBar = item->inherits("QQuickScrollBar") && item->property("onPhone").toBool();
+    if (touchable(item) && item->isEnabled() && !phoneBar) {
+        const QRectF r = item->mapRectToScene(QRectF(0, 0, item->width(), item->height()));
+        const QRectF shown = r.intersected(QRectF(QPointF(), window->size()));
+        if (!shown.isEmpty() && (r.width() < 47.5 || r.height() < 47.5))
+            out->append(u"small %1 (%2x%3)"_s.arg(touchName(item)).arg(qRound(r.width())).arg(qRound(r.height())));
+        const bool plain = item->inherits("QQuickAbstractButton") && !item->inherits("QQuickComboBox");
+        bool bar = false;
+        for (QQuickItem *i = item; i && !bar; i = i->parentItem())
+            bar = i->property("bar").toBool();
+        // (A phone's rows and buttons go across it, as phones' do: only their height counts there.)
+        const bool phone = window->width() < 600;
+        if (plain && !bar && !shown.isEmpty()
+            && (r.height() > window->height() / 5.0 || (!phone && r.width() > window->width() * 2.0 / 3.0)))
+            out->append(u"big %1 (%2x%3)"_s.arg(touchName(item)).arg(qRound(r.width())).arg(qRound(r.height())));
+    }
+    for (QQuickItem *child : item->childItems())
+        touchReport(child, window, out);
+}
+
+TEST_CASE("Touch: every page in every way of serving, size and style is finger-sized", "[ui][touch][touchmatrix]")
+{
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    QStringList ids;
+    for (const QString &file : QDir(QStringLiteral(VTM_SEED_DIR "/pages")).entryList({u"*.json"_s}))
+        if (const layout::Page *p = seedLayout().page(file.chopped(5)); p && p->variantOf.isEmpty())
+            ids << file.chopped(5);
+    struct Size { const char *name; int w, h; QString form; };
+    QStringList report;
+    const QByteArray only = qgetenv("VTM_TOUCH_ONLY");   // e.g. "retail" or "phone"
+    for (const char *mode : {"restaurant", "foodTruck", "retail"})
+        for (const Size &size : {Size{"1280x800", 1280, 800, {}}, Size{"1024x600", 1024, 600, {}}, Size{"phone", 412, 915, u"phone"_s}})
+            for (const char *style : {"classic", "modern"}) {
+                const QString where = u"%1 %2 %3"_s.arg(QLatin1String(mode), QLatin1String(size.name), QLatin1String(style));
+                if (!only.isEmpty() && !where.contains(QString::fromLocal8Bit(only)))
+                    continue;
+                Screen s(false, size.w, size.h, size.form);
+                if (std::string_view(style) == "modern") {
+                    layout::Layout modern = seedLayout();
+                    REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+                    s.c.replaceLayout(modern);
+                }
+                s.pos.shared()->settings.serviceMode = std::string_view(mode) == "restaurant" ? std::string() : mode;
+                emit s.pos.shared()->adminChanged();
+                REQUIRE(s.pos.loginWithPin(u"1234"_s));
+                if (!s.pos.hasCheck())
+                    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+                for (const char *item : {"soda", "caesar"})
+                    s.pos.addItem(QString::fromLatin1(item));
+                if (s.pos.choosingInfo()[u"active"_s].toBool())
+                    s.pos.finishChoosing();
+                for (const QString &id : ids) {
+                    if (!s.c.jumpTo(id))
+                        continue;
+                    QTest::qWait(60);
+                    QStringList found;
+                    touchReport(s.window->contentItem(), s.window, &found);
+                    found.removeDuplicates();
+                    for (const QString &x : found)
+                        report << where + u" | "_s + id + u" | "_s + x;
+                }
+            }
+    if (const QByteArray out = qgetenv("VTM_TOUCH_OUT"); !out.isEmpty()) {
+        QFile o(QString::fromLocal8Bit(out));
+        REQUIRE(o.open(QIODevice::WriteOnly | QIODevice::Text));
+        o.write(report.join(u'\n').toUtf8() + "\n");
+    }
+    INFO(report.size() << " found");
     CHECK(report.isEmpty());
 }
 
@@ -6252,6 +6350,10 @@ TEST_CASE("Host stand screen: pick a party, push tables together, seat; bussing"
         QTest::qWait(60);
         QQuickItem *root = s.window->contentItem();
         const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+        if (phone) {   // a phone starts on the tables' list: Plan, for the floor as drawn
+            s.tapItem(by(u"hostFloorListKey"_s));
+            QTest::qWait(60);
+        }
 
         // Hold T5 + T6 for Lee.
         s.tapItem(by(u"hostBooked"_s));
@@ -9629,6 +9731,10 @@ TEST_CASE("Host stand: the floor plan as drawn, a tab for each, picked by touch,
         REQUIRE(s.c.jumpTo(u"seating"_s));
         QTest::qWait(80);
         const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+        if (phone) {   // a phone starts on the tables' list: Plan, for the floor as drawn
+            s.tapItem(by(u"hostFloorListKey"_s));
+            QTest::qWait(80);
+        }
         // Main: every table where the plan has it, walls and all; T1 left of T2, the patio below.
         REQUIRE(by(u"host-T1"_s));
         REQUIRE(by(u"host-P1"_s));

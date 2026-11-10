@@ -15,9 +15,9 @@
       "kind": "label",
       "rect": {
         "x": 16,
-        "y": 16,
+        "y": 12,
         "w": 440,
-        "h": 80
+        "h": 92
       },
       "shape": "rect",
       "behavior": "none",
@@ -28,9 +28,9 @@
       "kind": "button",
       "rect": {
         "x": 472,
-        "y": 16,
+        "y": 12,
         "w": 444,
-        "h": 80
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -53,9 +53,9 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 16,
+        "y": 12,
         "w": 478,
-        "h": 80
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -77,9 +77,9 @@
       "kind": "button",
       "rect": {
         "x": 1426,
-        "y": 16,
+        "y": 12,
         "w": 478,
-        "h": 80
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",

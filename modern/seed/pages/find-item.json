@@ -17,7 +17,7 @@
         "x": 592,
         "y": 104,
         "w": 1312,
-        "h": 400
+        "h": 280
       },
       "shape": "rect",
       "behavior": "none",
@@ -31,9 +31,9 @@
       "kind": "keyboard",
       "rect": {
         "x": 592,
-        "y": 516,
+        "y": 396,
         "w": 1312,
-        "h": 448
+        "h": 568
       },
       "shape": "rect",
       "behavior": "none",

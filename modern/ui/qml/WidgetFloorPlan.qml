@@ -20,6 +20,7 @@ Item {
     Timer { interval: 30000; running: true; repeat: true; onTriggered: w.now = Date.now() }
 
     FloorPlanView {
+        keyH: w.zone ? w.zone.touch(48) : 0
         anchors.fill: parent
         controller: w.zone ? w.zone.controller : null
         unit: Math.max(14, Math.min(w.width / 22, 44)) * w.zone.textScale

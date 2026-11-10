@@ -10,13 +10,20 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     property bool shifted: true   // first letter capitalized
 
-    readonly property var rows: [
-        ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+    readonly property var digitRow: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+    readonly property var letterRows: [
         ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         ["a", "s", "d", "f", "g", "h", "j", "k", "l", "'"],
         ["shift", "z", "x", "c", "v", "b", "n", "m", ",", "back"],
-        ["clear", "space", "."],
     ]
+    // Five rows each a finger tall (48 screen px) when there's room; else
+    // four: the digits behind a 123 key, in the top row's place.
+    readonly property bool compact: zone !== null
+                                    && (w.height * 0.85 / 5) * zone.screenScale < 48
+    property bool digits: false
+    readonly property var rows: compact
+        ? [digits ? digitRow : letterRows[0], letterRows[1], letterRows[2], [digits ? "abc" : "123", "clear", "space", "."]]
+        : [digitRow].concat(letterRows).concat([["clear", "space", "."]])
 
     // On a phone: the phone's own keyboard (bigger keys, the language its
     // owner types in) into a field, instead of forty keys a few pixels wide.
@@ -62,6 +69,7 @@ Item {
 
     function press(k) {
         if (k === "shift") { shifted = !shifted; return }
+        if (k === "123" || k === "abc") { digits = k === "123"; return }
         if (k === "back" || k === "clear" || k === "space") {
             pos.textKey(k)
         } else {
@@ -70,15 +78,18 @@ Item {
         }
     }
 
+    // The keys get the room: the typed line and the gaps are kept small, so
+    // five rows of keys are each a finger tall (48 screen px) on a 1024x600
+    // screen too, when the page gives the keyboard its height.
     ColumnLayout {
         visible: !w.phone
         anchors.fill: parent
-        anchors.margins: w.height * 0.03
-        spacing: w.height * 0.02
+        anchors.margins: w.height * 0.015
+        spacing: w.height * 0.01
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: w.height * 0.14
+            Layout.preferredHeight: w.height * 0.11
             radius: 8
             color: "#10141a"
             Text {
@@ -107,7 +118,7 @@ Item {
                 required property var modelData
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: w.height * 0.015
+                spacing: Math.min(w.height * 0.012, w.zone ? w.zone.touch(4) : 6)   // (narrow: the keys keep the width)
                 Repeater {
                     model: row.modelData
                     delegate: WidgetKey {
@@ -115,6 +126,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.preferredWidth: modelData === "space" ? 6 : (modelData.length > 1 ? 1.5 : 1)
+                        objectName: modelData === "123" || modelData === "abc" ? "keyboardDigits" : ""
                         text: modelData === "space" ? qsTr("space") : modelData === "back" ? "⌫"
                             : modelData === "shift" ? "⇧" : modelData === "clear" ? qsTr("Clear")
                             : (w.shifted ? modelData.toUpperCase() : modelData)

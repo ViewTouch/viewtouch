@@ -21,6 +21,8 @@ Item {
     // Upright (a phone): the card's controls, then its history below.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 380 : 1100) : 1
+    // A finger: 48 screen pixels at least, in this form's zoomed units.
+    function fingers(px) { return zone ? Math.max(px, zone.touch(48) / zoom) : px }
     Item {
         width: w.width / w.zoom
         height: w.height / w.zoom
@@ -44,7 +46,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     TextField {
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         id: number
                         Layout.fillWidth: true
                         font.pixelSize: 22
@@ -79,7 +81,7 @@ Item {
                 RowLayout {
                     Label { textFormat: Text.PlainText; text: qsTr("Other $") }
                     TextField {
-                        implicitHeight: 48
+                        implicitHeight: w.fingers(48)
                         id: other
                         Layout.fillWidth: true
                         inputMethodHints: Qt.ImhDecimalNumbersOnly

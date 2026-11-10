@@ -46,7 +46,7 @@ Popup {
     component Choice: MenuTouchButton {
         property string label
         property bool on: false
-        implicitHeight: 44
+        implicitHeight: 48
         font.pixelSize: 15
         highlighted: on
         text: (on ? "✓ " : "") + label

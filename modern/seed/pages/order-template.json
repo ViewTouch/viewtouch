@@ -14,9 +14,9 @@
       "kind": "orderList",
       "rect": {
         "x": 16,
-        "y": 16,
+        "y": 8,
         "w": 560,
-        "h": 948
+        "h": 956
       },
       "shape": "rect",
       "behavior": "none"
@@ -26,9 +26,9 @@
       "kind": "button",
       "rect": {
         "x": 16,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -54,9 +54,9 @@
       "kind": "button",
       "rect": {
         "x": 16,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -77,9 +77,9 @@
       "kind": "button",
       "rect": {
         "x": 16,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -99,9 +99,9 @@
       "kind": "button",
       "rect": {
         "x": 226,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -118,9 +118,9 @@
       "kind": "button",
       "rect": {
         "x": 436,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -137,9 +137,9 @@
       "kind": "button",
       "rect": {
         "x": 646,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -156,9 +156,9 @@
       "kind": "button",
       "rect": {
         "x": 856,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -175,9 +175,9 @@
       "kind": "button",
       "rect": {
         "x": 1066,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -194,9 +194,9 @@
       "kind": "button",
       "rect": {
         "x": 1276,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "double",
@@ -218,9 +218,9 @@
       "kind": "button",
       "rect": {
         "x": 1486,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -246,9 +246,9 @@
       "kind": "button",
       "rect": {
         "x": 1486,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -270,9 +270,9 @@
       "kind": "button",
       "rect": {
         "x": 1696,
-        "y": 980,
+        "y": 972,
         "w": 202,
-        "h": 84
+        "h": 98
       },
       "shape": "rect",
       "behavior": "blink",
@@ -296,9 +296,9 @@
       "kind": "button",
       "rect": {
         "x": 592,
-        "y": 16,
+        "y": 8,
         "w": 210,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -321,9 +321,9 @@
       "kind": "button",
       "rect": {
         "x": 810,
-        "y": 16,
+        "y": 8,
         "w": 210,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -346,9 +346,9 @@
       "kind": "button",
       "rect": {
         "x": 1028,
-        "y": 16,
+        "y": 8,
         "w": 210,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -371,9 +371,9 @@
       "kind": "button",
       "rect": {
         "x": 1246,
-        "y": 16,
+        "y": 8,
         "w": 120,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -400,9 +400,9 @@
       "kind": "button",
       "rect": {
         "x": 1374,
-        "y": 16,
+        "y": 8,
         "w": 170,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -424,9 +424,9 @@
       "kind": "button",
       "rect": {
         "x": 1560,
-        "y": 16,
+        "y": 8,
         "w": 160,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -449,9 +449,9 @@
       "kind": "button",
       "rect": {
         "x": 1736,
-        "y": 16,
+        "y": 8,
         "w": 168,
-        "h": 72
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -474,9 +474,9 @@
     "modern": {
       "flow-tables": {
         "x": 16,
-        "y": 16,
+        "y": 8,
         "w": 176,
-        "h": 72
+        "h": 92
       },
       "order-list": {
         "x": 16,
@@ -486,111 +486,111 @@
       },
       "tab-breakfast": {
         "x": 592,
-        "y": 16,
+        "y": 8,
         "w": 150,
-        "h": 72
+        "h": 92
       },
       "tab-lunch": {
         "x": 750,
-        "y": 16,
+        "y": 8,
         "w": 150,
-        "h": 72
+        "h": 92
       },
       "tab-dinner": {
         "x": 908,
-        "y": 16,
+        "y": 8,
         "w": 150,
-        "h": 72
+        "h": 92
       },
       "tab-find": {
         "x": 1074,
-        "y": 16,
+        "y": 8,
         "w": 380,
-        "h": 72
+        "h": 92
       },
       "tab-categories": {
         "x": 1470,
-        "y": 16,
+        "y": 8,
         "w": 150,
-        "h": 72
+        "h": 92
       },
       "tab-note": {
         "x": 1636,
-        "y": 16,
+        "y": 8,
         "w": 126,
-        "h": 72
+        "h": 92
       },
       "tab-check": {
         "x": 1778,
-        "y": 16,
+        "y": 8,
         "w": 126,
-        "h": 72
+        "h": 92
       },
       "flow-no": {
         "x": 592,
-        "y": 980,
+        "y": 972,
         "w": 120,
-        "h": 84
+        "h": 98
       },
       "flow-extra": {
         "x": 720,
-        "y": 980,
+        "y": 972,
         "w": 120,
-        "h": 84
+        "h": 98
       },
       "flow-lite": {
         "x": 848,
-        "y": 980,
+        "y": 972,
         "w": 120,
-        "h": 84
+        "h": 98
       },
       "flow-side": {
         "x": 976,
-        "y": 980,
+        "y": 972,
         "w": 120,
-        "h": 84
+        "h": 98
       },
       "flow-sub": {
         "x": 1104,
-        "y": 980,
+        "y": 972,
         "w": 120,
-        "h": 84
+        "h": 98
       },
       "flow-void": {
         "x": 1248,
-        "y": 980,
+        "y": 972,
         "w": 176,
-        "h": 84
+        "h": 98
       },
       "flow-send": {
         "x": 1440,
-        "y": 980,
+        "y": 972,
         "w": 216,
-        "h": 84
+        "h": 98
       },
       "flow-pay": {
         "x": 1672,
-        "y": 980,
+        "y": 972,
         "w": 232,
-        "h": 84
+        "h": 98
       },
       "flow-logout": {
         "x": 16,
-        "y": 16,
+        "y": 8,
         "w": 176,
-        "h": 72
+        "h": 92
       },
       "flow-orders": {
         "x": 16,
-        "y": 16,
+        "y": 8,
         "w": 176,
-        "h": 72
+        "h": 92
       },
       "flow-manager": {
         "x": 1440,
-        "y": 980,
+        "y": 972,
         "w": 216,
-        "h": 84
+        "h": 98
       }
     }
   }

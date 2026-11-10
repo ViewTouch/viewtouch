@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 
 // A key on a widget keypad. Its look comes from the zone it is in: the
 // "Built-in button look" (style keyFill, keyTextColor, keyLitFill, keyFont,
@@ -30,6 +31,18 @@ Rectangle {
 
     signal clicked()
     signal held()
+
+    // A finger, 48 pixels on the screen, in its own units (the page and its
+    // forms are scaled to fit the screen): what a layout gives it at least.
+    readonly property real shownScale: {
+        let f = 1
+        for (let p = key.parent; p; p = p.parent)
+            f *= p.scale
+        return f > 0 ? f : 1
+    }
+    readonly property real finger: Math.ceil(48 / shownScale)
+    Layout.minimumHeight: finger
+    Layout.minimumWidth: finger
 
     radius: keySt.keyRadius !== undefined ? keySt.keyRadius : Math.min(width, height) * 0.14
     color: tap.pressed || accent ? (keySt.keyLitFill ?? (tap.pressed ? "#4c8dff" : Ui.go)) : baseColor

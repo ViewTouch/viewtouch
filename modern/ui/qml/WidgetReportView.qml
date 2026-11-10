@@ -20,7 +20,7 @@ Item {
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real unit: narrow ? Math.max(12, Math.min(40, w.width * 0.038))
                                         : Math.max(12, Math.min(26, w.width * 0.016))
-    readonly property real keyH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(46) : 0)
+    readonly property real keyH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
     readonly property real gap: w.unit * 0.3
 
     // The list beside the report: when the report keeps at least 30 units.
@@ -253,7 +253,7 @@ Item {
                 }
                 WidgetKey {
                     Layout.preferredWidth: w.unit * 5
-                    Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(46) : 0)
+                    Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(48) : 0)
                     text: qsTr("Show")
                     fontScale: 0.34
                     onClicked: w.refresh()
@@ -265,7 +265,7 @@ Item {
             // (on a phone behind ⋯).
             RowLayout {
                 id: dayBar
-                readonly property real rowH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(46) : 0)
+                readonly property real rowH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
                 readonly property bool oneDay: w.period === "day" && !w.forecasting
                 Layout.fillWidth: true
                 Layout.fillHeight: false

@@ -161,7 +161,7 @@ ColumnLayout {
             Rectangle {
                 objectName: "imagePreview"
                 implicitWidth: 56
-                implicitHeight: 40
+                implicitHeight: 48
                 color: "#10141a"
                 border.color: EditorStyle.muted
                 radius: 4
@@ -444,7 +444,7 @@ ColumnLayout {
             objectName: "percentField"
             Layout.minimumHeight: fe.minHeight
             implicitWidth: 216
-            implicitHeight: 44
+            implicitHeight: 48
             leftPadding: 52
             rightPadding: 52
             font.pixelSize: 16
@@ -569,7 +569,7 @@ ColumnLayout {
                 text: "−"
                 font.pixelSize: 20
                 implicitWidth: 48
-                implicitHeight: 44
+                implicitHeight: 48
                 autoRepeat: true
                 enabled: !fe.readOnly && parent.v > parent.lo
                 onClicked: parent.set(parent.v % parent.step ? parent.v - parent.v % parent.step : parent.v - parent.step)
@@ -579,7 +579,7 @@ ColumnLayout {
                 id: stepValue
                 objectName: "stepValue"
                 implicitWidth: 112
-                implicitHeight: 44
+                implicitHeight: 48
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: 16
                 readOnly: fe.readOnly
@@ -599,7 +599,7 @@ ColumnLayout {
                 text: "+"
                 font.pixelSize: 20
                 implicitWidth: 48
-                implicitHeight: 44
+                implicitHeight: 48
                 autoRepeat: true
                 enabled: !fe.readOnly && parent.v < parent.hi
                 onClicked: parent.set(parent.v - parent.v % parent.step + parent.step)
@@ -627,7 +627,7 @@ ColumnLayout {
             checked: fe.shown === true
             enabled: !fe.readOnly
             text: checked ? qsTr("On") : qsTr("Off")
-            implicitHeight: 44
+            implicitHeight: 48
             onToggled: fe.commit(checked)
         }
     }
@@ -685,7 +685,7 @@ ColumnLayout {
                         Layout.preferredWidth: modelData.width ?? -1
                     }
                 }
-                Item { implicitWidth: 44 }
+                Item { implicitWidth: 48 }
             }
             Repeater {
                 model: rowsBox.rows.length
@@ -714,7 +714,7 @@ ColumnLayout {
                                 TextField {
                                     Layout.minimumHeight: fe.minHeight
                                     objectName: "rowCell"
-                                    implicitHeight: 44
+                                    implicitHeight: 48
                                     text: cell.cellValue
                                     placeholderText: cell.modelData.placeholder ?? ""
                                     readOnly: fe.readOnly
@@ -728,7 +728,7 @@ ColumnLayout {
                                 id: cellCombo
                                 ComboBox {
                                     Layout.minimumHeight: fe.minHeight
-                                    implicitHeight: 44
+                                    implicitHeight: 48
                                     model: cell.modelData.options ?? []
                                     textRole: "text"
                                     valueRole: "value"
@@ -743,8 +743,8 @@ ColumnLayout {
                         Layout.minimumHeight: fe.minHeight
                         objectName: "rowRemove"
                         text: "✕"
-                        implicitWidth: 44
-                        implicitHeight: 44
+                        implicitWidth: 48
+                        implicitHeight: 48
                         enabled: !fe.readOnly
                         onClicked: {
                             const r = rowsBox.rows.slice()
@@ -760,7 +760,7 @@ ColumnLayout {
                 objectName: "rowAdd"
                 visible: !fe.readOnly && (!fe.field.max || rowsBox.rows.length < fe.field.max)
                 text: fe.field.addText ?? qsTr("+ Add")
-                implicitHeight: 44
+                implicitHeight: 48
                 onClicked: {
                     // A new row: an enum starts on its first choice (one not
                     // in another row yet, for a column marked unique).

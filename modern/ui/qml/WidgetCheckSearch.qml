@@ -46,6 +46,8 @@ Item {
     // Upright (a phone): the results, then a check on its own, with ‹ Results.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 360 : 1150) : 1.4
+    // A finger: 48 screen pixels at least, in this form's zoomed units.
+    function fingers(px) { return zone ? Math.max(px, zone.touch(48) / zoom) : px }
     Item {
         width: w.width / w.zoom
         height: w.height / w.zoom
@@ -65,7 +67,7 @@ Item {
                     id: query
                     objectName: "searchQuery"
                     Layout.fillWidth: true
-                    implicitHeight: 48
+                    implicitHeight: w.fingers(48)
                     font.pixelSize: 18
                     placeholderText: qsTr("#123, 17.62, a name, phone, table, server, item…")
                     onAccepted: if (text.trim().length > 1) w.fresh(text.trim())
@@ -74,7 +76,7 @@ Item {
                     objectName: "searchGo"
                     text: qsTr("Search")
                     highlighted: true
-                    implicitHeight: 48
+                    implicitHeight: w.fingers(48)
                     implicitWidth: 120
                     font.pixelSize: 17
                     enabled: query.text.trim().length > 1
@@ -83,7 +85,7 @@ Item {
                 PosButton {
                     objectName: "searchAll"
                     text: qsTr("Show All")
-                    implicitHeight: 48
+                    implicitHeight: w.fingers(48)
                     implicitWidth: 120
                     font.pixelSize: 17
                     onClicked: { query.text = ""; w.fresh("") }
@@ -100,7 +102,7 @@ Item {
                         required property var modelData
                         objectName: "range-" + modelData[0]
                         text: modelData[1]
-                        implicitHeight: 38
+                        implicitHeight: w.fingers(38)
                         font.pixelSize: 14
                         highlighted: w.days === modelData[0]
                         onClicked: {
@@ -295,7 +297,7 @@ Item {
                                         objectName: "refund-" + (detailRow.modelData.id ?? "")
                                         visible: detailRow.type === "payment" && !!detailRow.modelData.refundable
                                         text: qsTr("Refund…")
-                                        implicitHeight: 34
+                                        implicitHeight: w.fingers(34)
                                         font.pixelSize: 13
                                         onClicked: w.askRefund(detailRow.modelData)
                                     }
@@ -403,7 +405,7 @@ Item {
                 id: refundAmount
                 objectName: "refundAmount"
                 Layout.fillWidth: true
-                implicitHeight: 48
+                implicitHeight: w.fingers(48)
                 font.pixelSize: 20
                 inputMethodHints: Qt.ImhDecimalNumbersOnly
             }
@@ -425,7 +427,7 @@ Item {
                 id: refundReason
                 objectName: "refundReason"
                 Layout.fillWidth: true
-                implicitHeight: 44
+                implicitHeight: w.fingers(44)
                 placeholderText: qsTr("The reason (goes in the check's history)")
             }
             RowLayout {

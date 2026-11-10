@@ -87,7 +87,7 @@ Dialog {
                 id: into
                 objectName: "builderImportInto"
                 Layout.fillWidth: true
-                implicitHeight: 44
+                implicitHeight: 48
                 editable: true
                 model: menu.categories.map(c => c.name)
             }
@@ -98,7 +98,7 @@ Dialog {
             FindField {
                 objectName: "builderImportSearch"
                 Layout.fillWidth: true
-                implicitHeight: 44
+                implicitHeight: 48
                 placeholderText: qsTr("Find (name or category)")
                 text: importDialog.search
                 onEdited: typed => importDialog.search = typed

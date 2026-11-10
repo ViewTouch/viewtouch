@@ -388,7 +388,7 @@ Item {
             columnSpacing: 6
             rowSpacing: 6
             Layout.fillWidth: true
-            Layout.preferredHeight: stacked ? (w.zone ? w.zone.touch(34) : 40) + Math.ceil(order.length / 3) * (keyH + 6) : 72
+            Layout.preferredHeight: stacked ? (w.zone ? w.zone.touch(34) : 40) + Math.ceil(order.length / 3) * (keyH + 6) : Math.max(72, keyH)
             Layout.fillHeight: false   // nested layouts fill by default
             Text {
                 textFormat: Text.PlainText

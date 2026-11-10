@@ -11,7 +11,7 @@ Item {
     // A phone: a control as tall as it says in screen pixels (a finger's
     // worth), not shrunk with the page.
     function fingers(px) {
-        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+        return zone ? Math.max(px, zone.touch(Math.max(px, 48))) : px   // a finger: 48 screen px at least, any screen
     }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null

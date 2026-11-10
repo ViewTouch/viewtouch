@@ -89,7 +89,7 @@ Item {
                 WidgetKey {
                     objectName: "eodClockOut-" + modelData.id
                     Layout.preferredWidth: w.unit * 7
-                    Layout.preferredHeight: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(46) : 0)
+                    Layout.preferredHeight: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(48) : 0)
                     text: qsTr("Clock Out Now")
                     fontScale: 0.32
                     onClicked: w.pos.clockOutPunch(modelData.id)
@@ -191,7 +191,7 @@ Item {
         }
         WidgetKey {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(w.unit * 3.2, w.zone ? w.zone.touch(46) : 0)
+            Layout.preferredHeight: Math.max(w.unit * 3.2, w.zone ? w.zone.touch(48) : 0)
             text: w.armed ? qsTr("Tap again to close the day") : qsTr("Close the Day")
             baseColor: (w.day.ready ?? false) ? (w.armed ? "#b83232" : "#1f5f3a") : "#3a3f48"
             // Not ready: dimmed (a touch still says what's missing).

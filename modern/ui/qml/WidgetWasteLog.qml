@@ -11,7 +11,7 @@ Item {
     // A phone: a control as tall as it says in screen pixels (a finger's
     // worth), not shrunk with the page.
     function fingers(px) {
-        return zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(px, zone.touch(px)) : px
+        return zone ? Math.max(px, zone.touch(Math.max(px, 48))) : px   // a finger: 48 screen px at least, any screen
     }
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
@@ -107,7 +107,7 @@ Item {
                     clip: true
                     readonly property int columns: Math.max(2, Math.floor(width / 170))
                     cellWidth: (width - gridBar.room) / columns
-                    cellHeight: 58
+                    cellHeight: w.fingers(52) + 6   // its buttons a finger tall
                     model: shown
                     // From the rows, not contentHeight (that follows cellWidth: a loop).
                     ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * grid.cellHeight > grid.height + 1 }

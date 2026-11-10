@@ -12,6 +12,8 @@ ColumnLayout {
 
     property LayoutController controller
     property real unit: 20
+    // Its plan tabs and List key at least this tall (a finger, from the zone).
+    property real keyH: 0
     property string face: Ui.font
     property color ink: "white"
     // Text that reads on a table's color (ZoneItem.readable), and the
@@ -72,7 +74,7 @@ ColumnLayout {
                 text: qsTranslate("Page", modelData.name)
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1   // all the same width
-                Layout.preferredHeight: v.unit * 2.6
+                Layout.preferredHeight: Math.max(v.unit * 2.6, v.keyH)
                 font.family: v.face
                 font.pixelSize: v.unit * 0.8
                 font.bold: true
@@ -90,7 +92,7 @@ ColumnLayout {
             text: roomy ? (v.asList ? qsTr("▦ Plan") : qsTr("☰ List")) : (v.asList ? "▦" : "☰")
             Accessible.name: v.asList ? qsTr("▦ Plan") : qsTr("☰ List")
             Layout.preferredWidth: roomy ? v.unit * 5.5 : v.unit * 2.6
-            Layout.preferredHeight: v.unit * 2.6
+            Layout.preferredHeight: Math.max(v.unit * 2.6, v.keyH)
             font.family: v.face
             font.pixelSize: roomy ? v.unit * 0.8 : v.unit * 1.2
             font.bold: true

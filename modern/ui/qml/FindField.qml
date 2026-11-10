@@ -24,8 +24,8 @@ SearchField {
     }
     clearIndicator.indicator: Item {
         objectName: "findClear"
-        implicitWidth: 44
-        implicitHeight: 40
+        implicitWidth: 48
+        implicitHeight: 48
         x: f.width - width
         height: f.height
         visible: f.text.length > 0

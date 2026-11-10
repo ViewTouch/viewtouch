@@ -155,7 +155,7 @@ Item {
             visible: w.phone && w.showTabs
             Layout.fillWidth: true
             Layout.preferredHeight: keyH
-            readonly property real keyH: w.zone ? w.zone.touch(40) : 56
+            readonly property real keyH: w.zone ? w.zone.touch(48) : 56
             readonly property real textPx: w.zone ? w.zone.touch(14) : 20
             contentWidth: chipRow.width
             contentHeight: height

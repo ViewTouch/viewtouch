@@ -83,7 +83,7 @@ Item {
                                 readonly property var modelData: (group.modelData.options ?? [])[index] ?? ({})
                                 objectName: "option-" + modelData.name
                                 width: (groups.width - w.unit * 0.9) / 4
-                                height: w.unit * 2.6
+                                height: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
                                 readonly property bool leftOff: modelData.qualifier === "No"
                                 // "No Onion", "Extra Cheese +$1.50": how it was chosen.
                                 text: (modelData.qualifier ? modelData.qualifier + " " : "") + qsTranslate("Data", String(modelData.name ?? ""))
@@ -173,7 +173,7 @@ Item {
                         required property var modelData
                         objectName: "how-" + modelData[0]
                         width: (parent.width - w.unit * 0.3) / 2
-                        height: w.unit * 2.6
+                        height: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0)
                         fontScale: 0.36
                         text: modelData[1]
                         baseColor: modelData[0] === "no" ? "#8a2c30" : Ui.key
@@ -184,7 +184,7 @@ Item {
             }
             WidgetKey {
                 width: parent.width
-                height: w.unit * 2
+                height: Math.max(w.unit * 2, w.zone ? w.zone.touch(48) : 0)
                 fontScale: 0.36
                 text: qsTr("Cancel")
                 takesTouch: true
@@ -199,7 +199,7 @@ Item {
         enabled: !how.visible
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 16 }
         readonly property int shown: (w.zone.keyShown("cancel") ? 1 : 0) + (w.zone.keyShown("done") ? 1 : 0)
-        height: shown > 0 ? w.unit * 2.6 : 0
+        height: shown > 0 ? Math.max(w.unit * 2.6, w.zone ? w.zone.touch(48) : 0) : 0   // a finger, any screen
         spacing: w.unit * 0.4
         // Done first, if the editor says so.
         layoutDirection: w.zone.keyOrder("cancel", ["cancel", "done"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight

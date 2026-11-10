@@ -31,7 +31,7 @@ ScrollBar {
     // A phone: a slim bar (lists there are slid by the finger), about 16 px on the screen.
     readonly property bool onPhone: Window.width > 0 && Math.min(Window.width, Window.height) < 600
     readonly property real thickness: onPhone ? Math.round(Math.max(10, 16 / drawnScale))
-                                              : Math.round(Math.max(28, 40 / drawnScale, Math.min(44, Screen.pixelDensity * 8)))
+                                              : Math.ceil(Math.max(28, 48 / drawnScale))   // a finger: 48 px on the screen
     implicitWidth: thickness
     // Its width: the list it is attached to sets it from implicitWidth, and
     // places it by that at the same time (a width of its own lagged behind:

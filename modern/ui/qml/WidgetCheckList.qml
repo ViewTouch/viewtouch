@@ -45,7 +45,7 @@ Item {
         id: whose
         visible: w.choosesWhose
         anchors { left: parent.left; top: parent.top; margins: 16 }
-        height: visible ? 112 : 0   // a finger's size on a phone too
+        height: visible ? Math.max(112, w.zone ? w.zone.touch(48) : 0) : 0   // a finger, any screen
         spacing: 10
         Repeater {
             model: [{ all: false, text: qsTr("My Checks") }, { all: true, text: qsTr("All Checks") }]

@@ -17,6 +17,8 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 340 : 1180) : 1
+    // A finger: 48 screen pixels at least, in this form's zoomed units.
+    function fingers(px) { return zone ? Math.max(px, zone.touch(48) / zoom) : px }
 
     readonly property var categories: pos ? pos.menuCategories : []
     readonly property var allItems: pos ? pos.menuItems.filter(i => !i.modifier) : []
@@ -561,7 +563,7 @@ Item {
                     objectName: "builderSearch"
                     visible: w.mode === "menu"
                     Layout.fillWidth: true
-                    implicitHeight: 48
+                    implicitHeight: w.fingers(48)
                     font.pixelSize: 16
                     placeholderText: qsTr("Name, number or barcode")   // (the magnifier says it finds)
                     text: w.search
@@ -778,14 +780,14 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderThemes"
-                        Layout.preferredWidth: 44
+                        Layout.preferredWidth: w.fingers(52)
                         text: "🎨"
                         ToolTip.visible: hovered
                         ToolTip.text: qsTr("Colors for every category at once")
                         onClicked: themeDialog.open()
                     }
-                    TouchButton { Layout.preferredWidth: 44; text: "▲"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, -1) }
-                    TouchButton { Layout.preferredWidth: 44; text: "▼"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, 1) }
+                    TouchButton { Layout.preferredWidth: w.fingers(52); text: "▲"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, -1) }
+                    TouchButton { Layout.preferredWidth: w.fingers(52); text: "▼"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, 1) }
                 }
                 // Many at once: from a spreadsheet, or a starter menu; the
                 // printed menu. One row, or two when the words are longer
@@ -949,7 +951,7 @@ Item {
                     // Every item in one table, or the category's tiles.
                     TouchButton {
                         objectName: "builderListView"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         highlighted: w.listView
                         text: w.listView ? qsTr("▦ Tiles") : qsTr("☰ List")
@@ -959,7 +961,7 @@ Item {
                     TouchButton {
                         objectName: "builderPreview"
                         visible: !!w.category && w.items.length > 0 && !w.selecting && !w.listView
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         checkable: true
                         checked: w.preview
@@ -970,7 +972,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelect"
                         visible: (!!w.category && w.items.length > 0) || w.listView
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         highlighted: w.selecting
                         text: w.selecting ? qsTr("Done") : qsTr("Select…")
@@ -991,7 +993,7 @@ Item {
                     readonly property var list: w.pos ? w.pos.priceChanges : []
                     visible: list.length > 0
                     Layout.fillWidth: true
-                    implicitHeight: 40
+                    implicitHeight: w.fingers(40)
                     font.pixelSize: 14
                     text: list.length === 1 ? "⏰ " + list[0].label + "  ·  " + list[0].when
                                             : "⏰ " + qsTr("%n price changes set for later", "", list.length)
@@ -1013,7 +1015,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectAll"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         // What's shown: the category's tiles, or the List's rows.
                         readonly property var shown: w.listView ? builderList.rows : w.items
@@ -1027,7 +1029,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectMove"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Move to…")
@@ -1035,7 +1037,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectColor"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Color…")
@@ -1043,7 +1045,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectPrice"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Price…")
@@ -1051,7 +1053,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectTax"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Tax…")
@@ -1059,7 +1061,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectTags"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Price Tags…")
@@ -1067,7 +1069,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectSoldOut"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Sold Out")
@@ -1075,7 +1077,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectForSale"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("For Sale")
@@ -1083,7 +1085,7 @@ Item {
                     }
                     TouchButton {
                         objectName: "builderSelectRemove"
-                        implicitHeight: 44
+                        implicitHeight: w.fingers(44)
                         font.pixelSize: 14
                         enabled: w.selected.length > 0
                         text: qsTr("Remove…")
@@ -1314,7 +1316,7 @@ Item {
                                 // Most new tacos are like the other tacos.
                                 TouchButton {
                                     objectName: "builderLike"
-                                    implicitHeight: 44
+                                    implicitHeight: w.fingers(44)
                                     font.pixelSize: 14
                                     text: qsTr("Like…")
                                     onClicked: likeDialog.open()
@@ -1359,7 +1361,7 @@ Item {
                                     }
                                     TouchButton {
                                         objectName: "builderSizes"
-                                        implicitHeight: 44
+                                        implicitHeight: w.fingers(44)
                                         font.pixelSize: 14
                                         enabled: !!w.draft.id
                                         text: qsTr("Sizes…")
@@ -1407,7 +1409,7 @@ Item {
                                             model: parent.parent.known
                                             delegate: TouchButton {
                                                 required property string modelData
-                                                implicitHeight: 40
+                                                implicitHeight: w.fingers(40)
                                                 font.pixelSize: 14
                                                 checkable: true
                                                 checked: (w.draft.section ?? "") === modelData
@@ -1434,7 +1436,7 @@ Item {
                                     spacing: 2
                                     TouchButton {
                                         objectName: "builderReadyPicture"
-                                        implicitHeight: 44
+                                        implicitHeight: w.fingers(44)
                                         font.pixelSize: 14
                                         text: qsTr("🌮 Ready-Made Picture…")
                                         onClicked: pictureDialog.open()
@@ -2410,7 +2412,7 @@ Item {
                 id: priceAmount
                 objectName: "builderPriceAmount"
                 Layout.fillWidth: true
-                implicitHeight: 48
+                implicitHeight: w.fingers(48)
                 font.pixelSize: 18
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 placeholderText: priceSeveral.how === "set" ? qsTr("Like 9.50")
