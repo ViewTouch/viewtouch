@@ -174,6 +174,21 @@ class Rollout(unittest.TestCase):
         self.assertTrue(all(24 - 1 <= h <= 24 + 72 + 1 for h in days), days)
         self.assertGreater(max(days) - min(days), 36)   # not all on one night
 
+    def test_install_now_doesnt_wait_for_its_turn_but_never_when_paused(self):
+        # A manager's Install now, on the lockdown screen: before this computer's turn.
+        s = Store(self)
+        s.publish("0.16.1600", rollout={"betaHours": 24, "spreadHours": 72, "paused": False})
+        self.assertTrue(s.last_line("online-check")[1].startswith("SOON "))
+        code, out = s.run("online-update", "--now")
+        self.assertEqual(code, 0, out)
+        self.assertIn("INSTALLED 0.16.1600", out)
+        # Paused (a problem found): not even then.
+        s = Store(self)
+        s.publish("0.16.1600", rollout={"betaHours": 24, "spreadHours": 72, "paused": True})
+        code, out = s.run("online-update", "--now")
+        self.assertIn("PAUSED 0.16.1600", out)
+        self.assertEqual(s.read("state/installed").strip(), "0.15.1571-1~debian13")
+
     def test_paused_nobody_takes_it(self):
         s = Store(self)
         s.publish("0.16.1600", hours_ago=500, rollout={"betaHours": 0, "spreadHours": 0, "paused": True})

@@ -630,16 +630,17 @@ TEST_CASE("Station: a new ViewTouch looked for twice a day, installed at night o
     qunsetenv("VTM_STATION_HELPER");
 }
 
-TEST_CASE("Station: a new ViewTouch not yet this computer's turn, paused or held isn't offered", "[station][helper][updates]")
+TEST_CASE("Station: a new ViewTouch not yet this computer's turn is offered as Install Now; paused or held isn't", "[station][helper][updates]")
 {
     for (const char *said : {"SOON 9.9 2026-11-05T03:00", "PAUSED 9.9 0.15", "HELD 9.9 0.15"}) {
         INFO(said);
         QTemporaryDir dir;
         const QString helper = dir.filePath(u"helper.sh"_s);
+        const QString log = dir.filePath(u"asked.txt"_s);
         {
             QFile f(helper);
             REQUIRE(f.open(QIODevice::WriteOnly));
-            f.write("#!/bin/sh\necho '" + QByteArray(said) + "'\n");
+            f.write("#!/bin/sh\necho \"$*\" >> '" + log.toUtf8() + "'\necho '" + QByteArray(said) + "'\n");
             f.setPermissions(f.permissions() | QFile::ExeOwner);
         }
         qputenv("VTM_STATION_HELPER", helper.toLocal8Bit());
@@ -648,7 +649,18 @@ TEST_CASE("Station: a new ViewTouch not yet this computer's turn, paused or held
         station.checkOnline();
         REQUIRE(finished.wait(10000));
         CHECK(finished.first().at(1).toBool());
-        CHECK(station.newVersion().isEmpty());
+        if (QByteArray(said).startsWith("SOON")) {
+            // Out, its turn later: offered (Install Now), with when it comes by itself.
+            CHECK(station.newVersion() == u"9.9"_s);
+            CHECK_FALSE(station.newVersionFrom().isEmpty());
+            station.installOnline(true);
+            REQUIRE(finished.wait(10000));
+            QFile f(log);
+            REQUIRE(f.open(QIODevice::ReadOnly));
+            CHECK(QString::fromUtf8(f.readAll()).contains(u"online-update --now"_s));
+        } else {
+            CHECK(station.newVersion().isEmpty());
+        }
         qunsetenv("VTM_STATION_HELPER");
     }
 }

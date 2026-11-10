@@ -32,6 +32,17 @@ ApplicationWindow {
     // A newer ViewTouch found online (its version), to install.
     // A newer ViewTouch online (the home screen looks twice a day).
     readonly property string onlineReady: station.newVersion
+    // The release page's answer, its last line's words, said in full.
+    function onlineAnswer(words) {
+        switch (words[0]) {
+        case "READY": return qsTr("ViewTouch %1 is ready (this computer has %2).").arg(words[1]).arg(words[2] ?? "")
+        case "SOON": return qsTr("ViewTouch %1 is out. Stores update in turns: it comes to this computer by itself on %2, or touch Install Now.")
+                            .arg(words[1]).arg(station.newVersionFrom || (words[2] ?? ""))
+        case "PAUSED": return qsTr("ViewTouch %1 is on hold for now (its makers paused it); this computer stays on %2.").arg(words[1]).arg(words[2] ?? "")
+        case "HELD": return qsTr("ViewTouch %1 didn't start properly on this computer once, so it stays on %2.").arg(words[1]).arg(words[2] ?? "")
+        default: return qsTr("This computer has the newest ViewTouch (%1).").arg(words[1] ?? "")
+        }
+    }
     property bool askedOnline: false   // said only when someone touched Check
     Timer { id: restartSoon; interval: 3000; onTriggered: Qt.quit() }
 
@@ -117,14 +128,15 @@ ApplicationWindow {
             // A newer ViewTouch online: what the helper's last line says.
             if (action === "online-check" && !root.askedOnline)
                 return   // the twice-a-day look: quiet (Updates says when one's ready)
-            if (ok && action === "online-check") {
+            if (ok && (action === "online-check" || action === "online-update")) {
                 root.askedOnline = false
                 const words = (message ?? "").split(" ")
-                root.say(words[0] === "READY" ? qsTr("ViewTouch %1 is ready (this computer has %2).").arg(words[1]).arg(words[2] ?? "")
-                                              : qsTr("This computer has the newest ViewTouch (%1).").arg(words[1] ?? ""), true)
-            } else if (ok && action === "online-update") {
-                root.say(qsTr("ViewTouch %1 is installed. Starting it again…").arg((message ?? "").split(" ")[1] ?? ""), true)
-                restartSoon.start()   // the home screen on the new version (its service starts it again)
+                if (words[0] === "INSTALLED") {
+                    root.say(qsTr("ViewTouch %1 is installed. Starting it again…").arg(words[1] ?? ""), true)
+                    restartSoon.start()   // the home screen on the new version (its service starts it again)
+                } else {
+                    root.say(root.onlineAnswer(words), true)
+                }
             }
             if (action === "maintainer") {
                 root.say(message, ok)
@@ -469,7 +481,9 @@ ApplicationWindow {
                 Tile {
                     icon: "update"
                     label: qsTr("Updates")
-                    detail: root.onlineReady !== "" ? qsTr("%1 is ready").arg(root.onlineReady) : ""
+                    detail: root.onlineReady === "" ? ""
+                            : root.station.newVersionFrom !== "" ? qsTr("%1 on %2").arg(root.onlineReady).arg(root.station.newVersionFrom)
+                            : qsTr("%1 is ready").arg(root.onlineReady)
                     tint: root.onlineReady !== "" ? "#2b6a4a" : "#2a313c"
                     locked: true
                     onTapped: root.withPin(() => root.panel = "updates")
@@ -659,11 +673,19 @@ ApplicationWindow {
                 BigButton {
                     objectName: "installOnline"
                     visible: root.onlineReady !== ""
-                    text: qsTr("Install ViewTouch %1").arg(root.onlineReady)
+                    // Before its turn (it comes by itself then): Install Now.
+                    text: root.station.newVersionFrom !== "" ? qsTr("Install ViewTouch %1 Now").arg(root.onlineReady)
+                                                             : qsTr("Install ViewTouch %1").arg(root.onlineReady)
                     tint: Ui.go
                     enabled: !root.station.busy
-                    onClicked: root.station.installOnline()
+                    onClicked: root.station.installOnline(root.station.newVersionFrom !== "")
                 }
+            }
+            Note {
+                objectName: "onlineWhen"
+                visible: root.station.newVersionFrom !== ""
+                text: qsTr("Stores update in turns: ViewTouch %1 comes to this computer by itself on %2.")
+                      .arg(root.onlineReady).arg(root.station.newVersionFrom)
             }
             RowLayout {
                 spacing: root.u

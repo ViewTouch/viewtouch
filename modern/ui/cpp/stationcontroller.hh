@@ -56,6 +56,8 @@ class StationController : public QObject {
     // A newer ViewTouch online (looked for twice a day, quietly): its version,
     // else empty. With autoUpdate, it installs itself between 3 and 5 AM.
     Q_PROPERTY(QString newVersion READ newVersion NOTIFY newVersionChanged)
+    // When it comes by itself (stores update in turns: "Nov 12, 3:40 PM"); empty: ready now.
+    Q_PROPERTY(QString newVersionFrom READ newVersionFrom NOTIFY newVersionChanged)
     Q_PROPERTY(bool autoUpdate READ autoUpdate NOTIFY configChanged)
 
 public:
@@ -84,6 +86,7 @@ public:
     int rotation() const { return rotation_; }
     bool lockPower() const { return lockPower_; }
     QString newVersion() const { return newVersion_; }
+    QString newVersionFrom() const { return newVersionFrom_; }
     bool autoUpdate() const { return autoUpdate_; }
 
     // Start ViewTouch (on `afterLogin` once someone logs in: a page id, or "setup").
@@ -117,9 +120,10 @@ public:
     Q_INVOKABLE void runUpdates();
     Q_INVOKABLE void updateFromUsb();
     // A newer ViewTouch on the release page: look (online-check), or download
-    // and install it (online-update). Both signed; never an older one.
+    // and install it (online-update). Both signed; never an older one. now:
+    // before this computer's turn (a manager's Install now).
     Q_INVOKABLE void checkOnline();
-    Q_INVOKABLE void installOnline();
+    Q_INVOKABLE void installOnline(bool now = false);
     Q_INVOKABLE void setRemoteSupport(bool on);
     Q_INVOKABLE void restartComputer();
     Q_INVOKABLE void shutDown();
@@ -205,6 +209,7 @@ private:
     bool lockPower_ = false;
     bool autoUpdate_ = false;
     QString newVersion_;
+    QString newVersionFrom_;
     QDateTime lookedOnline_;
     QDate installedOn_;
     QTimer updatesTimer_;

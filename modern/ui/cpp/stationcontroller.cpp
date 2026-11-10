@@ -1,6 +1,7 @@
 #include "stationcontroller.hh"
 
 #include <QDateTime>
+#include <QLocale>
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -144,16 +145,24 @@ StationController::StationController(QString dataDir, QString configFile, bool k
             emit displayChanged();
     });
     connect(this, &StationController::posChanged, this, &StationController::refreshStatus);
-    // A new ViewTouch: what the helper's last line says ("READY 0.15 0.14", "NEWEST 0.14").
+    // A new ViewTouch: what the helper's last line says ("READY 0.15 0.14";
+    // "SOON 0.15 2026-11-12T15:40": its turn then; "CURRENT 0.14", "PAUSED",
+    // "HELD", "INSTALLED 0.15": none to install).
     connect(this, &StationController::finished, this, [this](const QString &action, bool ok, const QString &said) {
-        QString was = newVersion_;
-        if (action == u"online-check" && ok) {
-            const QStringList words = said.split(u' ', Qt::SkipEmptyParts);
-            newVersion_ = words.value(0) == u"READY" ? words.value(1) : QString();
-        } else if (action == u"online-update" && ok) {
-            newVersion_.clear();
+        if (!ok || (action != u"online-check" && action != u"online-update"))
+            return;
+        const QString was = newVersion_, wasFrom = newVersionFrom_;
+        const QStringList words = said.split(u' ', Qt::SkipEmptyParts);
+        newVersion_.clear();
+        newVersionFrom_.clear();
+        if (words.value(0) == u"READY") {
+            newVersion_ = words.value(1);
+        } else if (words.value(0) == u"SOON") {
+            newVersion_ = words.value(1);
+            const QDateTime at = QDateTime::fromString(words.value(2), u"yyyy-MM-ddTHH:mm"_s);
+            newVersionFrom_ = at.isValid() ? QLocale().toString(at, QLocale::ShortFormat) : words.value(2);
         }
-        if (newVersion_ != was)
+        if (newVersion_ != was || newVersionFrom_ != wasFrom)
             emit newVersionChanged();
     });
     updatesTimer_.setInterval(30 * 60'000);
@@ -582,9 +591,9 @@ void StationController::checkOnline()
     run(u"online-check"_s, {});
 }
 
-void StationController::installOnline()
+void StationController::installOnline(bool now)
 {
-    run(u"online-update"_s, {});
+    run(u"online-update"_s, now ? QStringList{u"--now"_s} : QStringList{});
 }
 
 void StationController::setRemoteSupport(bool on)

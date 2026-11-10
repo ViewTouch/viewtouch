@@ -10,8 +10,10 @@
 #   vtmodern-device timezone ZONE                       e.g. America/New_York
 #   vtmodern-device update                              install every update now
 #   vtmodern-device update-usb                          install the newest ViewTouch package on a USB stick
-#   vtmodern-device online-check                        is there a newer ViewTouch online? (last line: READY version | CURRENT version)
-#   vtmodern-device online-update                       download it (signed), install it, and the newest tablet apps
+#   vtmodern-device online-check                        is there a newer ViewTouch online? (last line: READY version have |
+#                                                       SOON version when | PAUSED version have | HELD version have | CURRENT have)
+#   vtmodern-device online-update [--now]               download it (signed), install it, and the newest tablet apps
+#                                                       (--now: before this computer's turn; never when paused or held)
 #   vtmodern-device update-verify                       did the update come up? if not, back to the version before
 #   vtmodern-device usb-open                            the USB sticks plugged in, read-only, for pictures
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
@@ -322,6 +324,10 @@ online-check|online-update)
         exit 0
     fi
     due=$(rollout_due "$work/latest.json" "$latest")
+    # (A manager's Install now: this computer doesn't wait for its turn.)
+    if [ "$action" = online-update ] && [ "${1:-}" = --now ]; then
+        due=0
+    fi
     if [ "$(now)" -lt "$due" ]; then
         echo "ViewTouch $latest comes to this computer from $(date -d "@$due" '+%Y-%m-%d %H:%M') (stores update in turns)."
         echo "SOON $latest $(date -d "@$due" +%Y-%m-%dT%H:%M)"
