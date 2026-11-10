@@ -5227,8 +5227,11 @@ TEST_CASE("Manual: every page, in Classic and in Modern", "[.manual][.pages]")
     REQUIRE(f.open(QIODevice::ReadOnly));
     const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
     QStringList ids;
+    // (Not a food truck's or a shop's own pages: they're shown on a screen
+    // serving that way, in the manual's pictures of them.)
+    const layout::Layout seed = seedLayout();
     for (const QString &file : QDir(QStringLiteral(VTM_SEED_DIR "/pages")).entryList({u"*.json"_s}))
-        if (!file.endsWith(u"-phone.json"_s))
+        if (const layout::Page *p = seed.page(file.chopped(5)); !file.endsWith(u"-phone.json"_s) && p && p->service.isEmpty())
             ids << file.chopped(5);
     struct Look { const char *name; bool modern; int w, h; QString form; };
     for (const Look &look : {Look{"classic", false, 1600, 900, {}}, Look{"modern", true, 1600, 900, {}},

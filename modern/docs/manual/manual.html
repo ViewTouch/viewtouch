@@ -26,11 +26,11 @@
 <div class="cover">
 <h1 class="first">ViewTouch</h1>
 <p style="font-size:18pt; color:#555">User Manual</p>
-<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.16 · November 2026</p>
+<p style="font-size:11pt; color:#555">For servers, hosts, kitchen staff, cashiers and managers<br>Version 0.17 · November 2026</p>
 <p class="shot"><img src="shots/m02-tables.jpg" width="520" height="292"></p>
 </div>
 
-<p style="font-size:10pt; color:#555">Pictures of every screen, in the Classic and the Modern look, on a standard screen and on a phone, are in <b>ViewTouch-Screens.zip</b> beside this manual (github.com/ViewTouch/viewtouch, release <i>modern-manual-0.16</i>).</p>
+<p style="font-size:10pt; color:#555">Pictures of every screen, in the Classic and the Modern look, on a standard screen and on a phone, are in <b>ViewTouch-Screens.zip</b> beside this manual (github.com/ViewTouch/viewtouch, release <i>modern-manual-0.17</i>).</p>
 
 <h1>Contents</h1>
 <ol>
@@ -56,6 +56,14 @@
 </ol>
 
 <!-- ======================================================================= -->
+<h1>What's new in 0.17</h1>
+<ul>
+<li><b>A food truck's and a shop's own screens</b>: each has its own order screen and login, on a standard screen and on a phone, instead of the restaurant's with buttons hidden (chapter 11). The truck's shows who's working and since when, the clock, <b>Orders</b> with how many wait, and <b>Log Out</b> along the top; the shop's a wide <b>Scan or search an item…</b>, a big sale list, <b>Qty +1</b>, <b>Discount…</b> and <b>No Sale</b>. Their checks leave out the guest count, seats and courses. Edit them like any page: edit mode on a truck's or a shop's screen opens its own, with the menu pages in its frame.</li>
+<li><b>A PIN at every truck shift</b>: the truck's login asks <i>Who's working?</i>; <b>Start My Shift</b> clocks them in, and their sales and tips are theirs. <b>Log Out</b> opens End of Shift (Clock Out, tips, Log Out), and the next person's PIN takes over; an order left open waits for its cashier. Nobody logging in (the Counter) is now a choice in Store Settings → How you serve, off unless turned on: <b>a truck that ran without logins asks for a PIN after this update.</b></li>
+<li><b>Call-in orders</b> on a truck: <b>Send</b> puts the order away and the screen is ready for the next guest; it waits on <b>Orders</b> (<i>NOT PAID</i>), where <b>Open</b> brings it back and <b>Pay</b> takes the payment when they come. An order sent before it's paid needs a name; <b>Picked Up</b> waits for the payment. <b>New Order</b> puts away one not sent yet. (Store Settings → How you serve → <b>After Send, start a new order</b>.)</li>
+<li><b>No idle logout at a truck or a shop</b>: whoever is working stays logged in until they log out.</li>
+</ul>
+
 <h1>What's new in 0.16</h1>
 <ul>
 <li><b>Moving pictures on the guest screens</b>: an animated GIF or WebP, or a Lottie animation (a <code>.json</code> file from After Effects or LottieFiles), plays on the customer display, the Now Serving board and the kiosk's welcome (chapter 13).</li>
