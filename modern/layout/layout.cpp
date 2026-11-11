@@ -211,7 +211,7 @@ QString Layout::styleOf(const Theme &theme)
 QString Layout::themePrint(const Theme &theme)
 {
     QJsonObject o = theme.toJson();
-    for (const char *k : {"styleId", "otherStyles", "builtIn", "schemaVersion"})
+    for (const char *k : {"styleId", "otherStyles", "builtIn", "schemaVersion", "arranged"})
         o.remove(QLatin1String(k));
     return QString::fromLatin1(QCryptographicHash::hash(QJsonDocument(o).toJson(QJsonDocument::Compact),
                                                         QCryptographicHash::Sha256).toHex());
@@ -224,7 +224,7 @@ bool Layout::refreshStyle(const Theme &builtIn)
     if (was.isEmpty() || was == now || themePrint(theme) != was)
         return false;   // not a starter theme, the same, or changed here
     Theme next = builtIn;
-    for (const char *k : {"styleId", "otherStyles"})
+    for (const char *k : {"styleId", "otherStyles", "arranged"})
         if (theme.extra.contains(QLatin1String(k)))
             next.extra.insert(QLatin1String(k), theme.extra.value(QLatin1String(k)));
     next.extra.insert(u"builtIn"_s, now);
@@ -261,9 +261,29 @@ bool Layout::arrangePage(Page &page, const QString &id, const QString &from)
     return true;
 }
 
+QList<Page> Layout::stylePages(const QString &style)
+{
+    QList<Page> out;
+    const QDir dir(u":/seed/"_s + style);
+    if (style.isEmpty() || style == u"classic" || style == u"modern" || !dir.exists())
+        return out;
+    for (const QString &file : dir.entryList({u"*.json"_s}, QDir::Files, QDir::Name))
+        if (const auto o = readJsonObject(dir.filePath(file), nullptr))
+            out.append(Page::fromJson(*o));
+    return out;
+}
+
+QString Layout::arrangedStyle(const Theme &theme)
+{
+    if (const QString was = theme.extra.value(u"arranged").toString(); !was.isEmpty())
+        return was;
+    const QString id = styleOf(theme);
+    return id == u"modern" ? id : u"classic"_s;
+}
+
 void Layout::arrangePages(const QStringList &ids)
 {
-    const QString id = styleOf(theme);
+    const QString id = arrangedStyle(theme);
     for (Page &p : pages) {
         if (!ids.isEmpty() && !ids.contains(p.id))
             continue;
@@ -274,13 +294,22 @@ void Layout::arrangePages(const QStringList &ids)
     }
 }
 
-bool Layout::useStyle(const QString &id, const Theme &builtIn)
+bool Layout::useStyle(const QString &id, const Theme &builtIn, const QList<Page> &stylePages)
 {
     const QString was = styleOf(theme);
     if (id.isEmpty() || id == was)
         return false;
-    for (Page &p : pages)
-        arrangePage(p, id, was);
+    // The buttons go to the new style's places: Classic's or Modern's. A
+    // style with its own pages (Legacy) leaves them where they were (its own
+    // pages show in their places), and coming back moves them from there.
+    const QString from = arrangedStyle(theme);
+    const QString to = id == u"classic" || id == u"modern" ? id : from;
+    if (to != from)
+        for (Page &p : pages)
+            arrangePage(p, to, from);
+    for (const Page &p : stylePages)   // the first time: its pages (edited ones stay)
+        if (!page(p.id))
+            pages.append(p);
     QJsonObject others = theme.extra.value(u"otherStyles").toObject();
     QJsonObject leaving = theme.toJson();
     leaving.remove(u"otherStyles"_s);
@@ -292,6 +321,7 @@ bool Layout::useStyle(const QString &id, const Theme &builtIn)
     others.insert(was, leaving);
     next.extra.insert(u"styleId"_s, id);
     next.extra.insert(u"otherStyles"_s, others);
+    next.extra.insert(u"arranged"_s, to);
     theme = std::move(next);
     return true;
 }
@@ -456,10 +486,12 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
     return out;
 }
 
-const Page *Layout::variantFor(const QString &pageId, const QString &formFactor, const QString &service) const
+const Page *Layout::variantFor(const QString &pageId, const QString &formFactor, const QString &service,
+                               const QString &style) const
 {
     for (const Page &p : pages) {
-        if (!p.variantOf.isEmpty() && p.variantOf == pageId && p.formFactor == formFactor && p.service == service)
+        if (!p.variantOf.isEmpty() && p.variantOf == pageId && p.formFactor == formFactor && p.service == service
+            && p.inStyle == style)
             return &p;
     }
     return nullptr;
@@ -467,13 +499,26 @@ const Page *Layout::variantFor(const QString &pageId, const QString &formFactor,
 
 Layout Layout::forService(const QString &service) const
 {
+    return service.isEmpty() ? *this : standIn(service, {});
+}
+
+Layout Layout::forStyle(const QString &style) const
+{
+    Layout out = std::ranges::any_of(pages, [&](const Page &p) { return !p.inStyle.isEmpty() && p.inStyle == style; })
+                     ? standIn({}, style)
+                     : *this;
+    // Another style's own pages: not in this one.
+    out.pages.removeIf([&](const Page &p) { return !p.inStyle.isEmpty() && p.inStyle != style; });
+    return out;
+}
+
+Layout Layout::standIn(const QString &service, const QString &style) const
+{
     Layout out = *this;
-    if (service.isEmpty())
-        return out;
     // Templates replaced, and where their framed pages' zones go from and to.
     QHash<QString, std::pair<QRect, QRect>> reframed;
     for (const Page &v : pages) {
-        if (v.service != service || v.variantOf.isEmpty() || !v.formFactor.isEmpty())
+        if (v.service != service || v.inStyle != style || v.variantOf.isEmpty() || !v.formFactor.isEmpty())
             continue;
         Page *base = out.page(v.variantOf);
         if (!base || !base->variantOf.isEmpty())
@@ -488,6 +533,7 @@ Layout Layout::forService(const QString &service) const
         shown.permission = base->permission;
         shown.variantOf.clear();
         shown.service.clear();
+        shown.inStyle.clear();
         shown.hiddenZones.clear();
         *base = shown;
         if (!v.contentArea.isEmpty() && v.contentArea != from)
@@ -508,7 +554,7 @@ Layout Layout::forService(const QString &service) const
     if (reframed.isEmpty())
         return out;
     for (Page &p : out.pages) {
-        if (const std::optional<Reframe> f = serviceFrame(p.id, service))   // (as it was)
+        if (const std::optional<Reframe> f = frameFor(p.id, service, style))   // (as it was)
             for (Zone &z : p.zones)
                 z.rect = f->map(z.rect);
     }
@@ -529,12 +575,22 @@ QRect Layout::Reframe::unmap(const QRect &r) const
 
 std::optional<Layout::Reframe> Layout::serviceFrame(const QString &pageId, const QString &service) const
 {
+    return service.isEmpty() ? std::nullopt : frameFor(pageId, service, {});
+}
+
+std::optional<Layout::Reframe> Layout::styleFrame(const QString &pageId, const QString &style) const
+{
+    return style.isEmpty() ? std::nullopt : frameFor(pageId, {}, style);
+}
+
+std::optional<Layout::Reframe> Layout::frameFor(const QString &pageId, const QString &service, const QString &style) const
+{
     const Page *p = page(pageId);
-    if (service.isEmpty() || !p || !p->variantOf.isEmpty() || variantFor(pageId, {}, service))
+    if (!p || !p->variantOf.isEmpty() || variantFor(pageId, {}, service, style))
         return std::nullopt;   // (a page with its own version is shown as that)
     const QList<const Page *> chain = templateChain(pageId);
     for (qsizetype i = 1; i < chain.size(); ++i) {
-        const Page *v = variantFor(chain[i]->id, {}, service);
+        const Page *v = variantFor(chain[i]->id, {}, service, style);
         if (!v || v->contentArea.isEmpty())
             continue;
         const QRect from = chain[i]->contentArea.isEmpty() ? DefaultContentArea : chain[i]->contentArea;
@@ -643,8 +699,8 @@ QList<Layout::NotShown> Layout::notOnVariant(const QString &variantId) const
 {
     QList<NotShown> out;
     const Page *v = page(variantId);
-    if (!v || v->variantOf.isEmpty() || !page(v->variantOf) || !v->service.isEmpty())
-        return out;   // (a way of serving's version is a page of its own: nothing must be on it)
+    if (!v || v->variantOf.isEmpty() || !page(v->variantOf) || !v->service.isEmpty() || !v->inStyle.isEmpty())
+        return out;   // (a way of serving's or a style's version is a page of its own: nothing must be on it)
     for (const PlacedZone &pz : effectiveZones(v->variantOf)) {
         const Zone &z = *pz.zone;
         if ((pz.inherited && !v->templateId.isEmpty()) || z.kind == u"comment" || z.kind == u"decor"
@@ -740,7 +796,7 @@ QStringList Layout::validate() const
         if (!p.variantOf.isEmpty()) {
             if (!page(p.variantOf))
                 issues << u"%1: it is a version of '%2', which does not exist"_s.arg(where, p.variantOf);
-            else if (variantFor(p.variantOf, p.formFactor, p.service) != &p)
+            else if (variantFor(p.variantOf, p.formFactor, p.service, p.inStyle) != &p)
                 issues << u"%1: '%2' has more than one %3 version"_s.arg(where, p.variantOf, p.formFactor.isEmpty() ? p.service : p.formFactor);
             for (const NotShown &n : notOnVariant(p.id)) {
                 if (!n.hidden)

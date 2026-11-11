@@ -29,10 +29,10 @@ bool LayoutHub::refreshStyle(const layout::Theme &builtIn)
     return save(l, &error, nullptr);
 }
 
-bool LayoutHub::useStyle(const QString &id, const layout::Theme &builtIn)
+bool LayoutHub::useStyle(const QString &id, const layout::Theme &builtIn, const QList<layout::Page> &stylePages)
 {
     layout::Layout l = layout_;
-    if (!l.useStyle(id, builtIn))
+    if (!l.useStyle(id, builtIn, stylePages))
         return false;
     QString error;
     return save(l, &error, nullptr);

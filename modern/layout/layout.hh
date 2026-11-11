@@ -58,7 +58,8 @@ public:
     // "enforce" (normal, selected, disabled, background) is its look over
     // the pages' own (frames, shadows, fonts, textures; not colors).
     static QString styleOf(const Theme &theme);
-    bool useStyle(const QString &id, const Theme &builtIn);
+    // `stylePages`: the style's own pages (Legacy's), added the first time.
+    bool useStyle(const QString &id, const Theme &builtIn, const QList<Page> &stylePages = {});
     // A style's theme as ViewTouch made it ("builtIn": the fingerprint of the
     // starter theme it is), never changed here: a newer starter theme for it
     // takes its place (like a starter page). A theme the store changed stays.
@@ -109,7 +110,8 @@ private:
 public:
     // The version of `pageId` made for `formFactor` screens ("phone"), or
     // for a way of serving (`service`: "foodTruck", "retail"), if any.
-    const Page *variantFor(const QString &pageId, const QString &formFactor, const QString &service = {}) const;
+    const Page *variantFor(const QString &pageId, const QString &formFactor, const QString &service = {},
+                           const QString &style = {}) const;
     // The pages as a screen serving that way shows them: each page with a
     // version for it takes the version's zones (keeping its id and role),
     // and the pages a replaced template frames (the menu pages) have their
@@ -124,6 +126,22 @@ public:
         QRect unmap(const QRect &r) const;   // as shown -> as it was
     };
     std::optional<Reframe> serviceFrame(const QString &pageId, const QString &service) const;
+    // The pages as the store's style shows them: a style's own pages
+    // (Page::style) only in that style, and its versions in their pages'
+    // places, as forService does for a way of serving.
+    Layout forStyle(const QString &style) const;
+    std::optional<Reframe> styleFrame(const QString &pageId, const QString &style) const;
+    // The Classic or Modern places the pages are in (Legacy leaves them as they were).
+    static QString arrangedStyle(const Theme &theme);
+    // A style's own starter pages (qrc:/seed/<style>/*.json: Legacy's); none for most.
+    static QList<Page> stylePages(const QString &style);
+
+private:
+    // Versions standing in for their pages: a way of serving's or a style's.
+    Layout standIn(const QString &service, const QString &style) const;
+    std::optional<Reframe> frameFor(const QString &pageId, const QString &service, const QString &style) const;
+
+public:
     // The order screen's frame before content areas were kept: where the menu pages' keys sit.
     static constexpr QRect DefaultContentArea{592, 104, 1312, 860};
 

@@ -2,10 +2,12 @@ import QtQuick
 import QtQuick.Layouts
 
 // PIN entry: masked dots and a keypad. Enter logs in.
+// props.keys false: the dots only (Legacy's login, whose keys are buttons of their own).
 Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
+    readonly property bool keys: zone?.props?.keys ?? true
 
     ColumnLayout {
         anchors.fill: parent
@@ -15,11 +17,12 @@ Item {
         Text {
             textFormat: Text.PlainText
             Layout.fillWidth: true
+            Layout.alignment: w.keys ? 0 : Qt.AlignBottom
             horizontalAlignment: Text.AlignHCenter
             text: w.zone.label || qsTr("Enter your PIN")
             color: w.zone.st.textColor ?? "white"
             font.family: w.zone.st.font ?? Ui.font
-            font.pixelSize: w.height * 0.05
+            font.pixelSize: w.height * (w.keys ? 0.05 : 0.16)
         }
 
         Row {
@@ -29,7 +32,7 @@ Item {
                 model: Math.max(4, w.pos ? w.pos.pinLength : 0)
                 delegate: Rectangle {
                     required property int index
-                    width: w.height * 0.045
+                    width: w.height * (w.keys ? 0.045 : 0.14)
                     height: width
                     radius: width / 2
                     color: w.pos && index < w.pos.pinLength ? (w.zone.st.textColor ?? "white") : "transparent"
@@ -39,7 +42,13 @@ Item {
             }
         }
 
+        Item {   // (no keys: the dots at the middle)
+            visible: !w.keys
+            Layout.fillHeight: true
+        }
+
         GridLayout {
+            visible: w.keys
             Layout.fillWidth: true
             Layout.fillHeight: true
             columns: 3

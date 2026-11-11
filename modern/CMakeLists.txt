@@ -321,6 +321,13 @@ if(Qt6_FOUND)
         parchment:parchment-6 blueparchment:blueparchment leather:leather-8
         steel:steel-8 metal:metal-8 canvas:canvas-8 velvet:velvet-8 pearl:pearl-8
         stone:stone-8 carbonfiber:carbonfiber-128-6
+        # The rest of legacy's (the Legacy style's pages use them all)
+        grayparchment:grayparchment-8 tanparchment:tanparchment-8 smoke:smoke-4 gradient:gradient-8
+        gradientbrown:gradient-brown black:black greysand:greySand whitemesh:whiteMesh
+        whitetexture:whitetexture-128-32 darkorangetexture:darkorangetexture-128-32
+        yellowtexture:yellowtexture-128-32 greentexture:greentexture-128-32
+        orangetexture:orangetexture-128-32 bluetexture:bluetexture-128-32 pooltable:pooltable-256
+        test:test-256 diamondleather:diamondleather-256 bread:bread-256 lava:lava-256 darkmarble:darkmarble-256
     )
     set(VTM_TEXTURE_FILES)
     foreach(entry IN LISTS VTM_TEXTURES)

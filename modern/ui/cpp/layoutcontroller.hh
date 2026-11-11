@@ -399,6 +399,10 @@ private:
     std::optional<vt::layout::Layout> editView_;
     void updateEditView();
     QString servedMode() const;
+    // The store's style when it has pages of its own here (Legacy), else "".
+    QString styledAs() const;
+    // A way of serving's or the style's version of a page, to edit in its place.
+    const vt::layout::Page *versionFor(const vt::layout::Layout &l, const QString &pageId) const;
     void updateTerminalLook();
     QVariantMap explanation_;
     QString unknownCode_;

@@ -354,8 +354,7 @@ void LayoutController::replaceLayout(Layout layout)
 {
     layout_ = std::move(layout);
     emit menuScreensChanged();
-    if (lookedLayout_)
-        updateTerminalLook();   // the new pages, in this screen's look
+    updateTerminalLook();   // the new pages, in this screen's look and style
     if (editing_) {
         setStatus(tr("Pages were changed on another terminal. Saving your edits will replace them."));
         return;
@@ -707,6 +706,23 @@ const Layout &LayoutController::activeLayout() const
     return lookedLayout_ ? *lookedLayout_ : layout_;
 }
 
+QString LayoutController::styledAs() const
+{
+    const QString style = vt::layout::Layout::styleOf(layout_.theme);
+    return std::ranges::any_of(layout_.pages, [&](const vt::layout::Page &p) { return p.inStyle == style; }) ? style
+                                                                                                       : QString();
+}
+
+const vt::layout::Page *LayoutController::versionFor(const Layout &l, const QString &pageId) const
+{
+    if (!servedAs_.isEmpty())
+        if (const vt::layout::Page *v = l.variantFor(pageId, {}, servedAs_))
+            return v;
+    if (const QString style = styledAs(); !style.isEmpty())
+        return l.variantFor(pageId, {}, {}, style);
+    return nullptr;
+}
+
 QString LayoutController::servedMode() const
 {
     const QString mode = pos_ ? pos_->serviceInfo().value(u"mode"_s).toString() : QString();
@@ -721,8 +737,11 @@ void LayoutController::updateTerminalLook()
         && QGuiApplication::styleHints()->accessibility()->contrastPreference() == Qt::ContrastPreference::HighContrast)
         id = u"contrast"_s;   // the device asks for it (Qt 6.10's accessibility hints)
     std::optional<Layout> next;
+    // The store's style's own pages (Legacy's) in their places; any other style's out of sight.
+    if (std::ranges::any_of(layout_.pages, [](const vt::layout::Page &p) { return !p.inStyle.isEmpty(); }))
+        next = layout_.forStyle(vt::layout::Layout::styleOf(layout_.theme));
     if (!served.isEmpty())
-        next = layout_.forService(served);
+        next = (next ? *next : layout_).forService(served);
     if (!id.isEmpty()) {
         const QList<vt::app::Look> looks = allLooks(pos_);
         if (const auto it = std::ranges::find_if(looks, [&](const vt::app::Look &l) { return l.id == id; }); it != looks.end()) {
@@ -1586,9 +1605,9 @@ bool LayoutController::showPage(const QString &pageId)
 {
     if (!activeLayout().page(pageId))
         return false;
-    // Editing at a truck or a shop: a page with its own version for it is edited as that.
-    if (editing_ && !servedAs_.isEmpty())
-        if (const vt::layout::Page *v = activeLayout().variantFor(pageId, {}, servedAs_); v && v->id != pageId)
+    // Editing at a truck or a shop, or in Legacy: a page with its own version there is edited as that.
+    if (editing_)
+        if (const vt::layout::Page *v = versionFor(activeLayout(), pageId); v && v->id != pageId)
             return showPage(v->id);
     return navigate(Navigator::Mode::Replace, pageId) || nav_.current() == pageId;
 }
@@ -1664,7 +1683,7 @@ void LayoutController::enterEditMode()
         editor_->setMealPeriods(pos_->mealPeriods());
     connect(editor_, &EditorController::layoutChanged, this, &LayoutController::onDraftChanged);
     connect(editor_, &EditorController::showPageRequested, this, &LayoutController::showPage);
-    editor_->setService(servedAs_);   // a truck's screen: its pages as the truck shows them
+    editor_->setService(servedAs_, styledAs());   // a truck's screen, Legacy: pages as they show them
     emit editorChanged();
     editing_ = true;
     updateEditView();
@@ -1673,10 +1692,9 @@ void LayoutController::enterEditMode()
     emit editingChanged();
     refresh();
     emit pageChanged();
-    // A food truck's or a shop's screen: its own version of this page, to edit.
-    if (!servedAs_.isEmpty())
-        if (const vt::layout::Page *v = layout_.variantFor(nav_.current(), {}, servedAs_))
-            showPage(v->id);
+    // A food truck's or a shop's screen, or Legacy: its own version of this page, to edit.
+    if (const vt::layout::Page *v = versionFor(layout_, nav_.current()))
+        showPage(v->id);
 }
 
 bool LayoutController::saveEdits()
@@ -1723,8 +1741,7 @@ bool LayoutController::saveEdits()
     }
     layout_ = draft;
     emit menuScreensChanged();
-    if (lookedLayout_)
-        updateTerminalLook();
+    updateTerminalLook();   // in this screen's look and style
     editor_->editor().markClean();
     setStatus(saver_ ? tr("Saved") : tr("Applied (not saved to disk)"));
     return true;
@@ -1764,8 +1781,8 @@ bool LayoutController::leaveEditMode(bool save)
 
 void LayoutController::updateEditView()
 {
-    if (editing_ && editor_ && !servedAs_.isEmpty())
-        editView_ = editor_->layout().forService(servedAs_);
+    if (editing_ && editor_ && (!servedAs_.isEmpty() || !styledAs().isEmpty()))
+        editView_ = editor_->layout().forStyle(styledAs()).forService(servedAs_);
     else
         editView_.reset();
 }
@@ -2028,6 +2045,28 @@ void LayoutController::buzz(bool refused)
 void LayoutController::runAction(const Action &a, Done done)
 {
     const QString type = a.type();
+
+    // A key on the page (Legacy's number keys): to its PIN entry when logging in, else its amount entry.
+    if (type == u"key") {
+        if (!pos_)
+            return done(false);
+        const QString key = a.str(u"key");
+        if (!pos_->loggedIn()) {
+            if (key == u"enter")
+                login();
+            else
+                pos_->pinKey(key);
+        } else if (key != u"enter") {
+            pos_->entryKey(key);
+        }
+        return done(true);
+    }
+
+    // A legacy button for something Modern doesn't do yet (the Legacy style's pages).
+    if (type == u"notInModern") {
+        setStatus(tr("Not in ViewTouch Modern yet: %1").arg(a.str(u"what")));
+        return done(true);
+    }
 
     if (type == u"jump") {
         const QString modeName = a.str(u"mode");

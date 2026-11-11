@@ -542,8 +542,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             with(field(u"style"_s, tr("Style"), u"enum"_s,
                        tr("How every screen looks. Classic: raised buttons and textures, as ViewTouch always looked. "
                           "Modern: flat buttons with thin borders, calm colors and a modern font. "
+                          "Legacy: the original ViewTouch's own pages, every one where it was, for a store coming from it. "
                           "Switch back any time: your buttons, pages and colors stay as they are in each.")),
-                 u"options"_s, options({{"classic", "Classic"}, {"modern", "Modern"}})),
+                 u"options"_s, options({{"classic", "Classic"}, {"modern", "Modern"}, {"legacy", "Legacy"}})),
             field(u"screensUpdate"_s, tr("Phones and tablets get updates by themselves"), u"bool"_s,
                   tr("While nobody is logged in on one, it gets the newer app from this computer; "
                      "the next person to use it touches Install. Off: the maintainer updates each one.")),

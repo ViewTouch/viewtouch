@@ -204,27 +204,44 @@ QString EditorController::selectionKind() const
     return kind;
 }
 
-void EditorController::setService(const QString &service)
+void EditorController::setService(const QString &service, const QString &style)
 {
-    if (service == service_)
+    if (service == service_ && style == style_)
         return;
     service_ = service;
+    style_ = style;
     ++revision_;
     emit revisionChanged();
 }
 
 std::optional<Layout::Reframe> EditorController::frame() const
 {
-    return editor_.layout().serviceFrame(pageId_, service_);
+    // The style's frame first (Legacy's order screen), then the way of
+    // serving's (a truck's): two scalings make one.
+    const Layout &l = editor_.layout();
+    const std::optional<Layout::Reframe> byStyle = l.styleFrame(pageId_, style_);
+    const std::optional<Layout::Reframe> byService =
+        service_.isEmpty() ? std::nullopt : l.forStyle(style_).serviceFrame(pageId_, service_);
+    if (byStyle && byService)
+        return Layout::Reframe{byStyle->from, byService->map(byStyle->to)};
+    return byStyle ? byStyle : byService;
 }
 
 QVariantList EditorController::geometry() const
 {
-    QVariantList out;
     // As the screen shows it: a truck's order screen around a menu page.
-    const std::optional<Layout> shown = service_.isEmpty() ? std::nullopt
-                                                           : std::optional<Layout>(editor_.layout().forService(service_));
-    for (const Layout::PlacedZone &pz : (shown ? *shown : editor_.layout()).effectiveZones(pageId_)) {
+    const std::optional<Layout> shown = service_.isEmpty() && style_.isEmpty()
+                                            ? std::nullopt
+                                            : std::optional<Layout>(editor_.layout().forStyle(style_).forService(service_));
+    if (shown && !shown->page(pageId_))   // a page of another style's, edited as it is
+        return geometryOf(editor_.layout());
+    return geometryOf(shown ? *shown : editor_.layout());
+}
+
+QVariantList EditorController::geometryOf(const Layout &l) const
+{
+    QVariantList out;
+    for (const Layout::PlacedZone &pz : l.effectiveZones(pageId_)) {
         const Zone &z = *pz.zone;
         out.append(QVariantMap{
             {u"id"_s, z.id}, {u"kind"_s, z.kind}, {u"label"_s, z.label},
@@ -243,7 +260,7 @@ QVariantList EditorController::pages() const
         out.append(QVariantMap{
             {u"id"_s, p.id}, {u"name"_s, p.name}, {u"kind"_s, p.kind}, {u"role"_s, p.role},
             {u"templateId"_s, p.templateId}, {u"zoneCount"_s, p.zones.size()},
-            {u"variantOf"_s, p.variantOf}, {u"service"_s, p.service},
+            {u"variantOf"_s, p.variantOf}, {u"service"_s, p.service}, {u"style"_s, p.inStyle},
             {u"hasPhone"_s, editor_.layout().variantFor(p.id, u"phone"_s) != nullptr},
         });
     }

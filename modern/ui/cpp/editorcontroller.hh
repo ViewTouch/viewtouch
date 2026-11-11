@@ -34,6 +34,7 @@ class EditorController : public QObject {
     // Bumps on any layout, page, or selection change; inspector bindings
     // read it to re-query field values.
     Q_PROPERTY(int revision READ revision NOTIFY revisionChanged)
+    Q_PROPERTY(QString style READ style NOTIFY revisionChanged)   // the store's style (Legacy: its own pages listed)
     Q_PROPERTY(bool dirty READ dirty NOTIFY stateChanged)
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY stateChanged)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY stateChanged)
@@ -162,8 +163,10 @@ public:
     // A food truck's or a shop's screen ("foodTruck", "retail"): pages are
     // shown as it shows them (a menu page in its order screen's frame), and
     // what's moved there goes back where the page keeps it.
-    void setService(const QString &service);
+    // And the store's style (Legacy's own pages in their places).
+    void setService(const QString &service, const QString &style = {});
     QString service() const { return service_; }
+    QString style() const { return style_; }
     Q_INVOKABLE bool importLayout(const QUrl &file);
     // Ready-made layouts for the page being edited (by its role, else its id):
     // [{id, name, description, zones, background}].
@@ -197,8 +200,10 @@ private:
     vt::app::LayoutEditor editor_;
     QString pageId_;
     QString service_;
+    QString style_;
     // This page's zones shown elsewhere than kept (Layout::serviceFrame).
     std::optional<vt::layout::Layout::Reframe> frame() const;
+    QVariantList geometryOf(const vt::layout::Layout &l) const;
     QStringList selection_;
     QString notice_;
     int revision_ = 0;

@@ -38,6 +38,10 @@ struct Page {
     // Or for one way of serving ("foodTruck", "retail"): screens serving
     // that way show it in place of the page (Layout::forService).
     QString service;
+    // Or a style's own page ("legacy": the original ViewTouch's): shown only
+    // in that style, in place of the page it's a version of if any
+    // (Layout::forStyle).
+    QString inStyle;
     // A version's: zones of that page left off this screen on purpose (the
     // rest not placed here are new there, and the page check says so).
     QStringList hiddenZones;

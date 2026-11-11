@@ -1389,7 +1389,7 @@ int runStore(const Args &cli, const Options &o)
         if (vt::layout::Layout::styleOf(hub.layout().theme) == id) {
             if (hub.refreshStyle(builtIn))   // a newer starter theme for it
                 qInfo().noquote() << "Style" << id << "updated";
-        } else if (hub.useStyle(id, builtIn)) {
+        } else if (hub.useStyle(id, builtIn, vt::layout::Layout::stylePages(id))) {
             qInfo().noquote() << "Style:" << id;
         }
     };
