@@ -1,0 +1,672 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n360",
+ "name": "Notes",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "parchment"
+ },
+ "legacyId": -360,
+ "zones": [
+  {
+   "id": "n360-15",
+   "rect": {
+    "x": 368,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Notes",
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n360-14",
+   "rect": {
+    "x": 520,
+    "y": 48,
+    "w": 796,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Certain pages in vt data have numbers which are hard coded. These are mostly found between -1 and -20 but also include the Settlement Page (-80)",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n360-13",
+   "rect": {
+    "x": 564,
+    "y": 180,
+    "w": 628,
+    "h": 88
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "The Command Window on the Table Page is hard coded to search for and jump to the Page closest to zero, starting at -10",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-12",
+   "rect": {
+    "x": 564,
+    "y": 288,
+    "w": 716,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Access to these pages is conditional upon Supervisor or Manager or Editor or Employee Records",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-11",
+   "rect": {
+    "x": 1708,
+    "y": 936,
+    "w": 204,
+    "h": 136
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n360-10",
+   "rect": {
+    "x": 372,
+    "y": 500,
+    "w": 884,
+    "h": 44
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Set terminal hostnames and IP addresses.",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-9",
+   "rect": {
+    "x": 372,
+    "y": 544,
+    "w": 884,
+    "h": 44
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Set vthost's hostnames and copy to terminals",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-8",
+   "rect": {
+    "x": 372,
+    "y": 588,
+    "w": 884,
+    "h": 52
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Usernames, Passwords:\nRouter: admin, vtpos",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-7",
+   "rect": {
+    "x": 372,
+    "y": 456,
+    "w": 884,
+    "h": 44
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Load Router config file from /home/viewtouch/Desktop",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n360-6",
+   "rect": {
+    "x": 1088,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "SuperUser Desktop",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n999"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -999
+   }
+  },
+  {
+   "id": "n360-5",
+   "rect": {
+    "x": 720,
+    "y": 940,
+    "w": 184,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Conditional Button Options",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n362"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -362
+   }
+  },
+  {
+   "id": "n360-4",
+   "rect": {
+    "x": 912,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "SYSCMD Play Area",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n998"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -998
+   }
+  },
+  {
+   "id": "n360-3",
+   "rect": {
+    "x": 192,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Table Page Button Options",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n332"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -332
+   }
+  },
+  {
+   "id": "n360-2",
+   "rect": {
+    "x": 544,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Notes",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n361"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -361
+   }
+  },
+  {
+   "id": "n360-1",
+   "rect": {
+    "x": 12,
+    "y": 940,
+    "w": 168,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Go Button Options",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n331"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#502d19",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -331
+   }
+  }
+ ]
+}

@@ -1,0 +1,569 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n47",
+ "name": "Personal Report: Daily & Period Menu Sales Summaries",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "sand"
+ },
+ "legacyId": -47,
+ "zones": [
+  {
+   "id": "n47-13",
+   "rect": {
+    "x": 1696,
+    "y": 912,
+    "w": 204,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n47-12",
+   "rect": {
+    "x": 880,
+    "y": 128,
+    "w": 1028,
+    "h": 32
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "This report shows a summary of revenue (sales) that you facilitated today",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n47-11",
+   "rect": {
+    "x": 952,
+    "y": 912,
+    "w": 228,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Day\nView",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "this toggle"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_TOGGLE"
+   }
+  },
+  {
+   "id": "n47-10",
+   "rect": {
+    "x": 956,
+    "y": 1036,
+    "w": 220,
+    "h": 24
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Toggle",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#ffff00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n47-9",
+   "rect": {
+    "x": 280,
+    "y": 32,
+    "w": 584,
+    "h": 1040
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Menu Sales Summary",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "this report"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_REPORT"
+   }
+  },
+  {
+   "id": "n47-8",
+   "rect": {
+    "x": 880,
+    "y": 184,
+    "w": 1028,
+    "h": 32
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "This report can show this information for any day before today",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n47-7",
+   "rect": {
+    "x": 1432,
+    "y": 912,
+    "w": 228,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Next",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Next"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n47-6",
+   "rect": {
+    "x": 1192,
+    "y": 912,
+    "w": 228,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Prior",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Prior"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "sand",
+     "textColor": "#008000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n47-5",
+   "rect": {
+    "x": 4,
+    "y": 56,
+    "w": 180,
+    "h": 48
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Redundancy",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n47-4",
+   "rect": {
+    "x": 1540,
+    "y": 36,
+    "w": 256,
+    "h": 72
+   },
+   "shape": "rect",
+   "behavior": "passthrough",
+   "kind": "button",
+   "label": "",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "command"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMAND"
+   }
+  },
+  {
+   "id": "n47-3",
+   "rect": {
+    "x": 1544,
+    "y": 76,
+    "w": 248,
+    "h": 20
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "parchment",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n47-2",
+   "rect": {
+    "x": 880,
+    "y": 240,
+    "w": 1028,
+    "h": 32
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "This is a midnight to midnight report",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n47-1",
+   "rect": {
+    "x": 1544,
+    "y": 88,
+    "w": 248,
+    "h": 16
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "parchment",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  }
+ ]
+}

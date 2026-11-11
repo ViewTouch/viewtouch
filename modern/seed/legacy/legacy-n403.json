@@ -1,0 +1,777 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n403",
+ "name": "View, Add or Configure Displays & Printers",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "parchment"
+ },
+ "legacyId": -403,
+ "zones": [
+  {
+   "id": "n403-17",
+   "rect": {
+    "x": 1636,
+    "y": 32,
+    "w": 284,
+    "h": 84
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Receipt Printer Queuename\nMUST be prefixed with",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n403-16",
+   "rect": {
+    "x": 1704,
+    "y": 928,
+    "w": 204,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n403-15",
+   "rect": {
+    "x": 1712,
+    "y": 936,
+    "w": 184,
+    "h": 52
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Changes Require Restart",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n403-14",
+   "rect": {
+    "x": 12,
+    "y": 388,
+    "w": 424,
+    "h": 160
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Change View,\nConfigure\nHighlighted Device",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Change View,\nConfigure\nHighlighted Device"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#0000e6",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n403-13",
+   "rect": {
+    "x": 12,
+    "y": 212,
+    "w": 424,
+    "h": 160
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Show Network Printers",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "this toggle"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#005c82",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#0084a8",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_TOGGLE"
+   }
+  },
+  {
+   "id": "n403-12",
+   "rect": {
+    "x": 1704,
+    "y": 280,
+    "w": 204,
+    "h": 180
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Test  Report Printers",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Test  Report Printers"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#844c26",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n403-11",
+   "rect": {
+    "x": 1704,
+    "y": 472,
+    "w": 204,
+    "h": 160
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Test\nReceipt Printers",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Test\nReceipt Printers"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#a0206e",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n403-10",
+   "rect": {
+    "x": 12,
+    "y": 732,
+    "w": 424,
+    "h": 160
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Active / Inactive",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Active / Inactive"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#006248",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#008060",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n403-9",
+   "rect": {
+    "x": 12,
+    "y": 564,
+    "w": 424,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Add\na Display or Network Printer",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Add\na Display or Network Printer"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#008000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n403-8",
+   "rect": {
+    "x": 12,
+    "y": 48,
+    "w": 424,
+    "h": 148
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "View and Set Global Tax Rates",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n411"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#a0206e",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#c03088",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL",
+    "id": -411
+   }
+  },
+  {
+   "id": "n403-7",
+   "rect": {
+    "x": 12,
+    "y": 908,
+    "w": 424,
+    "h": 152
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Remove\na Display or Network Printer",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Remove\na Display or Network Printer"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n403-6",
+   "rect": {
+    "x": 476,
+    "y": 52,
+    "w": 1152,
+    "h": 1028
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Equipment: Terminals, Printers & Cash Drawers",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "these hardware settings"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "leather",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_HARDWARE"
+   }
+  },
+  {
+   "id": "n403-5",
+   "rect": {
+    "x": 1636,
+    "y": 144,
+    "w": 284,
+    "h": 104
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Full Page Report Printers may have a filepath instead of a Queuename",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n403-4",
+   "rect": {
+    "x": 1668,
+    "y": 240,
+    "w": 220,
+    "h": 28
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "file:/var/vtreport",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n403-3",
+   "rect": {
+    "x": 1668,
+    "y": 108,
+    "w": 216,
+    "h": 28
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "lpd:Queuename",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n403-2",
+   "rect": {
+    "x": 1392,
+    "y": 0,
+    "w": 216,
+    "h": 52
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Turn Help On",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n713"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "graymarble",
+     "textColor": "#ffff00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -713
+   }
+  },
+  {
+   "id": "n403-1",
+   "rect": {
+    "x": 1752,
+    "y": 816,
+    "w": 156,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Continue Settings",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n404"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#008000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -404
+   }
+  }
+ ]
+}

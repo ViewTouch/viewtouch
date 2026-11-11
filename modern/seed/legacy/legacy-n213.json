@@ -1,0 +1,64 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n213",
+ "name": "Take Out & Delivery Help",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "sand"
+ },
+ "legacyId": -213,
+ "zones": [
+  {
+   "id": "n213-1",
+   "rect": {
+    "x": 1708,
+    "y": 936,
+    "w": 204,
+    "h": 136
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  }
+ ]
+}

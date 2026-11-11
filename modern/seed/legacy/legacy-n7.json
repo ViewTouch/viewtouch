@@ -1,0 +1,1545 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n7",
+ "name": "Clock Out, Captured Tips, Hours/Wages Report",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "sand"
+ },
+ "legacyId": -7,
+ "variantOf": "logout",
+ "zones": [
+  {
+   "id": "n7-35",
+   "rect": {
+    "x": 784,
+    "y": 544,
+    "w": 360,
+    "h": 268
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Your\nPersonal Reports",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "push",
+     "page": "legacy-n16"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#6400c8",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -16
+   }
+  },
+  {
+   "id": "n7-34",
+   "rect": {
+    "x": 4,
+    "y": 196,
+    "w": 716,
+    "h": 732
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Captured Tips Payout",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "payout"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_PAYOUT"
+   }
+  },
+  {
+   "id": "n7-33",
+   "rect": {
+    "x": 4,
+    "y": 92,
+    "w": 716,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-32",
+   "rect": {
+    "x": 1268,
+    "y": 32,
+    "w": 580,
+    "h": 52
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "If you have captured tips, don't Go Off Clock until the Tip Payout is entered on the left side of this page.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-31",
+   "rect": {
+    "x": 4,
+    "y": 32,
+    "w": 1208,
+    "h": 52
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Any employee whose tips are captured on credit cards should receive a cash payment equal to the amount of those tips upon completion of their shift, after their drawer is pulled.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-30",
+   "rect": {
+    "x": 720,
+    "y": 172,
+    "w": 500,
+    "h": 36
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "( - )   Overpayment After Adjustment",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-29",
+   "rect": {
+    "x": 728,
+    "y": 104,
+    "w": 428,
+    "h": 64
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "( ! )   Includes unpaid amount from prior day",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-28",
+   "rect": {
+    "x": 812,
+    "y": 352,
+    "w": 288,
+    "h": 184
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Pay Out Tips",
+   "actions": [
+    {
+     "type": "command",
+     "name": "payout"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffff00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_CONDITIONAL"
+   }
+  },
+  {
+   "id": "n7-27",
+   "rect": {
+    "x": 720,
+    "y": 944,
+    "w": 312,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Cancel...\nStay On Clock",
+   "actions": [
+    {
+     "type": "command",
+     "name": "releaseCheck"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-26",
+   "rect": {
+    "x": 1220,
+    "y": 100,
+    "w": 688,
+    "h": 612
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "logoutPanel",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 4,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_LOGOUT"
+   }
+  },
+  {
+   "id": "n7-25",
+   "rect": {
+    "x": 1232,
+    "y": 304,
+    "w": 664,
+    "h": 36
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Your Tip Declaration:",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-24",
+   "rect": {
+    "x": 4,
+    "y": 92,
+    "w": 708,
+    "h": 64
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "To Pay Captured Tips,  Highlight Employee",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-23",
+   "rect": {
+    "x": 820,
+    "y": 572,
+    "w": 288,
+    "h": 68
+   },
+   "shape": "rect",
+   "behavior": "passthrough",
+   "kind": "button",
+   "label": "",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "command"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#6400c8",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMAND"
+   }
+  },
+  {
+   "id": "n7-22",
+   "rect": {
+    "x": 824,
+    "y": 620,
+    "w": 280,
+    "h": 16
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#6400c8",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-21",
+   "rect": {
+    "x": 1456,
+    "y": 944,
+    "w": 328,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Go Off Clock",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Go Off Clock"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-20",
+   "rect": {
+    "x": 1080,
+    "y": 944,
+    "w": 328,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Go On Break",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Go On Break"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-19",
+   "rect": {
+    "x": 4,
+    "y": 140,
+    "w": 396,
+    "h": 44
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Amount is Owed, then Select",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-18",
+   "rect": {
+    "x": 392,
+    "y": 140,
+    "w": 188,
+    "h": 44
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Pay Out Tips",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#a50000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-17",
+   "rect": {
+    "x": 372,
+    "y": 104,
+    "w": 284,
+    "h": 40
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Highlight Employee",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "litsand",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n7-16",
+   "rect": {
+    "x": 1220,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Back\nspace",
+   "actions": [
+    {
+     "type": "key",
+     "key": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-15",
+   "rect": {
+    "x": 1220,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Clear",
+   "actions": [
+    {
+     "type": "key",
+     "key": "clear"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-14",
+   "rect": {
+    "x": 1452,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "2",
+   "actions": [
+    {
+     "type": "key",
+     "key": "2"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-13",
+   "rect": {
+    "x": 1800,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "5",
+   "actions": [
+    {
+     "type": "key",
+     "key": "5"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-12",
+   "rect": {
+    "x": 1336,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "6",
+   "actions": [
+    {
+     "type": "key",
+     "key": "6"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-11",
+   "rect": {
+    "x": 1800,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "0",
+   "actions": [
+    {
+     "type": "key",
+     "key": "0"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-10",
+   "rect": {
+    "x": 1568,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "3",
+   "actions": [
+    {
+     "type": "key",
+     "key": "3"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-9",
+   "rect": {
+    "x": 1684,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "4",
+   "actions": [
+    {
+     "type": "key",
+     "key": "4"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-8",
+   "rect": {
+    "x": 1336,
+    "y": 832,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "1",
+   "actions": [
+    {
+     "type": "key",
+     "key": "1"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-7",
+   "rect": {
+    "x": 1684,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "9",
+   "actions": [
+    {
+     "type": "key",
+     "key": "9"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-6",
+   "rect": {
+    "x": 1568,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "8",
+   "actions": [
+    {
+     "type": "key",
+     "key": "8"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-5",
+   "rect": {
+    "x": 1452,
+    "y": 724,
+    "w": 108,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "7",
+   "actions": [
+    {
+     "type": "key",
+     "key": "7"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-4",
+   "rect": {
+    "x": 44,
+    "y": 944,
+    "w": 196,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Prior\nDay",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Prior\nDay"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-3",
+   "rect": {
+    "x": 260,
+    "y": 944,
+    "w": 196,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Next\nDay",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Next\nDay"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000091",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-2",
+   "rect": {
+    "x": 476,
+    "y": 944,
+    "w": 196,
+    "h": 124
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Print",
+   "actions": [
+    {
+     "type": "command",
+     "name": "printReceipt"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#844c26",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#844c26",
+     "font": "DejaVu Serif",
+     "fontSize": 37,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n7-1",
+   "rect": {
+    "x": 1096,
+    "y": 4,
+    "w": 384,
+    "h": 24
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "This page MUST be -7 per the Clock Off button",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#ffff00",
+     "font": "DejaVu Serif",
+     "fontSize": 13,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 13,
+     "bold": true,
+     "shadow": 0,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  }
+ ]
+}

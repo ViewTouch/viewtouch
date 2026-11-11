@@ -1,0 +1,18 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-10",
+ "name": "Daily Special",
+ "kind": "items",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": 10,
+ "templateId": "legacy-n98",
+ "zones": []
+}

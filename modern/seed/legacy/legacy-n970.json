@@ -1,0 +1,178 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n970",
+ "name": "ViewTouch's Accounting Mission",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": -970,
+ "zones": [
+  {
+   "id": "n970-4",
+   "rect": {
+    "x": 4,
+    "y": 36,
+    "w": 1012,
+    "h": 232
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Our mission is to provide you with reports which you can use to plan and control the routine operations of your business.\n\nWe will provide you with the information you need to make decisions about issues which are not routine as well.  This includes investing in equipment, pricing your products and services, choosing which products to emphasize or de-emphasize and formulating overall policies and long-range plans.\n\nWe will assist you in preparing the reports you need to satisfy investors, government authorities and other outside parties, such as long-term creditors.",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n970-3",
+   "rect": {
+    "x": 4,
+    "y": 272,
+    "w": 1012,
+    "h": 232
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "The reason we accumulate large amounts of data is to help you make decisions.  There is no way to do management without an appreciation for and an understanding of the nature of accounting.\n\nThe accounting rules built into ViewTouch will complement your knowledge and enable you to make decisions better because they will be based on the facts collected by your business.  These facts will reflect the effects of the decisions you make, right and wrong, and show you the way to correct mistakes and to continue to carry out the policies which can be shown by the facts to be the correct ones for your business.",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n970-2",
+   "rect": {
+    "x": 532,
+    "y": 516,
+    "w": 488,
+    "h": 164
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "ViewTouch aims to provide comprehensive information pertaining to every detail of the restaurant's operation.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n970-1",
+   "rect": {
+    "x": 4,
+    "y": 516,
+    "w": 528,
+    "h": 164
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Managers apply and control the resources of the restaurant in the most efficient manner possible in the production of the items and the services which the restaurant offers for sale.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  }
+ ]
+}

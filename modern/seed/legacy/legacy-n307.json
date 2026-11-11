@@ -1,0 +1,520 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n307",
+ "name": "Mistakes to Avoid When Building Your Menu",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "sand"
+ },
+ "legacyId": -307,
+ "zones": [
+  {
+   "id": "n307-11",
+   "rect": {
+    "x": 1396,
+    "y": 936,
+    "w": 288,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Mistakes to Avoid when Building\nyour Menu",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n307"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -307
+   }
+  },
+  {
+   "id": "n307-10",
+   "rect": {
+    "x": 28,
+    "y": 196,
+    "w": 568,
+    "h": 32
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "There are Three types of Modifier Pages.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n307-9",
+   "rect": {
+    "x": 12,
+    "y": 232,
+    "w": 828,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "The second and third type are designed for you to prevent people from taking shortcuts out of your modifier sequences.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n307-8",
+   "rect": {
+    "x": 12,
+    "y": 32,
+    "w": 684,
+    "h": 32
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Don't use Menu Pages when doing your Modifiers.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n307-7",
+   "rect": {
+    "x": 8,
+    "y": 936,
+    "w": 208,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "12 Functions of The Edit ToolBar",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n301"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -301
+   }
+  },
+  {
+   "id": "n307-6",
+   "rect": {
+    "x": 228,
+    "y": 936,
+    "w": 208,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Pages and Buttons",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n302"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -302
+   }
+  },
+  {
+   "id": "n307-5",
+   "rect": {
+    "x": 1708,
+    "y": 936,
+    "w": 204,
+    "h": 136
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n307-4",
+   "rect": {
+    "x": 960,
+    "y": 936,
+    "w": 208,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Navigating\nthe Pages",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n305"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -305
+   }
+  },
+  {
+   "id": "n307-3",
+   "rect": {
+    "x": 448,
+    "y": 936,
+    "w": 260,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Page and Button Appearance Properties",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n303"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -303
+   }
+  },
+  {
+   "id": "n307-2",
+   "rect": {
+    "x": 1180,
+    "y": 936,
+    "w": 208,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Qualifiers",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n306"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -306
+   }
+  },
+  {
+   "id": "n307-1",
+   "rect": {
+    "x": 720,
+    "y": 936,
+    "w": 228,
+    "h": 140
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Editing Basics",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "replace",
+     "page": "legacy-n304"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "leather",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE",
+    "id": -304
+   }
+  }
+ ]
+}

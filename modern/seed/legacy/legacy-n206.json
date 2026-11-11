@@ -1,0 +1,351 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n206",
+ "name": "Guest Count Help",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "sand"
+ },
+ "legacyId": -206,
+ "zones": [
+  {
+   "id": "n206-8",
+   "rect": {
+    "x": 1132,
+    "y": 0,
+    "w": 168,
+    "h": 56
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Turn Help Off",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "none",
+     "fill": "transparent",
+     "texture": "",
+     "textColor": "#ffff00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#ffffff",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-7",
+   "rect": {
+    "x": 1244,
+    "y": 612,
+    "w": 288,
+    "h": 196
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "button",
+   "label": "Secure Table\n&\nSet or Increase\nGuest Count",
+   "actions": [
+    {
+     "type": "notInModern",
+     "what": "Secure Table\n&\nSet or Increase\nGuest Count"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "parchment",
+     "textColor": "#a0206e",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n206-6",
+   "rect": {
+    "x": 268,
+    "y": 716,
+    "w": 948,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "As soon as you tap this button the first time the table will be secured with one guest and you'll see the order button.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-5",
+   "rect": {
+    "x": 268,
+    "y": 804,
+    "w": 948,
+    "h": 36
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "Turn Help Off to Return",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-4",
+   "rect": {
+    "x": 268,
+    "y": 604,
+    "w": 948,
+    "h": 88
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "You don't ever need to enter any numbers on this page if you don't want to.  Instead, you can tap this button once for each guest.\nEach time you tap it the guest count will go up by one.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-3",
+   "rect": {
+    "x": 268,
+    "y": 436,
+    "w": 1060,
+    "h": 88
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "A table can be released as long as the guest check is empty.  Flash the table, then select it again.  You'll find yourself on the Guest Count page and select Release the Table.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-2",
+   "rect": {
+    "x": 268,
+    "y": 300,
+    "w": 1204,
+    "h": 120
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "label",
+   "label": "To use the \"Next Check\", \"Prior Check\" feature, allowing separation of orders at a by table by individual seats, you must set the Guest Count.  If you don't bother to indicate the number of guests then you give up the benefit of having seat based ordering and multiple checks at a table.",
+   "style": {
+    "normal": {
+     "frame": "none",
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_SIMPLE"
+   }
+  },
+  {
+   "id": "n206-1",
+   "rect": {
+    "x": 1708,
+    "y": 936,
+    "w": 204,
+    "h": 136
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 6,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  }
+ ]
+}

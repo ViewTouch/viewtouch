@@ -1,0 +1,624 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n972",
+ "name": "Ratio Analysis",
+ "kind": "custom",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": -972,
+ "zones": [
+  {
+   "id": "n972-15",
+   "rect": {
+    "x": 1644,
+    "y": 948,
+    "w": 156,
+    "h": 100
+   },
+   "shape": "rect",
+   "behavior": "blink",
+   "kind": "button",
+   "label": "Return",
+   "actions": [
+    {
+     "type": "jump",
+     "mode": "back"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "litewood",
+     "textColor": "#005a00",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "border",
+     "frameWidth": 6,
+     "texture": "greenmarble",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_STANDARD"
+   }
+  },
+  {
+   "id": "n972-14",
+   "rect": {
+    "x": 4,
+    "y": 100,
+    "w": 616,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Current Ratio = current assets/current liabilities",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-13",
+   "rect": {
+    "x": 4,
+    "y": 36,
+    "w": 276,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Ratio Analysis (160)",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-12",
+   "rect": {
+    "x": 4,
+    "y": 164,
+    "w": 804,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Current Debt to Equity = current liabilities/stockholder equity",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-11",
+   "rect": {
+    "x": 4,
+    "y": 228,
+    "w": 740,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Total Debt to Equity = total liabilities/stockholder equity",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-10",
+   "rect": {
+    "x": 4,
+    "y": 292,
+    "w": 424,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Profitability = Gross profit/sales",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-9",
+   "rect": {
+    "x": 4,
+    "y": 356,
+    "w": 480,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Return On Sales = Net Income/Sales",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-8",
+   "rect": {
+    "x": 4,
+    "y": 420,
+    "w": 796,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Return On Equity = Net Income/Average Stockholder Equity",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-7",
+   "rect": {
+    "x": 4,
+    "y": 484,
+    "w": 1196,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Earnings per Share = Net Income - Preferred dividends/Average common shares outstanding",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-6",
+   "rect": {
+    "x": 4,
+    "y": 612,
+    "w": 1020,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Dividend-Yield = Dividends per common share/market price of common share",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-5",
+   "rect": {
+    "x": 4,
+    "y": 548,
+    "w": 868,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Price-Earnings = Market price of common share/earnings per share",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-4",
+   "rect": {
+    "x": 4,
+    "y": 676,
+    "w": 880,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Dividend-Payout = Dividends per common share/earnings per share",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-3",
+   "rect": {
+    "x": 4,
+    "y": 740,
+    "w": 900,
+    "h": 132
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Cost-Volume Profit Analysis, Sales Mix & Raw Profit/Item Analysis, Suggested Pricing Report, Suggested New Item Report, Suggested Item Paring Report",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-2",
+   "rect": {
+    "x": 4,
+    "y": 876,
+    "w": 620,
+    "h": 60
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Budgeting, Budget Analysis, Capital Budgeting",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  },
+  {
+   "id": "n972-1",
+   "rect": {
+    "x": 4,
+    "y": 940,
+    "w": 432,
+    "h": 128
+   },
+   "shape": "rect",
+   "behavior": "none",
+   "kind": "comment",
+   "label": "Profitability as measured by ROI\n\nDecision Modeling",
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "none",
+     "fill": "transparent",
+     "textColor": "transparent",
+     "texture": "",
+     "font": "DejaVu Serif",
+     "fontSize": 19,
+     "bold": false,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_COMMENT"
+   }
+  }
+ ]
+}

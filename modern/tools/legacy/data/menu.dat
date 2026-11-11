@@ -1,0 +1,29 @@
+vtpos 0 17
+b BN8 A_Signature_Dessert ~ ~ A ~ ~ ~ ~ ~ JY A Bk A A A A A E A A A A A A
+B ~ A ~ A ~ A BN8 A_Signature_Item ~ ~ A ~ ~ ~ ~ ~ Po A H0 A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC American ~ ~ B ~ ~ ~ ~ ~ y A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Bacon ~ ~ B ~ ~ ~ ~ ~ Bk A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Biscuit ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Blue_Cheese_Dressing Blue_Cheese Blue B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Cheddar ~ ~ B ~ ~ ~ ~ ~ y A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BN8 Coffee ~ ~ A ~ ~ ~ ~ ~ DI A Bk A A A A A B A A A A A A
+B ~ A ~ A ~ A BN8 Deluxe_Hamburger Hamburger_Deluxe Burger A ~ ~ ~ ~ ~ OE A Es A A A A A A A A A A A A
+B ~ A ~ A ~ A BN8 Eggs_Benedict ~ Eggs_Bene A ~ ~ ~ ~ ~ Mg A Es A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC French_Dressing French French B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Honey_Mustard_Dressing Honey_Mustard Honey B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC House_Dressing House House B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Italian_Dressing Italian Italian B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Lettuce ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Mayonaise ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Muffin ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Mushroom ~ ~ B ~ ~ ~ ~ ~ Bk A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Mustard ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Onion ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Pickle ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BN8 Salad_Appetizer Salad Small_Salad A ~ ~ ~ ~ ~ GQ A Es A A A A A A A A A A A A
+B ~ A ~ A ~ A BN8 Side_Order ~ ~ A ~ ~ ~ ~ ~ JY A Bk A A A A A E A A A A A A
+B ~ A ~ A ~ A BN8 Soup_of_the_Day_1_(Bowl) Today's_Soup_1 Bowl_1 A ~ ~ ~ ~ ~ JY A Es A A A A A A A A A A A A
+B ~ A ~ A ~ A BN8 Soup_of_the_Day_1_(Cup) Today's_Soup_1 Cup_1 A ~ ~ ~ ~ ~ H0 A Es A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Swiss ~ ~ B ~ ~ ~ ~ ~ y A A A A A A A A A A A A A A
+B ~ A ~ A ~ A BOC Tomato ~ ~ B ~ ~ ~ ~ ~ A A A A A A A A A A A A A A A
+B ~ A ~ A ~ A 

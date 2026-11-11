@@ -1,0 +1,17 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-n94",
+ "name": "Index with Tabs Template",
+ "kind": "template",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 640,
+  "h": 480
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": -94,
+ "zones": []
+}

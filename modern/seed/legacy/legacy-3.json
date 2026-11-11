@@ -1,0 +1,65 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-3",
+ "name": "Side",
+ "kind": "items",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": 3,
+ "templateId": "legacy-n98",
+ "zones": [
+  {
+   "id": "3-1",
+   "rect": {
+    "x": 1516,
+    "y": 844,
+    "w": 208,
+    "h": 108
+   },
+   "shape": "rect",
+   "behavior": "toggle",
+   "kind": "button",
+   "label": "",
+   "actions": [
+    {
+     "type": "addItem",
+     "item": "Side Order"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_ITEM"
+   }
+  }
+ ]
+}

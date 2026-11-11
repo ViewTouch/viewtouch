@@ -1,0 +1,65 @@
+{
+ "schemaVersion": 1,
+ "id": "legacy-5",
+ "name": "Beverage",
+ "kind": "items",
+ "inStyle": "legacy",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "grid": 4,
+ "background": {
+  "texture": "greenmarble"
+ },
+ "legacyId": 5,
+ "templateId": "legacy-n98",
+ "zones": [
+  {
+   "id": "5-1",
+   "rect": {
+    "x": 1040,
+    "y": 832,
+    "w": 220,
+    "h": 104
+   },
+   "shape": "rect",
+   "behavior": "toggle",
+   "kind": "button",
+   "label": "",
+   "actions": [
+    {
+     "type": "addItem",
+     "item": "Coffee"
+    }
+   ],
+   "style": {
+    "normal": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "sand",
+     "textColor": "#000000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    },
+    "selected": {
+     "frame": "raised",
+     "frameWidth": 3,
+     "texture": "litsand",
+     "textColor": "#eb0000",
+     "font": "DejaVu Serif",
+     "fontSize": 24,
+     "bold": true,
+     "shadow": 9,
+     "radius": 0
+    }
+   },
+   "legacy": {
+    "kind": "ZONE_ITEM"
+   }
+  }
+ ]
+}

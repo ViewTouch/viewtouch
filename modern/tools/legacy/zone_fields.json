@@ -1,0 +1,737 @@
+{
+ "fields": [
+  [
+   "Amount",
+   "int"
+  ],
+  [
+   "Expression",
+   "str"
+  ],
+  [
+   "FileName",
+   "str"
+  ],
+  [
+   "ImagePath",
+   "always-str"
+  ],
+  [
+   "JumpType",
+   "int"
+  ],
+  [
+   "JumpID",
+   "int"
+  ],
+  [
+   "Message",
+   "str"
+  ],
+  [
+   "ItemName",
+   "str"
+  ],
+  [
+   "Script",
+   "str"
+  ],
+  [
+   "QualifierType",
+   "int"
+  ],
+  [
+   "ReportType",
+   "int"
+  ],
+  [
+   "Spacing",
+   "flt"
+  ],
+  [
+   "TenderType",
+   "int"
+  ],
+  [
+   "TenderAmount",
+   "int"
+  ],
+  [
+   "ReportPrint",
+   "int"
+  ],
+  [
+   "Columns",
+   "int"
+  ],
+  [
+   "SwitchType",
+   "int"
+  ],
+  [
+   "CustomerType",
+   "int"
+  ],
+  [
+   "CheckDisplayNum",
+   "int"
+  ],
+  [
+   "VideoTarget",
+   "int"
+  ],
+  [
+   "DrawerZoneType",
+   "int"
+  ],
+  [
+   "Confirm",
+   "int"
+  ],
+  [
+   "ConfirmMsg",
+   "str"
+  ]
+ ],
+ "types": {
+  "1": {
+   "zone": "ZONE_STANDARD",
+   "class": "MessageButtonZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "Message",
+    "Confirm",
+    "ConfirmMsg"
+   ]
+  },
+  "2": {
+   "zone": "ZONE_ITEM",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "3": {
+   "zone": "ZONE_CONDITIONAL",
+   "class": "ConditionalZone",
+   "fields": [
+    "Expression",
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "Message",
+    "Confirm",
+    "ConfirmMsg"
+   ]
+  },
+  "4": {
+   "zone": "ZONE_TENDER",
+   "class": "TenderZone",
+   "fields": [
+    "ImagePath",
+    "TenderType",
+    "TenderAmount"
+   ]
+  },
+  "5": {
+   "zone": "ZONE_TABLE",
+   "class": "TableZone",
+   "fields": [
+    "ImagePath",
+    "CustomerType"
+   ]
+  },
+  "6": {
+   "zone": "ZONE_COMMENT",
+   "class": "CommentZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "7": {
+   "zone": "ZONE_QUALIFIER",
+   "class": "QualifierZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "QualifierType"
+   ]
+  },
+  "8": {
+   "zone": "ZONE_TOGGLE",
+   "class": "ToggleZone",
+   "fields": [
+    "ImagePath",
+    "Message"
+   ]
+  },
+  "9": {
+   "zone": "ZONE_SIMPLE",
+   "class": "ButtonZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID"
+   ]
+  },
+  "10": {
+   "zone": "ZONE_SWITCH",
+   "class": "SwitchZone",
+   "fields": [
+    "ImagePath",
+    "SwitchType"
+   ]
+  },
+  "20": {
+   "zone": "ZONE_LOGIN",
+   "class": "LoginZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "21": {
+   "zone": "ZONE_COMMAND",
+   "class": "CommandZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "23": {
+   "zone": "ZONE_GUEST_COUNT",
+   "class": "GuestCountZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "24": {
+   "zone": "ZONE_LOGOUT",
+   "class": "LogoutZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "30": {
+   "zone": "ZONE_ORDER_ENTRY",
+   "class": "OrderEntryZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "31": {
+   "zone": "ZONE_CHECK_LIST",
+   "class": "CheckListZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "32": {
+   "zone": "ZONE_PAYMENT_ENTRY",
+   "class": "PaymentZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "33": {
+   "zone": "ZONE_USER_EDIT",
+   "class": "UserEditZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "34": {
+   "zone": "ZONE_SETTINGS",
+   "class": "SettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "35": {
+   "zone": "ZONE_TAX_SETTINGS",
+   "class": "TaxSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "36": {
+   "zone": "ZONE_DEVELOPER",
+   "class": "DeveloperZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "37": {
+   "zone": "ZONE_TENDER_SET",
+   "class": "TenderSetZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "38": {
+   "zone": "ZONE_TAX_SET",
+   "class": "TaxSetZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "39": {
+   "zone": "ZONE_MONEY_SET",
+   "class": "MoneySetZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "40": {
+   "zone": "ZONE_CC_SETTINGS",
+   "class": "CCSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "41": {
+   "zone": "ZONE_CC_MSG_SETTINGS",
+   "class": "CCMessageSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "50": {
+   "zone": "ZONE_REPORT",
+   "class": "ReportZone",
+   "fields": [
+    "ImagePath",
+    "ReportType",
+    "Spacing",
+    "ReportPrint",
+    "Columns",
+    "CheckDisplayNum",
+    "VideoTarget"
+   ]
+  },
+  "51": {
+   "zone": "ZONE_ORDER_PAGE",
+   "class": "OrderPageZone",
+   "fields": [
+    "Amount",
+    "ImagePath"
+   ]
+  },
+  "52": {
+   "zone": "ZONE_SCHEDULE",
+   "class": "ScheduleZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "53": {
+   "zone": "ZONE_PRINT_TARGET",
+   "class": "PrintTargetZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "54": {
+   "zone": "ZONE_SPLIT_CHECK",
+   "class": "SplitCheckZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "55": {
+   "zone": "ZONE_DRAWER_MANAGE",
+   "class": "DrawerManageZone",
+   "fields": [
+    "ImagePath",
+    "Spacing",
+    "DrawerZoneType"
+   ]
+  },
+  "56": {
+   "zone": "ZONE_HARDWARE",
+   "class": "HardwareZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "57": {
+   "zone": "ZONE_TIME_SETTINGS",
+   "class": "TimeSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "58": {
+   "zone": "ZONE_TABLE_ASSIGN",
+   "class": "TableAssignZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "61": {
+   "zone": "ZONE_KILL_SYSTEM",
+   "class": "KillSystemZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "62": {
+   "zone": "ZONE_PAYOUT",
+   "class": "PayoutZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "63": {
+   "zone": "ZONE_DRAWER_ASSIGN",
+   "class": "DrawerAssignZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "64": {
+   "zone": "ZONE_ORDER_FLOW",
+   "class": "OrderFlowZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "66": {
+   "zone": "ZONE_SEARCH",
+   "class": "SearchZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "67": {
+   "zone": "ZONE_SPLIT_KITCHEN",
+   "class": "SplitKitchenZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "68": {
+   "zone": "ZONE_END_DAY",
+   "class": "EndDayZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "69": {
+   "zone": "ZONE_READ",
+   "class": "ReadZone",
+   "fields": [
+    "FileName",
+    "ImagePath"
+   ]
+  },
+  "70": {
+   "zone": "ZONE_JOB_SECURITY",
+   "class": "JobSecurityZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "71": {
+   "zone": "ZONE_INVENTORY",
+   "class": "ProductZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "72": {
+   "zone": "ZONE_RECIPE",
+   "class": "RecipeZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "73": {
+   "zone": "ZONE_VENDOR",
+   "class": "VendorZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "74": {
+   "zone": "ZONE_LABOR",
+   "class": "LaborZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "75": {
+   "zone": "ZONE_ITEM_LIST",
+   "class": "ItemListZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "76": {
+   "zone": "ZONE_INVOICE",
+   "class": "InvoiceZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "77": {
+   "zone": "ZONE_PHRASE",
+   "class": "PhraseZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "78": {
+   "zone": "ZONE_ITEM_TARGET",
+   "class": "ItemPrintTargetZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "80": {
+   "zone": "ZONE_MERCHANT",
+   "class": "MerchantZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "82": {
+   "zone": "ZONE_ACCOUNT",
+   "class": "AccountZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "83": {
+   "zone": "ZONE_ORDER_ADD",
+   "class": "OrderAddZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "84": {
+   "zone": "ZONE_ORDER_DELETE",
+   "class": "OrderDeleteZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "86": {
+   "zone": "ZONE_CHART",
+   "class": "ChartZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "87": {
+   "zone": "ZONE_VIDEO_TARGET",
+   "class": "VideoTargetZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "88": {
+   "zone": "ZONE_EXPENSE",
+   "class": "ExpenseZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "89": {
+   "zone": "ZONE_STATUS_BUTTON",
+   "class": "StatusZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "90": {
+   "zone": "ZONE_CDU",
+   "class": "CDUZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "91": {
+   "zone": "ZONE_RECEIPTS",
+   "class": "ReceiptSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "92": {
+   "zone": "ZONE_CUSTOMER_INFO",
+   "class": "CustomerInfoZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "93": {
+   "zone": "ZONE_CHECK_EDIT",
+   "class": "CheckEditZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "94": {
+   "zone": "ZONE_CREDITCARD_LIST",
+   "class": "CreditCardListZone",
+   "fields": [
+    "ImagePath",
+    "Spacing"
+   ]
+  },
+  "95": {
+   "zone": "ZONE_EXPIRE_MSG",
+   "class": "ExpireSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "96": {
+   "zone": "ZONE_REVENUE_GROUPS",
+   "class": "RevenueGroupsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "97": {
+   "zone": "ZONE_IMAGE_BUTTON",
+   "class": "ImageButtonZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID"
+   ]
+  },
+  "98": {
+   "zone": "ZONE_ITEM_NORMAL",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "99": {
+   "zone": "ZONE_ITEM_MODIFIER",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "100": {
+   "zone": "ZONE_ITEM_METHOD",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "101": {
+   "zone": "ZONE_ITEM_SUBSTITUTE",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "102": {
+   "zone": "ZONE_ITEM_POUND",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "103": {
+   "zone": "ZONE_ITEM_ADMISSION",
+   "class": "ItemZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID",
+    "ItemName",
+    "Script"
+   ]
+  },
+  "104": {
+   "zone": "ZONE_ORDER_COMMENT",
+   "class": "OrderCommentZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "107": {
+   "zone": "ZONE_CLEAR_SYSTEM",
+   "class": "ClearSystemZone",
+   "fields": [
+    "ImagePath"
+   ]
+  },
+  "108": {
+   "zone": "ZONE_INDEX_TAB",
+   "class": "IndexTabZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID"
+   ]
+  },
+  "109": {
+   "zone": "ZONE_LANGUAGE_BUTTON",
+   "class": "LanguageButtonZone",
+   "fields": [
+    "ImagePath",
+    "JumpType",
+    "JumpID"
+   ]
+  },
+  "110": {
+   "zone": "ZONE_CALCULATION_SETTINGS",
+   "class": "CalculationSettingsZone",
+   "fields": [
+    "ImagePath"
+   ]
+  }
+ },
+ "unknownClasses": []
+}
