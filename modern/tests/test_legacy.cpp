@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "app/pos_json.hh"
 #include "layout_fixture.hh"
 #include "layoutcontroller.hh"
 #include "pos_fixture.hh"
@@ -195,4 +196,15 @@ TEST_CASE("Legacy: every page renders cleanly", "[legacy][ui][pages]")
     }
     qInstallMessageHandler(previous);
     CHECK(warnings == QStringList{});
+}
+
+TEST_CASE("Legacy: the style is kept when the store's settings are saved and read again", "[legacy]")
+{
+    core::PosSettings s;
+    for (const char *style : {"legacy", "modern", "classic"}) {
+        s.style = style;
+        CHECK(app::settingsFromJson(app::toJson(s)).style == style);
+    }
+    s.style = "something else";
+    CHECK(app::settingsFromJson(app::toJson(s)).style == "classic");
 }

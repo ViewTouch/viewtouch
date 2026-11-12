@@ -1376,7 +1376,10 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.autoLogoutMinutes = std::clamp(o.value(u"autoLogoutMinutes").toInt(0), 0, 120);
     s.phoneLockSeconds = std::clamp(o.value(u"phoneLockSeconds").toInt(30), -1, 3600);
     s.screensUpdate = o.value(u"screensUpdate").toBool(true);
-    s.style = o.value(u"style").toString() == u"modern" ? "modern" : "classic";
+    if (const QString style = o.value(u"style").toString(); style == u"modern" || style == u"legacy")
+        s.style = style.toStdString();
+    else
+        s.style = "classic";
     s.screenSaverMinutes = std::clamp(o.value(u"screenSaverMinutes").toInt(10), 0, 240);
     s.replicaKey = ss(o.value(u"replicaKey").toString());
     s.language = ss(o.value(u"language").toString(u"en"_s));
