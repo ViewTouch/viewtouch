@@ -18,6 +18,8 @@
 #include <QFile>
 #include <QJsonArray>
 #include <QProcess>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QTemporaryDir>
@@ -454,6 +456,117 @@ TEST_CASE("Legacy import end to end: a whole real store", "[legacy][import][e2e]
     if (dat.isEmpty())
         SKIP("VTM_LEGACY_DAT not set");
     endToEnd(dat);
+}
+
+namespace {
+
+// "$1,234.56" -> 123456
+std::int64_t centsOf(QString text)
+{
+    text.remove(u'$').remove(u',');
+    return std::llround(text.toDouble() * 100);
+}
+
+// Brought over (from the command line) and checked in full: every legacy
+// item on the menu as legacy had it, every closed day kept with its reports,
+// each report's checks and total what legacy took that day.
+void everyDayAndItem(const QString &dat)
+{
+    const legacy::Store legacy = legacy::readStore(dat);
+    REQUIRE(legacy.errors.isEmpty());
+    REQUIRE(legacy.menu);
+    const legacy::Imported in = legacy::convert(legacy, {});
+    QTemporaryDir dir;
+    QProcess run;
+    run.setProcessChannelMode(QProcess::MergedChannels);
+    run.start(QStringLiteral(VTM_PROGRAM), {u"--data-dir"_s, dir.path(), u"--import-legacy"_s, dat});
+    REQUIRE(run.waitForFinished(600'000));
+    INFO(QString::fromUtf8(run.readAll()).toStdString());
+    REQUIRE(run.exitCode() == 0);
+    const QString path = dir.filePath(u"viewtouch.db"_s);
+
+    // --- the menu: every item legacy had ---
+    storage::PosStore store(path);
+    REQUIRE(store.open());
+    std::optional<app::PosData> data = store.load();
+    REQUIRE(data);
+    std::map<QString, const core::MenuItem *> byName;
+    for (const core::MenuItem &m : data->menu)
+        byName.emplace(QString::fromStdString(m.name).toLower(), &m);
+    std::map<std::string, std::string> family;
+    for (const core::MenuCategory &c : data->settings.menuCategories)
+        family[c.id] = c.name;
+    QSet<QString> seen;
+    int items = 0;
+    for (const legacy::MenuItem &l : legacy.menu->items) {
+        const QString key = l.name.trimmed().toLower();
+        if (key.isEmpty() || seen.contains(key))
+            continue;   // (legacy finds an item by its name: the first of a name)
+        seen.insert(key);
+        ++items;
+        INFO(l.name.toStdString());
+        REQUIRE(byName.contains(key));
+        const core::MenuItem &m = *byName.at(key);
+        CHECK(m.price.cents() == l.cost);
+        CHECK(family[m.family] == legacy::familyName(l.family).toStdString());
+        CHECK(m.isModifier == (l.type == 1 || l.type == 2));
+        CHECK(m.available == !l.outOfStock);
+        if (l.takeoutCost > 0 && l.takeoutCost != l.cost)
+            CHECK(m.takeoutPrice.cents() == l.takeoutCost);
+        const core::TaxClass tax = (l.salesType & 2) ? core::TaxClass::None
+                                   : (l.salesType & 1) ? core::TaxClass::Alcohol
+                                   : (l.salesType & 4) ? core::TaxClass::Room
+                                   : (l.salesType & 8) ? core::TaxClass::Merchandise
+                                                       : core::TaxClass::Food;
+        CHECK(m.taxClass == tax);
+    }
+    CHECK(data->menu.size() == std::size_t(items));
+    WARN(items << " items, every one as legacy had it");
+
+    // --- every closed day: kept, with its reports ---
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, u"days"_s);
+        db.setDatabaseName(path);
+        REQUIRE(db.open());
+        QSqlQuery q(db);
+        REQUIRE(q.exec(u"SELECT id, closed_at, reports FROM business_days WHERE closed_at != 0 ORDER BY id"_s));
+        std::size_t k = 0;
+        Money total;
+        while (q.next()) {
+            REQUIRE(k < in.days.size());
+            const legacy::ImportedDay &d = in.days[k++];
+            INFO("legacy day " << d.legacyId);
+            CHECK(q.value(1).toLongLong() == d.closedAt);
+            const QJsonObject reports = QJsonDocument::fromJson(q.value(2).toByteArray()).object();
+            for (const char *id : {"sales", "items", "categories", "hourly", "servers", "drawer", "deposit", "exceptions"})
+                CHECK(reports.contains(QString::fromLatin1(id)));
+            const auto sales = lines(reports[u"sales"_s].toObject()[u"rows"_s].toArray().toVariantList());
+            REQUIRE(sales.contains(u"Checks"_s));
+            CHECK(sales.at(u"Checks"_s).toInt() == int(d.checks.size()));
+            REQUIRE(sales.contains(u"Total with tax"_s));
+            CHECK(centsOf(sales.at(u"Total with tax"_s)) == d.sales.cents());   // what legacy took that day
+            total += d.sales;
+        }
+        CHECK(k == in.days.size());
+        WARN(k << " closed days, every one with its reports, " << total.toString() << " in all");
+    }
+    QSqlDatabase::removeDatabase(u"days"_s);
+}
+
+} // namespace
+
+TEST_CASE("Legacy import: every item on the menu, every closed day with its reports", "[legacy][import]")
+{
+    QTemporaryDir dir;
+    everyDayAndItem(datFolder(dir));
+}
+
+TEST_CASE("Legacy import: every item and every closed day of a whole real store", "[legacy][import][local]")
+{
+    const QString dat = qEnvironmentVariable("VTM_LEGACY_DAT");
+    if (dat.isEmpty())
+        SKIP("VTM_LEGACY_DAT not set");
+    everyDayAndItem(dat);
 }
 
 TEST_CASE("Legacy import: a whole store, worked out", "[legacy][import][local]")
