@@ -207,7 +207,10 @@ Item {
     }
     Component.onCompleted: open()
     Component.onDestruction: keepUnsaved()
-    onPanelChanged: Qt.callLater(open)   // once the bindings have caught up
+    // Once the bindings have caught up (a Timer, not Qt.callLater: gone with
+    // this panel, it never runs after it, when the page is left).
+    Timer { id: reopen; interval: 0; onTriggered: w.open() }
+    onPanelChanged: reopen.restart()
 
     // Controls are laid out at a comfortable size, then scaled with the page.
     // Upright (a phone): the list, then a record's form on its own, with ‹ List.
