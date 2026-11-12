@@ -1398,6 +1398,13 @@ ApplicationWindow {
         pos: root.controller.pos as PosService
     }
 
+    NewPinPrompt {
+        id: newPinPrompt
+        anchors.fill: parent
+        z: 59
+        pos: root.controller.pos as PosService
+    }
+
     ReasonSheet {
         id: reasonSheet
         anchors.fill: parent

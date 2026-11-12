@@ -93,6 +93,8 @@ if(Qt6_FOUND)
         app/legacy/legacy_tokens.hh app/legacy/legacy_tokens.cpp
         app/legacy/legacy_files.hh app/legacy/legacy_files.cpp
         app/legacy/legacy_pages.hh app/legacy/legacy_pages.cpp
+        app/legacy/legacy_import.hh app/legacy/legacy_import.cpp
+        app/legacy/legacy_apply.hh app/legacy/legacy_apply.cpp
     )
     target_link_libraries(vtm_legacy PUBLIC vtm_pos vtm_layout Qt6::Core)
     qt_add_resources(vtm_legacy "vtm_legacy_data" PREFIX "/legacy" BASE tools/legacy FILES tools/legacy/zone_fields.json)
@@ -198,6 +200,7 @@ if(Qt6_FOUND)
             ui/qml/SelfOrder.qml
             ui/qml/JobChooser.qml
             ui/qml/CashTipsPrompt.qml
+            ui/qml/NewPinPrompt.qml
             ui/qml/DrawerCount.qml
             ui/qml/ReasonSheet.qml
             ui/qml/TouchKeyboard.qml
@@ -213,6 +216,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetFloorPlan.qml
             ui/qml/WidgetSchedule.qml
             ui/qml/WidgetFactoryReset.qml
+            ui/qml/WidgetLegacyImport.qml
             ui/qml/WidgetNetwork.qml
             ui/qml/WidgetReceiveDelivery.qml
             ui/qml/WidgetStockCount.qml

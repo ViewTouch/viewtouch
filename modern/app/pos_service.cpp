@@ -556,7 +556,7 @@ QVariantMap PosService::userPrefs() const
         start = deviceStart;
     return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
             {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}, {u"buzz"_s, e->buzz},
-            {u"colorSafe"_s, e->colorSafe || screenColorSafe},
+            {u"colorSafe"_s, e->colorSafe || screenColorSafe}, {u"newPin"_s, e->pinMustChange},
             {u"sendToTables"_s, s_->settings.sendToTables}, {u"sendNewOrder"_s, s_->settings.truckSendNew}};
 }
 
@@ -715,6 +715,40 @@ QVariantList PosService::messages() const
 bool PosService::training() const
 {
     return user() && (user()->training || trainingOn_);
+}
+
+bool PosService::chooseNewPin(const QString &pin)
+{
+    const Employee *me = user();
+    if (!me)
+        return fail(tr("Log in first."));
+    if (!me->pinMustChange)   // (anyone else's PIN is changed by a manager, in Staff)
+        return fail(tr("Ask a manager to change your PIN."));
+    static const QRegularExpression digits(u"^[0-9]{4,8}$"_s);
+    if (!digits.match(pin).hasMatch())
+        return fail(tr("PINs are 4 to 8 digits."));
+    const bool manager = me->role == "manager" || me->role == "admin" || me->role == "owner";
+    if (manager && pin.size() < 6)
+        return fail(tr("Managers' PINs are 6 to 8 digits."));
+    for (const Employee &e : s_->employees)
+        if (e.id != me->id && e.pinHash == hashPin(pin, e.pinSalt))
+            return fail(tr("Someone else already uses that PIN."));
+    if (s_->isMaintainerPin(pin))
+        return fail(tr("Someone else already uses that PIN."));
+    for (Employee &e : s_->employees) {
+        if (e.id != me->id)
+            continue;
+        e.pinSalt = newSalt();
+        e.pinHash = hashPin(pin, e.pinSalt);
+        e.pinMustChange = false;
+        if (s_->sink)
+            s_->sink->saveEmployee(e);
+    }
+    ++s_->adminRevision;
+    emit s_->adminChanged();
+    emit sessionChanged();
+    emit notice(tr("Your new PIN is set."));
+    return true;
 }
 
 bool PosService::setTraining(bool on)

@@ -1372,6 +1372,72 @@ bool PosService::endOfDay()
     return true;
 }
 
+bool PosService::importPastDay(std::int64_t openedAt, std::int64_t closedAt, std::vector<Check> checks,
+                               std::vector<TimePunch> punches, std::vector<DrawerSession> drawers,
+                               const TaxRates &rates, QString *error)
+{
+    const auto failed = [&](const QString &why) {
+        if (error)
+            *error = why;
+        return false;
+    };
+    if (!s_->open.empty() || !s_->closedToday.empty() || !s_->drawers.empty())
+        return failed(tr("This store has sales today: past days go in before the first."));
+    if (closedAt <= 0 || (openedAt > 0 && closedAt < openedAt))
+        return failed(tr("A day that ends before it begins."));
+    if (!s_->pastDays.empty() && closedAt < s_->pastDays.front().day.closedAt)
+        return failed(tr("Past days go in oldest first."));
+    // Its own clock while it's closed: the reports say when the day ended.
+    const std::function<std::int64_t()> clock = s_->clock();
+    s_->setClock([closedAt] { return closedAt; });
+    if (openedAt > 0)
+        s_->day.openedAt = openedAt;
+    std::vector<std::int64_t> drawerIds;
+    for (DrawerSession &d : drawers) {
+        d.id = ++s_->lastDrawerId;
+        drawerIds.push_back(d.id);
+    }
+    for (Check &c : checks) {
+        c.id = ++s_->lastCheckId;
+        c.businessDay = s_->day.id;
+        c.drawerSession = c.drawerSession > 0 && c.drawerSession <= qint64(drawerIds.size())
+                              ? drawerIds[std::size_t(c.drawerSession - 1)]
+                              : 0;
+        if (s_->sink)
+            s_->sink->saveCheck(c);
+    }
+    for (DrawerSession &d : drawers) {
+        d.expected = expectedCash(d, checks, rates);
+        if (s_->sink)
+            s_->sink->saveDrawer(d);
+    }
+    for (TimePunch &p : punches) {
+        p.id = ++s_->lastPunchId;
+        if (s_->sink)
+            s_->sink->savePunch(p);
+    }
+    s_->closedToday = std::move(checks);
+    s_->drawers = std::move(drawers);
+    std::vector<TimePunch> stillOn = std::move(s_->punches);
+    s_->punches = std::move(punches);
+    s_->day.closedAt = closedAt;
+    QJsonObject reports;
+    for (const QString &id : kReportIds)
+        reports.insert(id, toJson(buildReport(id)));
+    if (s_->sink)
+        s_->sink->saveDay(s_->day, reports);
+    s_->pastDays.insert(s_->pastDays.begin(), PastDay{s_->day, reports});
+    if (s_->pastDays.size() > 60)
+        s_->pastDays.resize(60);
+    s_->closedToday.clear();
+    s_->drawers.clear();
+    s_->punches = std::move(stillOn);
+    s_->startDay();   // opens at its close
+    s_->setClock(clock);
+    lastClosedId_ = 0;
+    return true;
+}
+
 // --- reports ---------------------------------------------------------------------------
 
 Report PosService::buildReport(const QString &id) const

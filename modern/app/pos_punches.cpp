@@ -89,7 +89,7 @@ QVariantList PosService::punchFields()
         if (e.active)
             people.append(QVariantMap{{u"value"_s, qs(e.id)}, {u"text"_s, qs(e.name)}});
     QVariantList jobs{QVariantMap{{u"value"_s, QString()}, {u"text"_s, tr("Their role")}}};
-    for (const char *r : {"server", "bartender", "cashier", "host", "busser", "driver", "manager"})
+    for (const char *r : {"server", "bartender", "cashier", "host", "busser", "driver", "kitchen", "manager"})
         jobs.append(QVariantMap{{u"value"_s, QString::fromLatin1(r)}, {u"text"_s, roleName(QString::fromLatin1(r))}});
     QVariantMap who = field(u"employeeId"_s, tr("Who"), u"enum"_s);
     who.insert(u"options"_s, people);

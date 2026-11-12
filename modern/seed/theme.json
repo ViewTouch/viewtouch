@@ -287,6 +287,17 @@
         "bold": false
       }
     },
+    "legacyImport": {
+      "normal": {
+        "fill": "#232933",
+        "frame": "flat",
+        "shadow": 0,
+        "radius": 12,
+        "textColor": "#e6e9ef",
+        "fontSize": 28,
+        "bold": false
+      }
+    },
     "messageComposer": {
       "normal": {
         "fill": "#232933",

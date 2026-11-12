@@ -509,6 +509,18 @@ Layout Layout::forStyle(const QString &style) const
                      : *this;
     // Another style's own pages: not in this one.
     out.pages.removeIf([&](const Page &p) { return !p.inStyle.isEmpty() && p.inStyle != style; });
+    // A store brought over from legacy: its own menu pages (its index page
+    // marked "storeMenu") are the menu in its style; Modern's step aside.
+    const bool ownMenu = !style.isEmpty() && std::ranges::any_of(out.pages, [&](const Page &p) {
+        return p.inStyle == style && p.kind == u"index" && p.extra.value(u"storeMenu").toBool();
+    });
+    if (ownMenu) {
+        QSet<QString> gone;
+        for (const Page &p : out.pages)
+            if (p.inStyle.isEmpty() && p.variantOf.isEmpty() && (p.kind == u"index" || p.kind == u"items"))
+                gone.insert(p.id);
+        out.pages.removeIf([&](const Page &p) { return gone.contains(p.id) || gone.contains(p.variantOf); });
+    }
     return out;
 }
 

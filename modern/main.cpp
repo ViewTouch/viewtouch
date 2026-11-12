@@ -1,3 +1,4 @@
+#include "app/legacy/legacy_apply.hh"
 #include "main_cli.hh"
 #include "app/pos_json.hh"
 #include "joincontroller.hh"
@@ -1174,6 +1175,32 @@ int runStore(const Args &cli, const Options &o)
 
     // Every save of the pages goes through the hub, which tells the terminals.
     vt::net::LayoutHub hub(*layout, haveStore ? &store : nullptr);
+
+    // A store brought over from legacy ViewTouch (Manager -> Bring Over a
+    // Legacy Store): what its dat folder has, then (a backup first) bringing
+    // it in, its pages through the hub to every screen.
+    if (havePosStore) {
+        shared->requestLegacyImport = [&cli, &o, &writer, &hub, shared](const QString &folder, const QVariantMap &parts,
+                                                                       bool apply) {
+            vt::legacy::Request r;
+            r.pages = [&hub] { return hub.layout(); };
+            r.savePages = [&hub](const vt::layout::Layout &l) {
+                QString error;
+                hub.save(l, &error, nullptr);
+                return error;
+            };
+            r.backup = [&cli, &o, &writer](QString *error) {
+                if (writer)
+                    writer->flush();
+                return backupBeforeReset(cli, o, error);
+            };
+            r.flush = [&writer] {
+                if (writer)
+                    writer->flush();
+            };
+            return vt::legacy::request(*shared, folder, parts, apply, r);
+        };
+    }
     std::unique_ptr<vt::net::PosServer> server;
     std::unique_ptr<vt::net::DiscoveryResponder> discovery;
     std::unique_ptr<QLocalServer> control;
@@ -1595,7 +1622,7 @@ void prepareEnvironment(int argc, char *argv[])
     for (int i = 1; i < argc; ++i) {
         const QByteArrayView arg(argv[i]);
         const bool command = arg == "--backup" || arg == "--snapshot" || arg.startsWith("--snapshot=") || arg == "--restore" || arg.startsWith("--restore=")
-                             || arg == "--factory-reset" || arg == "--demo-data" || arg == "--legacy-pages"
+                             || arg == "--factory-reset" || arg == "--demo-data" || arg == "--legacy-pages" || arg == "--import-legacy"
                              || arg == "--pairing-code" || arg == "--maintainer-pin" || arg.startsWith("--maintainer-pin=") || arg == "-h"
                              || arg == "--help" || arg == "--help-all" || arg == "-v" || arg == "--version";
         // One-shot commands answer on the terminal, even through a pipe
@@ -1671,7 +1698,7 @@ int main(int argc, char *argv[])
     cli.addHelpOption();
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
-        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.legacyPages, o.legacyOut, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
+        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.legacyPages, o.legacyOut, o.importLegacy, o.dryRun, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.snapshot, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
@@ -1710,6 +1737,8 @@ int main(int argc, char *argv[])
         return runDemoData(args, o);
     if (args.isSet(o.legacyPages))
         return runLegacyPages(args, o);
+    if (args.isSet(o.importLegacy))
+        return runImportLegacy(args, o);
     if (args.isSet(o.backup))
         return runBackup(args, o);
     if (args.isSet(o.snapshot))

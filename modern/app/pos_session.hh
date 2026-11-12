@@ -156,6 +156,9 @@ class PosSession : public QObject {
     // Finding checks: {query, loading, more, results: [{id, label, when,
     // server, customer, total, status}], selected: {..., lines, payments}}.
     Q_PROPERTY(QVariantMap checkSearch READ checkSearch NOTIFY sessionChanged)
+    // Bringing a store over from legacy ViewTouch: {folder, preview, busy,
+    // done, error} (legacyPreview, legacyImport).
+    Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
     // Manager -> Network: {role: main|single, term, terminals: [{name,
     // address, user, since}], standby: {address, since} | null, printers:
     // [{name, type, where, status: ok|failed|unknown, error, at}]}.
@@ -343,6 +346,15 @@ public:
     // pictureFiles, without the screen waiting (usbSticksOpened says when).
     // False where it can't (then they're opened by the desktop).
     Q_INVOKABLE bool openUsbSticks();
+    // Legacy ViewTouch's dat folders on this computer and its USB sticks:
+    // [{path, label}], the likeliest first.
+    Q_INVOKABLE QVariantList legacyFolders() const;
+    Q_INVOKABLE void legacyPreview(const QString &folder) { invoke(QStringLiteral("legacyPreview"), {folder}); }
+    Q_INVOKABLE void legacyImport(const QString &folder, const QVariantMap &parts)
+    {
+        invoke(QStringLiteral("legacyImportRun"), {folder, parts});
+    }
+    Q_INVOKABLE void legacyClear() { invoke(QStringLiteral("legacyClear"), {}); }
     Q_INVOKABLE void removeStoreImage(const QString &ref) { invoke(QStringLiteral("removeStoreImage"), {ref}); }
     // "Logo Final.PNG" -> "store:logo-final.png" ("" if not a picture type).
     static QString storeImageRef(const QString &fileName);
@@ -372,6 +384,7 @@ public:
     virtual QVariantMap storeCheck() const = 0;
     virtual QVariantMap prepLabels() const = 0;
     virtual QVariantMap checkSearch() const = 0;
+    virtual QVariantMap legacyImport() const = 0;
     virtual QVariantMap networkInfo() const = 0;
     virtual QVariantList printerAlerts() const = 0;
     virtual bool training() const = 0;
@@ -652,6 +665,7 @@ public:
         invoke(QStringLiteral("logPageEdits"), {added, removed, changed});
     }
     Q_INVOKABLE void setTraining(bool on) { invoke(QStringLiteral("setTraining"), {on}); }
+    Q_INVOKABLE void chooseNewPin(const QString &pin) { invoke(QStringLiteral("chooseNewPin"), {pin}); }
     Q_INVOKABLE void redeemReward(int index) { invoke(QStringLiteral("redeemReward"), {index}); }
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }
     Q_INVOKABLE void releaseHold() { invoke(QStringLiteral("releaseHold"), {}); }

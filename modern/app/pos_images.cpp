@@ -11,6 +11,8 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QSet>
+
+#include <functional>
 #include <QStandardPaths>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -252,6 +254,44 @@ QVariantList PosSession::pictureFiles() const
     QVariantList out;
     for (const auto &[f, label] : found.mid(0, 300))
         out << QVariantMap{{u"path"_s, f.filePath()}, {u"name"_s, f.fileName()}, {u"folder"_s, label}};
+    return out;
+}
+
+QVariantList PosSession::legacyFolders() const
+{
+    // Where legacy kept them, then copies: home folders, USB sticks (the
+    // folder and three levels down, so a backup's "dat" is found).
+    const auto isDat = [](const QString &d) {
+        const QDir dir(d);
+        return dir.exists(u"menu.dat"_s) || dir.exists(u"settings.dat"_s) || dir.exists(u"zone_db.dat"_s);
+    };
+    QList<std::pair<QString, QString>> roots{{u"/usr/viewtouch/dat"_s, tr("Legacy ViewTouch on this computer")}};
+    for (const QFileInfo &home : QDir(u"/home"_s).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+        roots.append({home.filePath(), home.fileName()});
+    roots.append({QDir::homePath(), QDir(QDir::homePath()).dirName()});
+    for (const QString &usb : {u"/run/vtmodern-usb"_s, u"/media"_s, u"/run/media"_s})
+        roots.append({usb, tr("USB stick")});
+    QVariantList out;
+    QSet<QString> seen;
+    std::function<void(const QString &, const QString &, int)> look = [&](const QString &dir, const QString &label, int depth) {
+        if (!QFileInfo(dir).isReadable())
+            return;
+        if (isDat(dir)) {
+            const QString real = QFileInfo(dir).canonicalFilePath();
+            if (!seen.contains(real)) {
+                seen.insert(real);
+                out.append(QVariantMap{{u"path"_s, dir}, {u"label"_s, label}});
+            }
+            return;
+        }
+        if (depth == 0)
+            return;
+        for (const QFileInfo &d : QDir(dir).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable))
+            if (!d.fileName().startsWith(u'.'))
+                look(d.filePath(), label, depth - 1);
+    };
+    for (const auto &[root, label] : roots)
+        look(root, label, root.startsWith(u"/home"_s) || root == QDir::homePath() ? 3 : 4);
     return out;
 }
 

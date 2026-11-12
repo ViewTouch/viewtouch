@@ -232,8 +232,14 @@ QJsonArray actionsOf(const Zone &z, const Page &page, const QString &label, Cont
     }
     if (kItems.contains(kind)) {
         const QString item = z.fields.value(u"ItemName"_s).toString();
-        if (!item.isEmpty())
-            return {act(u"addItem"_s, {{u"item"_s, cx.options.item ? cx.options.item(item) : item}})};
+        if (!item.isEmpty() && !cx.options.item)
+            return {act(u"addItem"_s, {{u"item"_s, item}})};
+        if (!item.isEmpty()) {
+            if (const QString id = cx.options.item(item); !id.isEmpty())
+                return {act(u"addItem"_s, {{u"item"_s, id}})};
+            // A button for an item since taken off the menu (legacy showed it; touching did nothing).
+            return missing(u"\"%1\", no longer on the menu"_s.arg(item));
+        }
     }
     if (kind == u"ZONE_ORDER_FLOW" || kind == u"ZONE_ORDER_PAGE")
         return {act(u"jump"_s, {{u"mode"_s, u"index"_s}})};

@@ -184,6 +184,7 @@ public:
 
     std::int64_t now() const { return now_(); }
     void setClock(std::function<std::int64_t()> now) { now_ = std::move(now); }
+    const std::function<std::int64_t()> &clock() const { return now_; }
 
     // While the server makes every screen's update at once (nothing changes
     // meanwhile), what's the same for all of them (the kitchen's tickets, the
@@ -434,6 +435,10 @@ public:
     // database and starts again (`empty`: with an empty store). False: not
     // possible here.
     std::function<bool(bool empty)> requestFactoryReset;
+    // A store brought over from legacy ViewTouch (main sets it: it has the
+    // store's pages): what's in `folder` ({preview...}), or (apply) bringing
+    // `parts` of it in ({done, error}). Empty when not possible here.
+    std::function<QVariantMap(const QString &folder, const QVariantMap &parts, bool apply)> requestLegacyImport;
     // The store's computers and printers, for Manager -> Network (set by
     // the app): {role, term, terminals, standby, printers}.
     std::function<QVariantMap()> network;
@@ -541,6 +546,12 @@ public:
     void selectFoundCheck(qint64 id);
     bool reprintCheck(qint64 id);   // a copy of a found check's receipt
     QVariantMap checkSearch() const override;
+    QVariantMap legacyImport() const override { return legacy_; }
+    // A legacy dat folder: what it would bring (nothing changed), then
+    // bringing it (owner or maintainer). Through requestLegacyImport.
+    bool legacyPreviewOf(const QString &folder);
+    bool legacyImportRun(const QString &folder, const QVariantMap &parts);
+    void legacyClearState();
     QVariantMap receiving() const override;
     QVariantMap stockCounting() const override;
     // A stock count: each item counted becomes what's on hand, and the count
@@ -801,6 +812,16 @@ public:
     // This person counts drawers blind (not seeing what should be there).
     bool blindCount() const;
     bool endOfDay();
+    // A business day closed elsewhere (a store brought over from legacy
+    // ViewTouch), put in as the day now open and closed again as End of
+    // Day closes one: its checks, time punches and drawers get this store's
+    // next ids (a check's drawerSession is an index into `drawers` plus
+    // one), and its reports are made and kept. Nothing is printed or said.
+    // Only into a store with nothing open and nothing sold today; days
+    // oldest first. False and `error` otherwise.
+    bool importPastDay(std::int64_t openedAt, std::int64_t closedAt, std::vector<core::Check> checks,
+                       std::vector<core::TimePunch> punches, std::vector<core::DrawerSession> drawers,
+                       const core::TaxRates &rates, QString *error = nullptr);
     const core::BusinessDay &currentDay() const { return s_->day; }
     const std::vector<core::Check> &closedToday() const { return s_->closedToday; }
 
@@ -1050,6 +1071,10 @@ public:
     // manager switched it on here.
     bool training() const override;
     bool setTraining(bool on);
+    // The one logged in chooses their own PIN (brought over from legacy with
+    // one too short for their job): 4 to 8 digits, 6 to 8 for a manager,
+    // nobody else's.
+    bool chooseNewPin(const QString &pin);
 
     // Self-order kiosk: this screen is for guests ordering on their own (no
     // staff logged in; the built-in "Self-order kiosk" user takes the
@@ -1279,6 +1304,7 @@ private:
     int rangeRequest_ = 0;
     core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
+    QVariantMap legacy_;
     std::vector<core::Check> searchHits_;
     qint64 selectedHit_ = 0;
     int searchRequest_ = 0;

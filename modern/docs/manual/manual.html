@@ -1348,6 +1348,20 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p class="shot"><img src="shots/m197-legacy-manager.jpg" width="560" height="315"></p>
 <p class="caption">Manager: legacy's Administrative Index.</p>
 
+<h2>Bringing your store over from legacy ViewTouch</h2>
+<p>A store that ran the original ViewTouch brings everything over in one go: <b>Manager &rarr; Settings (Store Settings) &rarr; Bring Over a Legacy Store&hellip;</b> (the owner, or whoever looks after the store's computer). Nothing is downloaded: ViewTouch already has legacy's own system pages, and reads the rest from the store's <b>dat</b> folder.</p>
+<ol>
+<li><b>Choose the folder.</b> On the legacy computer it is <i>/usr/viewtouch/dat</i>; copied to a USB stick, put the stick in and touch <b>Look on USB Sticks</b>. The folders found are listed; or type where it is. Do it on the store's own computer (the one that keeps the data).</li>
+<li><b>See what comes over</b>, before anything changes: the store's name, its own pages, the menu (items, prices, taxes, printers), the dining room's tables, its settings (receipt lines, taxes, discounts, comps, coupons, printers), staff, customers, and every closed day's sales (how many days, from when to when, the checks and the money). Touch a part to leave it out.</li>
+<li><b>Bring It Over.</b> A backup of the store as it was is taken first. Then the store opens in the <b>Legacy</b> style with its own pages: its buttons, its menu pages and its tables, where they were.</li>
+</ol>
+<p>Staff log in with the PIN they had. Managers need 6 to 8 digits here (everyone else 4 to 8): anyone whose legacy PIN is too short logs in with it once and is then asked to choose a new one (typed twice). Jobs become roles (Manager, Server, Cashier, Bartender, Host, Busser; cooks, the chef and dishwashers <b>Kitchen</b>, who clock in and out), each with its pay.</p>
+<p>The sales history comes with its reports: every past day is in the Day reports as legacy closed it, and in the reports over any range of days. A few checks may come to a cent or a dollar more or less than legacy took (legacy worked some discounts out its own way): they are listed before you bring the store over, and kept as legacy had them. The sales history only goes into a store with no sales of its own yet (a new one, or after a factory reset); a store already selling can bring everything else.</p>
+<p>What isn't brought over, and why, is said too: legacy's screens and card terminals (pair them in ViewTouch Modern), card batches (the card processor keeps them), expenses, and legacy's list of who voided or comped what. Customers' card numbers and staff's social security numbers are never brought over. Close the day in legacy (End Day) first: a day still open there isn't brought over.</p>
+<p>The same from the command line, on the store's computer with ViewTouch stopped: <code>vtmodern --import-legacy /usr/viewtouch/dat --dry-run</code> says what it would bring; without <code>--dry-run</code> it brings it.</p>
+<p class="shot"><img src="shots/m198-legacy-import-preview.jpg" width="560" height="315"></p>
+<p class="caption">What a legacy store's dat folder holds, before anything changes.</p>
+
 <h2>Ready-made looks</h2>
 <p>In edit mode, the <b>Theme</b> tab starts with <b>Looks</b>: touch one and every screen takes its colors. Once your logo is set, two looks are made from its colors. Don't like it? <b>Undo</b>. Like it? <b>Save</b>.</p>
 <p class="shot"><img src="shots/m94-looks.jpg" width="560" height="315"></p>

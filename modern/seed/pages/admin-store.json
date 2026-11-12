@@ -49,11 +49,31 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "\u2039 Manager",
+      "label": "‹ Manager",
       "actions": [
         {
           "type": "jump",
           "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "legacy-import",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bring Over a Legacy Store…",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "legacy-import"
         }
       ]
     }

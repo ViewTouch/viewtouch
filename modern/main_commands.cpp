@@ -3,6 +3,7 @@
 // its job and exits.
 
 #include "main_cli.hh"
+#include "app/legacy/legacy_apply.hh"
 #include "app/legacy/legacy_pages.hh"
 #include "app/pos_demo.hh"
 #include "app/pos_json.hh"
@@ -395,6 +396,110 @@ int runLegacyPages(const Args &cli, const Options &o)
                              .arg(set.zones)
                              .arg(set.missing.size())
                              .arg(md.fileName());
+    return 0;
+}
+
+
+// A store brought over from legacy ViewTouch (its dat folder): first what it
+// will bring, then (not --dry-run) bringing it, the store's pages saved.
+int runImportLegacy(const Args &cli, const Options &o)
+{
+    const QString folder = cli.value(o.importLegacy);
+    if (!vt::legacy::isDatFolder(folder)) {
+        qCritical().noquote() << u"%1 isn't legacy ViewTouch's dat folder (no menu.dat, settings.dat or zone_db.dat)."_s.arg(folder);
+        return 1;
+    }
+    const QString dbPath = dbPathOf(cli, o);
+    QDir().mkpath(QFileInfo(dbPath).absolutePath());
+    QLockFile lock(dbPath + u".lock"_s);
+    lock.setStaleLockTime(0);
+    if (!lock.tryLock(0)) {
+        qCritical().noquote() << u"ViewTouch is running on %1. Stop it first."_s.arg(dbPath);
+        return 1;
+    }
+    vt::storage::PosStore store(dbPath);
+    QString error;
+    if (!store.open(&error)) {
+        qCritical().noquote() << "Cannot open the database:" << error;
+        return 1;
+    }
+    vt::storage::LayoutStore pages(dbPath);
+    pages.open();
+    auto readSeed = [](const QString &name) {
+        QFile f(u":/seed/pos/"_s + name);
+        return f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()) : QJsonDocument();
+    };
+    if (!store.started()
+        && !store.seed(vt::app::settingsFromJson(readSeed(u"settings.json"_s).object()),
+                       vt::app::menuFromJson(readSeed(u"menu.json"_s).array()),
+                       vt::app::employeesFromJson(readSeed(u"employees.json"_s).array()), &error,
+                       vt::app::ingredientsFromJson(readSeed(u"ingredients.json"_s).array()))) {
+        qCritical().noquote() << "Could not start the store:" << error;
+        return 1;
+    }
+    auto data = store.load();
+    if (!data) {
+        qCritical("Cannot read the store.");
+        return 1;
+    }
+    std::optional<vt::layout::Layout> layout = pages.hasLayout() ? pages.load() : vt::layout::Layout::loadDirectory(u":/seed"_s);
+    if (!layout) {
+        qCritical("Cannot read the store's pages.");
+        return 1;
+    }
+    vt::storage::AsyncWriter writer(dbPath);
+    vt::storage::SqlPosSink sink(writer);
+    vt::app::PosService pos(std::move(*data), &sink);
+
+    qInfo().noquote() << "Reading" << folder << "...";
+    const vt::legacy::Store legacy = vt::legacy::readStore(folder);
+    vt::legacy::ImportContext cx;
+    cx.current = &pos.shared()->settings;
+    const vt::legacy::Imported in = vt::legacy::convert(legacy, cx);
+    const QVariantMap p = vt::legacy::preview(legacy, in);
+    QTextStream out(stdout);
+    out << u"Store: %1\n"_s.arg(p.value(u"storeName"_s).toString());
+    out << u"Pages: %1   Menu items: %2 in %3 families   Tables: %4\n"_s.arg(p.value(u"pages"_s).toInt())
+               .arg(p.value(u"items"_s).toInt()).arg(p.value(u"categories"_s).toInt()).arg(p.value(u"tables"_s).toInt());
+    out << u"Staff: %1 (a new PIN at first login: %2)   Customers: %3\n"_s.arg(p.value(u"staff"_s).toInt())
+               .arg(p.value(u"managersNewPin"_s).toStringList().join(u", "_s)).arg(p.value(u"customers"_s).toInt());
+    out << u"Sales: %1 days (%2 to %3), %4 checks, $%5\n"_s.arg(p.value(u"days"_s).toInt())
+               .arg(p.value(u"from"_s).toString(), p.value(u"to"_s).toString()).arg(p.value(u"checks"_s).toLongLong())
+               .arg(p.value(u"sales"_s).toLongLong() / 100.0, 0, 'f', 2);
+    if (!in.mismatches.empty()) {
+        out << u"Checks whose total in ViewTouch Modern isn't what legacy took (kept as legacy had them): %1\n"_s.arg(in.mismatches.size());
+        for (const vt::legacy::Mismatch &m : in.mismatches)
+            out << u"  day %1, check %2 (%3): legacy $%4, here $%5\n"_s.arg(m.day).arg(m.serial).arg(m.label)
+                       .arg(m.legacy.cents() / 100.0, 0, 'f', 2).arg(m.modern.cents() / 100.0, 0, 'f', 2);
+    }
+    for (const QString &n : in.notes)
+        out << u"Note: "_s << n << u'\n';
+    for (const QString &e : in.errors)
+        out << u"Can't: "_s << e << u'\n';
+    out.flush();
+    if (cli.isSet(o.dryRun) || !in.errors.isEmpty())
+        return in.errors.isEmpty() ? 0 : 1;
+
+    // A copy first, as a factory reset takes one.
+    if (QFile::exists(dbPath)) {
+        const QString copy = dbPath + u".before-legacy-"_s + QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s);
+        if (!vt::storage::backupDatabase(dbPath, copy, &error))
+            qWarning().noquote() << "No copy of the store before bringing legacy's in:" << error;
+        else
+            qInfo().noquote() << "A copy of the store as it was:" << copy;
+    }
+    const vt::legacy::Applied applied = vt::legacy::applyImport(pos, &*layout, in, {});
+    writer.flush();
+    if (!applied.error.isEmpty()) {
+        qCritical().noquote() << applied.error;
+        return 1;
+    }
+    if (!pages.save(*layout, &error)) {
+        qCritical().noquote() << "Could not save the pages:" << error;
+        return 1;
+    }
+    for (const QString &d : applied.done)
+        out << u"Brought over: "_s << d << u'\n';
     return 0;
 }
 

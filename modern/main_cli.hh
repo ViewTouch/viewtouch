@@ -67,6 +67,11 @@ struct Options {
                                    "(vt_data, zone_db.dat, tables.dat) into --legacy-out (default seed/legacy)."_s,
                                    u"dir"_s};
     QCommandLineOption legacyOut{u"legacy-out"_s, u"Where --legacy-pages writes its pages."_s, u"dir"_s};
+    QCommandLineOption importLegacy{u"import-legacy"_s,
+                                    u"Bring a store over from legacy ViewTouch: its dat folder's pages, menu, dining room, "
+                                    "settings, staff, customers and sales history (into a store with no sales yet), then exit."_s,
+                                    u"dat folder"_s};
+    QCommandLineOption dryRun{u"dry-run"_s, u"With --import-legacy: only say what it would bring over."_s};
     QCommandLineOption demoData{u"demo-data"_s,
         u"Fill a store that has no sales yet with demo history (two months, and the same months last year), "
          "customers, gift cards, a schedule and a waitlist, then exit."_s};
@@ -216,6 +221,7 @@ int runSnapshot(const Args &cli, const Options &o);
 int runFactoryReset(const Args &cli, const Options &o);
 int runDemoData(const Args &cli, const Options &o);
 int runLegacyPages(const Args &cli, const Options &o);
+int runImportLegacy(const Args &cli, const Options &o);
 int runRestore(const Args &cli, const Options &o);
 
 } // namespace vt::cli

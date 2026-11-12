@@ -64,6 +64,41 @@ bool PosService::factoryReset(const QString &confirm, bool empty)
     return true;
 }
 
+bool PosService::legacyPreviewOf(const QString &folder)
+{
+    if (!require(perm::Owner, tr("Bringing a store over from legacy ViewTouch")))
+        return false;
+    if (!s_->requestLegacyImport)
+        return fail(tr("A store is brought over on the computer that keeps the data."));
+    legacy_ = s_->requestLegacyImport(folder, {}, false);
+    legacy_.insert(u"folder"_s, folder);
+    emit sessionChanged();
+    return !legacy_.contains(u"error"_s);
+}
+
+bool PosService::legacyImportRun(const QString &folder, const QVariantMap &parts)
+{
+    if (!require(perm::Owner, tr("Bringing a store over from legacy ViewTouch")))
+        return false;
+    if (!s_->requestLegacyImport)
+        return fail(tr("A store is brought over on the computer that keeps the data."));
+    const QVariantMap result = s_->requestLegacyImport(folder, parts, true);
+    legacy_.insert(u"done"_s, result.value(u"done"_s));
+    legacy_.insert(u"error"_s, result.value(u"error"_s));
+    legacy_.insert(u"backup"_s, result.value(u"backup"_s));
+    emit sessionChanged();
+    if (const QString error = result.value(u"error"_s).toString(); !error.isEmpty())
+        return fail(error);
+    emit notice(tr("%1 is here: its pages, menu and the rest.").arg(qs(s_->settings.storeName)));
+    return true;
+}
+
+void PosService::legacyClearState()
+{
+    legacy_.clear();
+    emit sessionChanged();
+}
+
 bool PosService::backupNow()
 {
     if (!require(perm::Manager, tr("Backups")))

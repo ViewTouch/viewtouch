@@ -52,6 +52,9 @@ struct Employee {
     bool sample = false;   // one of the demo's staff (their PINs are public): the setup guide turns them off
     // Practice only: their checks never reach the kitchen, sales or stock.
     bool training = false;
+    // Brought over from legacy ViewTouch with a PIN too short for their job
+    // (or none): it logs them in once, then they choose a new one.
+    bool pinMustChange = false;
     // Cash handling for this person: "serverBank" (own bank), "drawer" (the
     // terminal's drawer), or empty for the store's setting.
     std::string language;          // "en", "es"...; empty: the store's

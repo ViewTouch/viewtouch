@@ -420,11 +420,12 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.autoLogoutMinutes = std::clamp(record.value(u"autoLogoutMinutes"_s).toInt(), 0, 120);
         if (record.contains(u"phoneLockSeconds"_s))
             s_->settings.phoneLockSeconds = std::clamp(record.value(u"phoneLockSeconds"_s).toInt(), -1, 3600);
-        if (record.contains(u"style"_s))
+        if (record.contains(u"style"_s)) {
             if (const QString style = record.value(u"style"_s).toString(); style == u"modern" || style == u"legacy")
                 s_->settings.style = ss(style);
             else
                 s_->settings.style = "classic";
+        }
         if (record.contains(u"screensUpdate"_s))
             s_->settings.screensUpdate = record.value(u"screensUpdate"_s).toBool();
         if (record.contains(u"tableLongMinutes"_s))
@@ -842,7 +843,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     const bool active = record.value(u"active"_s, true).toBool();
     if (name.isEmpty())
         return fail(tr("The employee needs a name."));
-    if (!QStringList{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s, u"owner"_s}
+    if (!QStringList{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"kitchen"_s, u"manager"_s, u"admin"_s, u"owner"_s}
              .contains(role))
         return fail(tr("Choose a role."));
     if (index < 0 && pin.isEmpty())
@@ -904,7 +905,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     if (rate < 0 || rate > 1000)
         return fail(tr("Write the pay rate in dollars an hour."));
     std::vector<Job> otherJobs;
-    static const QStringList jobRoles{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"manager"_s, u"admin"_s, u"owner"_s};
+    static const QStringList jobRoles{u"server"_s, u"bartender"_s, u"cashier"_s, u"host"_s, u"busser"_s, u"driver"_s, u"kitchen"_s, u"manager"_s, u"admin"_s, u"owner"_s};
     for (const QString &line : record.value(u"otherJobs"_s).toString().split(u'\n', Qt::SkipEmptyParts)) {
         const QStringList parts = line.simplified().split(u' ');
         bool ok = parts.size() == 2;
@@ -942,6 +943,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     if (!pin.isEmpty()) {
         e.pinSalt = newSalt();
         e.pinHash = hashPin(pin, e.pinSalt);
+        e.pinMustChange = false;   // a manager gave them one
     }
     if (const QString no = ownerRule(index >= 0 ? &s_->employees[index] : nullptr, e); !no.isEmpty())
         return fail(no);

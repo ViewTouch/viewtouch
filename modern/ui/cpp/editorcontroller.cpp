@@ -320,6 +320,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"waitlist"_s, QT_TR_NOOP("Waitlist")},
         {u"schedule"_s, QT_TR_NOOP("Schedule")},
         {u"factoryReset"_s, QT_TR_NOOP("Start over (erase)")},
+        {u"legacyImport"_s, QT_TR_NOOP("Bring over a legacy store")},
         {u"messageComposer"_s, QT_TR_NOOP("Messages")},
         {u"network"_s, QT_TR_NOOP("Network")},
         {u"receiveDelivery"_s, QT_TR_NOOP("Receive a delivery")},
