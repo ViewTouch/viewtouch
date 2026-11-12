@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "legacy-import",
-  "name": "Bring Over a Legacy Store",
+  "name": "Legacy Menu & Sales",
   "kind": "manager",
   "canvas": {
     "w": 1920,
@@ -21,7 +21,7 @@
       },
       "shape": "rect",
       "behavior": "none",
-      "label": "Bring over a store from legacy ViewTouch"
+      "label": "A legacy ViewTouch store's menu and sales"
     },
     {
       "id": "import",

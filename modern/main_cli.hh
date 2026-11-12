@@ -68,8 +68,8 @@ struct Options {
                                    u"dir"_s};
     QCommandLineOption legacyOut{u"legacy-out"_s, u"Where --legacy-pages writes its pages."_s, u"dir"_s};
     QCommandLineOption importLegacy{u"import-legacy"_s,
-                                    u"Bring a store over from legacy ViewTouch: its dat folder's pages, menu, dining room, "
-                                    "settings, staff, customers and sales history (into a store with no sales yet), then exit."_s,
+                                    u"Bring a legacy ViewTouch store's menu and sales history (the sales into a store with no "
+                                    "sales yet) over from its dat folder, then exit."_s,
                                     u"dat folder"_s};
     QCommandLineOption dryRun{u"dry-run"_s, u"With --import-legacy: only say what it would bring over."_s};
     QCommandLineOption demoData{u"demo-data"_s,

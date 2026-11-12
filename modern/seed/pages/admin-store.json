@@ -68,7 +68,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Bring Over a Legacy Store…",
+      "label": "Legacy Menu & Sales…",
       "actions": [
         {
           "type": "jump",

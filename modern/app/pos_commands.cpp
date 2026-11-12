@@ -207,7 +207,6 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"legacyPreview"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.legacyPreviewOf(a.value(0).toString())); }},
         {u"legacyImportRun"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.legacyImportRun(a.value(0).toString(), a.value(1).toMap())); }},
         {u"legacyClear"_s, [](PosService &p, const QVariantList &) { p.legacyClearState(); return QVariant(true); }},
-        {u"chooseNewPin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.chooseNewPin(a.value(0).toString())); }},
         {u"toggleTraining"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setTraining(!p.training())); }},
         {u"redeemReward"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.redeemReward(a.value(0).toInt())); }},
         {u"holdCharge"_s, [](PosService &p, const QVariantList &) { return QVariant(p.holdCharge()); }},

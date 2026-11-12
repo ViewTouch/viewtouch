@@ -459,10 +459,8 @@ int runImportLegacy(const Args &cli, const Options &o)
     const QVariantMap p = vt::legacy::preview(legacy, in);
     QTextStream out(stdout);
     out << u"Store: %1\n"_s.arg(p.value(u"storeName"_s).toString());
-    out << u"Pages: %1   Menu items: %2 in %3 families   Tables: %4\n"_s.arg(p.value(u"pages"_s).toInt())
-               .arg(p.value(u"items"_s).toInt()).arg(p.value(u"categories"_s).toInt()).arg(p.value(u"tables"_s).toInt());
-    out << u"Staff: %1 (a new PIN at first login: %2)   Customers: %3\n"_s.arg(p.value(u"staff"_s).toInt())
-               .arg(p.value(u"managersNewPin"_s).toStringList().join(u", "_s)).arg(p.value(u"customers"_s).toInt());
+    out << u"Menu: %1 items in %2 families, %3 choice groups\n"_s.arg(p.value(u"items"_s).toInt())
+               .arg(p.value(u"categories"_s).toInt()).arg(p.value(u"choices"_s).toInt());
     out << u"Sales: %1 days (%2 to %3), %4 checks, $%5\n"_s.arg(p.value(u"days"_s).toInt())
                .arg(p.value(u"from"_s).toString(), p.value(u"to"_s).toString()).arg(p.value(u"checks"_s).toLongLong())
                .arg(p.value(u"sales"_s).toLongLong() / 100.0, 0, 'f', 2);

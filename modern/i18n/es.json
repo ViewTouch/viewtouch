@@ -148,7 +148,6 @@
  "%1 is full: make room in the page editor.": "%1 está llena: haga espacio en el editor de páginas.",
  "%1 is held for %2.": "%1 está apartada para %2.",
  "%1 is here (%2 people)": "%1 ya llegó (%2 personas)",
- "%1 is here: its pages, menu and the rest.": "%1 ya está aquí: sus páginas, menú y lo demás.",
  "%1 is in %2 pieces: move each to its check.": "%1 está en %2 partes: mueva cada una a su cuenta.",
  "%1 is in it twice.": "%1 está dos veces.",
  "%1 is in no category, so it's on no menu screen.": "%1 no está en ninguna categoría, así que no aparece en ninguna pantalla del menú.",
@@ -243,7 +242,6 @@
  "%1 took the test page": "%1 recibió la página de prueba",
  "%1 visits": "%1 visitas",
  "%1 waiting, oldest %2 min": "%1 esperando, el más antiguo %2 min",
- "%1 was paid by the day, week or month; ViewTouch Modern pays by the hour: set their pay in Staff.": "A %1 se le pagaba por día, semana o mes; ViewTouch Modern paga por hora: fije su pago en Personal.",
  "%1 was sent: Again adds more, Void takes it off.": "%1 ya se envió: Otra vez agrega más, Anular lo quita.",
  "%1 words left over": "sobran %1 palabras",
  "%1 wrong PINs in a row on %2: someone may be guessing": "%1 PIN incorrectos seguidos en %2: alguien puede estar adivinando",
@@ -305,9 +303,9 @@
   "one": "%n cuenta",
   "other": "%n cuentas"
  },
- "%n check(s) come to a little more or less here than legacy took (legacy worked some discounts out its own way); they're kept as legacy had them:": {
-  "one": "%n cuenta da aquí un poco más o menos de lo que cobró el antiguo (calculaba algunos descuentos a su manera); se guarda como la tenía:",
-  "other": "%n cuentas dan aquí un poco más o menos de lo que cobró el antiguo (calculaba algunos descuentos a su manera); se guardan como las tenía:"
+ "%n check(s) come to a little more or less here than legacy took (legacy worked some discounts out its own way); each closes for what legacy took, the difference a \"Legacy difference\" discount:": {
+  "one": "%n cuenta da aquí un poco más o menos de lo que cobró el antiguo (calculaba algunos descuentos a su manera); se cierra por lo que cobró, con la diferencia como descuento \"Diferencia del antiguo\":",
+  "other": "%n cuentas dan aquí un poco más o menos de lo que cobró el antiguo (calculaba algunos descuentos a su manera); cada una se cierra por lo que cobró, con la diferencia como descuento \"Diferencia del antiguo\":"
  },
  "%n check(s) made offline go to the store's computer once it's back.": {
   "one": "%n cuenta hecha sin conexión pasa a la computadora de la tienda cuando vuelva.",
@@ -333,25 +331,13 @@
   "one": "%n tarea de cierre sin hacer",
   "other": "%n tareas de cierre sin hacer"
  },
- "%n customer(s)": {
-  "one": "%n cliente",
-  "other": "%n clientes"
- },
- "%n customer(s): names, phones, addresses, notes (never card numbers)": {
-  "one": "%n cliente: nombre, teléfono, dirección, notas (nunca números de tarjeta)",
-  "other": "%n clientes: nombres, teléfonos, direcciones, notas (nunca números de tarjeta)"
- },
- "%n employee(s)": {
-  "one": "%n empleado",
-  "other": "%n empleados"
- },
- "%n employee(s), their jobs, pay and PINs": {
-  "one": "%n empleado, su puesto, pago y PIN",
-  "other": "%n empleados, sus puestos, pagos y PIN"
- },
  "%n expense(s) recorded in legacy aren't brought over.": {
   "one": "%n gasto registrado en el antiguo no se trae.",
   "other": "%n gastos registrados en el antiguo no se traen."
+ },
+ "%n famil(ies)": {
+  "one": "%n familia",
+  "other": "%n familias"
  },
  "%n guest(s)": {
   "one": "%n persona",
@@ -375,9 +361,9 @@
   "one": "%n artículo importado. Marque los siguientes.",
   "other": "%n artículos importados. Marque los siguientes."
  },
- "%n item(s) in %1 families, with their prices, taxes and printers": {
-  "one": "%n artículo en %1 familias, con sus precios, impuestos e impresoras",
-  "other": "%n artículos en %1 familias, con sus precios, impuestos e impresoras"
+ "%n item(s) in %1 families and %2 choice groups (its modifier pages), with their prices, taxes and printers, in place of this store's menu, on its menu screens": {
+  "one": "%n artículo en %1 familias y %2 grupos de opciones (sus páginas de modificadores), con precios, impuestos e impresoras, en lugar del menú de esta tienda, en sus pantallas de menú",
+  "other": "%n artículos en %1 familias y %2 grupos de opciones (sus páginas de modificadores), con precios, impuestos e impresoras, en lugar del menú de esta tienda, en sus pantallas de menú"
  },
  "%n item(s) removed from the menu": {
   "one": "%n artículo quitado del menú",
@@ -421,14 +407,6 @@
  "%n order(s) picked": {
   "one": "%n orden elegida",
   "other": "%n órdenes elegidas"
- },
- "%n page(s) of the store's own, in the Legacy style": {
-  "one": "%n página propia de la tienda, en el estilo Legado",
-  "other": "%n páginas propias de la tienda, en el estilo Legado"
- },
- "%n page(s), as legacy showed them: the store opens in the Legacy style": {
-  "one": "%n página, como la mostraba el antiguo: la tienda abre en el estilo Legado",
-  "other": "%n páginas, como las mostraba el antiguo: la tienda abre en el estilo Legado"
  },
  "%n price changes set for later": {
   "one": "%n cambio de precios programado",
@@ -481,14 +459,6 @@
  "%n size(s)": {
   "one": "%n tamaño",
   "other": "%n tamaños"
- },
- "%n table(s) of its dining room": {
-  "one": "%n mesa de su comedor",
-  "other": "%n mesas de su comedor"
- },
- "%n table(s), where legacy had them": {
-  "one": "%n mesa, donde la tenía el antiguo",
-  "other": "%n mesas, donde las tenía el antiguo"
  },
  "%n tap(s) waiting for the store's computer were let go: add them again once it's back.": {
   "one": "Se descartó %n toque que esperaba a la computadora de la tienda: agréguelo de nuevo cuando vuelva.",
@@ -571,7 +541,6 @@
  "+ Text": "+ Texto",
  "+ phone": "+ teléfono",
  "+%1 more": "+%1 más",
- ". A new PIN at first login (theirs is too short): %1": ". Un PIN nuevo al entrar por primera vez (el suyo es muy corto): %1",
  "0 = any order.": "0 = cualquier pedido.",
  "0 = every matching item is off. Otherwise buy this many...": "0 = todos los artículos que coinciden tienen descuento. Si no, compre esta cantidad...",
  "0 = never. Kitchen, bar and expo screens don't need a login.": "0 = nunca. Las pantallas de cocina, barra y expo no necesitan sesión.",
@@ -612,14 +581,12 @@
  "3 days": "3 días",
  "4 to 8 digits (6 or more is much harder to guess). It's asked before this computer's network, updates and reset, and it's the store's maintainer code too: the store's technician logs in with it to erase the store, update screens, pair a standby and the like, which managers and the owner can't. Keep it between the owner and the technician; it isn't anyone's staff PIN.": "De 4 a 8 dígitos (6 o más es mucho más difícil de adivinar). Se pide antes de la red, las actualizaciones y el reinicio de esta computadora, y también es el código del técnico del negocio: el técnico entra con él para borrar el negocio, actualizar pantallas, emparejar un respaldo y demás, lo que ni los gerentes ni el dueño pueden. Que lo sepan solo el dueño y el técnico; no es el PIN de nadie del personal.",
  "4 to 8 digits (6 or more is much harder to guess). It's asked before this computer's network, updates and reset. (The store's own maintainer code is set on its main register.)": "De 4 a 8 dígitos (6 o más es mucho más difícil de adivinar). Se pide antes de la red, las actualizaciones y el reinicio de esta computadora. (El código del técnico del negocio se pone en su caja principal.)",
- "4 to 8 digits, only yours.": "De 4 a 8 dígitos, solo suyo.",
  "4 to 8 digits. It's asked before the network, updates and reset. Give it only to managers. (Not the same as anyone's ViewTouch PIN.)": "De 4 a 8 dígitos. Se pide antes de la red, las actualizaciones y el restablecimiento. Déselo solo a los gerentes. (No es el PIN de ViewTouch de nadie.)",
  "4 to 8 digits. Leave empty to keep the current PIN.": "De 4 a 8 dígitos. Déjelo vacío para mantener el PIN actual.",
  "5 Years": "5 Años",
  "5 days": "5 días",
  "50 = half price, 100 = free": "50 = mitad de precio, 100 = gratis",
  "50 Years": "50 Años",
- "6 to 8 digits: managers' PINs are longer, so they're harder to guess.": "De 6 a 8 dígitos: los PIN de los gerentes son más largos, para que sean más difíciles de adivinar.",
  "7 days": "7 días",
  "8, unless the IRS has approved a lower rate for the store (2 at least). Reports -> IRS 8027.": "8, salvo que el IRS haya aprobado una tasa menor para la tienda (2 como mínimo). Informes -> IRS 8027.",
  "86'd items come back the next day": "Los artículos agotados (86) vuelven al día siguiente",
@@ -666,7 +633,10 @@
  "A gift card can hold up to %1.": "Una tarjeta de regalo puede tener hasta %1.",
  "A handheld gives a short buzz each time they add an item, so they know it went on without looking.": "El dispositivo de mano vibra brevemente cada vez que agrega un artículo, para saber que entró sin mirar.",
  "A label printer (Manager → Printers: format ZPL or TSPL), or a receipt printer for slips. Each screen can say otherwise (Terminals).": "Una impresora de etiquetas (Gerente → Impresoras: formato ZPL o TSPL), o una impresora de recibos para tiras. Cada pantalla puede elegir otra (Terminales).",
+ "A legacy ViewTouch store's menu and sales": "El menú y las ventas de una tienda del ViewTouch antiguo",
  "A legacy store": "Una tienda del ViewTouch antiguo",
+ "A legacy store's menu and sales": "El menú y las ventas de una tienda del antiguo",
+ "A legacy store's menu and sales are brought over on the computer that keeps the data.": "El menú y las ventas del antiguo se traen en la computadora que guarda los datos.",
  "A line guests read, e.g. Grilled steak, onion, cilantro": "Una línea que leen los clientes, p. ej. Carne asada, cebolla, cilantro",
  "A line guests see under the name, e.g. \"Two patties, cheddar, house sauce\".": "Una línea que los clientes ven bajo el nombre, p. ej. \"Dos carnes, cheddar, salsa de la casa\".",
  "A manager gets it on the store's screen: Manager → Terminals → Pair a Device.": "Un gerente lo obtiene en la pantalla de la tienda: Gerente → Terminales → Vincular un dispositivo.",
@@ -707,7 +677,6 @@
  "A spreadsheet saved as CSV": "Una hoja de cálculo guardada como CSV",
  "A spreadsheet saved as CSV, or another store's menu": "Una hoja de cálculo guardada como CSV, o el menú de otra tienda",
  "A station's orders": "Los pedidos de una estación",
- "A store is brought over on the computer that keeps the data.": "Una tienda se trae en la computadora que guarda los datos.",
  "A surcharge can't be less than 0%.": "Un recargo no puede ser menor que 0%.",
  "A tablet or another screen can run an older build until it updates.": "Una tableta u otra pantalla puede tener una compilación anterior hasta que se actualice.",
  "A weight (125 = 1.25 lb)": "Un peso (125 = 1.25 lb)",
@@ -904,7 +873,6 @@
  "Ask": "Pedir",
  "Ask For Here or To Go": "Preguntar Para comer aquí o Para llevar",
  "Ask Guest for Tip": "Pedir propina al cliente",
- "Ask a manager to change your PIN.": "Pida a un gerente que cambie su PIN.",
  "Ask again what this computer is (main register, register, kitchen...). A register forgets the store it joined; the main register's sales, menu and staff are kept.": "Volver a preguntar qué es esta computadora (caja principal, caja, cocina...). Una caja olvida la tienda a la que se unió; las ventas, el menú y el personal de la caja principal se conservan.",
  "Ask each time (handhelds)": "Preguntar cada vez (portátiles)",
  "Ask for Time Off…": "Pedir Día Libre…",
@@ -1043,15 +1011,11 @@
  "Bright": "Vivos",
  "Brightness": "Brillo",
  "Bring It Over": "Traerla",
- "Bring Over a Legacy Store": "Traer una tienda del antiguo",
- "Bring Over a Legacy Store…": "Traer una tienda del antiguo…",
- "Bring over a legacy store": "Traer una tienda del antiguo",
- "Bring over a store from legacy ViewTouch": "Traer una tienda del ViewTouch antiguo",
  "Bring to front": "Traer al frente",
- "Bringing a store over from legacy ViewTouch": "Traer una tienda del ViewTouch antiguo",
  "Brings everything down within reach of a seated guest.": "Baja todo al alcance de un cliente sentado.",
  "British pound (gbp)": "Libra esterlina (gbp)",
  "Brought over": "Se trajo",
+ "Brought over from legacy ViewTouch.": "Se trajo del ViewTouch antiguo.",
  "Browse…": "Buscar…",
  "Built-in button look": "Estilo de sus botones",
  "Built-in buttons": "Botones incluidos",
@@ -1112,7 +1076,6 @@
  "Can't open it: %1": "No se puede abrir: %1",
  "Can't reach the main server (%1).": "No se puede llegar al servidor principal (%1).",
  "Can't read %1: %2": "No se puede leer %1: %2",
- "Canada's GST, PST, HST and QST, and VAT, aren't kept apart in ViewTouch Modern: check the tax rates in Store Settings.": "El GST, PST, HST y QST de Canadá, y el IVA, no se llevan aparte en ViewTouch Modern: revise las tasas de impuesto en Configuración.",
  "Canadian dollar (cad)": "Dólar canadiense (cad)",
  "Cancel": "Cancelar",
  "Cancel Booking": "Cancelar reservación",
@@ -1145,7 +1108,6 @@
  "Card held: %1 for %2": "Tarjeta retenida: %1 por %2",
  "Card held: %1 for %2 (not charged)": "Tarjeta retenida: %1 por %2 (sin cobrar)",
  "Card held: %1 · %2": "Tarjeta retenida: %1 · %2",
- "Card kinds (Visa, MasterCard...) aren't tenders of their own here: a card reader says which card it was.": "Los tipos de tarjeta (Visa, MasterCard...) no son formas de pago aparte aquí: el lector dice qué tarjeta fue.",
  "Card number": "Número de tarjeta",
  "Card on File…": "Tarjeta retenida…",
  "Card on file (bar tab): charge or let go": "Tarjeta retenida (cuenta de barra): cobrar o liberar",
@@ -1355,7 +1317,6 @@
  "Choose who worked.": "Elija quién trabajó.",
  "Choose who works the shift.": "Elija quién trabaja el turno.",
  "Choose why it was thrown away.": "Elija por qué se desechó.",
- "Choose your new PIN": "Elija su nuevo PIN",
  "Choose ›": "Elegir ›",
  "Chosen with other items": "Elegidos con otros artículos",
  "Circle": "Círculo",
@@ -1519,7 +1480,6 @@
  "Coupon: %1": "Cupón: %1",
  "Coupon: type or scan its code": "Cupón: escriba o escanee su código",
  "Coupons": "Cupones",
- "Coupons legacy took on Pay are promotions with a code here: their names, without spaces (Store Settings > Promotions).": "Los cupones que el antiguo tomaba al cobrar aquí son promociones con código: su nombre, sin espacios (Configuración > Promociones).",
  "Coupon…": "Cupón…",
  "Course": "Tiempo",
  "Course %1": "Tiempo %1",
@@ -1537,7 +1497,6 @@
  "Credit card surcharges aren't allowed in %1. A cash discount is.": "Los recargos por tarjeta de crédito no están permitidos en %1. Un descuento en efectivo sí.",
  "Credit card: %1 surcharge added.": "Tarjeta de crédito: se agregó un recargo de %1.",
  "Credit cards add %1%; debit cards don't.": "Las tarjetas de crédito agregan %1%; las de débito no.",
- "Cross street: %1": "Entre calle: %1",
  "Ctrl+V — works across pages": "Ctrl+V: funciona entre páginas",
  "Currency symbol": "Símbolo de moneda",
  "Custom": "Personalizada",
@@ -1762,7 +1721,6 @@
  "Everyone": "Todos",
  "Everything": "Todo",
  "Everything is settled and counted.": "Todo está cobrado y contado.",
- "Everything legacy ViewTouch kept is in its dat folder (/usr/viewtouch/dat, or a copy of it on a USB stick): its own pages and buttons, menu, dining room, settings, staff, customers and every closed day's sales. Choose it: you'll see what comes over before anything changes.": "Todo lo que guardaba el ViewTouch antiguo está en su carpeta dat (/usr/viewtouch/dat, o una copia en una memoria USB): sus páginas y botones, menú, comedor, configuración, personal, clientes y las ventas de cada día cerrado. Elíjala: verá lo que se trae antes de que cambie nada.",
  "Everything, in order": "Todo, en orden",
  "Exact": "Exacto",
  "Exceptions": "Excepciones",
@@ -2130,16 +2088,11 @@
  "Its buttons on the order screen": "Sus botones en la pantalla de pedidos",
  "Its categories (breakfast, lunch...: Menu Builder). Empty: what's on now.": "Sus categorías (desayuno, almuerzo...: Constructor de menú). Vacío: lo que está en el menú ahora.",
  "Its categories, choices and items, with typical prices, are added to your menu; nothing already on it changes. Then change anything you like.": "Sus categorías, opciones y artículos, con precios típicos, se agregan a su menú; nada de lo que ya tiene cambia. Luego cambie lo que quiera.",
- "Its customers": "Sus clientes",
- "Its dining room": "Su comedor",
  "Its items take shades of its color, each a little different (an item's own color still wins).": "Sus artículos toman tonos de su color, cada uno un poco distinto (el color propio de un artículo sigue mandando).",
  "Its menu": "Su menú",
  "Its menu, tables, staff and settings, to try things out on.": "Su menú, mesas, personal y ajustes, para hacer pruebas.",
  "Its name": "Su nombre",
- "Its pages and buttons": "Sus páginas y botones",
  "Its sales history": "Su historial de ventas",
- "Its settings": "Su configuración",
- "Its staff": "Su personal",
  "Its ticket's screen": "La pantalla de su ticket",
  "JSON (*.json)": "JSON (*.json)",
  "Job": "Puesto",
@@ -2231,12 +2184,12 @@
  "Left the Line": "Se fueron",
  "Left-handed": "Zurdo",
  "Legacy": "Legado",
+ "Legacy Menu & Sales": "Menú y ventas del antiguo",
+ "Legacy Menu & Sales…": "Menú y ventas del antiguo…",
+ "Legacy ViewTouch kept its menu and every closed day's sales in its dat folder (/usr/viewtouch/dat, or a copy of it on a USB stick). Choose it: you'll see what comes over before anything changes. The menu goes on this ViewTouch's own menu screens.": "El ViewTouch antiguo guardaba su menú y las ventas de cada día cerrado en su carpeta dat (/usr/viewtouch/dat, o una copia en una memoria USB). Elíjala: verá lo que se trae antes de que cambie nada. El menú va a las pantallas de menú de este ViewTouch.",
  "Legacy ViewTouch on this computer": "El ViewTouch antiguo de esta computadora",
- "Legacy had prices with the tax in them; ViewTouch Modern adds the tax on top: check the prices.": "El antiguo tenía precios con el impuesto incluido; ViewTouch Modern lo suma aparte: revise los precios.",
- "Legacy's %n screen(s) aren't brought over: pair each in ViewTouch Modern.": {
-  "one": "La pantalla del antiguo no se trae: vincúlela en ViewTouch Modern.",
-  "other": "Las %n pantallas del antiguo no se traen: vincule cada una en ViewTouch Modern."
- },
+ "Legacy difference": "Diferencia del antiguo",
+ "Legacy menu and sales": "Menú y ventas del antiguo",
  "Legacy's day isn't closed: %n check(s) are still open. Close the day in legacy ViewTouch first (End Day), then bring the store over.": {
   "one": "El día del antiguo no está cerrado: queda %n cuenta abierta. Cierre primero el día en el ViewTouch antiguo (End Day) y luego traiga la tienda.",
   "other": "El día del antiguo no está cerrado: quedan %n cuentas abiertas. Cierre primero el día en el ViewTouch antiguo (End Day) y luego traiga la tienda."
@@ -3139,7 +3092,6 @@
  "Print the logo on receipts": "Imprimir el logo en los recibos",
  "Printed at %1": "Imprimió a las %1",
  "Printed menu": "Menú impreso",
- "Printer \"%1\" was on legacy's own computer (%2): set it up again in Store Settings > Printers.": "La impresora \"%1\" estaba en la computadora del antiguo (%2): configúrela otra vez en Configuración > Impresoras.",
  "Printer error (paper jam or cutter?)": "Error de la impresora (¿papel atascado o cortador?)",
  "Printer test: %1": "Prueba de impresora: %1",
  "Printers": "Impresoras",
@@ -3432,7 +3384,6 @@
  },
  "Save Count": "Guardar conteo",
  "Save Logs to USB": "Guardar registros en USB",
- "Save My PIN": "Guardar mi PIN",
  "Save Sizes": "Guardar tamaños",
  "Save as PDF": "Guardar como PDF",
  "Save the changes to %1?": "¿Guardar los cambios en %1?",
@@ -3739,10 +3690,6 @@
  "Store setting": "Ajuste de la tienda",
  "Store setting: %1.": "Ajuste de la tienda: %1.",
  "Store settings": "Ajustes de la tienda",
- "Store settings: name, receipt lines, taxes, %n discount(s) and comp(s), printers": {
-  "one": "Configuración: nombre, líneas del recibo, impuestos, %n descuento o cortesía, impresoras",
-  "other": "Configuración: nombre, líneas del recibo, impuestos, %n descuentos y cortesías, impresoras"
- },
  "Store street address": "Calle y número de la tienda",
  "Store's fee, not the driver's tip.": "Cargo del local, no propina del repartidor.",
  "Stores on this network": "Tiendas en esta red",
@@ -4087,7 +4034,6 @@
  "The menu has %1 items. Add yours here: they show on the Everything page right away. Prices, photos and choices: Manager -> Menu.": "El menú tiene %1 artículos. Agregue los suyos aquí: aparecen en la página Todo de inmediato. Precios, fotos y opciones: Gerente -> Menú.",
  "The menu has changed since, so that can't be undone.": "El menú cambió desde entonces, así que eso no se puede deshacer.",
  "The menu with today's prices as a PDF, to print or hand out": "El menú con los precios de hoy en PDF, para imprimir o repartir",
- "The name, receipt lines, taxes, discounts, comps, coupons and printers": "El nombre, las líneas del recibo, impuestos, descuentos, cortesías, cupones e impresoras",
  "The newest %1 that match \"%2\".": "Las %1 más recientes que coinciden con \"%2\".",
  "The next choice you touch comes on the side.": "La siguiente opción que toque va aparte.",
  "The next choice you touch is extra (EXTRA cheese), and may cost more.": "La siguiente opción que toque va extra (EXTRA queso), y puede costar más.",
@@ -4138,7 +4084,7 @@
  "The standby is taking over. This screen will reconnect to it.": "El respaldo está tomando el control. Esta pantalla se reconectará a él.",
  "The station whose screen shows it (Store Settings -> Kitchen stations). As a combo's part, it shows there on its own.": "La estación cuya pantalla lo muestra (Ajustes de la tienda -> Estaciones de cocina). Como parte de un combo, aparece allí por separado.",
  "The store": "La tienda",
- "The store as it was before is kept in a backup: %1. Staff log in with their legacy PINs; anyone whose was too short chooses a new one then.": "La tienda como estaba antes queda en una copia de seguridad: %1. El personal entra con sus PIN del antiguo; quien lo tenía muy corto elige uno nuevo entonces.",
+ "The store as it was before is kept in a backup: %1.": "La tienda como estaba antes queda en una copia de seguridad: %1.",
  "The store didn't take the maintainer code: set it again from Maintainer Code.": "El negocio no tomó el código del técnico: póngalo otra vez desde Código del técnico.",
  "The store has no newer version for this screen.": "La tienda no tiene una versión más nueva para esta pantalla.",
  "The store is erased; ViewTouch starts fresh.": "La tienda se borró; ViewTouch empieza de nuevo.",
@@ -4164,7 +4110,6 @@
  "The theme is the default look for every page. Pages and zones override it.": "El tema es la apariencia predeterminada de todas las páginas. Las páginas y zonas pueden cambiarla.",
  "The time is set from the internet, and is right.": "La hora se toma de internet y es correcta.",
  "The time isn't set from the internet yet: check the network. Until then the computer's own clock keeps it.": "La hora aún no se toma de internet: revise la red. Mientras tanto la lleva el reloj de la computadora.",
- "The two didn't match. Choose it again.": "No coincidieron. Elíjalo otra vez.",
  "The two don't match. Touch Clear and type it again.": "No coinciden. Toque Borrar y escríbalo otra vez.",
  "The update didn't arrive whole. Try again.": "La actualización no llegó completa. Intente de nuevo.",
  "The update didn't finish": "La actualización no terminó",
@@ -4258,10 +4203,9 @@
  "This screen's version": "Versión de esta pantalla",
  "This screen: %1": "Esta pantalla: %1",
  "This store already has sales. Run --factory-reset first (it takes a backup).": "Esta tienda ya tiene ventas. Primero ejecute --factory-reset (hace una copia de seguridad).",
- "This store already has sales: its past days can't go in before them. Bring it over without the sales history, or after a factory reset (it takes a backup).": "Esta tienda ya tiene ventas: sus días pasados no pueden ir antes. Tráigala sin el historial de ventas, o tras un restablecimiento de fábrica (hace una copia de seguridad).",
+ "This store already has sales: its past days can't go in before them. Bring over only the menu, or the sales after a factory reset (it takes a backup).": "Esta tienda ya tiene ventas: sus días pasados no pueden ir antes. Traiga solo el menú, o las ventas tras un restablecimiento de fábrica (hace una copia de seguridad).",
  "This store doesn't cash out gift cards (Store Settings -> Staff hours).": "Esta tienda no da en efectivo tarjetas de regalo (Ajustes de la tienda -> Horas del personal).",
  "This store has sales today: past days go in before the first.": "Esta tienda tiene ventas hoy: los días pasados van antes de la primera.",
- "This store's own system pages (vt_data) are used in place of legacy's.": "Se usan las páginas de sistema propias de esta tienda (vt_data) en lugar de las del antiguo.",
  "This terminal has no cash drawer": "Esta terminal no tiene cajón de dinero",
  "This terminal is not paired with the server. Pair it again.": "Esta terminal no está vinculada con el servidor. Vincúlela de nuevo.",
  "This terminal's name": "Nombre de esta terminal",
@@ -4413,7 +4357,6 @@
  "Type how much came of each item.": "Escriba cuánto llegó de cada artículo.",
  "Type how much was thrown away.": "Escriba cuánto se desechó.",
  "Type how much; each new price shows here before anything changes. Items priced 0 are left alone.": "Escriba cuánto; cada precio nuevo se muestra aquí antes de cambiar nada. Los artículos con precio 0 no se tocan.",
- "Type it again": "Escríbalo otra vez",
  "Type or scan the coupon": "Escriba o escanee el cupón",
  "Type or scan the coupon's code.": "Escriba o escanee el código del cupón.",
  "Type or swipe…": "Escriba o deslice…",
@@ -4735,7 +4678,6 @@
  "Your menu pages have buttons placed by hand, so new items and categories don't show up on them. Switch them to fill themselves from the menu? You'll see them in the page editor first, to Save or Undo.": "Sus páginas del menú tienen botones colocados a mano, así que los artículos y categorías nuevos no aparecen en ellas. ¿Cambiarlas para que se llenen solas desde el menú? Primero las verá en el editor de páginas, para Guardar o Deshacer.",
  "Your menu pages now fill themselves. Look them over, then Save (Undo puts them back).": "Sus páginas del menú ahora se llenan solas. Revíselas y luego Guarde (Deshacer las regresa).",
  "Your name, so we can call your order": "Su nombre, para llamarle cuando esté su orden",
- "Your new PIN is set.": "Su nuevo PIN quedó guardado.",
  "Your order number": "Su número de orden",
  "Your order number shows here while it's made, and when it's ready.": "Su número de pedido aparece aquí mientras se prepara y cuando está listo.",
  "Your order will be cleared in %1 seconds.": "Su orden se borrará en %1 segundos.",

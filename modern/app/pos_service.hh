@@ -1071,10 +1071,6 @@ public:
     // manager switched it on here.
     bool training() const override;
     bool setTraining(bool on);
-    // The one logged in chooses their own PIN (brought over from legacy with
-    // one too short for their job): 4 to 8 digits, 6 to 8 for a manager,
-    // nobody else's.
-    bool chooseNewPin(const QString &pin);
 
     // Self-order kiosk: this screen is for guests ordering on their own (no
     // staff logged in; the built-in "Self-order kiosk" user takes the

@@ -200,7 +200,6 @@ if(Qt6_FOUND)
             ui/qml/SelfOrder.qml
             ui/qml/JobChooser.qml
             ui/qml/CashTipsPrompt.qml
-            ui/qml/NewPinPrompt.qml
             ui/qml/DrawerCount.qml
             ui/qml/ReasonSheet.qml
             ui/qml/TouchKeyboard.qml

@@ -114,8 +114,7 @@ std::set<std::string> permissionsForRole(const std::string &role)
         return {perm::Order, perm::Settle};
     if (role == "host" || role == "kiosk")
         return {perm::Order};   // the waitlist and seating; guests ordering on their own
-    // A busser clocks in and out (and gets a share of the tips); so does
-    // the kitchen (cooks, the chef, dishwashers: legacy's kitchen jobs).
+    // A busser clocks in and out (and gets a share of the tips).
     return {};
 }
 

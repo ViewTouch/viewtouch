@@ -665,7 +665,6 @@ public:
         invoke(QStringLiteral("logPageEdits"), {added, removed, changed});
     }
     Q_INVOKABLE void setTraining(bool on) { invoke(QStringLiteral("setTraining"), {on}); }
-    Q_INVOKABLE void chooseNewPin(const QString &pin) { invoke(QStringLiteral("chooseNewPin"), {pin}); }
     Q_INVOKABLE void redeemReward(int index) { invoke(QStringLiteral("redeemReward"), {index}); }
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }
     Q_INVOKABLE void releaseHold() { invoke(QStringLiteral("releaseHold"), {}); }

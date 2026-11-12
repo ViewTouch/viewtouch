@@ -4,23 +4,24 @@
 #include "app/legacy/legacy_import.hh"
 #include "app/pos_json.hh"
 #include "core/report.hh"
-#include "storage/async_writer.hh"
-#include "storage/layout_store.hh"
-#include "storage/pos_store.hh"
+#include "layout/menu_screens.hh"
 #include "layout_fixture.hh"
 #include "layoutcontroller.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
+#include "storage/async_writer.hh"
+#include "storage/layout_store.hh"
+#include "storage/pos_store.hh"
 
 #include <QDir>
-#include <QProcess>
-#include <QJsonArray>
-#include <QQmlApplicationEngine>
-#include <QQuickWindow>
-#include <QTest>
 #include <QDirIterator>
 #include <QFile>
+#include <QJsonArray>
+#include <QProcess>
+#include <QQmlApplicationEngine>
+#include <QQuickWindow>
 #include <QTemporaryDir>
+#include <QTest>
 #include <QTimeZone>
 
 #include <set>
@@ -29,9 +30,9 @@ using namespace Qt::StringLiterals;
 using namespace vt;
 using vt::Money;
 
-// Bringing a store over from legacy ViewTouch: a made-up store's people and
+// A legacy ViewTouch store's menu and sales brought over: a made-up store's
 // sales (tests/fixtures/legacy/sample, tools/legacy/make_sample.py) with a
-// real store's menu, pages and dining room (tests/fixtures/legacy/elmirador).
+// real store's menu and pages (tests/fixtures/legacy/elmirador).
 
 namespace {
 
@@ -63,31 +64,21 @@ std::map<QString, QString> lines(const QVariantList &rows)
     return out;
 }
 
-const core::Employee *employee(app::PosService &pos, const std::string &id)
+QStringList warnings;
+void collect(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
-    for (const core::Employee &e : pos.shared()->employees)
-        if (e.id == id)
-            return &e;
-    return nullptr;
+    if (type != QtDebugMsg && type != QtInfoMsg)
+        warnings << msg;
 }
 
 } // namespace
 
-TEST_CASE("Legacy import: what a store's files say, worked out before anything changes", "[legacy][import]")
+TEST_CASE("Legacy import: a store's menu and sales, worked out before anything changes", "[legacy][import]")
 {
     QTemporaryDir dir;
     const legacy::Store store = legacy::readStore(datFolder(dir));
     INFO(store.errors.join(u'\n').toStdString());
     REQUIRE(store.errors.isEmpty());
-    REQUIRE(store.settings);
-    CHECK(store.settings->storeName == u"Casa Sample"_s);
-    CHECK(store.settings->taxFood == 0.0825);
-    CHECK(store.settings->drawerDayFloat == 20000);
-    CHECK(store.employees.size() == 3);
-    CHECK(store.customers.size() == 2);
-    CHECK(store.archives.size() == 3);
-    REQUIRE(store.current);
-    CHECK(store.current->drawers.size() == 1);
 
     legacy::ImportContext cx;
     cx.zone = QTimeZone::UTC;
@@ -95,8 +86,8 @@ TEST_CASE("Legacy import: what a store's files say, worked out before anything c
     const QVariantMap p = legacy::preview(store, in);
     CHECK(p.value(u"storeName"_s) == u"Casa Sample"_s);
     CHECK(p.value(u"items"_s).toInt() == 1457);
-    CHECK(p.value(u"pages"_s).toInt() == 112);
-    CHECK(p.value(u"tables"_s).toInt() == 25);
+    CHECK(p.value(u"categories"_s).toInt() == 16);
+    CHECK(p.value(u"choices"_s).toInt() > 10);
     CHECK(p.value(u"days"_s).toInt() == 3);
     CHECK(p.value(u"checks"_s).toInt() == 6);        // the practice checks left out
     CHECK(p.value(u"sales"_s).toInt() == 3 * (2858 + 1456));
@@ -105,72 +96,51 @@ TEST_CASE("Legacy import: what a store's files say, worked out before anything c
     CHECK(in.mismatches.empty());                    // every check comes to what legacy took
     CHECK(in.errors.isEmpty());
 
-    // Settings: the store's name, its receipt lines, taxes, discounts.
-    CHECK(in.receiptHeader == u"100 Main Street\nSpringfield, ST 00000\nPhone 555-0100"_s);
-    CHECK(in.receiptFooter == u"Thank you!\nCome again"_s);
-    REQUIRE(in.tax);
-    CHECK(in.tax->foodPpm == 82500);
-    CHECK(in.tax->merchandisePpm == 70000);
-    const auto tender = [&](const std::string &name) -> const core::Tender * {
-        const auto it = std::ranges::find(in.tenders, name, &core::Tender::name);
-        return it == in.tenders.end() ? nullptr : &*it;
-    };
-    REQUIRE(tender("Ten Percent"));
-    CHECK(tender("Ten Percent")->percentBp == 1000);
-    REQUIRE(tender("Manager Comp"));
-    CHECK(tender("Manager Comp")->percentBp == 10000);
-    REQUIRE(tender("Staff Meal"));
-    CHECK(tender("Staff Meal")->staffMeal);
-    CHECK(tender("Staff Meal")->percentBp == 5000);
-    REQUIRE(in.promotions.size() == 1);
-    CHECK(in.promotions[0].name == "Happy Hour");
-    CHECK(in.promotions[0].percentBp == 1500);
-    CHECK(in.promotions[0].startMinute == 15 * 60);
-    CHECK(in.promotions[0].endMinute == 18 * 60);
-    CHECK(in.promotions[0].code.empty());            // automatic: no code
-    REQUIRE(in.printers.size() == 2);
-    CHECK(in.printers[0].id == "kitchen");
-    CHECK(in.printers[0].host == "192.168.1.60");
-    CHECK(in.printers[1].id == "receipt");
-
-    // Staff: jobs as roles, pay, PINs; a short manager PIN asks for a new one.
-    REQUIRE(in.employees.size() == 3);
-    const core::Employee &pat = in.employees[0], &sam = in.employees[1], &lee = in.employees[2];
-    CHECK(pat.name == "Pat Manager");
-    CHECK(pat.role == "manager");
-    CHECK(pat.payRate.cents() == 2000);
-    CHECK(pat.pinMustChange);                        // "42": too short for a manager
-    CHECK(pat.pinHash == app::hashPin(u"42"_s, pat.pinSalt));
-    CHECK(sam.role == "server");
-    CHECK_FALSE(sam.pinMustChange);
-    CHECK(lee.role == "kitchen");                    // a line cook
-    REQUIRE(lee.otherJobs.size() == 1);
-    CHECK(lee.otherJobs[0].role == "cashier");
-    CHECK(in.managersNewPin == QStringList{u"Pat Manager"_s});
-
-    // Customers: never their card numbers.
-    REQUIRE(in.customers.size() == 2);
-    CHECK(in.customers[0].name == "Dana Regular");
-    CHECK(in.customers[0].note == "Cross street: Oak Ave; no onions");
-    CHECK(QString::fromStdString(app::toJson(in.customers[0]).value(u"note"_s).toString().toStdString())
-              .contains(u"4111"_s) == false);
-    for (const core::CustomerRecord &c : in.customers)
-        CHECK(QJsonDocument(app::toJson(c)).toJson().contains("4111") == false);
+    // The menu: items found by name, their families, prices and taxes.
+    std::map<std::string, const core::MenuItem *> items;
+    for (const core::MenuItem &m : in.menu)
+        items[m.id] = &m;
+    const auto plain = std::ranges::find(in.menu, "*PLAIN*", &core::MenuItem::name);
+    REQUIRE(plain != in.menu.end());
+    CHECK(plain->isModifier);
+    // Legacy's modifier pages as choices: each a page's modifiers, asked by
+    // the items whose buttons went to it.
+    std::set<std::string> groups;
+    for (const core::ModifierGroup &g : in.modifierGroups) {
+        INFO(g.name);
+        groups.insert(g.id);
+        CHECK_FALSE(g.options.empty());
+        CHECK(g.min == 0);
+        for (const core::ModifierOption &o : g.options) {
+            REQUIRE(items.contains(o.itemId));
+            CHECK(items.at(o.itemId)->isModifier);
+        }
+    }
+    int asking = 0;
+    for (const core::MenuItem &m : in.menu)
+        for (const std::string &g : m.modifierGroups) {
+            CHECK(groups.contains(g));
+            CHECK_FALSE(m.isModifier);
+            ++asking;
+        }
+    CHECK(asking > 20);
 
     // The days: their checks, as legacy rang them.
     REQUIRE(in.days.size() == 3);
     const legacy::ImportedDay &d = in.days[0];
     CHECK(d.checks.size() == 2);
-    CHECK(d.punches.size() == 2);
+    CHECK(d.punches.empty());                        // (the time clock is staff's: not brought over)
     REQUIRE(d.drawers.size() == 1);
     CHECK(d.drawers[0].counted.cents() == 22858);
     const core::Check &cash = d.checks[0];
     CHECK(cash.label == "5");
-    CHECK(cash.serverName == "Sam Server");
+    CHECK(cash.serverName == "Sam Server");          // who served it, by name
     CHECK(cash.type == core::CheckType::DineIn);
     REQUIRE(cash.lines.size() == 2);
     CHECK(cash.lines[0].quantity == 2);
     CHECK(cash.lines[0].unitPrice.cents() == 1195);
+    CHECK(items.contains(cash.lines[0].itemId));     // the item it is on the menu brought over
+    CHECK(cash.payments[0].tenderId == "cash");
     const core::Totals t = cash.totals(*cash.closedRates);
     CHECK(t.total.cents() == 2858);
     CHECK(t.change.cents() == 142);
@@ -182,12 +152,14 @@ TEST_CASE("Legacy import: what a store's files say, worked out before anything c
     CHECK(takeout.totals(*takeout.closedRates).total.cents() == 1456);
 }
 
-TEST_CASE("Legacy import: brought into a store, it works there", "[legacy][import]")
+TEST_CASE("Legacy import: the menu on Modern's own screens, the sales in its reports", "[legacy][import]")
 {
     QTemporaryDir dir;
     const legacy::Store store = legacy::readStore(datFolder(dir));
     test::RecordingSink sink;
     app::PosService pos(test::seedPosData(), &sink);
+    const core::PosSettings before = pos.shared()->settings;
+    const std::size_t staff = pos.shared()->employees.size();
     legacy::ImportContext cx;
     cx.zone = QTimeZone::UTC;
     cx.current = &pos.shared()->settings;
@@ -199,80 +171,51 @@ TEST_CASE("Legacy import: brought into a store, it works there", "[legacy][impor
     REQUIRE(applied.error.isEmpty());
     app::PosShared *s = pos.shared();
 
-    CHECK(s->settings.storeName == "Casa Sample");
-    CHECK(s->settings.style == "legacy");
-    CHECK(s->settings.setupDone);
+    // The menu, in place of the store's: items, families, choices.
     CHECK(s->menu.size() == 1457);
-    CHECK(sink.menu.size() == 1457);   // the starter's items gone from the store, the store's in
-    // The starter's sample staff stop; the store's own log in.
-    for (const core::Employee &e : s->employees)
-        if (e.sample)
-            CHECK_FALSE(e.active);
+    CHECK(sink.menu.size() == 1457);
+    CHECK(s->settings.menuCategories.size() == 16);
+    CHECK(s->settings.modifierGroups.size() == in.modifierGroups.size());
+    // Nothing else changed: the store's name, style, taxes, staff and pages are its own.
+    CHECK(s->settings.storeName == before.storeName);
+    CHECK(s->settings.style == before.style);
+    CHECK(s->settings.tax == before.tax);
+    CHECK(s->settings.tenders == before.tenders);
+    CHECK(s->employees.size() == staff);
+    CHECK(layout::Layout::styleOf(l->theme) == layout::Layout::styleOf(test::loadTestLayout()->theme));
+    // Modern's own menu screens: they fill themselves from the menu.
+    CHECK_FALSE(layout::hasHandBuiltMenu(*l));
+    QStringList families;
+    for (const core::MenuCategory &c : s->categories())
+        families << QString::fromStdString(c.name);
+    CHECK(families.contains(u"Seafood"_s));
+    CHECK(families.contains(u"Beverage"_s));
+    // An imported item rings up on a new check.
     REQUIRE(pos.loginWithPin(u"1234"_s));
-    CHECK(pos.userName() == u"Sam Server"_s);
-    CHECK_FALSE(pos.userPrefs().value(u"newPin"_s).toBool());
-    CHECK_FALSE(pos.chooseNewPin(u"9999"_s));   // not theirs to change: a manager's
-    pos.logout();
-    // A manager with a short legacy PIN: once with it, then a new one.
-    REQUIRE(pos.loginWithPin(u"42"_s));
-    CHECK(pos.userPrefs().value(u"newPin"_s).toBool());
-    CHECK_FALSE(pos.chooseNewPin(u"5678"_s));       // a manager's is 6 to 8 digits
-    CHECK_FALSE(pos.chooseNewPin(u"12345"_s));
-    REQUIRE(pos.chooseNewPin(u"424242"_s));
-    CHECK_FALSE(pos.userPrefs().value(u"newPin"_s).toBool());
-    pos.logout();
-    CHECK_FALSE(pos.loginWithPin(u"42"_s));
-    REQUIRE(pos.loginWithPin(u"424242"_s));
-    CHECK(employee(pos, "legacy-1")->role == "manager");
+    const auto pepsi = std::ranges::find_if(s->menu, [](const core::MenuItem &m) { return m.name == "Pepsi"; });
+    REQUIRE(pepsi != s->menu.end());
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(QString::fromStdString(pepsi->id)));
+    REQUIRE(pos.currentCheck());
+    CHECK(pos.currentCheck()->lines.back().unitPrice == pepsi->price);
 
     // The past days: each with its reports, the checks in them.
     REQUIRE(s->pastDays.size() == 3);
     const app::PastDay &last = s->pastDays.front();
     CHECK(QDateTime::fromMSecsSinceEpoch(last.day.closedAt, QTimeZone::UTC).date() == QDate(2025, 1, 12));
     CHECK(last.reports.contains(u"sales"_s));
-    CHECK(sink.checks.size() == 6);
+    const auto sales = lines(last.reports[u"sales"_s].toObject()[u"rows"_s].toArray().toVariantList());
+    CHECK(sales.at(u"Checks"_s) == u"2"_s);
+    CHECK(sales.at(u"Total with tax"_s) == u"$43.14"_s);
+    int closedChecks = 0;
     for (const auto &[id, c] : sink.checks)
-        CHECK(c.businessDay > 0);
-    CHECK(sink.punches.size() == 6);
-    // A new day, open since the last one closed: nothing open, nothing sold.
-    CHECK(s->closedToday.empty());
-    CHECK(s->day.openedAt == last.day.closedAt);
-
-    // Its pages: the store's own menu pages in the Legacy style, its tables.
-    const layout::Layout shown = l->forStyle(u"legacy"_s);
-    const auto index = std::ranges::find_if(shown.pages, [](const layout::Page &p) { return p.kind == u"index"; });
-    REQUIRE(index != shown.pages.end());
-    CHECK(index->id == u"legacy-60"_s);
-    // The store's own pages in legacy's order screen: framed by it, as legacy showed them.
-    CHECK(index->templateId == u"legacy-n99"_s);
-    CHECK(shown.page(u"legacy-n99"_s));
-    for (const layout::Page &p : l->pages)
-        if (p.extra.value(u"storeLegacy"_s).toBool() && !p.templateId.isEmpty()) {
-            INFO(p.id.toStdString() << " framed by " << p.templateId.toStdString());
-            CHECK(shown.page(p.templateId));
+        if (c.status == core::CheckStatus::Closed) {
+            ++closedChecks;
+            CHECK(c.businessDay > 0);
         }
-    CHECK_FALSE(shown.page(u"menu-all"_s));   // Modern's menu pages step aside
-    CHECK(l->page(u"menu-all"_s));            // (kept, for Classic and Modern)
-    const layout::Page *tables = l->page(u"tables"_s);
-    REQUIRE(tables);
-    CHECK(std::ranges::count(tables->zones, u"table"_s, &layout::Zone::kind) == 25);
-    CHECK(std::ranges::none_of(tables->zones, [](const layout::Zone &z) { return z.label == u"T1"; }));
-    // Every item button on the store's pages adds one of its items.
-    std::set<std::string> ids;
-    for (const core::MenuItem &m : s->menu)
-        ids.insert(m.id);
-    int buttons = 0;
-    for (const layout::Page &p : l->pages)
-        for (const layout::Zone &z : p.zones)
-            for (const layout::Action &a : z.actions)
-                if (a.type() == u"addItem" && p.extra.value(u"storeLegacy"_s).toBool()) {
-                    ++buttons;
-                    INFO(p.id.toStdString() << " " << z.id.toStdString() << " " << a.str(u"item"_s).toStdString());
-                    CHECK(ids.contains(a.str(u"item"_s).toStdString()));
-                }
-    CHECK(buttons > 1000);
-    INFO(l->validate().join(u'\n').toStdString());
-    CHECK(l->validate().isEmpty());
+    CHECK(closedChecks == 6);   // (and the one just begun, open)
+    CHECK(sink.punches.empty());
+    CHECK(s->day.openedAt == last.day.closedAt);
 }
 
 TEST_CASE("Legacy import: what it won't do", "[legacy][import]")
@@ -281,33 +224,31 @@ TEST_CASE("Legacy import: what it won't do", "[legacy][import]")
     const QString dat = datFolder(dir);
     legacy::ImportContext cx;
     cx.zone = QTimeZone::UTC;
-    // Past days don't go in after sales of the store's own.
+    // Past days don't go in after sales of the store's own; the menu does.
     {
         test::RecordingSink sink;
         app::PosService pos(test::seedPosData(), &sink);
         REQUIRE(pos.loginWithPin(u"1234"_s));
         pos.addItem(u"classic-burger"_s);
         pos.tender(u"cash"_s, 2000);
-        const legacy::Imported in = legacy::convert(legacy::readStore(dat), cx);
-        const legacy::Applied applied = legacy::applyImport(pos, nullptr, in, {});
+        const std::size_t menu = pos.shared()->menu.size();
+        const legacy::Applied applied = legacy::applyImport(pos, nullptr, legacy::convert(legacy::readStore(dat), cx), {});
         CHECK(applied.error.contains(u"already has sales"_s));
-        CHECK(pos.shared()->settings.storeName != "Casa Sample");   // nothing changed
-        // Without the history, the rest comes.
+        CHECK(pos.shared()->menu.size() == menu);   // nothing changed
         legacy::ImportParts parts;
         parts.history = false;
         cx.parts = parts;
-        const legacy::Applied rest = legacy::applyImport(pos, nullptr, legacy::convert(legacy::readStore(dat), cx), parts);
-        CHECK(rest.error.isEmpty());
-        CHECK(pos.shared()->settings.storeName == "Casa Sample");
+        const legacy::Applied menuOnly = legacy::applyImport(pos, nullptr, legacy::convert(legacy::readStore(dat), cx), parts);
+        CHECK(menuOnly.error.isEmpty());
+        CHECK(pos.shared()->menu.size() == 1457);
         cx.parts = {};
     }
     // A day still open in legacy: close it there first.
-    QFile open(QDir(dat).filePath(u"current/check_7"_s));   // (dat: the copy's folder)
+    QFile open(QDir(dat).filePath(u"current/check_7"_s));
     REQUIRE(open.open(QIODevice::WriteOnly));
     open.write("vtpos 0 25\nH i6Rf fq C C A B P////////// I A A A A H A A A A A A ~ C A Cc A A");
     open.close();
     const legacy::Store store = legacy::readStore(dat);
-    INFO(store.errors.join(u'\n').toStdString());
     REQUIRE(store.current);
     CHECK(store.current->checks.size() == 1);
     const legacy::Imported in = legacy::convert(store, cx);
@@ -315,18 +256,10 @@ TEST_CASE("Legacy import: what it won't do", "[legacy][import]")
     CHECK(in.errors[0].contains(u"Close the day in legacy"_s));
     test::RecordingSink sink;
     app::PosService pos(test::seedPosData(), &sink);
+    const std::size_t menu = pos.shared()->menu.size();
     CHECK_FALSE(legacy::applyImport(pos, nullptr, in, {}).error.isEmpty());
-    CHECK(pos.shared()->settings.storeName != "Casa Sample");
+    CHECK(pos.shared()->menu.size() == menu);
 }
-
-namespace {
-QStringList warnings;
-void collect(QtMsgType type, const QMessageLogContext &, const QString &msg)
-{
-    if (type != QtDebugMsg && type != QtInfoMsg)
-        warnings << msg;
-}
-} // namespace
 
 TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring it over", "[legacy][import][ui]")
 {
@@ -350,7 +283,7 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
         r.backup = [&](QString *) { return dir.filePath(u"backup.db"_s); };
         return legacy::request(*pos.shared(), folder, parts, apply, r);
     };
-    // Only the owner (or the maintainer) brings a store over.
+    // Only the owner (or the maintainer) brings it over.
     REQUIRE(pos.loginWithPin(u"1111"_s));   // a server
     CHECK_FALSE(pos.legacyPreviewOf(dat));
     pos.logout();
@@ -383,18 +316,17 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
     // The store's folder: what it holds, nothing changed yet.
     REQUIRE(pos.legacyPreviewOf(dat));
     const QVariantMap preview = pos.legacyImport().value(u"preview"_s).toMap();
-    CHECK(preview.value(u"storeName"_s) == u"Casa Sample"_s);
     CHECK(preview.value(u"items"_s).toInt() == 1457);
     CHECK_FALSE(preview.value(u"hasSales"_s).toBool());
-    CHECK(pos.shared()->settings.storeName != "Casa Sample");
+    CHECK(pos.shared()->menu.size() != 1457);
     shot(u"legacy-import-2-preview"_s);
-    // Bring it over: everything, the screens in the Legacy style.
+    // Bring it over: the menu and the sales, the screens as they were.
     REQUIRE(pos.legacyImportRun(dat, {}));
-    CHECK(pos.legacyImport().value(u"done"_s).toStringList().size() == 7);
+    CHECK(pos.legacyImport().value(u"done"_s).toStringList().size() == 2);
     CHECK(pos.legacyImport().value(u"backup"_s).toString().endsWith(u"backup.db"_s));
-    CHECK(pos.shared()->settings.storeName == "Casa Sample");
+    CHECK(pos.shared()->menu.size() == 1457);
     CHECK(pos.shared()->pastDays.size() == 3);
-    CHECK(layout::Layout::styleOf(pages.theme) == u"legacy"_s);
+    CHECK(layout::Layout::styleOf(pages.theme) == layout::Layout::styleOf(l->theme));
     shot(u"legacy-import-3-done"_s);
     qInstallMessageHandler(previous);
     CHECK(warnings == QStringList{});
@@ -403,8 +335,8 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
 namespace {
 
 // From the command line into a store on disk, then that store opened again
-// as ViewTouch opens it: its days, reports, staff, pages; a sale on its own
-// pages; End of Day after its history.
+// as ViewTouch opens it: its days and reports; a sale from the menu brought
+// over; End of Day after its history.
 void endToEnd(const QString &dat)
 {
     const legacy::Store legacy = legacy::readStore(dat);
@@ -426,11 +358,10 @@ void endToEnd(const QString &dat)
     std::optional<app::PosData> data = store.load(&problems);
     REQUIRE(data);
     CHECK(problems.isEmpty());
-    CHECK(data->settings.style == "legacy");
-    CHECK(data->settings.setupDone);
+    CHECK(data->settings.style == "classic");   // the store's own look
     const std::size_t days = std::size_t(legacy.archives.size());
     CHECK(data->pastDays.size() == std::min<std::size_t>(days, 60));
-    // Every closed check back, oldest day to newest.
+    // Every closed check back, each paid in full for what legacy took.
     const std::vector<core::Check> all = storage::closedChecksBetween(path, 0, std::numeric_limits<std::int64_t>::max() / 2);
     legacy::ImportContext cx;
     const legacy::Imported in = legacy::convert(legacy, cx);
@@ -438,7 +369,6 @@ void endToEnd(const QString &dat)
     for (const legacy::ImportedDay &d : in.days)
         checks += d.checks.size();
     CHECK(all.size() == checks);
-    // Each closes paid in full, for what legacy took.
     Money owing;
     for (const core::Check &c : all) {
         const core::Totals t = c.totals(*c.closedRates);
@@ -455,17 +385,8 @@ void endToEnd(const QString &dat)
     pos.shared()->refundHistory = [&](std::int64_t from, std::int64_t to) { return storage::refundsBetween(path, from, to); };
     pos.shared()->punchHistory = [&](std::int64_t from, std::int64_t to) { return storage::punchesBetween(path, from, to); };
 
-    // Someone who worked there logs in with their legacy PIN.
-    const auto worker = std::ranges::find_if(legacy.employees, [&](const legacy::Employee &e) {
-        return e.active && e.key >= 1000 && !e.jobs.isEmpty() && e.jobs.first().job != 12 && e.jobs.first().job != 3;
-    });
-    const auto manager = std::ranges::find_if(legacy.employees, [](const legacy::Employee &e) {
-        return e.active && !e.jobs.isEmpty() && e.jobs.first().job == 12;
-    });
-    REQUIRE(manager != legacy.employees.end());
-
     // The last day's frozen reports = the same day worked out again.
-    REQUIRE(pos.loginWithPin(QString::number(manager->key)));
+    REQUIRE(pos.loginWithPin(u"1234"_s));
     const app::PastDay last = pos.shared()->pastDays.front();
     const auto frozen = lines(last.reports[u"sales"_s].toObject()[u"rows"_s].toArray().toVariantList());
     const QString date = QDateTime::fromMSecsSinceEpoch(last.day.closedAt - 5 * 3'600'000).date().toString(u"yyyy-MM-dd"_s);
@@ -480,64 +401,25 @@ void endToEnd(const QString &dat)
         REQUIRE(again.contains(line));
         CHECK(again.at(line) == frozen.at(line));
     }
-    // Its pages: the store's own menu pages are the menu in Legacy.
+    // The store's pages: Modern's own, filling themselves from the menu.
     storage::LayoutStore pages(path);
     REQUIRE(pages.open());
     std::optional<layout::Layout> l = pages.load();
     REQUIRE(l);
-    LayoutController c(*l);
-    c.setPos(&pos);
-    const layout::Layout shown = l->forStyle(u"legacy"_s);
-    // An item button on the store's own pages: it rings up that item, at its price.
-    QString page, zone;
-    std::string item;
-    for (const layout::Page &p : shown.pages)
-        for (const layout::Zone &z : p.zones)
-            for (const layout::Action &a : z.actions)
-                if (page.isEmpty() && p.kind == u"items" && a.type() == u"addItem" && p.extra.value(u"storeLegacy"_s).toBool()) {
-                    const std::string id = a.str(u"item"_s).toStdString();
-                    const auto m = std::ranges::find(pos.shared()->menu, id, &core::MenuItem::id);
-                    if (m != pos.shared()->menu.end() && !m->isModifier && m->available && m->price.cents() > 0) {
-                        page = p.id;
-                        zone = z.id;
-                        item = id;
-                    }
-                }
-    REQUIRE_FALSE(page.isEmpty());
-    pos.logout();
-    QString managerPin = QString::number(manager->key);
-    const bool byWorker = worker != legacy.employees.end();
-    REQUIRE(pos.loginWithPin(byWorker ? QString::number(worker->key) : managerPin));
-    if (pos.userPrefs().value(u"newPin"_s).toBool()) {
-        REQUIRE(pos.chooseNewPin(u"864213"_s));
-        if (!byWorker)
-            managerPin = u"864213"_s;
-    }
+    CHECK_FALSE(layout::hasHandBuiltMenu(*l));
+    // A sale from the menu brought over, paid, closed.
+    const auto item = std::ranges::find_if(pos.shared()->menu, [](const core::MenuItem &m) {
+        return !m.isModifier && m.available && m.price.cents() > 0 && m.modifierGroups.empty();
+    });
+    REQUIRE(item != pos.shared()->menu.end());
     REQUIRE(pos.startCheck(core::CheckType::Quick));
-    REQUIRE(c.showPage(page));
-    c.activate(zone);
-    REQUIRE(pos.currentCheck());
-    REQUIRE(pos.currentCheck()->lines.size() == 1);
-    CHECK(pos.currentCheck()->lines[0].itemId == item);
-    QString said1;
-    QObject::connect(&pos, &app::PosService::notice, [&](const QString &m) { said1 = m; });
+    REQUIRE(pos.addItem(QString::fromStdString(item->id)));
     const std::int64_t due = pos.totals().value(u"balanceCents"_s).toLongLong();
     CHECK(due > 0);
-    const bool paid = pos.tender(u"cash"_s, (due + 499) / 500 * 500);
-    INFO(said1.toStdString());
-    REQUIRE(paid);
+    REQUIRE(pos.tender(u"cash"_s, (due + 499) / 500 * 500));
     REQUIRE(pos.closeCheck());
-    CHECK(pos.shared()->open.empty());
     REQUIRE(pos.shared()->closedToday.size() == 1);
-    CHECK(pos.shared()->closedToday[0].lines[0].itemId == item);
     // The day ends, after all the days before it.
-    pos.logout();
-    REQUIRE(pos.loginWithPin(managerPin));
-    if (pos.userPrefs().value(u"newPin"_s).toBool()) {
-        REQUIRE(pos.chooseNewPin(u"975310"_s));
-        pos.logout();
-        REQUIRE(pos.loginWithPin(u"975310"_s));
-    }
     for (const core::DrawerSession &d : std::vector<core::DrawerSession>(pos.shared()->drawers)) {
         if (!d.open())
             continue;
@@ -552,7 +434,6 @@ void endToEnd(const QString &dat)
     INFO(said2.toStdString());
     REQUIRE(closed);
     CHECK(pos.shared()->pastDays.front().day.id > last.day.id);
-    // Store Check: nothing about the checks brought over.
     for (const auto &p : pos.shared()->problems)
         CHECK(p.kind != "books");
     writer.flush();
@@ -566,6 +447,7 @@ TEST_CASE("Legacy import end to end: from the command line, the store opened aga
     endToEnd(datFolder(dir));
 }
 
+// The whole of a real store (never in the repo), VTM_LEGACY_DAT=<its dat folder>.
 TEST_CASE("Legacy import end to end: a whole real store", "[legacy][import][e2e][local]")
 {
     const QString dat = qEnvironmentVariable("VTM_LEGACY_DAT");
@@ -574,7 +456,6 @@ TEST_CASE("Legacy import end to end: a whole real store", "[legacy][import][e2e]
     endToEnd(dat);
 }
 
-// The whole of a real store (never in the repo), VTM_LEGACY_DAT=<its dat folder>.
 TEST_CASE("Legacy import: a whole store, worked out", "[legacy][import][local]")
 {
     const QString dat = qEnvironmentVariable("VTM_LEGACY_DAT");
@@ -582,23 +463,12 @@ TEST_CASE("Legacy import: a whole store, worked out", "[legacy][import][local]")
         SKIP("VTM_LEGACY_DAT not set");
     const legacy::Store store = legacy::readStore(dat);
     REQUIRE(store.errors.isEmpty());
-    legacy::ImportContext cx;
-    const legacy::Imported in = legacy::convert(store, cx);
-    std::map<std::int64_t, int> byDiff;
-    for (const legacy::Mismatch &m : in.mismatches)
-        ++byDiff[(m.modern - m.legacy).cents()];
-    for (const auto &[diff, n] : byDiff)
-        WARN("off by " << diff << " cents: " << n);
+    const legacy::Imported in = legacy::convert(store, {});
     std::size_t checks = 0;
     for (const legacy::ImportedDay &d : in.days)
         checks += d.checks.size();
-    WARN(in.days.size() << " days, " << checks << " checks, " << in.mismatches.size() << " not adding up");
+    WARN(in.days.size() << " days, " << checks << " checks, " << in.mismatches.size() << " evened, "
+                        << in.menu.size() << " items, " << in.modifierGroups.size() << " choice groups");
     CHECK(in.days.size() == std::size_t(store.archives.size()));
     CHECK(in.mismatches.size() * 200 < checks);   // under half a percent
-    // Into a store, every day.
-    test::RecordingSink sink;
-    app::PosService pos(test::seedPosData(), &sink);
-    const legacy::Applied applied = legacy::applyImport(pos, nullptr, in, {});
-    CHECK(applied.error.isEmpty());
-    CHECK(sink.checks.size() == checks);
 }

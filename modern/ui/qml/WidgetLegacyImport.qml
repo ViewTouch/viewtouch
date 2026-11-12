@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
-// Bringing a store over from legacy ViewTouch: its dat folder (found on this
-// computer or a USB stick), what it holds and will become, which parts to
-// bring, then bringing it (a backup is taken first).
+// A legacy ViewTouch store's menu and sales: its dat folder (found on this
+// computer or a USB stick), what they hold and will become, which to bring,
+// then bringing them (a backup is taken first).
 Item {
     id: w
     property ZoneItem zone
@@ -15,7 +15,7 @@ Item {
     property var folders: []
     property string typed: ""
     // The parts to bring; history only into a store with no sales yet.
-    property var parts: ({ pages: true, menu: true, tables: true, settings: true, staff: true, customers: true, history: true })
+    property var parts: ({ menu: true, history: true })
 
     function look() { folders = pos ? pos.legacyFolders() : [] }
     Component.onCompleted: { look(); if (pos) pos.legacyClear() }
@@ -57,10 +57,9 @@ Item {
                     font.pixelSize: 16
                     color: w.ink
                     opacity: 0.8
-                    text: qsTr("Everything legacy ViewTouch kept is in its dat folder (/usr/viewtouch/dat, or a copy "
-                               + "of it on a USB stick): its own pages and buttons, menu, dining room, settings, staff, "
-                               + "customers and every closed day's sales. Choose it: you'll see what comes over before "
-                               + "anything changes.")
+                    text: qsTr("Legacy ViewTouch kept its menu and every closed day's sales in its dat folder "
+                               + "(/usr/viewtouch/dat, or a copy of it on a USB stick). Choose it: you'll see what "
+                               + "comes over before anything changes. The menu goes on this ViewTouch's own menu screens.")
                 }
                 Repeater {
                     model: !w.preview && w.done.length === 0 ? w.folders : []
@@ -146,20 +145,10 @@ Item {
                 }
                 Repeater {
                     model: w.preview && w.done.length === 0 ? [
-                        { key: "pages", title: qsTr("Its pages and buttons"),
-                          text: qsTr("%n page(s), as legacy showed them: the store opens in the Legacy style", "", w.preview.pages) },
                         { key: "menu", title: qsTr("Its menu"),
-                          text: qsTr("%n item(s) in %1 families, with their prices, taxes and printers", "", w.preview.items).arg(w.preview.categories) },
-                        { key: "tables", title: qsTr("Its dining room"),
-                          text: qsTr("%n table(s), where legacy had them", "", w.preview.tables) },
-                        { key: "settings", title: qsTr("Its settings"),
-                          text: qsTr("The name, receipt lines, taxes, discounts, comps, coupons and printers") },
-                        { key: "staff", title: qsTr("Its staff"),
-                          text: qsTr("%n employee(s), their jobs, pay and PINs", "", w.preview.staff)
-                                + ((w.preview.managersNewPin ?? []).length
-                                   ? qsTr(". A new PIN at first login (theirs is too short): %1").arg(w.preview.managersNewPin.join(", ")) : "") },
-                        { key: "customers", title: qsTr("Its customers"),
-                          text: qsTr("%n customer(s): names, phones, addresses, notes (never card numbers)", "", w.preview.customers) },
+                          text: qsTr("%n item(s) in %1 families and %2 choice groups (its modifier pages), with their "
+                                     + "prices, taxes and printers, in place of this store's menu, on its menu screens", "",
+                                     w.preview.items).arg(w.preview.categories).arg(w.preview.choices) },
                         { key: "history", title: qsTr("Its sales history"),
                           text: w.preview.hasSales
                                 ? qsTr("Not into a store that has sales already: only into a new one (or after a factory reset)")
@@ -238,9 +227,10 @@ Item {
                         objectName: "legacyBring"
                         Layout.fillWidth: true
                         implicitHeight: 72
-                        enabled: !!w.preview && (w.preview.errors ?? []).length === 0
                         palette.button: Ui.goDark
                         text: qsTr("Bring It Over")
+                        enabled: !!w.preview && (w.preview.errors ?? []).length === 0
+                                 && (w.parts.menu || (w.parts.history && !w.preview.hasSales))
                         onClicked: w.pos.legacyImport(w.state.folder,
                                                       Object.assign({}, w.parts, { history: w.parts.history && !w.preview.hasSales }))
                     }
@@ -277,8 +267,7 @@ Item {
                     font.pixelSize: 14
                     color: w.ink
                     opacity: 0.8
-                    text: qsTr("The store as it was before is kept in a backup: %1. Staff log in with their legacy "
-                               + "PINs; anyone whose was too short chooses a new one then.").arg(w.state.backup ?? "")
+                    text: qsTr("The store as it was before is kept in a backup: %1.").arg(w.state.backup ?? "")
                 }
             }
         }

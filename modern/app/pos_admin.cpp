@@ -66,10 +66,10 @@ bool PosService::factoryReset(const QString &confirm, bool empty)
 
 bool PosService::legacyPreviewOf(const QString &folder)
 {
-    if (!require(perm::Owner, tr("Bringing a store over from legacy ViewTouch")))
+    if (!require(perm::Owner, tr("A legacy store's menu and sales")))
         return false;
     if (!s_->requestLegacyImport)
-        return fail(tr("A store is brought over on the computer that keeps the data."));
+        return fail(tr("A legacy store's menu and sales are brought over on the computer that keeps the data."));
     legacy_ = s_->requestLegacyImport(folder, {}, false);
     legacy_.insert(u"folder"_s, folder);
     emit sessionChanged();
@@ -78,10 +78,10 @@ bool PosService::legacyPreviewOf(const QString &folder)
 
 bool PosService::legacyImportRun(const QString &folder, const QVariantMap &parts)
 {
-    if (!require(perm::Owner, tr("Bringing a store over from legacy ViewTouch")))
+    if (!require(perm::Owner, tr("A legacy store's menu and sales")))
         return false;
     if (!s_->requestLegacyImport)
-        return fail(tr("A store is brought over on the computer that keeps the data."));
+        return fail(tr("A legacy store's menu and sales are brought over on the computer that keeps the data."));
     const QVariantMap result = s_->requestLegacyImport(folder, parts, true);
     legacy_.insert(u"done"_s, result.value(u"done"_s));
     legacy_.insert(u"error"_s, result.value(u"error"_s));
@@ -89,7 +89,7 @@ bool PosService::legacyImportRun(const QString &folder, const QVariantMap &parts
     emit sessionChanged();
     if (const QString error = result.value(u"error"_s).toString(); !error.isEmpty())
         return fail(error);
-    emit notice(tr("%1 is here: its pages, menu and the rest.").arg(qs(s_->settings.storeName)));
+    emit notice(tr("Brought over from legacy ViewTouch."));
     return true;
 }
 

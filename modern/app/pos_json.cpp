@@ -554,7 +554,6 @@ QJsonObject toJson(const Employee &e)
     return {
         {u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
         {u"pinSalt"_s, qs(e.pinSalt)}, {u"pinHash"_s, qs(e.pinHash)}, {u"active"_s, e.active}, {u"training"_s, e.training}, {u"sample"_s, e.sample},
-        {u"pinMustChange"_s, e.pinMustChange},
         {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"look"_s, qs(e.look)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
         {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
         {u"colorSafe"_s, e.colorSafe}, {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
@@ -575,7 +574,6 @@ Employee employeeFromJson(const QJsonObject &o)
     e.role = ss(o.value(u"role").toString(u"server"_s));
     e.active = o.value(u"active").toBool(true);
     e.training = o.value(u"training").toBool(false);
-    e.pinMustChange = o.value(u"pinMustChange").toBool(false);
     e.sample = o.value(u"sample").toBool(false);
     e.cashMode = ss(o.value(u"cashMode").toString());
     e.requireName = ss(o.value(u"requireName").toString());

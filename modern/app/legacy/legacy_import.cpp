@@ -142,32 +142,7 @@ QString printerId(int target)
     return {};
 }
 
-QString printerName(const QString &id)
-{
-    static const QHash<QString, QString> names{{u"kitchen"_s, u"Kitchen"_s},   {u"kitchen2"_s, u"Kitchen 2"_s},
-                                               {u"kitchen3"_s, u"Kitchen 3"_s}, {u"kitchen4"_s, u"Kitchen 4"_s},
-                                               {u"bar"_s, u"Bar"_s},           {u"bar2"_s, u"Bar 2"_s},
-                                               {u"expo"_s, u"Expediter"_s},    {u"receipt"_s, u"Receipts"_s},
-                                               {u"report"_s, u"Reports"_s}};
-    return names.value(id, id);
-}
 
-// Jobs: legacy's job numbers as Modern's roles.
-QString roleOf(int job)
-{
-    switch (job) {
-    case 2: return u"busser"_s;
-    case 5: return u"cashier"_s;
-    case 6: case 7: return u"server"_s;
-    case 8: return u"host"_s;
-    case 10: case 11: case 12: return u"manager"_s;
-    case 13: return u"bartender"_s;
-    case 1: case 3: case 4: case 9: case 14: return u"kitchen"_s;
-    }
-    return u"server"_s;
-}
-
-bool managerRole(const QString &role) { return role == u"manager" || role == u"owner" || role == u"admin"; }
 
 // Legacy worked some discounts out its own way: one that didn't lower the
 // tax (the tax on the full price, then so much off), or a percent of the
@@ -254,7 +229,7 @@ Imported convert(const Store &store, const ImportContext &cx)
     QHash<QString, std::string> itemIds;   // legacy name, lower case -> Modern id
     const auto key = [](const QString &name) { return name.trimmed().toLower(); };
     QHash<int, std::string> categoryOf;    // legacy family -> category id
-    if (store.menu && (parts.menu || parts.pages)) {
+    if (store.menu) {   // (the sales name items too)
         QSet<QString> taken;
         for (const MenuItem &m : store.menu->items) {
             if (m.name.trimmed().isEmpty() || itemIds.contains(key(m.name)))
@@ -311,254 +286,78 @@ Imported convert(const Store &store, const ImportContext &cx)
         }
     }
 
-    // --- settings -----------------------------------------------------------
-    if (store.settings && parts.settings) {
-        const Settings &s = *store.settings;
-        if (!s.storeName.trimmed().isEmpty())
-            out.storeName = s.storeName.trimmed();
-        QStringList header;
-        for (const QString &l : {s.storeAddress, s.storeAddress2})
-            if (!l.trimmed().isEmpty())
-                header.append(l.trimmed());
-        for (const QString &l : s.receiptHeader)
-            if (!l.trimmed().isEmpty() && !header.contains(l.trimmed()) && l.trimmed() != s.storeName.trimmed())
-                header.append(l.trimmed());
-        out.receiptHeader = header.join(u'\n');
-        QStringList footer;
-        for (const QString &l : s.receiptFooter)
-            if (!l.trimmed().isEmpty())
-                footer.append(l.trimmed());
-        out.receiptFooter = footer.join(u'\n');
-        core::TaxRates t = current ? current->tax : core::TaxRates{};
-        t.foodPpm = ppm(s.taxFood);
-        t.alcoholPpm = ppm(s.taxAlcohol);
-        t.roomPpm = ppm(s.taxRoom);
-        t.merchandisePpm = ppm(s.taxMerchandise);
-        t.taxTakeoutFood = s.taxTakeoutFood;
-        out.tax = t;
-        if (s.taxGst || s.taxPst || s.taxHst || s.taxQst || s.taxVat)
-            out.notes.append(tr("Canada's GST, PST, HST and QST, and VAT, aren't kept apart in ViewTouch Modern: "
-                                "check the tax rates in Store Settings."));
-        if (std::ranges::any_of(s.taxInclusive, [](int x) { return x != 0; }))
-            out.notes.append(tr("Legacy had prices with the tax in them; ViewTouch Modern adds the tax on top: "
-                                "check the prices."));
-
-        // Discounts, comps and employee meals: ways to take money off a check.
-        QSet<QString> tenderIds;
-        if (current)
-            for (const core::Tender &t : current->tenders)
-                tenderIds.insert(QString::fromStdString(t.id));
-        const auto addTender = [&](const QString &prefix, const Discount &d, std::int64_t bp, bool meal) {
-            core::Tender t;
-            t.id = idFrom(prefix, d.name, tenderIds);
-            t.name = ss(d.name);
-            t.kind = core::TenderKind::Discount;
-            t.percentBp = bp;
-            t.staffMeal = meal;
-            out.tenders.push_back(t);
-        };
-        for (const Discount &d : s.media.discounts)
-            if (d.active)
-                addTender(u"discount-"_s, d, (d.flags & 1) ? d.amount : 0, false);
-        for (const Discount &d : s.media.comps)
-            if (d.active)
-                addTender(u"comp-"_s, d, 10000, false);
-        for (const Discount &d : s.media.meals)
-            if (d.active)
-                addTender(u"meal-"_s, d, (d.flags & 1) ? d.amount : 10000, true);
-        QSet<QString> promoIds;
-        for (const Discount &c : s.media.coupons) {
-            if (!c.active)
-                continue;
-            core::PosSettings::Promotion p;
-            p.id = idFrom(u"coupon-"_s, c.name, promoIds);
-            p.name = ss(c.name);
-            if (c.flags & 1)
-                p.percentBp = c.amount;
-            else
-                p.amount = cents(c.amount);
-            if (c.family >= 0 && categoryOf.contains(c.family))
-                p.families.push_back(categoryOf.value(c.family));
-            if (!c.itemName.isEmpty() && itemIds.contains(key(c.itemName)))
-                p.items.push_back(itemIds.value(key(c.itemName)));
-            if (c.startTime.isSet() && c.endTime.isSet()) {
-                p.startMinute = c.startTime.time.hour() * 60 + c.startTime.time.minute();
-                p.endMinute = c.endTime.time.hour() * 60 + c.endTime.time.minute();
+    // --- choice groups: legacy's modifier pages ---------------------------------
+    // An item's button went to a page of modifiers (No Rice, Corn Tortilla...):
+    // in Modern that page is a choice group the item asks for.
+    if (store.menu && store.pages && parts.menu) {
+        QHash<QString, const MenuItem *> byName;
+        for (const MenuItem &m : store.menu->items)
+            if (!byName.contains(key(m.name)))
+                byName.insert(key(m.name), &m);
+        QHash<int, const Page *> pageOf;
+        for (const Page &p : store.pages->pages)
+            pageOf.insert(p.id, &p);
+        QHash<int, std::string> groupOf;   // legacy page -> group id
+        const auto groupFor = [&](int pageId) -> std::string {
+            if (groupOf.contains(pageId))
+                return groupOf.value(pageId);
+            const Page *p = pageOf.value(pageId);
+            if (!p)
+                return {};
+            core::ModifierGroup g;
+            for (const Zone &z : p->zones) {
+                const QString name = z.fields.value(u"ItemName"_s).toString();
+                const MenuItem *m = byName.value(key(name));
+                if (!m || !(m->type == 1 || m->type == 2))
+                    continue;
+                if (std::ranges::any_of(g.options, [&](const core::ModifierOption &o) { return o.itemId == itemIds.value(key(name)); }))
+                    continue;
+                core::ModifierOption o;
+                o.name = ss(m->name);
+                o.price = cents(m->cost);
+                o.itemId = itemIds.value(key(name));
+                if (!m->printName.isEmpty() && m->printName != m->name)
+                    o.kitchenName = ss(m->printName);
+                g.options.push_back(o);
             }
-            if (c.days)
-                p.days = c.days & 0x7F;
-            if (c.startDate.isSet())
-                p.fromDay = ss(c.startDate.date.toString(Qt::ISODate));
-            if (c.endDate.isSet())
-                p.untilDay = ss(c.endDate.date.toString(Qt::ISODate));
-            // Legacy's coupons were touched on Pay; here, one that isn't
-            // automatic takes a code: its name, without spaces.
-            if (!c.automatic)
-                p.code = ss(c.name.toUpper().remove(QRegularExpression(u"[^A-Z0-9]"_s)));
-            out.promotions.push_back(p);
-        }
-        if (std::ranges::any_of(s.media.coupons, [](const Discount &c) { return c.active && !c.automatic; }))
-            out.notes.append(tr("Coupons legacy took on Pay are promotions with a code here: their names, "
-                                "without spaces (Store Settings > Promotions)."));
-        if (!s.media.creditCards.isEmpty())
-            out.notes.append(tr("Card kinds (Visa, MasterCard...) aren't tenders of their own here: a card "
-                                "reader says which card it was."));
-
-        // Printers: the network ones, where legacy sent each kind of ticket.
-        for (const Printer &p : s.printers) {
-            const QString id = printerId(p.type);
-            if (id.isEmpty() || std::ranges::any_of(out.printers, [&](const core::PrinterConfig &c) {
-                    return c.id == ss(id);
-                }))
-                continue;
-            core::PrinterConfig c;
-            c.id = ss(id);
-            c.name = ss(p.name.isEmpty() ? printerName(id) : p.name);
-            const bool network = p.host.contains(u'.') || p.host.contains(u':');
-            c.type = network ? "network" : "none";
-            c.host = ss(network ? p.host.section(u':', 0, 0) : QString());
-            c.port = p.port > 0 ? p.port : 9100;
-            c.receipts = id == u"receipt";
-            out.printers.push_back(c);
-            if (!network)
-                out.notes.append(tr("Printer \"%1\" was on legacy's own computer (%2): set it up again in Store "
-                                    "Settings > Printers.")
-                                     .arg(QString::fromStdString(c.name), p.host));
-        }
-        if (!s.terminals.isEmpty())
-            out.notes.append(tr("Legacy's %n screen(s) aren't brought over: pair each in ViewTouch Modern.", nullptr,
-                                int(s.terminals.size())));
-    }
-
-    // --- staff --------------------------------------------------------------
-    QHash<int, std::pair<std::string, std::string>> staff;   // legacy user id -> Modern id, name
-    if (parts.staff || parts.history) {
-        QSet<QString> pins;
-        for (const Employee &e : store.employees) {
-            core::Employee m;
-            m.id = ss(u"legacy-%1"_s.arg(e.id));
-            QString name = (e.firstName + u' ' + e.lastName).trimmed();
-            if (name.isEmpty())
-                name = e.systemName.trimmed();
-            if (name.isEmpty())
-                name = tr("Employee %1").arg(e.id);
-            m.name = ss(name);
-            staff.insert(e.id, {m.id, m.name});
-            if (!parts.staff)
-                continue;
-            const QString role = e.jobs.isEmpty() ? u"server"_s : roleOf(e.jobs.first().job);
-            m.role = ss(role);
-            const auto rate = [&](const Job &j) {
-                if (j.payRate == 1)
-                    return cents(j.payAmount);
-                return Money();
-            };
-            if (!e.jobs.isEmpty())
-                m.payRate = rate(e.jobs.first());
-            for (qsizetype k = 1; k < e.jobs.size(); ++k)
-                m.otherJobs.push_back({ss(roleOf(e.jobs[k].job)), rate(e.jobs[k])});
-            if (!e.jobs.isEmpty() && e.jobs.first().job == 7)
-                m.otherJobs.push_back({"cashier", m.payRate});   // Server/Cashier: both jobs
-            if (std::ranges::any_of(e.jobs, [](const Job &j) { return j.payRate != 1 && j.payAmount > 0; }))
-                out.notes.append(tr("%1 was paid by the day, week or month; ViewTouch Modern pays by the hour: "
-                                    "set their pay in Staff.")
-                                     .arg(name));
-            m.active = e.active;
-            m.training = e.training;
-            // Their PIN as it was: a manager's under 6 digits (or anyone's
-            // under 4) logs them in once, then asks for a new one.
-            const QString pin = QString::number(e.key);
-            if (e.key > 0 && !pins.contains(pin)) {
-                pins.insert(pin);
-                m.pinSalt = app::newSalt();
-                m.pinHash = app::hashPin(pin, m.pinSalt);
-                if (pin.size() < 4 || (managerRole(role) && pin.size() < 6)) {
-                    m.pinMustChange = true;
-                    out.managersNewPin.append(name);
-                }
-            } else {
-                m.pinMustChange = true;   // no PIN, or one someone else has: a new one at first login
-                out.managersNewPin.append(name);
+            if (g.options.empty()) {
+                groupOf.insert(pageId, {});
+                return {};
             }
-            out.employees.push_back(m);
-        }
-    }
-
-    // --- customers ----------------------------------------------------------
-    if (parts.customers) {
-        for (const Customer &c : store.customers) {
-            core::CustomerRecord r;
-            r.id = ss(u"legacy-%1"_s.arg(c.id));
-            QString name = (c.firstName + u' ' + c.lastName).trimmed();
-            if (!c.company.trimmed().isEmpty())
-                name = name.isEmpty() ? c.company.trimmed() : name + u" (" + c.company.trimmed() + u')';
-            r.name = ss(name);
-            r.phone = ss(c.extension.isEmpty() ? c.phone : c.phone + u" x" + c.extension);
-            QStringList address;
-            for (const QString &l : {c.address, c.address2})
-                if (!l.trimmed().isEmpty())
-                    address.append(l.trimmed());
-            const QString place = QStringList{c.city.trimmed(), (c.state + u' ' + c.postal).trimmed()}
-                                      .filter(QRegularExpression(u"."_s))
-                                      .join(u", "_s);
-            if (!place.isEmpty())
-                address.append(place);
-            r.address = ss(address.join(u", "_s));
-            QStringList note;
-            if (!c.crossStreet.trimmed().isEmpty())
-                note.append(tr("Cross street: %1").arg(c.crossStreet.trimmed()));
-            if (!c.comment.trimmed().isEmpty())
-                note.append(c.comment.trimmed());
-            r.note = ss(note.join(u"; "_s));
-            if (r.name.empty() && r.phone.empty() && r.address.empty())
-                continue;
-            out.customers.push_back(r);
-        }
-    }
-
-    // --- pages and the dining room -------------------------------------------
-    if (store.pages && parts.pages) {
-        PageOptions options;
-        options.defaults = store.pages->defaults.value_or(PageDefaults{});
-        options.item = [&](const QString &name) {
-            return QString::fromStdString(itemIds.value(key(name)));   // empty: not on its menu
+            g.id = ss(u"legacy-page-%1"_s.arg(pageId));
+            g.name = ss(p->name.trimmed());
+            g.min = 0;
+            g.max = int(g.options.size());
+            out.modifierGroups.push_back(g);
+            groupOf.insert(pageId, g.id);
+            return g.id;
         };
-        // Legacy's system pages are the Legacy style's: the store's pages are
-        // framed by them and go to them (its order screen, Pay, Manager...).
-        for (const layout::Page &p : layout::Layout::stylePages(u"legacy"_s))
-            if (const int lid = p.extra.value(u"legacyId"_s).toInt(); lid < 0)
-                options.knownPages.insert(lid);
-        // A store that edited its system pages kept them (vt_data): those, in place of legacy's.
-        QList<const PageFile *> files;
-        if (store.vtData)
-            files.append(&*store.vtData);
-        files.append(&*store.pages);
-        PageSet set = convertPages(files, options);
-        out.pages = set.pages;
-        out.notInModern = set.missing;
-        if (store.vtData)
-            out.notes.append(tr("This store's own system pages (vt_data) are used in place of legacy's."));
-    }
-    if (store.tables && parts.tables) {
-        QJsonArray floor;
-        for (const Page &p : store.tables->pages) {
+        for (const Page &p : store.pages->pages)
             for (const Zone &z : p.zones) {
-                if (z.kind != u"ZONE_TABLE")
+                const QString name = z.fields.value(u"ItemName"_s).toString();
+                const int jump = z.fields.value(u"JumpID"_s).toInt();
+                const MenuItem *m = byName.value(key(name));
+                if (!m || m->type == 1 || m->type == 2 || !jump || jump == p.id)
                     continue;
-                const QString label = z.name.trimmed();
-                if (label.isEmpty())
+                const std::string g = groupFor(jump);
+                if (g.empty())
                     continue;
-                floor.append(QJsonObject{
-                    {u"id"_s, u"table-%1"_s.arg(label.toLower().replace(QRegularExpression(u"[^a-z0-9]+"_s), u"-"_s))},
-                    {u"kind"_s, u"table"_s},
-                    {u"label"_s, label},
-                    {u"shape"_s, z.shape == 3 ? u"circle"_s : u"rect"_s},
-                    {u"rect"_s, QJsonObject{{u"x"_s, z.x}, {u"y"_s, z.y}, {u"w"_s, z.w}, {u"h"_s, z.h}}},
-                    {u"legacyPage"_s, p.id}});
+                for (core::MenuItem &i : out.menu)
+                    if (i.id == itemIds.value(key(name))
+                        && std::ranges::find(i.modifierGroups, g) == i.modifierGroups.end())
+                        i.modifierGroups.push_back(g);
             }
-        }
-        if (!floor.isEmpty())
-            out.floor = floor;
+    }
+
+    // Whose checks: legacy's staff by name (they aren't brought over).
+    QHash<int, std::pair<std::string, std::string>> staff;   // legacy user id -> an id, a name
+    for (const Employee &e : store.employees) {
+        QString name = (e.firstName + u' ' + e.lastName).trimmed();
+        if (name.isEmpty())
+            name = e.systemName.trimmed();
+        if (name.isEmpty())
+            name = tr("Employee %1").arg(e.id);
+        staff.insert(e.id, {ss(u"legacy-%1"_s.arg(e.id)), ss(name)});
     }
 
     // --- closed business days ---------------------------------------------------
@@ -579,19 +378,18 @@ Imported convert(const Store &store, const ImportContext &cx)
     if (parts.history && !store.archives.isEmpty()) {
         const Settings *settings = store.settings ? &*store.settings : nullptr;
         std::int64_t previousEnd = 0;
-        std::vector<WorkEntry> work;
-        for (const LaborPeriod &p : store.labor)
-            for (const WorkEntry &w : p.entries)
-                if (w.start.isSet() && w.end.isSet())
-                    work.push_back(w);
-        std::ranges::sort(work, {}, [&](const WorkEntry &w) { return toEpoch(w.start, cx.zone); });
-        std::size_t nextWork = 0;
         for (const Archive &a : store.archives) {
             ImportedDay day;
             day.legacyId = a.id;
             day.closedAt = toEpoch(a.end, cx.zone);
             day.openedAt = a.start.isSet() ? toEpoch(a.start, cx.zone) : previousEnd;
-            core::TaxRates rates = out.tax.value_or(current ? current->tax : core::TaxRates{});
+            core::TaxRates rates = current ? current->tax : core::TaxRates{};
+            if (settings) {   // legacy's rates, unless the day kept its own
+                rates.foodPpm = ppm(settings->taxFood);
+                rates.alcoholPpm = ppm(settings->taxAlcohol);
+                rates.roomPpm = ppm(settings->taxRoom);
+                rates.merchandisePpm = ppm(settings->taxMerchandise);
+            }
             if (a.taxFood) {
                 rates.foodPpm = ppm(*a.taxFood);
                 rates.alcoholPpm = ppm(*a.taxAlcohol);
@@ -812,25 +610,6 @@ Imported convert(const Store &store, const ImportContext &cx)
                 }
             }
             std::ranges::sort(day.checks, {}, &core::Check::closedAt);
-            // The day's time clock: shifts that began in it.
-            while (nextWork < work.size() && toEpoch(work[nextWork].start, cx.zone) < day.closedAt) {
-                const WorkEntry &w = work[nextWork++];
-                if (toEpoch(w.start, cx.zone) < day.openedAt - 24LL * 3'600'000)
-                    continue;   // long before this day: no day of its own here
-                core::TimePunch p;
-                p.employeeId = staff.value(w.userId).first;
-                if (p.employeeId.empty())
-                    continue;
-                p.clockIn = toEpoch(w.start, cx.zone);
-                p.clockOut = toEpoch(w.end, cx.zone);
-                p.job = ss(roleOf(w.job));
-                p.rate = w.payRate == 1 ? cents(w.payAmount) : Money();
-                if (w.tips > 0) {
-                    p.cashTipsDeclared = true;
-                    p.cashTips = cents(w.tips);
-                }
-                day.punches.push_back(p);
-            }
             previousEnd = day.closedAt;
             out.days.push_back(std::move(day));
         }
@@ -866,19 +645,14 @@ QVariantMap preview(const Store &store, const Imported &in)
     }
     const auto dayText = [](std::int64_t ms) { return QDateTime::fromMSecsSinceEpoch(ms).date().toString(Qt::ISODate); };
     QVariantMap out{{u"folder"_s, store.folder},
-                    {u"storeName"_s, in.storeName.value_or(QString())},
-                    {u"pages"_s, in.pages.size()},
+                    {u"storeName"_s, store.settings ? store.settings->storeName.trimmed() : QString()},
                     {u"items"_s, qint64(in.menu.size())},
                     {u"categories"_s, qint64(in.categories.size())},
-                    {u"tables"_s, in.floor ? in.floor->size() : 0},
-                    {u"staff"_s, qint64(in.employees.size())},
-                    {u"managersNewPin"_s, in.managersNewPin},
-                    {u"customers"_s, qint64(in.customers.size())},
+                    {u"choices"_s, qint64(in.modifierGroups.size())},
                     {u"days"_s, qint64(in.days.size())},
                     {u"checks"_s, qint64(checks)},
                     {u"sales"_s, qint64(sales.cents())},
                     {u"mismatches"_s, qint64(in.mismatches.size())},
-                    {u"notInModern"_s, in.notInModern.size()},
                     {u"notes"_s, in.notes},
                     {u"errors"_s, in.errors}};
     if (!in.days.empty()) {
