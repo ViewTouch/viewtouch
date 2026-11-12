@@ -4614,8 +4614,9 @@ TEST_CASE("Touch: every page in every way of serving, size and style is finger-s
     REQUIRE(f.open(QIODevice::ReadOnly));
     const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
     QStringList ids;
+    const layout::Layout seed = seedLayout();   // (kept: its pages are looked at)
     for (const QString &file : QDir(QStringLiteral(VTM_SEED_DIR "/pages")).entryList({u"*.json"_s}))
-        if (const layout::Page *p = seedLayout().page(file.chopped(5)); p && p->variantOf.isEmpty())
+        if (const layout::Page *p = seed.page(file.chopped(5)); p && p->variantOf.isEmpty())
             ids << file.chopped(5);
     struct Size { const char *name; int w, h; QString form; };
     QStringList report;
