@@ -467,7 +467,7 @@ int runImportLegacy(const Args &cli, const Options &o)
                .arg(p.value(u"from"_s).toString(), p.value(u"to"_s).toString()).arg(p.value(u"checks"_s).toLongLong())
                .arg(p.value(u"sales"_s).toLongLong() / 100.0, 0, 'f', 2);
     if (!in.mismatches.empty()) {
-        out << u"Checks whose total in ViewTouch Modern isn't what legacy took (kept as legacy had them): %1\n"_s.arg(in.mismatches.size());
+        out << u"Checks whose total in ViewTouch Modern isn't what legacy took (each closed for what legacy took, the rest a \"Legacy difference\" discount): %1\n"_s.arg(in.mismatches.size());
         for (const vt::legacy::Mismatch &m : in.mismatches)
             out << u"  day %1, check %2 (%3): legacy $%4, here $%5\n"_s.arg(m.day).arg(m.serial).arg(m.label)
                        .arg(m.legacy.cents() / 100.0, 0, 'f', 2).arg(m.modern.cents() / 100.0, 0, 'f', 2);

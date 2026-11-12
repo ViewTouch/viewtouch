@@ -330,6 +330,8 @@ QJsonObject lookOf(const Zone &z, int state, const Page &page, const PageDefault
 QJsonObject convertZone(const Zone &z, int n, const Page &page, std::pair<int, int> canvas, Context &cx)
 {
     QString label = labelOf(z.name);
+    if (label.isEmpty() && kItems.contains(z.kind))   // legacy draws the item's name on its button
+        label = z.fields.value(u"ItemName"_s).toString().trimmed();
     if (label.isEmpty() && z.kind == u"ZONE_QUALIFIER") {
         const int q = z.fields.value(u"QualifierType"_s).toInt();
         QStringList words;
@@ -443,6 +445,9 @@ PageSet convertPages(const QList<const PageFile *> &files, const PageOptions &op
     QHash<int, QString> pageIds;
     for (const auto &[lid, p] : pages)
         pageIds.insert(lid, standsIn().value(lid, ownId(lid)));
+    for (const int lid : options.knownPages)
+        if (!pageIds.contains(lid))
+            pageIds.insert(lid, standsIn().value(lid, ownId(lid)));
     PageSet out;
     Context cx{options, pageIds, out.missing};
     for (const auto &[lid, p] : pages) {

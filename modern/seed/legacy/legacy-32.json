@@ -25,7 +25,7 @@
             "behavior": "blink",
             "id": "32-2",
             "kind": "button",
-            "label": "",
+            "label": "Biscuit",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -71,7 +71,7 @@
             "behavior": "blink",
             "id": "32-1",
             "kind": "button",
-            "label": "",
+            "label": "Muffin",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

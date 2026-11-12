@@ -25,7 +25,7 @@
             "behavior": "blink",
             "id": "33-31",
             "kind": "button",
-            "label": "",
+            "label": "Mushroom",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -71,7 +71,7 @@
             "behavior": "blink",
             "id": "33-30",
             "kind": "button",
-            "label": "",
+            "label": "Bacon",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -117,7 +117,7 @@
             "behavior": "blink",
             "id": "33-29",
             "kind": "button",
-            "label": "",
+            "label": "Cheddar",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -163,7 +163,7 @@
             "behavior": "blink",
             "id": "33-28",
             "kind": "button",
-            "label": "",
+            "label": "Swiss",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -209,7 +209,7 @@
             "behavior": "blink",
             "id": "33-27",
             "kind": "button",
-            "label": "",
+            "label": "American",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -255,7 +255,7 @@
             "behavior": "blink",
             "id": "33-26",
             "kind": "button",
-            "label": "",
+            "label": "Mustard",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -301,7 +301,7 @@
             "behavior": "blink",
             "id": "33-25",
             "kind": "button",
-            "label": "",
+            "label": "Pickle",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -347,7 +347,7 @@
             "behavior": "blink",
             "id": "33-24",
             "kind": "button",
-            "label": "",
+            "label": "Tomato",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -393,7 +393,7 @@
             "behavior": "blink",
             "id": "33-23",
             "kind": "button",
-            "label": "",
+            "label": "Mayonaise",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -439,7 +439,7 @@
             "behavior": "blink",
             "id": "33-22",
             "kind": "button",
-            "label": "",
+            "label": "Onion",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -485,7 +485,7 @@
             "behavior": "blink",
             "id": "33-21",
             "kind": "button",
-            "label": "",
+            "label": "Lettuce",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

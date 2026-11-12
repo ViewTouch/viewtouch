@@ -191,7 +191,7 @@
             "behavior": "toggle",
             "id": "2-25",
             "kind": "button",
-            "label": "",
+            "label": "Deluxe Hamburger",
             "legacy": {
                 "id": 33,
                 "kind": "ZONE_ITEM"
@@ -238,7 +238,7 @@
             "behavior": "toggle",
             "id": "2-24",
             "kind": "button",
-            "label": "",
+            "label": "Eggs Benedict",
             "legacy": {
                 "id": 32,
                 "kind": "ZONE_ITEM"
@@ -1159,7 +1159,7 @@
             "behavior": "toggle",
             "id": "2-4",
             "kind": "button",
-            "label": "",
+            "label": "A Signature Item",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -1205,7 +1205,7 @@
             "behavior": "toggle",
             "id": "2-3",
             "kind": "button",
-            "label": "",
+            "label": "Coffee",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -1251,7 +1251,7 @@
             "behavior": "toggle",
             "id": "2-2",
             "kind": "button",
-            "label": "",
+            "label": "A Signature Dessert",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

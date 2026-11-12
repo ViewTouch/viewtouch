@@ -206,7 +206,7 @@ Item {
                     font.pixelSize: 14
                     color: "#f0b429"
                     text: w.preview ? qsTr("%n check(s) come to a little more or less here than legacy took (legacy "
-                                           + "worked some discounts out its own way); they're kept as legacy had them:", "",
+                                           + "worked some discounts out its own way); each closes for what legacy took, the difference a \"Legacy difference\" discount:", "",
                                            (w.preview.differ ?? []).length)
                                       + "\n" + (w.preview.differ ?? []).slice(0, 8).join("\n")
                                       + ((w.preview.differ ?? []).length > 8 ? "\n…" : "") : ""

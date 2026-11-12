@@ -25,7 +25,7 @@
             "behavior": "toggle",
             "id": "5-1",
             "kind": "button",
-            "label": "",
+            "label": "Coffee",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

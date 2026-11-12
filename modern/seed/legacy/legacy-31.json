@@ -25,7 +25,7 @@
             "behavior": "blink",
             "id": "31-5",
             "kind": "button",
-            "label": "",
+            "label": "Honey Mustard Dressing",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -71,7 +71,7 @@
             "behavior": "blink",
             "id": "31-4",
             "kind": "button",
-            "label": "",
+            "label": "Blue Cheese Dressing",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -117,7 +117,7 @@
             "behavior": "blink",
             "id": "31-3",
             "kind": "button",
-            "label": "",
+            "label": "French Dressing",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -163,7 +163,7 @@
             "behavior": "blink",
             "id": "31-2",
             "kind": "button",
-            "label": "",
+            "label": "House Dressing",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },
@@ -209,7 +209,7 @@
             "behavior": "blink",
             "id": "31-1",
             "kind": "button",
-            "label": "",
+            "label": "Italian Dressing",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

@@ -38,6 +38,9 @@ struct PageOptions {
     // A legacy item's name -> what an item button adds in Modern (the
     // item's id). Empty: the legacy name as it is.
     std::function<QString(const QString &)> item;
+    // Legacy pages there besides these (the Legacy style's system pages, by
+    // legacy id): a page framed by one, or a button going to one, keeps it.
+    QSet<int> knownPages;
 };
 
 // Legacy pages standing in for Modern's, by legacy id: the Legacy style

@@ -25,7 +25,7 @@
             "behavior": "toggle",
             "id": "3-1",
             "kind": "button",
-            "label": "",
+            "label": "Side Order",
             "legacy": {
                 "kind": "ZONE_ITEM"
             },

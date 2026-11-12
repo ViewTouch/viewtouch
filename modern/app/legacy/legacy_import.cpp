@@ -1,6 +1,7 @@
 #include "app/legacy/legacy_import.hh"
 
 #include "app/pos_json.hh"
+#include "layout/layout.hh"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -522,7 +523,16 @@ Imported convert(const Store &store, const ImportContext &cx)
         options.item = [&](const QString &name) {
             return QString::fromStdString(itemIds.value(key(name)));   // empty: not on its menu
         };
-        QList<const PageFile *> files{&*store.pages};
+        // Legacy's system pages are the Legacy style's: the store's pages are
+        // framed by them and go to them (its order screen, Pay, Manager...).
+        for (const layout::Page &p : layout::Layout::stylePages(u"legacy"_s))
+            if (const int lid = p.extra.value(u"legacyId"_s).toInt(); lid < 0)
+                options.knownPages.insert(lid);
+        // A store that edited its system pages kept them (vt_data): those, in place of legacy's.
+        QList<const PageFile *> files;
+        if (store.vtData)
+            files.append(&*store.vtData);
+        files.append(&*store.pages);
         PageSet set = convertPages(files, options);
         out.pages = set.pages;
         out.notInModern = set.missing;
@@ -552,6 +562,20 @@ Imported convert(const Store &store, const ImportContext &cx)
     }
 
     // --- closed business days ---------------------------------------------------
+    // Cash and cards as this store calls them, so the reports put legacy's with its own.
+    std::string cashId = "cash", cardId = "credit";
+    if (current) {
+        for (const core::Tender &t : current->tenders)
+            if (t.kind == core::TenderKind::Card) {
+                cardId = t.id;
+                break;
+            }
+        for (const core::Tender &t : current->tenders)
+            if (t.kind == core::TenderKind::Cash) {
+                cashId = t.id;
+                break;
+            }
+    }
     if (parts.history && !store.archives.isEmpty()) {
         const Settings *settings = store.settings ? &*store.settings : nullptr;
         std::int64_t previousEnd = 0;
@@ -690,13 +714,13 @@ Imported convert(const Store &store, const ImportContext &cx)
                         pay.tenderName = ss(tenderName(p.tenderType, p.tenderId, media));
                         switch (kind) {
                         case Kind::Money:
-                            pay.tenderId = p.tenderType == 0 ? "cash" : "check";
+                            pay.tenderId = p.tenderType == 0 ? cashId : "legacy-check";
                             pay.kind = core::TenderKind::Cash;
                             pay.amount = cents(p.amount);
                             taken += pay.amount;
                             break;
                         case Kind::Card:
-                            pay.tenderId = p.tenderType == 2 || p.tenderType >= 11 ? "card" : ss(u"legacy-%1"_s.arg(p.tenderType));
+                            pay.tenderId = p.tenderType == 2 || p.tenderType >= 11 ? cardId : ss(u"legacy-%1"_s.arg(p.tenderType));
                             pay.kind = core::TenderKind::Card;
                             pay.amount = cents(p.amount);
                             pay.tip = cents(p.cardTip);
@@ -768,8 +792,21 @@ Imported convert(const Store &store, const ImportContext &cx)
                     core::Totals t = m.totals(rates);
                     if (t.total != taken)
                         t = fitDiscounts(m, rates, taken).value_or(t);
-                    if (t.total != taken)
+                    if (t.total != taken) {
                         out.mismatches.push_back({a.id, c.serial, label, taken, t.total});
+                        // Closed for what legacy took, not owing the difference:
+                        // that much more off (not lowering the tax), said so.
+                        if (t.total > taken) {
+                            core::Payment even;
+                            even.id = m.nextPaymentId++;
+                            even.tenderId = "legacy-difference";
+                            even.tenderName = ss(tr("Legacy difference"));
+                            even.kind = core::TenderKind::Discount;
+                            even.amount = t.total - taken;
+                            even.classShares = {{core::TaxClass::None, even.amount}};
+                            m.payments.push_back(even);
+                        }
+                    }
                     day.sales += taken;
                     day.checks.push_back(std::move(m));
                 }
