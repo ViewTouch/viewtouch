@@ -189,8 +189,8 @@ TEST_CASE("Legacy: every page renders cleanly", "[legacy][ui][pages]")
         QTest::qWait(20);
         if (!shots.isEmpty()) {
             QTest::qWait(150);
-            QDir().mkpath(QString::fromLocal8Bit(shots) + u"/legacy"_s);
-            window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/legacy/"_s + id + u".png"_s);
+            QDir().mkpath(QString::fromLocal8Bit(shots) + u"/pages/legacy"_s);
+            window->grabWindow().save(QString::fromLocal8Bit(shots) + u"/pages/legacy/"_s + id + u".png"_s);
         }
     }
     qInstallMessageHandler(previous);
