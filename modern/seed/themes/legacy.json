@@ -41,11 +41,13 @@
         "frame": "none",
         "shadow": 0,
         "fontSize": 44,
-        "textColor": "#e6e9ef"
+        "textColor": "#e6e9ef",
+        "texture": ""
       },
       "selected": {
         "fill": "transparent",
-        "frame": "none"
+        "frame": "none",
+        "texture": ""
       }
     },
     "comment": {
@@ -55,13 +57,15 @@
         "frame": "flat",
         "shadow": 0,
         "fontSize": 20,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "image": {
       "normal": {
         "fill": "#f5efe0",
-        "textColor": "#2b2b2b"
+        "textColor": "#2b2b2b",
+        "texture": ""
       }
     },
     "orderList": {
@@ -72,7 +76,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "loginPad": {
@@ -83,7 +88,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "guestCount": {
@@ -94,7 +100,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "numPad": {
@@ -105,7 +112,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "paymentPanel": {
@@ -116,7 +124,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "logoutPanel": {
@@ -127,7 +136,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "clock": {
@@ -138,7 +148,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "checkList": {
@@ -149,7 +160,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "keyboard": {
@@ -160,7 +172,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "statusBar": {
@@ -171,7 +184,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "adminPanel": {
@@ -182,7 +196,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "reportView": {
@@ -193,7 +208,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "drawerPanel": {
@@ -204,7 +220,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "endOfDay": {
@@ -215,7 +232,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "splitCheck": {
@@ -226,7 +244,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "customerInfo": {
@@ -237,7 +256,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "customerLookup": {
@@ -248,7 +268,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "giftCard": {
@@ -259,7 +280,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "waitlist": {
@@ -270,7 +292,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "schedule": {
@@ -281,7 +304,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "factoryReset": {
@@ -292,7 +316,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "messageComposer": {
@@ -303,7 +328,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "network": {
@@ -314,7 +340,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "receiveDelivery": {
@@ -325,7 +352,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "checkSearch": {
@@ -336,7 +364,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "orderLater": {
@@ -347,7 +376,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "menuGrid": {
@@ -358,7 +388,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "menuCategories": {
@@ -369,7 +400,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "menuBuilder": {
@@ -380,7 +412,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "timeClock": {
@@ -391,7 +424,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "dashboard": {
@@ -402,7 +436,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "checklist": {
@@ -413,7 +448,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "hostStand": {
@@ -424,7 +460,8 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
       }
     },
     "deliveryBoard": {
@@ -435,7 +472,20 @@
         "radius": 12,
         "textColor": "#e6e9ef",
         "fontSize": 28,
-        "bold": false
+        "bold": false,
+        "texture": ""
+      }
+    },
+    "legacyImport": {
+      "normal": {
+        "fill": "#232933",
+        "frame": "flat",
+        "shadow": 0,
+        "radius": 12,
+        "textColor": "#e6e9ef",
+        "fontSize": 28,
+        "bold": false,
+        "texture": ""
       }
     }
   },
