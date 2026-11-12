@@ -1,1487 +1,1487 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n6",
- "name": "TakeOut Orders",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "sand"
- },
- "legacyId": -6,
- "zones": [
-  {
-   "id": "n6-36",
-   "rect": {
-    "x": 1708,
-    "y": 936,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "sand"
     },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-35",
-   "rect": {
-    "x": 224,
-    "y": 32,
-    "w": 1460,
-    "h": 572
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "customerInfo",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CUSTOMER_INFO"
-   }
-  },
-  {
-   "id": "n6-34",
-   "rect": {
-    "x": 1548,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "P",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-33",
-   "rect": {
-    "x": 220,
-    "y": 924,
-    "w": 168,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Next",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "Next"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litewood",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-32",
-   "rect": {
-    "x": 168,
-    "y": 768,
-    "w": 156,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Search\nNext",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "Search\nNext"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-31",
-   "rect": {
-    "x": 4,
-    "y": 768,
-    "w": 156,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "checkSearch",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SEARCH"
-   }
-  },
-  {
-   "id": "n6-30",
-   "rect": {
-    "x": 4,
-    "y": 924,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Previous",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "Previous"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litewood",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-29",
-   "rect": {
-    "x": 1556,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": ".",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-28",
-   "rect": {
-    "x": 1412,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": ",",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-27",
-   "rect": {
-    "x": 1268,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "M",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-26",
-   "rect": {
-    "x": 1124,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "N",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-25",
-   "rect": {
-    "x": 980,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "B",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-24",
-   "rect": {
-    "x": 836,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "V",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-23",
-   "rect": {
-    "x": 692,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "C",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-22",
-   "rect": {
-    "x": 548,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "X",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-21",
-   "rect": {
-    "x": 404,
-    "y": 908,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Z",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-20",
-   "rect": {
-    "x": 1492,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "L",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-19",
-   "rect": {
-    "x": 1348,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "K",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-18",
-   "rect": {
-    "x": 1204,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "J",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-17",
-   "rect": {
-    "x": 1060,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "H",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-16",
-   "rect": {
-    "x": 916,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "G",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-15",
-   "rect": {
-    "x": 772,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "F",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-14",
-   "rect": {
-    "x": 628,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "D",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-13",
-   "rect": {
-    "x": 484,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "S",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-12",
-   "rect": {
-    "x": 340,
-    "y": 760,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "A",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-11",
-   "rect": {
-    "x": 1404,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "O",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-10",
-   "rect": {
-    "x": 1260,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "I",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-9",
-   "rect": {
-    "x": 1116,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "U",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-8",
-   "rect": {
-    "x": 972,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Y",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-7",
-   "rect": {
-    "x": 828,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "T",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-6",
-   "rect": {
-    "x": 684,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "R",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-5",
-   "rect": {
-    "x": 540,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "E",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-4",
-   "rect": {
-    "x": 396,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "W",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-3",
-   "rect": {
-    "x": 252,
-    "y": 612,
-    "w": 136,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Q",
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n6-2",
-   "rect": {
-    "x": 1696,
-    "y": 412,
-    "w": 212,
-    "h": 188
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "index"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "greenmarble",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ORDER_FLOW"
-   }
-  },
-  {
-   "id": "n6-1",
-   "rect": {
-    "x": 1752,
-    "y": 780,
-    "w": 156,
-    "h": 96
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Settle",
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": 1020
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n6",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -6,
+    "name": "TakeOut Orders",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n6-36",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1708,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-35",
+            "kind": "customerInfo",
+            "legacy": {
+                "kind": "ZONE_CUSTOMER_INFO"
+            },
+            "rect": {
+                "h": 572,
+                "w": 1460,
+                "x": 224,
+                "y": 32
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-34",
+            "kind": "label",
+            "label": "P",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1548,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "Next"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n6-33",
+            "kind": "button",
+            "label": "Next",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 168,
+                "x": 220,
+                "y": 924
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "Search\nNext"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n6-32",
+            "kind": "button",
+            "label": "Search\nNext",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 156,
+                "x": 168,
+                "y": 768
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-31",
+            "kind": "checkSearch",
+            "legacy": {
+                "kind": "ZONE_SEARCH"
+            },
+            "rect": {
+                "h": 136,
+                "w": 156,
+                "x": 4,
+                "y": 768
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "Previous"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n6-30",
+            "kind": "button",
+            "label": "Previous",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 4,
+                "y": 924
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-29",
+            "kind": "label",
+            "label": ".",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1556,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-28",
+            "kind": "label",
+            "label": ",",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1412,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-27",
+            "kind": "label",
+            "label": "M",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1268,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-26",
+            "kind": "label",
+            "label": "N",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1124,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-25",
+            "kind": "label",
+            "label": "B",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 980,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-24",
+            "kind": "label",
+            "label": "V",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 836,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-23",
+            "kind": "label",
+            "label": "C",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 692,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-22",
+            "kind": "label",
+            "label": "X",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 548,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-21",
+            "kind": "label",
+            "label": "Z",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 404,
+                "y": 908
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-20",
+            "kind": "label",
+            "label": "L",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1492,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-19",
+            "kind": "label",
+            "label": "K",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1348,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-18",
+            "kind": "label",
+            "label": "J",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1204,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-17",
+            "kind": "label",
+            "label": "H",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1060,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-16",
+            "kind": "label",
+            "label": "G",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 916,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-15",
+            "kind": "label",
+            "label": "F",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 772,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-14",
+            "kind": "label",
+            "label": "D",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 628,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-13",
+            "kind": "label",
+            "label": "S",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 484,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-12",
+            "kind": "label",
+            "label": "A",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 340,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-11",
+            "kind": "label",
+            "label": "O",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1404,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-10",
+            "kind": "label",
+            "label": "I",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1260,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-9",
+            "kind": "label",
+            "label": "U",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 1116,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-8",
+            "kind": "label",
+            "label": "Y",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 972,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-7",
+            "kind": "label",
+            "label": "T",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 828,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-6",
+            "kind": "label",
+            "label": "R",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 684,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-5",
+            "kind": "label",
+            "label": "E",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 540,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-4",
+            "kind": "label",
+            "label": "W",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 396,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-3",
+            "kind": "label",
+            "label": "Q",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 144,
+                "w": 136,
+                "x": 252,
+                "y": 612
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "index",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n6-2",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_ORDER_FLOW"
+            },
+            "rect": {
+                "h": 188,
+                "w": 212,
+                "x": 1696,
+                "y": 412
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000091",
+                    "texture": "greenmarble"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "sand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n6-1",
+            "kind": "label",
+            "label": "Settle",
+            "legacy": {
+                "id": 1020,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 96,
+                "w": 156,
+                "x": 1752,
+                "y": 780
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "greenmarble"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

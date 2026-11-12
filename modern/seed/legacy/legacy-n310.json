@@ -1,384 +1,384 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n310",
- "name": "About the Wireless Router & Access Point",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "parchment"
- },
- "legacyId": -310,
- "zones": [
-  {
-   "id": "n310-9",
-   "rect": {
-    "x": 8,
-    "y": 176,
-    "w": 1404,
-    "h": 80
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If your ISP's modem is also a wireless access point then make sure that it is broadcasting on a channel which is at least 3 channels higher or lower than the channel at which your router is broadcasting.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "parchment"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-8",
-   "rect": {
-    "x": 8,
-    "y": 256,
-    "w": 1684,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "This device connects the wireless tablet, wireless printers and, optionally, wireless net access for laptops and smartphones.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-7",
-   "rect": {
-    "x": 8,
-    "y": 452,
-    "w": 700,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Use Wireless Routers Auto Crossover (MDI/MDI-X)",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-6",
-   "rect": {
-    "x": 8,
-    "y": 56,
-    "w": 1732,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Don't install this any wireless access point within ten feet of a microwave oven, or on the opposite side of a wall which has one.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-5",
-   "rect": {
-    "x": 8,
-    "y": 100,
-    "w": 1036,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Radio signals penetrate walls with ease except when a wall is a metal plate.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-4",
-   "rect": {
-    "x": 8,
-    "y": 500,
-    "w": 1308,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If you feel you need to improve signal range or signal strength available to your wireless tablets",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-3",
-   "rect": {
-    "x": 8,
-    "y": 544,
-    "w": 828,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": ">> Replace the standard antennae with high gain antennae.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-2",
-   "rect": {
-    "x": 8,
-    "y": 328,
-    "w": 1588,
-    "h": 120
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Each device with a network interface has a unique hardware identification, a Media Access Control Address.\nThe ISP's modem must have port forwarding enabled on port 22 to the router's MAC (Media Access Control) address.\nYour router must have port forwarding enabled on port 22 to the MAC address of the ViewTouch computer.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#a0206e",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n310-1",
-   "rect": {
-    "x": 1708,
-    "y": 936,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n310",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -310,
+    "name": "About the Wireless Router & Access Point",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n310-9",
+            "kind": "label",
+            "label": "If your ISP's modem is also a wireless access point then make sure that it is broadcasting on a channel which is at least 3 channels higher or lower than the channel at which your router is broadcasting.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 80,
+                "w": 1404,
+                "x": 8,
+                "y": 176
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-8",
+            "kind": "label",
+            "label": "This device connects the wireless tablet, wireless printers and, optionally, wireless net access for laptops and smartphones.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 1684,
+                "x": 8,
+                "y": 256
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-7",
+            "kind": "label",
+            "label": "Use Wireless Routers Auto Crossover (MDI/MDI-X)",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 700,
+                "x": 8,
+                "y": 452
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-6",
+            "kind": "label",
+            "label": "Don't install this any wireless access point within ten feet of a microwave oven, or on the opposite side of a wall which has one.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 1732,
+                "x": 8,
+                "y": 56
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-5",
+            "kind": "label",
+            "label": "Radio signals penetrate walls with ease except when a wall is a metal plate.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 1036,
+                "x": 8,
+                "y": 100
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-4",
+            "kind": "label",
+            "label": "If you feel you need to improve signal range or signal strength available to your wireless tablets",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 1308,
+                "x": 8,
+                "y": 500
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-3",
+            "kind": "label",
+            "label": ">> Replace the standard antennae with high gain antennae.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 828,
+                "x": 8,
+                "y": 544
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n310-2",
+            "kind": "label",
+            "label": "Each device with a network interface has a unique hardware identification, a Media Access Control Address.\nThe ISP's modem must have port forwarding enabled on port 22 to the router's MAC (Media Access Control) address.\nYour router must have port forwarding enabled on port 22 to the MAC address of the ViewTouch computer.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 120,
+                "w": 1588,
+                "x": 8,
+                "y": 328
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a0206e",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n310-1",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1708,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        }
+    ]
 }

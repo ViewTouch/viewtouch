@@ -1,525 +1,525 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n29",
- "name": "End Day",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "sand"
- },
- "legacyId": -29,
- "zones": [
-  {
-   "id": "n29-11",
-   "rect": {
-    "x": 408,
-    "y": 36,
-    "w": 1176,
-    "h": 48
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Review Today's Payment Edits and Exceptions",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "background": {
+        "texture": "sand"
     },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n29-10",
-   "rect": {
-    "x": 560,
-    "y": 536,
-    "w": 748,
-    "h": 96
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "1. Review, Settle Any Open Checks",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "check-list"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a0206e",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -24
-   }
-  },
-  {
-   "id": "n29-9",
-   "rect": {
-    "x": 1704,
-    "y": 932,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n29-8",
-   "rect": {
-    "x": 588,
-    "y": 648,
-    "w": 1004,
-    "h": 96
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "2. Pull and Balance Open Tills or Server Banks",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n50"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#005c82",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD",
-    "id": -50
-   }
-  },
-  {
-   "id": "n29-7",
-   "rect": {
-    "x": 644,
-    "y": 876,
-    "w": 584,
-    "h": 92
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "4. End Day, Start New Day",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "4. End Day, Start New Day"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "yellowtexture",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n29-6",
-   "rect": {
-    "x": 616,
-    "y": 760,
-    "w": 1024,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "3. Review or Edit Time Clock Entries, Clock Out Anyone Still On Clock",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "time-clock"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD",
-    "id": -72
-   }
-  },
-  {
-   "id": "n29-5",
-   "rect": {
-    "x": 588,
-    "y": 240,
-    "w": 668,
-    "h": 272
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "endOfDay",
-   "style": {
-    "normal": {
-     "frame": "inset",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_END_DAY"
-   }
-  },
-  {
-   "id": "n29-4",
-   "rect": {
-    "x": 1308,
-    "y": 112,
-    "w": 276,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Closed Check Edits",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n66"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -66
-   }
-  },
-  {
-   "id": "n29-3",
-   "rect": {
-    "x": 408,
-    "y": 112,
-    "w": 276,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Line Item Comps",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n63"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -63
-   }
-  },
-  {
-   "id": "n29-2",
-   "rect": {
-    "x": 700,
-    "y": 112,
-    "w": 276,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Line Item Voids",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n64"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -64
-   }
-  },
-  {
-   "id": "n29-1",
-   "rect": {
-    "x": 992,
-    "y": 112,
-    "w": 300,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Transferred Checks",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n65"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -65
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n29",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -29,
+    "name": "End Day",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n29-11",
+            "kind": "label",
+            "label": "Review Today's Payment Edits and Exceptions",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 48,
+                "w": 1176,
+                "x": 408,
+                "y": 36
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "check-list",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-10",
+            "kind": "button",
+            "label": "1. Review, Settle Any Open Checks",
+            "legacy": {
+                "id": -24,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 96,
+                "w": 748,
+                "x": 560,
+                "y": 536
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a0206e",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n29-9",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1704,
+                "y": 932
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n50",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-8",
+            "kind": "button",
+            "label": "2. Pull and Balance Open Tills or Server Banks",
+            "legacy": {
+                "id": -50,
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 96,
+                "w": 1004,
+                "x": 588,
+                "y": 648
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005c82",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "4. End Day, Start New Day"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n29-7",
+            "kind": "button",
+            "label": "4. End Day, Start New Day",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 92,
+                "w": 584,
+                "x": 644,
+                "y": 876
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "yellowtexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "sand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "time-clock",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-6",
+            "kind": "button",
+            "label": "3. Review or Edit Time Clock Entries, Clock Out Anyone Still On Clock",
+            "legacy": {
+                "id": -72,
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 100,
+                "w": 1024,
+                "x": 616,
+                "y": 760
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#006248",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n29-5",
+            "kind": "endOfDay",
+            "legacy": {
+                "kind": "ZONE_END_DAY"
+            },
+            "rect": {
+                "h": 272,
+                "w": 668,
+                "x": 588,
+                "y": 240
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "inset",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#005a00",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n66",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-4",
+            "kind": "button",
+            "label": "Closed Check Edits",
+            "legacy": {
+                "id": -66,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 100,
+                "w": 276,
+                "x": 1308,
+                "y": 112
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n63",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-3",
+            "kind": "button",
+            "label": "Line Item Comps",
+            "legacy": {
+                "id": -63,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 100,
+                "w": 276,
+                "x": 408,
+                "y": 112
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n64",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-2",
+            "kind": "button",
+            "label": "Line Item Voids",
+            "legacy": {
+                "id": -64,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 100,
+                "w": 276,
+                "x": 700,
+                "y": 112
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n65",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n29-1",
+            "kind": "button",
+            "label": "Transferred Checks",
+            "legacy": {
+                "id": -65,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 100,
+                "w": 300,
+                "x": 992,
+                "y": 112
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

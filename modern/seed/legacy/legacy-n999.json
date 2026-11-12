@@ -1,1784 +1,1784 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n999",
- "name": "SuperUser Desktop",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "sand"
- },
- "legacyId": -999,
- "zones": [
-  {
-   "id": "n999-41",
-   "rect": {
-    "x": 1708,
-    "y": 936,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "background": {
+        "texture": "sand"
     },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-40",
-   "rect": {
-    "x": 1416,
-    "y": 936,
-    "w": 276,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "this setting switch"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#6400c8",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SWITCH"
-   }
-  },
-  {
-   "id": "n999-39",
-   "rect": {
-    "x": 8,
-    "y": 276,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "WiFi\nnmtui",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-38",
-   "rect": {
-    "x": 12,
-    "y": 404,
-    "w": 460,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "network manager text user interface",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#502d19",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-37",
-   "rect": {
-    "x": 412,
-    "y": 88,
-    "w": 816,
-    "h": 28
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If you kill the ViewTouch process return to the desktop with [Ctrl] [Alt] F7.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-36",
-   "rect": {
-    "x": 356,
-    "y": 32,
-    "w": 1088,
-    "h": 52
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If you find yourself locked up in ViewTouch, [Ctrl] [Alt] F1 to the command line interface. \nEither ps -aux and kill the ViewTouch process by its number or reboot.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-35",
-   "rect": {
-    "x": 400,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Notes",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n360"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -360
-   }
-  },
-  {
-   "id": "n999-34",
-   "rect": {
-    "x": 784,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Conditional Button Options",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n362"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -362
-   }
-  },
-  {
-   "id": "n999-33",
-   "rect": {
-    "x": 1168,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "SuperUser Desktop",
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL"
-   }
-  },
-  {
-   "id": "n999-32",
-   "rect": {
-    "x": 952,
-    "y": 752,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Quit or Refresh ViewTouch",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "quitting ViewTouch from here"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_KILL_SYSTEM"
-   }
-  },
-  {
-   "id": "n999-31",
-   "rect": {
-    "x": 480,
-    "y": 752,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Save vt data\nto ViewTouch Cloud",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-30",
-   "rect": {
-    "x": 8,
-    "y": 236,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:nmtui",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-29",
-   "rect": {
-    "x": 1424,
-    "y": 460,
-    "w": 460,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:sudo system-config-printeer",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-28",
-   "rect": {
-    "x": 952,
-    "y": 236,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:sudo synaptic-pkexec",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-27",
-   "rect": {
-    "x": 480,
-    "y": 460,
-    "w": 460,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:xfce4-terminal",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-26",
-   "rect": {
-    "x": 12,
-    "y": 460,
-    "w": 460,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:conky",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-25",
-   "rect": {
-    "x": 1424,
-    "y": 236,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:xfce4-taskmanager",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-24",
-   "rect": {
-    "x": 480,
-    "y": 712,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:filezilla",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-23",
-   "rect": {
-    "x": 952,
-    "y": 712,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Button's Type: Kill System",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-22",
-   "rect": {
-    "x": 4,
-    "y": 712,
-    "w": 460,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:sudo shutdown -r now",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-21",
-   "rect": {
-    "x": 8,
-    "y": 276,
-    "w": 460,
-    "h": 44
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Open Text Console, then type nmtui",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-20",
-   "rect": {
-    "x": 1424,
-    "y": 276,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "task manager",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-19",
-   "rect": {
-    "x": 8,
-    "y": 528,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "About Your Computer",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-18",
-   "rect": {
-    "x": 12,
-    "y": 528,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-17",
-   "rect": {
-    "x": 8,
-    "y": 752,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Reboot to Desktop",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-16",
-   "rect": {
-    "x": 480,
-    "y": 276,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "ViewTouch Wiki",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-15",
-   "rect": {
-    "x": 480,
-    "y": 528,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Text Console, Command Line",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-14",
-   "rect": {
-    "x": 952,
-    "y": 276,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Update All Raspberry Pi Packages",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-13",
-   "rect": {
-    "x": 1424,
-    "y": 528,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Configure Printers",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-12",
-   "rect": {
-    "x": 12,
-    "y": 756,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-11",
-   "rect": {
-    "x": 1428,
-    "y": 528,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-10",
-   "rect": {
-    "x": 484,
-    "y": 528,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-9",
-   "rect": {
-    "x": 956,
-    "y": 276,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-8",
-   "rect": {
-    "x": 952,
-    "y": 528,
-    "w": 460,
-    "h": 164
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Get the Latest Version of ViewTouch",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "running a program on the computer"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n999-7",
-   "rect": {
-    "x": 952,
-    "y": 528,
-    "w": 460,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-6",
-   "rect": {
-    "x": 952,
-    "y": 460,
-    "w": 460,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "RUNCMD:sudo /usr/viewtouch/bin/pull.sh",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n999-5",
-   "rect": {
-    "x": 976,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "SYSCMD Play Area",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n998"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -998
-   }
-  },
-  {
-   "id": "n999-4",
-   "rect": {
-    "x": 208,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Table Page Button Options",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n332"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -332
-   }
-  },
-  {
-   "id": "n999-3",
-   "rect": {
-    "x": 16,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Go Button Options",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n331"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -331
-   }
-  },
-  {
-   "id": "n999-2",
-   "rect": {
-    "x": 592,
-    "y": 940,
-    "w": 184,
-    "h": 132
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Notes",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "push",
-     "page": "legacy-n361"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_CONDITIONAL",
-    "id": -361
-   }
-  },
-  {
-   "id": "n999-1",
-   "rect": {
-    "x": 484,
-    "y": 276,
-    "w": 452,
-    "h": 24
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Working",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n999",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -999,
+    "name": "SuperUser Desktop",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-41",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1708,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "this setting switch"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-40",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_SWITCH"
+            },
+            "rect": {
+                "h": 136,
+                "w": 276,
+                "x": 1416,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#6400c8",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-39",
+            "kind": "button",
+            "label": "WiFi\nnmtui",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 8,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-38",
+            "kind": "label",
+            "label": "network manager text user interface",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 460,
+                "x": 12,
+                "y": 404
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#502d19",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-37",
+            "kind": "label",
+            "label": "If you kill the ViewTouch process return to the desktop with [Ctrl] [Alt] F7.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 28,
+                "w": 816,
+                "x": 412,
+                "y": 88
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-36",
+            "kind": "label",
+            "label": "If you find yourself locked up in ViewTouch, [Ctrl] [Alt] F1 to the command line interface. \nEither ps -aux and kill the ViewTouch process by its number or reboot.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 52,
+                "w": 1088,
+                "x": 356,
+                "y": 32
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n360",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-35",
+            "kind": "button",
+            "label": "Notes",
+            "legacy": {
+                "id": -360,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 400,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n362",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-34",
+            "kind": "button",
+            "label": "Conditional Button Options",
+            "legacy": {
+                "id": -362,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 784,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-33",
+            "kind": "label",
+            "label": "SuperUser Desktop",
+            "legacy": {
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 1168,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "quitting ViewTouch from here"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-32",
+            "kind": "button",
+            "label": "Quit or Refresh ViewTouch",
+            "legacy": {
+                "kind": "ZONE_KILL_SYSTEM"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 952,
+                "y": 752
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-31",
+            "kind": "button",
+            "label": "Save vt data\nto ViewTouch Cloud",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 480,
+                "y": 752
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-30",
+            "kind": "label",
+            "label": "RUNCMD:nmtui",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 8,
+                "y": 236
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-29",
+            "kind": "label",
+            "label": "RUNCMD:sudo system-config-printeer",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 460,
+                "x": 1424,
+                "y": 460
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-28",
+            "kind": "label",
+            "label": "RUNCMD:sudo synaptic-pkexec",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 952,
+                "y": 236
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-27",
+            "kind": "label",
+            "label": "RUNCMD:xfce4-terminal",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 460,
+                "x": 480,
+                "y": 460
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-26",
+            "kind": "label",
+            "label": "RUNCMD:conky",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 460,
+                "x": 12,
+                "y": 460
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-25",
+            "kind": "label",
+            "label": "RUNCMD:xfce4-taskmanager",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 1424,
+                "y": 236
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-24",
+            "kind": "label",
+            "label": "RUNCMD:filezilla",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 480,
+                "y": 712
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-23",
+            "kind": "label",
+            "label": "Button's Type: Kill System",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 952,
+                "y": 712
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-22",
+            "kind": "label",
+            "label": "RUNCMD:sudo shutdown -r now",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 460,
+                "x": 4,
+                "y": 712
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-21",
+            "kind": "label",
+            "label": "Open Text Console, then type nmtui",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 44,
+                "w": 460,
+                "x": 8,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-20",
+            "kind": "button",
+            "label": "task manager",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 1424,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-19",
+            "kind": "button",
+            "label": "About Your Computer",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 8,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-18",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 12,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-17",
+            "kind": "button",
+            "label": "Reboot to Desktop",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 8,
+                "y": 752
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-16",
+            "kind": "button",
+            "label": "ViewTouch Wiki",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 480,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-15",
+            "kind": "button",
+            "label": "Text Console, Command Line",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 480,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-14",
+            "kind": "button",
+            "label": "Update All Raspberry Pi Packages",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 952,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-13",
+            "kind": "button",
+            "label": "Configure Printers",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 1424,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-12",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 12,
+                "y": 756
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-11",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 1428,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-10",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 484,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-9",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 956,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "running a program on the computer"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n999-8",
+            "kind": "button",
+            "label": "Get the Latest Version of ViewTouch",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 164,
+                "w": 460,
+                "x": 952,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-7",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 460,
+                "x": 952,
+                "y": 528
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-6",
+            "kind": "label",
+            "label": "RUNCMD:sudo /usr/viewtouch/bin/pull.sh",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 460,
+                "x": 952,
+                "y": 460
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n998",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-5",
+            "kind": "button",
+            "label": "SYSCMD Play Area",
+            "legacy": {
+                "id": -998,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 976,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n332",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-4",
+            "kind": "button",
+            "label": "Table Page Button Options",
+            "legacy": {
+                "id": -332,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 208,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n331",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-3",
+            "kind": "button",
+            "label": "Go Button Options",
+            "legacy": {
+                "id": -331,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 16,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "push",
+                    "page": "legacy-n361",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n999-2",
+            "kind": "button",
+            "label": "Notes",
+            "legacy": {
+                "id": -361,
+                "kind": "ZONE_CONDITIONAL"
+            },
+            "rect": {
+                "h": 132,
+                "w": 184,
+                "x": 592,
+                "y": 940
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n999-1",
+            "kind": "label",
+            "label": "Working",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 24,
+                "w": 452,
+                "x": 484,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

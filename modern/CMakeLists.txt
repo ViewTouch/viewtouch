@@ -92,6 +92,7 @@ if(Qt6_FOUND)
     add_library(vtm_legacy STATIC
         app/legacy/legacy_tokens.hh app/legacy/legacy_tokens.cpp
         app/legacy/legacy_files.hh app/legacy/legacy_files.cpp
+        app/legacy/legacy_pages.hh app/legacy/legacy_pages.cpp
     )
     target_link_libraries(vtm_legacy PUBLIC vtm_pos vtm_layout Qt6::Core)
     qt_add_resources(vtm_legacy "vtm_legacy_data" PREFIX "/legacy" BASE tools/legacy FILES tools/legacy/zone_fields.json)

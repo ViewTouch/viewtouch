@@ -1,1456 +1,1456 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n710",
- "name": "How to Give a Bixolon Printer a Static IP Address",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "parchment"
- },
- "legacyId": -710,
- "zones": [
-  {
-   "id": "n710-35",
-   "rect": {
-    "x": 4,
-    "y": 28,
-    "w": 736,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Give each network printer a static IP address",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "parchment"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-34",
-   "rect": {
-    "x": 4,
-    "y": 828,
-    "w": 840,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Enter the IP Address into the Browser URL and Check Static !",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-33",
-   "rect": {
-    "x": 336,
-    "y": 776,
-    "w": 276,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "AA.BB.CC.DD.EE.FF",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-32",
-   "rect": {
-    "x": 8,
-    "y": 776,
-    "w": 192,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "MAC Address",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-31",
-   "rect": {
-    "x": 336,
-    "y": 740,
-    "w": 76,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "9100",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-30",
-   "rect": {
-    "x": 8,
-    "y": 740,
-    "w": 68,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Port",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-29",
-   "rect": {
-    "x": 8,
-    "y": 668,
-    "w": 160,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Gateway IP",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-28",
-   "rect": {
-    "x": 8,
-    "y": 560,
-    "w": 296,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "IP Allocation Method",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-27",
-   "rect": {
-    "x": 8,
-    "y": 704,
-    "w": 256,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Inactivity Timeout",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-26",
-   "rect": {
-    "x": 336,
-    "y": 668,
-    "w": 200,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "xxx.xxx.xxx.zzz",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-25",
-   "rect": {
-    "x": 336,
-    "y": 596,
-    "w": 200,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "xxx.xxx.xxx.yyy",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-24",
-   "rect": {
-    "x": 336,
-    "y": 632,
-    "w": 204,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "255.255.255.0",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-23",
-   "rect": {
-    "x": 8,
-    "y": 632,
-    "w": 184,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Subnet Mask",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-22",
-   "rect": {
-    "x": 8,
-    "y": 596,
-    "w": 156,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "IP Address",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-21",
-   "rect": {
-    "x": 336,
-    "y": 560,
-    "w": 252,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Static or Dynamic",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-20",
-   "rect": {
-    "x": 4,
-    "y": 512,
-    "w": 332,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Ethernet Configuration",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-19",
-   "rect": {
-    "x": 4,
-    "y": 484,
-    "w": 332,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-18",
-   "rect": {
-    "x": 4,
-    "y": 468,
-    "w": 1440,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If the printer printed this message, select Mode 1 (one short press and one long press to see the LAN data",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-17",
-   "rect": {
-    "x": 24,
-    "y": 340,
-    "w": 884,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Step 1. Short press as many times as the mode number to choose",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-16",
-   "rect": {
-    "x": 4,
-    "y": 148,
-    "w": 372,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Checking Interface Setting",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-15",
-   "rect": {
-    "x": 20,
-    "y": 256,
-    "w": 560,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "2: LAN Factory Reset and Reboot Printer",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-14",
-   "rect": {
-    "x": 20,
-    "y": 220,
-    "w": 348,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "1: LAN Information Print",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-13",
-   "rect": {
-    "x": 20,
-    "y": 184,
-    "w": 96,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "0: Exit",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-12",
-   "rect": {
-    "x": 4,
-    "y": 304,
-    "w": 636,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Select Modes by Feed button Control as below.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-11",
-   "rect": {
-    "x": 24,
-    "y": 376,
-    "w": 492,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Step 2. Long press over one second.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-10",
-   "rect": {
-    "x": 4,
-    "y": 100,
-    "w": 844,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Add paper, close the cover and the following text will print.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-9",
-   "rect": {
-    "x": 4,
-    "y": 64,
-    "w": 1496,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "After the printer has finished booting, open the printer, then press and hold the FEED button for 5 seconds.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-8",
-   "rect": {
-    "x": 4,
-    "y": 412,
-    "w": 1324,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Example, to choose Mode 2, press Feed Button three times (short-short-long)",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-7",
-   "rect": {
-    "x": 828,
-    "y": 904,
-    "w": 204,
-    "h": 168
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Attaching Printers",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n711"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -711
-   }
-  },
-  {
-   "id": "n710-6",
-   "rect": {
-    "x": 1708,
-    "y": 904,
-    "w": 204,
-    "h": 168
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n710-5",
-   "rect": {
-    "x": 1488,
-    "y": 904,
-    "w": 204,
-    "h": 168
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Display & Printer Addressing",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n713"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -713
-   }
-  },
-  {
-   "id": "n710-4",
-   "rect": {
-    "x": 1268,
-    "y": 904,
-    "w": 204,
-    "h": 168
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Installing Printers",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n712"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -712
-   }
-  },
-  {
-   "id": "n710-3",
-   "rect": {
-    "x": 1048,
-    "y": 904,
-    "w": 204,
-    "h": 168
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Local Area Network IP Addressing",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n711"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -711
-   }
-  },
-  {
-   "id": "n710-2",
-   "rect": {
-    "x": 4,
-    "y": 516,
-    "w": 332,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n710-1",
-   "rect": {
-    "x": 336,
-    "y": 704,
-    "w": 200,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "xxx.xxx.xxx.zzz",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n710",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -710,
+    "name": "How to Give a Bixolon Printer a Static IP Address",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n710-35",
+            "kind": "label",
+            "label": "Give each network printer a static IP address",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 736,
+                "x": 4,
+                "y": 28
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-34",
+            "kind": "label",
+            "label": "Enter the IP Address into the Browser URL and Check Static !",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 840,
+                "x": 4,
+                "y": 828
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-33",
+            "kind": "label",
+            "label": "AA.BB.CC.DD.EE.FF",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 276,
+                "x": 336,
+                "y": 776
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-32",
+            "kind": "label",
+            "label": "MAC Address",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 192,
+                "x": 8,
+                "y": 776
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-31",
+            "kind": "label",
+            "label": "9100",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 76,
+                "x": 336,
+                "y": 740
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-30",
+            "kind": "label",
+            "label": "Port",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 68,
+                "x": 8,
+                "y": 740
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-29",
+            "kind": "label",
+            "label": "Gateway IP",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 160,
+                "x": 8,
+                "y": 668
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-28",
+            "kind": "label",
+            "label": "IP Allocation Method",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 296,
+                "x": 8,
+                "y": 560
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-27",
+            "kind": "label",
+            "label": "Inactivity Timeout",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 256,
+                "x": 8,
+                "y": 704
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-26",
+            "kind": "label",
+            "label": "xxx.xxx.xxx.zzz",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 200,
+                "x": 336,
+                "y": 668
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-25",
+            "kind": "label",
+            "label": "xxx.xxx.xxx.yyy",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 200,
+                "x": 336,
+                "y": 596
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-24",
+            "kind": "label",
+            "label": "255.255.255.0",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 204,
+                "x": 336,
+                "y": 632
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-23",
+            "kind": "label",
+            "label": "Subnet Mask",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 184,
+                "x": 8,
+                "y": 632
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-22",
+            "kind": "label",
+            "label": "IP Address",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 156,
+                "x": 8,
+                "y": 596
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-21",
+            "kind": "label",
+            "label": "Static or Dynamic",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 252,
+                "x": 336,
+                "y": 560
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-20",
+            "kind": "label",
+            "label": "Ethernet Configuration",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 332,
+                "x": 4,
+                "y": 512
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-19",
+            "kind": "label",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 332,
+                "x": 4,
+                "y": 484
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-18",
+            "kind": "label",
+            "label": "If the printer printed this message, select Mode 1 (one short press and one long press to see the LAN data",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1440,
+                "x": 4,
+                "y": 468
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-17",
+            "kind": "label",
+            "label": "Step 1. Short press as many times as the mode number to choose",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 884,
+                "x": 24,
+                "y": 340
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-16",
+            "kind": "label",
+            "label": "Checking Interface Setting",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 372,
+                "x": 4,
+                "y": 148
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-15",
+            "kind": "label",
+            "label": "2: LAN Factory Reset and Reboot Printer",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 560,
+                "x": 20,
+                "y": 256
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-14",
+            "kind": "label",
+            "label": "1: LAN Information Print",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 348,
+                "x": 20,
+                "y": 220
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-13",
+            "kind": "label",
+            "label": "0: Exit",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 96,
+                "x": 20,
+                "y": 184
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-12",
+            "kind": "label",
+            "label": "Select Modes by Feed button Control as below.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 636,
+                "x": 4,
+                "y": 304
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-11",
+            "kind": "label",
+            "label": "Step 2. Long press over one second.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 492,
+                "x": 24,
+                "y": 376
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-10",
+            "kind": "label",
+            "label": "Add paper, close the cover and the following text will print.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 844,
+                "x": 4,
+                "y": 100
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-9",
+            "kind": "label",
+            "label": "After the printer has finished booting, open the printer, then press and hold the FEED button for 5 seconds.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1496,
+                "x": 4,
+                "y": 64
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-8",
+            "kind": "label",
+            "label": "Example, to choose Mode 2, press Feed Button three times (short-short-long)",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1324,
+                "x": 4,
+                "y": 412
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n711",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n710-7",
+            "kind": "button",
+            "label": "Attaching Printers",
+            "legacy": {
+                "id": -711,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 168,
+                "w": 204,
+                "x": 828,
+                "y": 904
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#008000",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n710-6",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 168,
+                "w": 204,
+                "x": 1708,
+                "y": 904
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n713",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n710-5",
+            "kind": "button",
+            "label": "Display & Printer Addressing",
+            "legacy": {
+                "id": -713,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 168,
+                "w": 204,
+                "x": 1488,
+                "y": 904
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n712",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n710-4",
+            "kind": "button",
+            "label": "Installing Printers",
+            "legacy": {
+                "id": -712,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 168,
+                "w": 204,
+                "x": 1268,
+                "y": 904
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n711",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n710-3",
+            "kind": "button",
+            "label": "Local Area Network IP Addressing",
+            "legacy": {
+                "id": -711,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 168,
+                "w": 204,
+                "x": 1048,
+                "y": 904
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-2",
+            "kind": "label",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 332,
+                "x": 4,
+                "y": 516
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n710-1",
+            "kind": "label",
+            "label": "xxx.xxx.xxx.zzz",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 200,
+                "x": 336,
+                "y": 704
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

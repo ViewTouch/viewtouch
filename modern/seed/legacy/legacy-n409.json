@@ -1,318 +1,318 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n409",
- "name": "Revenue Group Assignments",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "parchment"
- },
- "legacyId": -409,
- "zones": [
-  {
-   "id": "n409-7",
-   "rect": {
-    "x": 1704,
-    "y": 932,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "parchment"
     },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n409-6",
-   "rect": {
-    "x": 1752,
-    "y": 816,
-    "w": 156,
-    "h": 100
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Continue Settings",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n410"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -410
-   }
-  },
-  {
-   "id": "n409-5",
-   "rect": {
-    "x": 424,
-    "y": 192,
-    "w": 1248,
-    "h": 792
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "notInModern",
-     "what": "revenue groups"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "parchment",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_REVENUE_GROUPS"
-   }
-  },
-  {
-   "id": "n409-4",
-   "rect": {
-    "x": 424,
-    "y": 68,
-    "w": 1088,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Revenue Groups",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n409-3",
-   "rect": {
-    "x": 476,
-    "y": 1008,
-    "w": 868,
-    "h": 68
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Revenue Group Totals won't equal sales receipts unless all items AND modifiers with prices are in a Revenue Group Family",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n409-2",
-   "rect": {
-    "x": 508,
-    "y": 104,
-    "w": 808,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Revenue Group Totals are used in the Final Balance Report",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n409-1",
-   "rect": {
-    "x": 1428,
-    "y": 32,
-    "w": 488,
-    "h": 76
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "SuperUser comment: There is hard coding of some revenue groups: beer, alcohol and wine.\nThis is not yet enforced but should be.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n409",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -409,
+    "name": "Revenue Group Assignments",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n409-7",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1704,
+                "y": 932
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n410",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n409-6",
+            "kind": "button",
+            "label": "Continue Settings",
+            "legacy": {
+                "id": -410,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 100,
+                "w": 156,
+                "x": 1752,
+                "y": 816
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#008000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "type": "notInModern",
+                    "what": "revenue groups"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n409-5",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_REVENUE_GROUPS"
+            },
+            "rect": {
+                "h": 792,
+                "w": 1248,
+                "x": 424,
+                "y": 192
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#000000",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n409-4",
+            "kind": "label",
+            "label": "Revenue Groups",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1088,
+                "x": 424,
+                "y": 68
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n409-3",
+            "kind": "label",
+            "label": "Revenue Group Totals won't equal sales receipts unless all items AND modifiers with prices are in a Revenue Group Family",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 68,
+                "w": 868,
+                "x": 476,
+                "y": 1008
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n409-2",
+            "kind": "label",
+            "label": "Revenue Group Totals are used in the Final Balance Report",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 808,
+                "x": 508,
+                "y": 104
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n409-1",
+            "kind": "comment",
+            "label": "SuperUser comment: There is hard coding of some revenue groups: beer, alcohol and wine.\nThis is not yet enforced but should be.",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 76,
+                "w": 488,
+                "x": 1428,
+                "y": 32
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#a50000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        }
+    ]
 }

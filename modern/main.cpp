@@ -1595,7 +1595,7 @@ void prepareEnvironment(int argc, char *argv[])
     for (int i = 1; i < argc; ++i) {
         const QByteArrayView arg(argv[i]);
         const bool command = arg == "--backup" || arg == "--snapshot" || arg.startsWith("--snapshot=") || arg == "--restore" || arg.startsWith("--restore=")
-                             || arg == "--factory-reset" || arg == "--demo-data"
+                             || arg == "--factory-reset" || arg == "--demo-data" || arg == "--legacy-pages"
                              || arg == "--pairing-code" || arg == "--maintainer-pin" || arg.startsWith("--maintainer-pin=") || arg == "-h"
                              || arg == "--help" || arg == "--help-all" || arg == "-v" || arg == "--version";
         // One-shot commands answer on the terminal, even through a pipe
@@ -1671,7 +1671,7 @@ int main(int argc, char *argv[])
     cli.addHelpOption();
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
-        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
+        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.legacyPages, o.legacyOut, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.snapshot, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);
@@ -1708,6 +1708,8 @@ int main(int argc, char *argv[])
     }
     if (args.isSet(o.demoData))
         return runDemoData(args, o);
+    if (args.isSet(o.legacyPages))
+        return runLegacyPages(args, o);
     if (args.isSet(o.backup))
         return runBackup(args, o);
     if (args.isSet(o.snapshot))

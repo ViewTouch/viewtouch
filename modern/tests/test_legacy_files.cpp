@@ -1,10 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "app/legacy/legacy_files.hh"
+#include "app/legacy/legacy_pages.hh"
 #include "qt_catch.hh"
 
 #include <QDir>
 #include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QTemporaryDir>
 
 using namespace Qt::StringLiterals;
@@ -158,4 +161,38 @@ TEST_CASE("Legacy files: a whole store's dat folder", "[legacy][files][local]")
     // Days in order, each starting where the one before ended.
     for (qsizetype k = 1; k < s.archives.size(); ++k)
         CHECK(s.archives[k].id > s.archives[k - 1].id);
+}
+
+TEST_CASE("Legacy pages: the Legacy style's pages are legacy's own, converted", "[legacy][files]")
+{
+    const QString data = QStringLiteral(VTM_SEED_DIR "/../tools/legacy/data/");
+    QString error;
+    const auto system = legacy::readVtData(data + u"vt_data"_s, &error);
+    const auto menu = legacy::readPageFile(data + u"zone_db.dat"_s, &error);
+    const auto tables = legacy::readPageFile(data + u"tables.dat"_s, &error);
+    REQUIRE(system);
+    REQUIRE(menu);
+    REQUIRE(tables);
+    REQUIRE(menu->defaults);
+    const legacy::PageSet set = legacy::convertPages({&*system, &*menu, &*tables}, {*menu->defaults, {}});
+    // seed/legacy is what this makes (vtmodern --legacy-pages): page for page.
+    const QDir seed(QStringLiteral(VTM_SEED_DIR "/legacy"));
+    CHECK(set.pages.size() == qsizetype(seed.entryList({u"*.json"_s}).size()));
+    for (const QJsonObject &page : set.pages) {
+        const QString id = page.value(u"id"_s).toString();
+        INFO(id.toStdString());
+        QFile f(seed.filePath(id + u".json"_s));
+        REQUIRE(f.open(QIODevice::ReadOnly));
+        const QJsonObject want = QJsonDocument::fromJson(f.readAll()).object();
+        if (want != page) {
+            for (auto it = want.begin(); it != want.end(); ++it)
+                if (page.value(it.key()) != it.value())
+                    UNSCOPED_INFO("differs: " << it.key().toStdString());
+            for (auto it = page.begin(); it != page.end(); ++it)
+                if (!want.contains(it.key()))
+                    UNSCOPED_INFO("extra: " << it.key().toStdString());
+        }
+        CHECK(want == page);
+    }
+    CHECK(set.missing.size() == 966);
 }

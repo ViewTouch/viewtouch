@@ -1,6 +1,6 @@
 # Legacy buttons not in ViewTouch Modern yet
 
-Made by tools/legacy/legacy_pages.py from the legacy ViewTouch's own pages. In the Legacy style
+Made by `vtmodern --legacy-pages` from the legacy ViewTouch's own pages. In the Legacy style
 these buttons are where legacy had them; touching one says it isn't in Modern yet.
 
 ## Accountant's Report: Receipts Balance & Cash Deposit
@@ -298,7 +298,8 @@ these buttons are where legacy had them; touching one says it isn't in Modern ye
 
 ## CC Archive
 - Charge Room: the payment 'Charge Room'
-- Add Tip Amount to Drawer: the payment 'Add Tip Amount\nto Drawer'
+- Add Tip Amount to Drawer: the payment 'Add Tip Amount
+to Drawer'
 
 ## Chart of Accounts
 - Inactivate Account: the command 'DELETE'
@@ -839,9 +840,12 @@ these buttons are where legacy had them; touching one says it isn't in Modern ye
 - Images On: this setting switch
 
 ## Page Master Template: Heuristic
-- New Qualifier "Senior Share": the qualifier 'New Qualifier\n"Senior Share"'
-- New Qualifier "Add": the qualifier 'New Qualifier\n"Add"'
-- New Qualifier "Easy": the qualifier 'New Qualifier\n"Easy"'
+- New Qualifier "Senior Share": the qualifier 'New Qualifier
+"Senior Share"'
+- New Qualifier "Add": the qualifier 'New Qualifier
+"Add"'
+- New Qualifier "Easy": the qualifier 'New Qualifier
+"Easy"'
 - Cut/2: the qualifier 'Cut/2'
 - Cut/3: the qualifier 'Cut/3'
 - Cut/4: the qualifier 'Cut/4'
@@ -1042,12 +1046,14 @@ these buttons are where legacy had them; touching one says it isn't in Modern ye
 
 ## Settlement
 - (Deprecated Print Expediting ticket): the command 'print subcheck'
-- Add Cash Tip to Drawer: the payment 'Add Cash Tip\nto Drawer'
+- Add Cash Tip to Drawer: the payment 'Add Cash Tip
+to Drawer'
 - Charge Room: the payment 'Charge Room'
 - Merchandise: the command 'merchandise'
 - Clear  Entries: the command 'undo'
 - Credit Card Fee 3.99%: the payment 'Credit Card Fee 3.99%'
-- Debit Card Fee $1: the payment 'Debit Card\nFee $1'
+- Debit Card Fee $1: the payment 'Debit Card
+Fee $1'
 - Guest Check: this report
 - Multiple Checks: Select Next Check: the command 'nextcheck'
 

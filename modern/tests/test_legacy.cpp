@@ -18,7 +18,7 @@ using namespace Qt::StringLiterals;
 using namespace vt;
 
 // The Legacy style: the original ViewTouch's own pages (seed/legacy, made by
-// tools/legacy/legacy_pages.py from its vt_data, zone_db.dat and tables.dat).
+// `vtmodern --legacy-pages` from its vt_data, zone_db.dat and tables.dat).
 
 namespace {
 

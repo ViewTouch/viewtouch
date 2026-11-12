@@ -1,1190 +1,1190 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n304",
- "name": "Editing Basics",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "parchment"
- },
- "legacyId": -304,
- "zones": [
-  {
-   "id": "n304-28",
-   "rect": {
-    "x": 4,
-    "y": 736,
-    "w": 876,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "A selected button or gathering of lassoed buttons can be moved, resized (height & width), copied or moved to another page.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "background": {
+        "texture": "parchment"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-27",
-   "rect": {
-    "x": 4,
-    "y": 640,
-    "w": 1024,
-    "h": 92
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "This toggles the Selection State of all buttons within the rectangular Lasso.  Shift & Left Click to add or remove buttons from a Lassoed group.  This also unselects a group of buttons from a Lassoed group.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-26",
-   "rect": {
-    "x": 4,
-    "y": 600,
-    "w": 1384,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Hold down mouse button and slide a finger or move mouse to gather a group of buttons with a 'Lasso'.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-25",
-   "rect": {
-    "x": 4,
-    "y": 532,
-    "w": 1068,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Touch or Click a button and use Keyboard's Arrow Keys to change its position.  Alternately, Left Mouse Click & Grab any edge to move a button.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-24",
-   "rect": {
-    "x": 4,
-    "y": 492,
-    "w": 660,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Mouse Click & Grab any edge to resize a button.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-23",
-   "rect": {
-    "x": 4,
-    "y": 220,
-    "w": 1060,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Right Mouse click to open a dialog and edit a button's information properties.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-22",
-   "rect": {
-    "x": 4,
-    "y": 384,
-    "w": 1016,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Keyboard H adds height to a selected  button or selected group of buttons. Keyboard W adds width of any selected button or group of buttons.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-21",
-   "rect": {
-    "x": 4,
-    "y": 300,
-    "w": 1260,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Depress and Hold Shift and touch (or left mouse click) to select or deselect multiple buttons.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-20",
-   "rect": {
-    "x": 4,
-    "y": 260,
-    "w": 1240,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Mouse Click or Touch any open space outside any button or to deselect any and all buttons.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-19",
-   "rect": {
-    "x": 4,
-    "y": 340,
-    "w": 1328,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "If multiple buttons are selected the appearance properties of all selected buttons can be changed.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-18",
-   "rect": {
-    "x": 4,
-    "y": 452,
-    "w": 1264,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Shift H decreases height, Shift W decreases width of any selected button or group of buttons.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-17",
-   "rect": {
-    "x": 1708,
-    "y": 936,
-    "w": 204,
-    "h": 136
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "Return",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "litewood",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "greenmarble",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_STANDARD"
-   }
-  },
-  {
-   "id": "n304-16",
-   "rect": {
-    "x": 4,
-    "y": 804,
-    "w": 964,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Shift 'remembers' button selections made from multiple pages, making it easy to copy or move buttons from several pages to a target page.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-15",
-   "rect": {
-    "x": 540,
-    "y": 76,
-    "w": 548,
-    "h": 88
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "F3 Toggles Macro Recording on & off.\nPlay Recording with F4.\nClear Recording with two F3 presses.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  },
-  {
-   "id": "n304-14",
-   "rect": {
-    "x": 4,
-    "y": 140,
-    "w": 412,
-    "h": 56
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "Enter TTID (adminforceauth)",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  },
-  {
-   "id": "n304-13",
-   "rect": {
-    "x": 1268,
-    "y": 32,
-    "w": 604,
-    "h": 180
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "F7 Exports a page to /usr/viewtouch/dat/exports.\nMove or copy page files to /usr/viewtouch/dat/pageimports.\nPage files in /usr/viewtouch/dat/pageimports are loaded when ViewTouch starts.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  },
-  {
-   "id": "n304-12",
-   "rect": {
-    "x": 772,
-    "y": 900,
-    "w": 704,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "F11 Toggles Edit Mode on & off, Discards Changes (Reverts)",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "litsand",
-     "textColor": "#a50000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": false,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": false,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-11",
-   "rect": {
-    "x": 208,
-    "y": 900,
-    "w": 564,
-    "h": 36
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "F1 Toggles Edit Mode On & Off, Saves Changes",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "litsand",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": false,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 16,
-     "bold": false,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-10",
-   "rect": {
-    "x": 960,
-    "y": 936,
-    "w": 208,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Navigating\nthe Pages",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n305"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -305
-   }
-  },
-  {
-   "id": "n304-9",
-   "rect": {
-    "x": 716,
-    "y": 935,
-    "w": 236,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Editing Basics",
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#008000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n304-8",
-   "rect": {
-    "x": 8,
-    "y": 936,
-    "w": 208,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "12 Functions of The Edit ToolBar",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n301"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -301
-   }
-  },
-  {
-   "id": "n304-7",
-   "rect": {
-    "x": 448,
-    "y": 936,
-    "w": 260,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Page and Button Appearance Properties",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n303"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -303
-   }
-  },
-  {
-   "id": "n304-6",
-   "rect": {
-    "x": 1180,
-    "y": 936,
-    "w": 208,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Qualifiers",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n306"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -306
-   }
-  },
-  {
-   "id": "n304-5",
-   "rect": {
-    "x": 228,
-    "y": 936,
-    "w": 208,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Pages and Buttons",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n302"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -302
-   }
-  },
-  {
-   "id": "n304-4",
-   "rect": {
-    "x": 0,
-    "y": 36,
-    "w": 504,
-    "h": 88
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "Editors will not need these functions.\nThese funcions are helpful to code developers and people doing testing",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  },
-  {
-   "id": "n304-3",
-   "rect": {
-    "x": 576,
-    "y": 164,
-    "w": 356,
-    "h": 40
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "F8 Toggles Language Sets",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 0,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  },
-  {
-   "id": "n304-2",
-   "rect": {
-    "x": 1400,
-    "y": 936,
-    "w": 280,
-    "h": 140
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Mistakes to Avoid when Building your Menu",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n307"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "border",
-     "frameWidth": 6,
-     "texture": "leather",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -307
-   }
-  },
-  {
-   "id": "n304-1",
-   "rect": {
-    "x": 540,
-    "y": 36,
-    "w": 696,
-    "h": 40
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "comment",
-   "label": "F2 Turns Translate Mode on & off, Saves Changes",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#006248",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "textColor": "transparent",
-     "texture": "",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_COMMENT"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n304",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -304,
+    "name": "Editing Basics",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n304-28",
+            "kind": "label",
+            "label": "A selected button or gathering of lassoed buttons can be moved, resized (height & width), copied or moved to another page.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 876,
+                "x": 4,
+                "y": 736
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-27",
+            "kind": "label",
+            "label": "This toggles the Selection State of all buttons within the rectangular Lasso.  Shift & Left Click to add or remove buttons from a Lassoed group.  This also unselects a group of buttons from a Lassoed group.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 92,
+                "w": 1024,
+                "x": 4,
+                "y": 640
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-26",
+            "kind": "label",
+            "label": "Hold down mouse button and slide a finger or move mouse to gather a group of buttons with a 'Lasso'.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1384,
+                "x": 4,
+                "y": 600
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-25",
+            "kind": "label",
+            "label": "Touch or Click a button and use Keyboard's Arrow Keys to change its position.  Alternately, Left Mouse Click & Grab any edge to move a button.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 1068,
+                "x": 4,
+                "y": 532
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-24",
+            "kind": "label",
+            "label": "Mouse Click & Grab any edge to resize a button.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 660,
+                "x": 4,
+                "y": 492
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-23",
+            "kind": "label",
+            "label": "Right Mouse click to open a dialog and edit a button's information properties.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1060,
+                "x": 4,
+                "y": 220
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-22",
+            "kind": "label",
+            "label": "Keyboard H adds height to a selected  button or selected group of buttons. Keyboard W adds width of any selected button or group of buttons.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 1016,
+                "x": 4,
+                "y": 384
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-21",
+            "kind": "label",
+            "label": "Depress and Hold Shift and touch (or left mouse click) to select or deselect multiple buttons.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1260,
+                "x": 4,
+                "y": 300
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-20",
+            "kind": "label",
+            "label": "Mouse Click or Touch any open space outside any button or to deselect any and all buttons.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1240,
+                "x": 4,
+                "y": 260
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-19",
+            "kind": "label",
+            "label": "If multiple buttons are selected the appearance properties of all selected buttons can be changed.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1328,
+                "x": 4,
+                "y": 340
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-18",
+            "kind": "label",
+            "label": "Shift H decreases height, Shift W decreases width of any selected button or group of buttons.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 1264,
+                "x": 4,
+                "y": 452
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n304-17",
+            "kind": "button",
+            "label": "Return",
+            "legacy": {
+                "kind": "ZONE_STANDARD"
+            },
+            "rect": {
+                "h": 136,
+                "w": 204,
+                "x": 1708,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "litewood"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "greenmarble"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-16",
+            "kind": "label",
+            "label": "Shift 'remembers' button selections made from multiple pages, making it easy to copy or move buttons from several pages to a target page.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 964,
+                "x": 4,
+                "y": 804
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-15",
+            "kind": "comment",
+            "label": "F3 Toggles Macro Recording on & off.\nPlay Recording with F4.\nClear Recording with two F3 presses.",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 88,
+                "w": 548,
+                "x": 540,
+                "y": 76
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-14",
+            "kind": "comment",
+            "label": "Enter TTID (adminforceauth)",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 56,
+                "w": 412,
+                "x": 4,
+                "y": 140
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-13",
+            "kind": "comment",
+            "label": "F7 Exports a page to /usr/viewtouch/dat/exports.\nMove or copy page files to /usr/viewtouch/dat/pageimports.\nPage files in /usr/viewtouch/dat/pageimports are loaded when ViewTouch starts.",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 180,
+                "w": 604,
+                "x": 1268,
+                "y": 32
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-12",
+            "kind": "label",
+            "label": "F11 Toggles Edit Mode on & off, Discards Changes (Reverts)",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 704,
+                "x": 772,
+                "y": 900
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": false,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#a50000",
+                    "texture": "litsand"
+                },
+                "selected": {
+                    "bold": false,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-11",
+            "kind": "label",
+            "label": "F1 Toggles Edit Mode On & Off, Saves Changes",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 36,
+                "w": 564,
+                "x": 208,
+                "y": 900
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": false,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000091",
+                    "texture": "litsand"
+                },
+                "selected": {
+                    "bold": false,
+                    "font": "DejaVu Serif",
+                    "fontSize": 16,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n305",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-10",
+            "kind": "button",
+            "label": "Navigating\nthe Pages",
+            "legacy": {
+                "id": -305,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 208,
+                "x": 960,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-9",
+            "kind": "label",
+            "label": "Editing Basics",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 236,
+                "x": 716,
+                "y": 935
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#008000",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n301",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-8",
+            "kind": "button",
+            "label": "12 Functions of The Edit ToolBar",
+            "legacy": {
+                "id": -301,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 208,
+                "x": 8,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n303",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-7",
+            "kind": "button",
+            "label": "Page and Button Appearance Properties",
+            "legacy": {
+                "id": -303,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 260,
+                "x": 448,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n306",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-6",
+            "kind": "button",
+            "label": "Qualifiers",
+            "legacy": {
+                "id": -306,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 208,
+                "x": 1180,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n302",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-5",
+            "kind": "button",
+            "label": "Pages and Buttons",
+            "legacy": {
+                "id": -302,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 208,
+                "x": 228,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-4",
+            "kind": "comment",
+            "label": "Editors will not need these functions.\nThese funcions are helpful to code developers and people doing testing",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 88,
+                "w": 504,
+                "x": 0,
+                "y": 36
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-3",
+            "kind": "comment",
+            "label": "F8 Toggles Language Sets",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 40,
+                "w": 356,
+                "x": 576,
+                "y": 164
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 0,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n307",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n304-2",
+            "kind": "button",
+            "label": "Mistakes to Avoid when Building your Menu",
+            "legacy": {
+                "id": -307,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 140,
+                "w": 280,
+                "x": 1400,
+                "y": 936
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "border",
+                    "frameWidth": 6,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#005a00",
+                    "texture": "leather"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n304-1",
+            "kind": "comment",
+            "label": "F2 Turns Translate Mode on & off, Saves Changes",
+            "legacy": {
+                "kind": "ZONE_COMMENT"
+            },
+            "rect": {
+                "h": 40,
+                "w": 696,
+                "x": 540,
+                "y": 36
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#006248",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "transparent",
+                    "texture": ""
+                }
+            }
+        }
+    ]
 }

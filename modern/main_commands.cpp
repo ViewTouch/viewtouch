@@ -3,6 +3,7 @@
 // its job and exits.
 
 #include "main_cli.hh"
+#include "app/legacy/legacy_pages.hh"
 #include "app/pos_demo.hh"
 #include "app/pos_json.hh"
 #include "storage/async_writer.hh"
@@ -353,6 +354,47 @@ int runRestore(const Args &cli, const Options &o)
     qInfo().noquote() << "Restored" << cli.value(o.restore) << "to" << dbPath;
     if (!keptAs.isEmpty())
         qInfo().noquote() << "The previous database is kept as" << keptAs;
+    return 0;
+}
+
+
+// The Legacy style's built-in pages (seed/legacy), from the legacy
+// ViewTouch's own files (tools/legacy/data): what tools/legacy/data/README.md says.
+int runLegacyPages(const Args &cli, const Options &o)
+{
+    const QDir data(cli.value(o.legacyPages));
+    QDir out(cli.isSet(o.legacyOut) ? cli.value(o.legacyOut) : u"seed/legacy"_s);
+    QString error;
+    const auto system = vt::legacy::readVtData(data.filePath(u"vt_data"_s), &error);
+    const auto menu = system ? vt::legacy::readPageFile(data.filePath(u"zone_db.dat"_s), &error) : std::nullopt;
+    const auto tables = menu ? vt::legacy::readPageFile(data.filePath(u"tables.dat"_s), &error) : std::nullopt;
+    if (!tables || !menu->defaults) {
+        qCritical().noquote() << (error.isEmpty() ? u"zone_db.dat has no page defaults"_s : error);
+        return 1;
+    }
+    const vt::legacy::PageSet set = vt::legacy::convertPages({&*system, &*menu, &*tables}, {*menu->defaults, {}});
+    if (!out.mkpath(u"."_s)) {
+        qCritical().noquote() << "Cannot make" << out.path();
+        return 1;
+    }
+    for (const QString &old : out.entryList({u"*.json"_s}, QDir::Files))
+        out.remove(old);
+    for (const QJsonObject &page : set.pages) {
+        QFile f(out.filePath(page.value(u"id"_s).toString() + u".json"_s));
+        if (!f.open(QIODevice::WriteOnly) || f.write(QJsonDocument(page).toJson(QJsonDocument::Indented)) < 0) {
+            qCritical().noquote() << "Cannot write" << f.fileName();
+            return 1;
+        }
+    }
+    QFile md(out.filePath(u"NOT-IN-MODERN.md"_s));
+    if (!md.open(QIODevice::WriteOnly) || md.write(vt::legacy::notInModernReport(set.missing).toUtf8()) < 0) {
+        qCritical().noquote() << "Cannot write" << md.fileName();
+        return 1;
+    }
+    qInfo().noquote() << u"%1 pages, %2 zones; %3 buttons not in Modern yet (%4)"_s.arg(set.pages.size())
+                             .arg(set.zones)
+                             .arg(set.missing.size())
+                             .arg(md.fileName());
     return 0;
 }
 

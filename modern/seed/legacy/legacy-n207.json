@@ -1,454 +1,454 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n207",
- "name": "Index Page Help",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "whitetexture"
- },
- "legacyId": -207,
- "zones": [
-  {
-   "id": "n207-11",
-   "rect": {
-    "x": 308,
-    "y": 420,
-    "w": 1168,
-    "h": 88
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Editors: 'Show Button' or the 'I' key, shows the page number each Index Tab points to.\nWhen you create a new Index Tab, the page it jumps to is automatically created if it does not yet exist.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "whitetexture"
     },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-10",
-   "rect": {
-    "x": 308,
-    "y": 132,
-    "w": 1316,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "The buttons at right are Index Tabs. They can only be created or edited when you are on an Index Page.  Index Tabs are shown on every Menu Item Page.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-9",
-   "rect": {
-    "x": 308,
-    "y": 60,
-    "w": 1372,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Building and using every menu begins on an Index Page.  The Index Page lists the Food and Beverage Categories, or Families, which are the framework for building your menu.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-8",
-   "rect": {
-    "x": 308,
-    "y": 688,
-    "w": 1460,
-    "h": 88
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "The goal of ViewTouch menu design is to make it easy for you to create an interface with pages and buttons that perfectly mirror, or match, the range of words that hospitality customers use when ordering the food and beverage buttons your restaurant offers.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-7",
-   "rect": {
-    "x": 308,
-    "y": 348,
-    "w": 1444,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "There can be 'time of day' Index Pages if you need certain menu pages to be restricted to or made available only at certain times of the day.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-6",
-   "rect": {
-    "x": 1132,
-    "y": 0,
-    "w": 168,
-    "h": 56
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Turn Help Off",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "back"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#ffff00",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-5",
-   "rect": {
-    "x": 308,
-    "y": 788,
-    "w": 1520,
-    "h": 32
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Editors: encourage suggestions from your staff that can make the interface easier for them to learn and to use.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-4",
-   "rect": {
-    "x": 308,
-    "y": 592,
-    "w": 1268,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Editors: If you need more than the ten Index Tabs at right you may resize them to make space for more Index Tabs.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-3",
-   "rect": {
-    "x": 308,
-    "y": 276,
-    "w": 1344,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "The purpose of the Index page and Index Tabs is to allow users to navigate to ANY Menu Item page from wherever they may be in the Menu with a single touch.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-2",
-   "rect": {
-    "x": 308,
-    "y": 204,
-    "w": 1316,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "When you change the name of an Index Tab, the change will be shown on every Menu Item Page.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n207-1",
-   "rect": {
-    "x": 308,
-    "y": 520,
-    "w": 1060,
-    "h": 60
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "Editors: 'Show Page' or the 'J' key, shows the list of all the pages in your menu.  You can 'Jump' to any page with a mouse click.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "whitetexture",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n207",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -207,
+    "name": "Index Page Help",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n207-11",
+            "kind": "label",
+            "label": "Editors: 'Show Button' or the 'I' key, shows the page number each Index Tab points to.\nWhen you create a new Index Tab, the page it jumps to is automatically created if it does not yet exist.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 88,
+                "w": 1168,
+                "x": 308,
+                "y": 420
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-10",
+            "kind": "label",
+            "label": "The buttons at right are Index Tabs. They can only be created or edited when you are on an Index Page.  Index Tabs are shown on every Menu Item Page.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1316,
+                "x": 308,
+                "y": 132
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-9",
+            "kind": "label",
+            "label": "Building and using every menu begins on an Index Page.  The Index Page lists the Food and Beverage Categories, or Families, which are the framework for building your menu.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1372,
+                "x": 308,
+                "y": 60
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-8",
+            "kind": "label",
+            "label": "The goal of ViewTouch menu design is to make it easy for you to create an interface with pages and buttons that perfectly mirror, or match, the range of words that hospitality customers use when ordering the food and beverage buttons your restaurant offers.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 88,
+                "w": 1460,
+                "x": 308,
+                "y": 688
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-7",
+            "kind": "label",
+            "label": "There can be 'time of day' Index Pages if you need certain menu pages to be restricted to or made available only at certain times of the day.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1444,
+                "x": 308,
+                "y": 348
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "back",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n207-6",
+            "kind": "button",
+            "label": "Turn Help Off",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 56,
+                "w": 168,
+                "x": 1132,
+                "y": 0
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ffff00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-5",
+            "kind": "label",
+            "label": "Editors: encourage suggestions from your staff that can make the interface easier for them to learn and to use.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 32,
+                "w": 1520,
+                "x": 308,
+                "y": 788
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-4",
+            "kind": "label",
+            "label": "Editors: If you need more than the ten Index Tabs at right you may resize them to make space for more Index Tabs.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1268,
+                "x": 308,
+                "y": 592
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-3",
+            "kind": "label",
+            "label": "The purpose of the Index page and Index Tabs is to allow users to navigate to ANY Menu Item page from wherever they may be in the Menu with a single touch.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1344,
+                "x": 308,
+                "y": 276
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-2",
+            "kind": "label",
+            "label": "When you change the name of an Index Tab, the change will be shown on every Menu Item Page.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1316,
+                "x": 308,
+                "y": 204
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        },
+        {
+            "behavior": "none",
+            "id": "n207-1",
+            "kind": "label",
+            "label": "Editors: 'Show Page' or the 'J' key, shows the list of all the pages in your menu.  You can 'Jump' to any page with a mouse click.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 60,
+                "w": 1060,
+                "x": 308,
+                "y": 520
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "whitetexture"
+                },
+                "selected": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": ""
+                }
+            }
+        }
+    ]
 }

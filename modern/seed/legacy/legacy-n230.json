@@ -1,105 +1,105 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n230",
- "name": "Credit Card Help",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "sand"
- },
- "legacyId": -230,
- "zones": [
-  {
-   "id": "n230-2",
-   "rect": {
-    "x": 232,
-    "y": 100,
-    "w": 1276,
-    "h": 64
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "label",
-   "label": "To process a refund select \"Issue Refund\".  You'll see a dialog to swipe the card.  Next, you'll see a dialog to Hold & Await Tip.  This payment event will show up at end of day as Refund instead of Sale.",
-   "style": {
-    "normal": {
-     "frame": "none",
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "background": {
+        "texture": "sand"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE"
-   }
-  },
-  {
-   "id": "n230-1",
-   "rect": {
-    "x": 1216,
-    "y": 0,
-    "w": 168,
-    "h": 56
-   },
-   "shape": "rect",
-   "behavior": "none",
-   "kind": "button",
-   "label": "Turn Help Off",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "replace",
-     "page": "legacy-n130"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "none",
-     "fill": "transparent",
-     "texture": "",
-     "textColor": "#ffff00",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#ffffff",
-     "font": "DejaVu Serif",
-     "fontSize": 19,
-     "bold": true,
-     "shadow": 6,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_SIMPLE",
-    "id": -130
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-n230",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -230,
+    "name": "Credit Card Help",
+    "schemaVersion": 1,
+    "zones": [
+        {
+            "behavior": "none",
+            "id": "n230-2",
+            "kind": "label",
+            "label": "To process a refund select \"Issue Refund\".  You'll see a dialog to swipe the card.  Next, you'll see a dialog to Hold & Await Tip.  This payment event will show up at end of day as Refund instead of Sale.",
+            "legacy": {
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 64,
+                "w": 1276,
+                "x": 232,
+                "y": 100
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "mode": "replace",
+                    "page": "legacy-n130",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "none",
+            "id": "n230-1",
+            "kind": "button",
+            "label": "Turn Help Off",
+            "legacy": {
+                "id": -130,
+                "kind": "ZONE_SIMPLE"
+            },
+            "rect": {
+                "h": 56,
+                "w": 168,
+                "x": 1216,
+                "y": 0
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "fill": "transparent",
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "none",
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#ffff00",
+                    "texture": ""
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 19,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 6,
+                    "textColor": "#ffffff",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

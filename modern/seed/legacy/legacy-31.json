@@ -1,249 +1,249 @@
 {
- "schemaVersion": 1,
- "id": "legacy-31",
- "name": "Salad Dressing",
- "kind": "modifier",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "greenmarble"
- },
- "legacyId": 31,
- "templateId": "legacy-n98",
- "zones": [
-  {
-   "id": "31-5",
-   "rect": {
-    "x": 1628,
-    "y": 796,
-    "w": 184,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "addItem",
-     "item": "Honey Mustard Dressing"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#ffff00",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "greenmarble"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ITEM"
-   }
-  },
-  {
-   "id": "31-4",
-   "rect": {
-    "x": 1424,
-    "y": 796,
-    "w": 184,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "addItem",
-     "item": "Blue Cheese Dressing"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000091",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "canvas": {
+        "h": 1080,
+        "w": 1920
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ITEM"
-   }
-  },
-  {
-   "id": "31-3",
-   "rect": {
-    "x": 1220,
-    "y": 796,
-    "w": 184,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "addItem",
-     "item": "French Dressing"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#ff3800",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ITEM"
-   }
-  },
-  {
-   "id": "31-2",
-   "rect": {
-    "x": 812,
-    "y": 796,
-    "w": 184,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "addItem",
-     "item": "House Dressing"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ITEM"
-   }
-  },
-  {
-   "id": "31-1",
-   "rect": {
-    "x": 1016,
-    "y": 796,
-    "w": 184,
-    "h": 144
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "addItem",
-     "item": "Italian Dressing"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "sand",
-     "textColor": "#000000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#eb0000",
-     "font": "DejaVu Serif",
-     "fontSize": 24,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ITEM"
-   }
-  }
- ]
+    "grid": 4,
+    "id": "legacy-31",
+    "inStyle": "legacy",
+    "kind": "modifier",
+    "legacyId": 31,
+    "name": "Salad Dressing",
+    "schemaVersion": 1,
+    "templateId": "legacy-n98",
+    "zones": [
+        {
+            "actions": [
+                {
+                    "item": "Honey Mustard Dressing",
+                    "type": "addItem"
+                }
+            ],
+            "behavior": "blink",
+            "id": "31-5",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ITEM"
+            },
+            "rect": {
+                "h": 144,
+                "w": 184,
+                "x": 1628,
+                "y": 796
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ffff00",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "item": "Blue Cheese Dressing",
+                    "type": "addItem"
+                }
+            ],
+            "behavior": "blink",
+            "id": "31-4",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ITEM"
+            },
+            "rect": {
+                "h": 144,
+                "w": 184,
+                "x": 1424,
+                "y": 796
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000091",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "item": "French Dressing",
+                    "type": "addItem"
+                }
+            ],
+            "behavior": "blink",
+            "id": "31-3",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ITEM"
+            },
+            "rect": {
+                "h": 144,
+                "w": 184,
+                "x": 1220,
+                "y": 796
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#ff3800",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "item": "House Dressing",
+                    "type": "addItem"
+                }
+            ],
+            "behavior": "blink",
+            "id": "31-2",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ITEM"
+            },
+            "rect": {
+                "h": 144,
+                "w": 184,
+                "x": 812,
+                "y": 796
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        },
+        {
+            "actions": [
+                {
+                    "item": "Italian Dressing",
+                    "type": "addItem"
+                }
+            ],
+            "behavior": "blink",
+            "id": "31-1",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ITEM"
+            },
+            "rect": {
+                "h": 144,
+                "w": 184,
+                "x": 1016,
+                "y": 796
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#000000",
+                    "texture": "sand"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 24,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#eb0000",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }

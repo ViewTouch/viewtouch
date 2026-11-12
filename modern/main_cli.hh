@@ -62,6 +62,11 @@ struct Options {
     QCommandLineOption empty{u"empty"_s,
         u"With --factory-reset: the next start begins with an empty store (no menu, tables, sample staff, "
          "printers or tax rates; one sample manager to run the setup guide)."_s};
+    QCommandLineOption legacyPages{u"legacy-pages"_s,
+                                   u"Make the Legacy style's pages from the legacy ViewTouch's own files in <dir> "
+                                   "(vt_data, zone_db.dat, tables.dat) into --legacy-out (default seed/legacy)."_s,
+                                   u"dir"_s};
+    QCommandLineOption legacyOut{u"legacy-out"_s, u"Where --legacy-pages writes its pages."_s, u"dir"_s};
     QCommandLineOption demoData{u"demo-data"_s,
         u"Fill a store that has no sales yet with demo history (two months, and the same months last year), "
          "customers, gift cards, a schedule and a waitlist, then exit."_s};
@@ -210,6 +215,7 @@ int runBackup(const Args &cli, const Options &o);
 int runSnapshot(const Args &cli, const Options &o);
 int runFactoryReset(const Args &cli, const Options &o);
 int runDemoData(const Args &cli, const Options &o);
+int runLegacyPages(const Args &cli, const Options &o);
 int runRestore(const Args &cli, const Options &o);
 
 } // namespace vt::cli

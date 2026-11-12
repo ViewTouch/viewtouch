@@ -1,18 +1,19 @@
 {
- "schemaVersion": 1,
- "id": "legacy-6",
- "name": "Specials",
- "kind": "items",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "greenmarble"
- },
- "legacyId": 6,
- "templateId": "legacy-n98",
- "zones": []
+    "background": {
+        "texture": "greenmarble"
+    },
+    "canvas": {
+        "h": 1080,
+        "w": 1920
+    },
+    "grid": 4,
+    "id": "legacy-6",
+    "inStyle": "legacy",
+    "kind": "items",
+    "legacyId": 6,
+    "name": "Specials",
+    "schemaVersion": 1,
+    "templateId": "legacy-n98",
+    "zones": [
+    ]
 }

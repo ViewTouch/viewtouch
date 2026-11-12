@@ -1,18 +1,19 @@
 {
- "schemaVersion": 1,
- "id": "legacy-10",
- "name": "Daily Special",
- "kind": "items",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "greenmarble"
- },
- "legacyId": 10,
- "templateId": "legacy-n98",
- "zones": []
+    "background": {
+        "texture": "greenmarble"
+    },
+    "canvas": {
+        "h": 1080,
+        "w": 1920
+    },
+    "grid": 4,
+    "id": "legacy-10",
+    "inStyle": "legacy",
+    "kind": "items",
+    "legacyId": 10,
+    "name": "Daily Special",
+    "schemaVersion": 1,
+    "templateId": "legacy-n98",
+    "zones": [
+    ]
 }

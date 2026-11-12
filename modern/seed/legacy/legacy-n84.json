@@ -1,17 +1,18 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n84",
- "name": "Bar Index Parent",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "greenmarble"
- },
- "legacyId": -84,
- "zones": []
+    "background": {
+        "texture": "greenmarble"
+    },
+    "canvas": {
+        "h": 1080,
+        "w": 1920
+    },
+    "grid": 4,
+    "id": "legacy-n84",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -84,
+    "name": "Bar Index Parent",
+    "schemaVersion": 1,
+    "zones": [
+    ]
 }

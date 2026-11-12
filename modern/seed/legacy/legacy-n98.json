@@ -1,65 +1,65 @@
 {
- "schemaVersion": 1,
- "id": "legacy-n98",
- "name": "Page Master Template: Menu Items",
- "kind": "custom",
- "inStyle": "legacy",
- "canvas": {
-  "w": 1920,
-  "h": 1080
- },
- "grid": 4,
- "background": {
-  "texture": "greenmarble"
- },
- "legacyId": -98,
- "templateId": "legacy-n99",
- "zones": [
-  {
-   "id": "n98-1",
-   "rect": {
-    "x": 1284,
-    "y": 960,
-    "w": 220,
-    "h": 108
-   },
-   "shape": "rect",
-   "behavior": "blink",
-   "kind": "button",
-   "label": "",
-   "actions": [
-    {
-     "type": "jump",
-     "mode": "index"
-    }
-   ],
-   "style": {
-    "normal": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "parchment",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
+    "background": {
+        "texture": "greenmarble"
     },
-    "selected": {
-     "frame": "raised",
-     "frameWidth": 3,
-     "texture": "litsand",
-     "textColor": "#005a00",
-     "font": "DejaVu Serif",
-     "fontSize": 37,
-     "bold": true,
-     "shadow": 9,
-     "radius": 0
-    }
-   },
-   "legacy": {
-    "kind": "ZONE_ORDER_FLOW"
-   }
-  }
- ]
+    "canvas": {
+        "h": 1080,
+        "w": 1920
+    },
+    "grid": 4,
+    "id": "legacy-n98",
+    "inStyle": "legacy",
+    "kind": "custom",
+    "legacyId": -98,
+    "name": "Page Master Template: Menu Items",
+    "schemaVersion": 1,
+    "templateId": "legacy-n99",
+    "zones": [
+        {
+            "actions": [
+                {
+                    "mode": "index",
+                    "type": "jump"
+                }
+            ],
+            "behavior": "blink",
+            "id": "n98-1",
+            "kind": "button",
+            "label": "",
+            "legacy": {
+                "kind": "ZONE_ORDER_FLOW"
+            },
+            "rect": {
+                "h": 108,
+                "w": 220,
+                "x": 1284,
+                "y": 960
+            },
+            "shape": "rect",
+            "style": {
+                "normal": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "parchment"
+                },
+                "selected": {
+                    "bold": true,
+                    "font": "DejaVu Serif",
+                    "fontSize": 37,
+                    "frame": "raised",
+                    "frameWidth": 3,
+                    "radius": 0,
+                    "shadow": 9,
+                    "textColor": "#005a00",
+                    "texture": "litsand"
+                }
+            }
+        }
+    ]
 }
