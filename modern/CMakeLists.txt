@@ -87,6 +87,16 @@ if(Qt6_FOUND)
     # which needs its type information.
     qt_extract_metatypes(vtm_pos)
 
+    # The original ViewTouch's data files, read as it reads them, and brought
+    # into a store (see app/legacy/legacy_files.hh)
+    add_library(vtm_legacy STATIC
+        app/legacy/legacy_tokens.hh app/legacy/legacy_tokens.cpp
+        app/legacy/legacy_files.hh app/legacy/legacy_files.cpp
+    )
+    target_link_libraries(vtm_legacy PUBLIC vtm_pos vtm_layout Qt6::Core)
+    qt_add_resources(vtm_legacy "vtm_legacy_data" PREFIX "/legacy" BASE tools/legacy FILES tools/legacy/zone_fields.json)
+    set_target_properties(vtm_legacy PROPERTIES AUTOMOC OFF)
+
     # Printing: ticket formatting (plain C++) and the background spooler
     add_library(vtm_print STATIC
         print/document.hh print/document.cpp
@@ -268,7 +278,7 @@ if(Qt6_FOUND)
             ui/cpp/posforeign.hh
     )
     target_include_directories(vtm_ui PUBLIC ui/cpp)
-    target_link_libraries(vtm_ui PUBLIC vtm_layout vtm_editor vtm_storage vtm_pos vtm_print vtm_net Qt6::Gui Qt6::Quick Qt6::QuickControls2)
+    target_link_libraries(vtm_ui PUBLIC vtm_layout vtm_editor vtm_storage vtm_pos vtm_print vtm_net vtm_legacy Qt6::Gui Qt6::Quick Qt6::QuickControls2)
 
     qt_add_executable(vtmodern main.cpp main_cli.cpp main_commands.cpp)
     target_link_libraries(vtmodern PRIVATE vtm_ui vtm_uiplugin)
@@ -362,7 +372,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Brace-initializing only a struct's first fields ({Kind::Rule}) is how
     # this code is written: not warned about.
     set(VTM_WARNINGS -Wall -Wextra -Wno-missing-field-initializers)
-    foreach(target vtm_core vtm_layout vtm_editor vtm_pos vtm_print vtm_storage vtm_net)
+    foreach(target vtm_core vtm_layout vtm_editor vtm_pos vtm_print vtm_storage vtm_net vtm_legacy)
         if(TARGET ${target})
             target_compile_options(${target} PRIVATE ${VTM_WARNINGS})
         endif()
