@@ -15,23 +15,45 @@
       "id": "title",
       "kind": "label",
       "rect": {
-        "x": 160,
-        "y": 24,
-        "w": 1600,
-        "h": 100
+        "x": 48,
+        "y": 16,
+        "w": 1824,
+        "h": 64
       },
       "shape": "rect",
       "behavior": "none",
       "label": "Manager"
     },
     {
+      "id": "group-today",
+      "kind": "label",
+      "rect": {
+        "x": 48,
+        "y": 92,
+        "w": 352,
+        "h": 48
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Today",
+      "showWhen": {
+        "screen": "standard"
+      },
+      "style": {
+        "normal": {
+          "fontSize": 26,
+          "bold": true
+        }
+      }
+    },
+    {
       "id": "dashboard",
       "kind": "button",
       "rect": {
-        "x": 160,
-        "y": 124,
-        "w": 300,
-        "h": 120
+        "x": 48,
+        "y": 152,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -50,13 +72,166 @@
       }
     },
     {
+      "id": "admin-reports",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 250,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Reports",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "reports"
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-endOfDay",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 348,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "End of Day",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "endOfDay"
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-drawers",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 446,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Banks & Drawers",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "drawers"
+          }
+        }
+      ]
+    },
+    {
+      "id": "checklists",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 544,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Checklists",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "checklists"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "store-check",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 642,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Store Check {problems}",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "store-check"
+        }
+      ]
+    },
+    {
+      "id": "find-check",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 740,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Find a Check\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "find-check"
+        }
+      ]
+    },
+    {
+      "id": "group-menu",
+      "kind": "label",
+      "rect": {
+        "x": 416,
+        "y": 92,
+        "w": 352,
+        "h": 48
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Menu",
+      "showWhen": {
+        "screen": "standard"
+      },
+      "style": {
+        "normal": {
+          "fontSize": 26,
+          "bold": true
+        }
+      }
+    },
+    {
       "id": "menu-builder",
       "kind": "button",
       "rect": {
-        "x": 484,
-        "y": 124,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 152,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -78,10 +253,10 @@
       "id": "admin-menu",
       "kind": "button",
       "rect": {
-        "x": 808,
-        "y": 124,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 250,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -97,199 +272,43 @@
       ]
     },
     {
-      "id": "admin-employees",
+      "id": "sold-out",
       "kind": "button",
       "rect": {
-        "x": 1132,
-        "y": 124,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 348,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Employees",
+      "label": "Sold Out (86)\u2026",
       "actions": [
         {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "employees"
-          }
+          "type": "jump",
+          "mode": "push",
+          "page": "sold-out"
         }
       ]
     },
     {
-      "id": "admin-settings",
+      "id": "admin-promotions",
       "kind": "button",
       "rect": {
-        "x": 1456,
-        "y": 124,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 446,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Settings",
+      "label": "Promotions",
       "actions": [
         {
           "type": "command",
           "name": "openAdmin",
           "args": {
-            "panel": "settings"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-taxes",
-      "kind": "button",
-      "rect": {
-        "x": 160,
-        "y": 258,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Taxes",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "taxes"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-tenders",
-      "kind": "button",
-      "rect": {
-        "x": 484,
-        "y": 258,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Tenders",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "tenders"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-printers",
-      "kind": "button",
-      "rect": {
-        "x": 808,
-        "y": 258,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Printers",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "printers"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-reports",
-      "kind": "button",
-      "rect": {
-        "x": 1132,
-        "y": 258,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Reports",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "reports"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-drawers",
-      "kind": "button",
-      "rect": {
-        "x": 1456,
-        "y": 258,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Banks & Drawers",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "drawers"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-endOfDay",
-      "kind": "button",
-      "rect": {
-        "x": 160,
-        "y": 392,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "End of Day",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "endOfDay"
-          }
-        }
-      ]
-    },
-    {
-      "id": "admin-terminals",
-      "kind": "button",
-      "rect": {
-        "x": 484,
-        "y": 392,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Terminals",
-      "actions": [
-        {
-          "type": "command",
-          "name": "openAdmin",
-          "args": {
-            "panel": "terminals"
+            "panel": "promotions"
           }
         }
       ]
@@ -298,10 +317,10 @@
       "id": "admin-mealPeriods",
       "kind": "button",
       "rect": {
-        "x": 808,
-        "y": 392,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 544,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -320,10 +339,10 @@
       "id": "admin-modifierGroups",
       "kind": "button",
       "rect": {
-        "x": 1132,
-        "y": 392,
-        "w": 300,
-        "h": 120
+        "x": 416,
+        "y": 642,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -339,23 +358,45 @@
       ]
     },
     {
-      "id": "admin-inventory",
+      "id": "group-people",
+      "kind": "label",
+      "rect": {
+        "x": 784,
+        "y": 92,
+        "w": 352,
+        "h": 48
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "People",
+      "showWhen": {
+        "screen": "standard"
+      },
+      "style": {
+        "normal": {
+          "fontSize": 26,
+          "bold": true
+        }
+      }
+    },
+    {
+      "id": "admin-employees",
       "kind": "button",
       "rect": {
-        "x": 1456,
-        "y": 392,
-        "w": 300,
-        "h": 120
+        "x": 784,
+        "y": 152,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Inventory",
+      "label": "Employees",
       "actions": [
         {
           "type": "command",
           "name": "openAdmin",
           "args": {
-            "panel": "inventory"
+            "panel": "employees"
           }
         }
       ]
@@ -364,10 +405,10 @@
       "id": "admin-schedule",
       "kind": "button",
       "rect": {
-        "x": 160,
-        "y": 526,
-        "w": 300,
-        "h": 120
+        "x": 784,
+        "y": 250,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -383,120 +424,269 @@
       ]
     },
     {
-      "id": "admin-promotions",
+      "id": "customers",
       "kind": "button",
       "rect": {
-        "x": 484,
-        "y": 526,
-        "w": 300,
-        "h": 120
+        "x": 784,
+        "y": 348,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Promotions",
+      "label": "Customers\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "customers"
+        }
+      ]
+    },
+    {
+      "id": "gift-cards",
+      "kind": "button",
+      "rect": {
+        "x": 784,
+        "y": 446,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Gift Cards\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "gift-card"
+        }
+      ]
+    },
+    {
+      "id": "group-store",
+      "kind": "label",
+      "rect": {
+        "x": 1152,
+        "y": 92,
+        "w": 352,
+        "h": 48
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Store",
+      "showWhen": {
+        "screen": "standard"
+      },
+      "style": {
+        "normal": {
+          "fontSize": 26,
+          "bold": true
+        }
+      }
+    },
+    {
+      "id": "admin-settings",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 152,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Settings",
       "actions": [
         {
           "type": "command",
           "name": "openAdmin",
           "args": {
-            "panel": "promotions"
+            "panel": "settings"
           }
         }
       ]
     },
     {
-      "id": "checklists",
+      "id": "admin-taxes",
       "kind": "button",
       "rect": {
-        "x": 808,
-        "y": 526,
-        "w": 300,
-        "h": 120
+        "x": 1152,
+        "y": 250,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Checklists",
+      "label": "Taxes",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "taxes"
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-tenders",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 348,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Tenders",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "tenders"
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-printers",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 446,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Printers",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "printers"
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-terminals",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 544,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Terminals",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "terminals"
+          }
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 642,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Network\u2026",
       "actions": [
         {
           "type": "jump",
           "mode": "push",
-          "page": "checklists"
+          "page": "network"
         }
-      ],
+      ]
+    },
+    {
+      "id": "admin-inventory",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 740,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Inventory",
+      "actions": [
+        {
+          "type": "command",
+          "name": "openAdmin",
+          "args": {
+            "panel": "inventory"
+          }
+        }
+      ]
+    },
+    {
+      "id": "waste-log",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 838,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Waste\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "waste-log"
+        }
+      ]
+    },
+    {
+      "id": "group-system",
+      "kind": "label",
+      "rect": {
+        "x": 1520,
+        "y": 92,
+        "w": 352,
+        "h": 48
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Screens & System",
+      "showWhen": {
+        "screen": "standard"
+      },
       "style": {
         "normal": {
-          "fill": "#1f6f73"
+          "fontSize": 26,
+          "bold": true
         }
       }
-    },
-    {
-      "id": "kitchen-display",
-      "kind": "button",
-      "rect": {
-        "x": 1132,
-        "y": 526,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Kitchen Display",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "kitchen"
-        }
-      ]
-    },
-    {
-      "id": "bar-display",
-      "kind": "button",
-      "rect": {
-        "x": 1456,
-        "y": 526,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Bar Display",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "bar-display"
-        }
-      ]
-    },
-    {
-      "id": "expo-display",
-      "kind": "button",
-      "rect": {
-        "x": 160,
-        "y": 660,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Expo Display",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "expo"
-        }
-      ]
     },
     {
       "id": "edit-pages",
       "kind": "button",
       "rect": {
-        "x": 484,
-        "y": 660,
-        "w": 300,
-        "h": 120
+        "x": 1520,
+        "y": 152,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -514,13 +704,97 @@
       }
     },
     {
+      "id": "kitchen-display",
+      "kind": "button",
+      "rect": {
+        "x": 1520,
+        "y": 250,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Kitchen Display",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "kitchen"
+        }
+      ]
+    },
+    {
+      "id": "bar-display",
+      "kind": "button",
+      "rect": {
+        "x": 1520,
+        "y": 348,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar Display",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "bar-display"
+        }
+      ]
+    },
+    {
+      "id": "expo-display",
+      "kind": "button",
+      "rect": {
+        "x": 1520,
+        "y": 446,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Expo Display",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "expo"
+        }
+      ]
+    },
+    {
+      "id": "self-order",
+      "kind": "button",
+      "rect": {
+        "x": 1520,
+        "y": 544,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Self-Order Kiosk",
+      "actions": [
+        {
+          "type": "command",
+          "name": "selfOrder"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
       "id": "setup-guide",
       "kind": "button",
       "rect": {
-        "x": 808,
-        "y": 660,
-        "w": 300,
-        "h": 120
+        "x": 1520,
+        "y": 642,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -538,73 +812,13 @@
       }
     },
     {
-      "id": "customers",
-      "kind": "button",
-      "rect": {
-        "x": 1132,
-        "y": 660,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Customers\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "customers"
-        }
-      ]
-    },
-    {
-      "id": "gift-cards",
-      "kind": "button",
-      "rect": {
-        "x": 1456,
-        "y": 660,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Gift Cards\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "gift-card"
-        }
-      ]
-    },
-    {
-      "id": "sold-out",
-      "kind": "button",
-      "rect": {
-        "x": 160,
-        "y": 794,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Sold Out (86)\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "sold-out"
-        }
-      ]
-    },
-    {
       "id": "close-app",
       "kind": "button",
       "rect": {
-        "x": 484,
-        "y": 794,
-        "w": 300,
-        "h": 120
+        "x": 1520,
+        "y": 740,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "double",
@@ -625,10 +839,10 @@
       "id": "factory-reset",
       "kind": "button",
       "rect": {
-        "x": 808,
-        "y": 794,
-        "w": 300,
-        "h": 120
+        "x": 1520,
+        "y": 838,
+        "w": 352,
+        "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
@@ -647,53 +861,13 @@
       }
     },
     {
-      "id": "waste-log",
-      "kind": "button",
-      "rect": {
-        "x": 1132,
-        "y": 794,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Log Waste\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "waste-log"
-        }
-      ]
-    },
-    {
-      "id": "store-check",
-      "kind": "button",
-      "rect": {
-        "x": 1456,
-        "y": 794,
-        "w": 300,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Store Check {problems}",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "store-check"
-        }
-      ]
-    },
-    {
       "id": "back",
       "kind": "button",
       "rect": {
-        "x": 160,
-        "y": 940,
-        "w": 384,
-        "h": 120
+        "x": 48,
+        "y": 944,
+        "w": 352,
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -704,283 +878,249 @@
           "mode": "back"
         }
       ]
-    },
-    {
-      "id": "network",
-      "kind": "button",
-      "rect": {
-        "x": 568,
-        "y": 940,
-        "w": 384,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Network\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "network"
-        }
-      ]
-    },
-    {
-      "id": "self-order",
-      "kind": "button",
-      "rect": {
-        "x": 976,
-        "y": 940,
-        "w": 384,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Self-Order Kiosk",
-      "actions": [
-        {
-          "type": "command",
-          "name": "selfOrder"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
-      }
-    },
-    {
-      "id": "find-check",
-      "kind": "button",
-      "rect": {
-        "x": 1384,
-        "y": 940,
-        "w": 384,
-        "h": 120
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Find a Check\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "find-check"
-        }
-      ]
     }
   ],
   "styleRects": {
     "modern": {
+      "title": {
+        "x": 232,
+        "y": 16,
+        "w": 1640,
+        "h": 92
+      },
+      "group-today": {
+        "x": 48,
+        "y": 116,
+        "w": 352,
+        "h": 44
+      },
+      "dashboard": {
+        "x": 48,
+        "y": 168,
+        "w": 352,
+        "h": 92
+      },
+      "admin-reports": {
+        "x": 48,
+        "y": 266,
+        "w": 352,
+        "h": 92
+      },
+      "admin-endOfDay": {
+        "x": 48,
+        "y": 364,
+        "w": 352,
+        "h": 92
+      },
+      "admin-drawers": {
+        "x": 48,
+        "y": 462,
+        "w": 352,
+        "h": 92
+      },
+      "checklists": {
+        "x": 48,
+        "y": 560,
+        "w": 352,
+        "h": 92
+      },
+      "store-check": {
+        "x": 48,
+        "y": 658,
+        "w": 352,
+        "h": 92
+      },
+      "find-check": {
+        "x": 48,
+        "y": 756,
+        "w": 352,
+        "h": 92
+      },
+      "group-menu": {
+        "x": 416,
+        "y": 116,
+        "w": 352,
+        "h": 44
+      },
+      "menu-builder": {
+        "x": 416,
+        "y": 168,
+        "w": 352,
+        "h": 92
+      },
+      "admin-menu": {
+        "x": 416,
+        "y": 266,
+        "w": 352,
+        "h": 92
+      },
+      "sold-out": {
+        "x": 416,
+        "y": 364,
+        "w": 352,
+        "h": 92
+      },
+      "admin-promotions": {
+        "x": 416,
+        "y": 462,
+        "w": 352,
+        "h": 92
+      },
+      "admin-mealPeriods": {
+        "x": 416,
+        "y": 560,
+        "w": 352,
+        "h": 92
+      },
+      "admin-modifierGroups": {
+        "x": 416,
+        "y": 658,
+        "w": 352,
+        "h": 92
+      },
+      "group-people": {
+        "x": 784,
+        "y": 116,
+        "w": 352,
+        "h": 44
+      },
+      "admin-employees": {
+        "x": 784,
+        "y": 168,
+        "w": 352,
+        "h": 92
+      },
+      "admin-schedule": {
+        "x": 784,
+        "y": 266,
+        "w": 352,
+        "h": 92
+      },
+      "customers": {
+        "x": 784,
+        "y": 364,
+        "w": 352,
+        "h": 92
+      },
+      "gift-cards": {
+        "x": 784,
+        "y": 462,
+        "w": 352,
+        "h": 92
+      },
+      "group-store": {
+        "x": 1152,
+        "y": 116,
+        "w": 352,
+        "h": 44
+      },
+      "admin-settings": {
+        "x": 1152,
+        "y": 168,
+        "w": 352,
+        "h": 92
+      },
+      "admin-taxes": {
+        "x": 1152,
+        "y": 266,
+        "w": 352,
+        "h": 92
+      },
+      "admin-tenders": {
+        "x": 1152,
+        "y": 364,
+        "w": 352,
+        "h": 92
+      },
+      "admin-printers": {
+        "x": 1152,
+        "y": 462,
+        "w": 352,
+        "h": 92
+      },
+      "admin-terminals": {
+        "x": 1152,
+        "y": 560,
+        "w": 352,
+        "h": 92
+      },
+      "network": {
+        "x": 1152,
+        "y": 658,
+        "w": 352,
+        "h": 92
+      },
+      "admin-inventory": {
+        "x": 1152,
+        "y": 756,
+        "w": 352,
+        "h": 92
+      },
+      "waste-log": {
+        "x": 1152,
+        "y": 854,
+        "w": 352,
+        "h": 92
+      },
+      "group-system": {
+        "x": 1520,
+        "y": 116,
+        "w": 352,
+        "h": 44
+      },
+      "edit-pages": {
+        "x": 1520,
+        "y": 168,
+        "w": 352,
+        "h": 92
+      },
+      "kitchen-display": {
+        "x": 1520,
+        "y": 266,
+        "w": 352,
+        "h": 92
+      },
+      "bar-display": {
+        "x": 1520,
+        "y": 364,
+        "w": 352,
+        "h": 92
+      },
+      "expo-display": {
+        "x": 1520,
+        "y": 462,
+        "w": 352,
+        "h": 92
+      },
+      "self-order": {
+        "x": 1520,
+        "y": 560,
+        "w": 352,
+        "h": 92
+      },
+      "setup-guide": {
+        "x": 1520,
+        "y": 658,
+        "w": 352,
+        "h": 92
+      },
+      "close-app": {
+        "x": 1520,
+        "y": 756,
+        "w": 352,
+        "h": 92
+      },
+      "factory-reset": {
+        "x": 1520,
+        "y": 854,
+        "w": 352,
+        "h": 92
+      },
       "back": {
         "x": 16,
         "y": 16,
         "w": 200,
         "h": 92
-      },
-      "title": {
-        "x": 232,
-        "y": 16,
-        "w": 1000,
-        "h": 80
-      },
-      "dashboard": {
-        "x": 16,
-        "y": 112,
-        "w": 364,
-        "h": 120
-      },
-      "menu-builder": {
-        "x": 397,
-        "y": 112,
-        "w": 364,
-        "h": 120
-      },
-      "admin-menu": {
-        "x": 778,
-        "y": 112,
-        "w": 364,
-        "h": 120
-      },
-      "admin-employees": {
-        "x": 1159,
-        "y": 112,
-        "w": 364,
-        "h": 120
-      },
-      "admin-settings": {
-        "x": 1540,
-        "y": 112,
-        "w": 364,
-        "h": 120
-      },
-      "admin-taxes": {
-        "x": 16,
-        "y": 246,
-        "w": 364,
-        "h": 120
-      },
-      "admin-tenders": {
-        "x": 397,
-        "y": 246,
-        "w": 364,
-        "h": 120
-      },
-      "admin-printers": {
-        "x": 778,
-        "y": 246,
-        "w": 364,
-        "h": 120
-      },
-      "admin-reports": {
-        "x": 1159,
-        "y": 246,
-        "w": 364,
-        "h": 120
-      },
-      "admin-drawers": {
-        "x": 1540,
-        "y": 246,
-        "w": 364,
-        "h": 120
-      },
-      "admin-endOfDay": {
-        "x": 16,
-        "y": 380,
-        "w": 364,
-        "h": 120
-      },
-      "admin-terminals": {
-        "x": 397,
-        "y": 380,
-        "w": 364,
-        "h": 120
-      },
-      "admin-mealPeriods": {
-        "x": 778,
-        "y": 380,
-        "w": 364,
-        "h": 120
-      },
-      "admin-modifierGroups": {
-        "x": 1159,
-        "y": 380,
-        "w": 364,
-        "h": 120
-      },
-      "admin-inventory": {
-        "x": 1540,
-        "y": 380,
-        "w": 364,
-        "h": 120
-      },
-      "admin-schedule": {
-        "x": 16,
-        "y": 514,
-        "w": 364,
-        "h": 120
-      },
-      "admin-promotions": {
-        "x": 397,
-        "y": 514,
-        "w": 364,
-        "h": 120
-      },
-      "checklists": {
-        "x": 778,
-        "y": 514,
-        "w": 364,
-        "h": 120
-      },
-      "kitchen-display": {
-        "x": 1159,
-        "y": 514,
-        "w": 364,
-        "h": 120
-      },
-      "bar-display": {
-        "x": 1540,
-        "y": 514,
-        "w": 364,
-        "h": 120
-      },
-      "expo-display": {
-        "x": 16,
-        "y": 648,
-        "w": 364,
-        "h": 120
-      },
-      "edit-pages": {
-        "x": 397,
-        "y": 648,
-        "w": 364,
-        "h": 120
-      },
-      "setup-guide": {
-        "x": 778,
-        "y": 648,
-        "w": 364,
-        "h": 120
-      },
-      "customers": {
-        "x": 1159,
-        "y": 648,
-        "w": 364,
-        "h": 120
-      },
-      "gift-cards": {
-        "x": 1540,
-        "y": 648,
-        "w": 364,
-        "h": 120
-      },
-      "sold-out": {
-        "x": 16,
-        "y": 782,
-        "w": 364,
-        "h": 120
-      },
-      "close-app": {
-        "x": 397,
-        "y": 782,
-        "w": 364,
-        "h": 120
-      },
-      "factory-reset": {
-        "x": 778,
-        "y": 782,
-        "w": 364,
-        "h": 120
-      },
-      "waste-log": {
-        "x": 1159,
-        "y": 782,
-        "w": 364,
-        "h": 120
-      },
-      "store-check": {
-        "x": 1540,
-        "y": 782,
-        "w": 364,
-        "h": 120
-      },
-      "network": {
-        "x": 16,
-        "y": 944,
-        "w": 364,
-        "h": 120
-      },
-      "self-order": {
-        "x": 397,
-        "y": 944,
-        "w": 364,
-        "h": 120
-      },
-      "find-check": {
-        "x": 778,
-        "y": 944,
-        "w": 364,
-        "h": 120
       }
     }
   }
