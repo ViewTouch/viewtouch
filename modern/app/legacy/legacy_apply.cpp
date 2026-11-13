@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 
 #include <algorithm>
+#include <set>
 
 using namespace Qt::StringLiterals;
 
@@ -52,6 +53,38 @@ Applied applyImport(app::PosService &pos, layout::Layout *layout, const Imported
         // On Modern's own menu screens: pages that fill themselves from the menu.
         if (layout && layout::hasHandBuiltMenu(*layout))
             *layout = layout::withSelfFillingMenu(*layout);
+        // Buttons for the old menu's items go; an item page left with none
+        // (the sample café's Burgers, Drinks...) goes, and the ways to it.
+        if (layout) {
+            std::set<std::string> items;
+            for (const core::MenuItem &m : s->menu)
+                items.insert(m.id);
+            const auto stale = [&](const layout::Zone &z) {
+                return std::ranges::any_of(z.actions, [&](const layout::Action &a) {
+                    return a.type() == u"addItem" && !items.contains(a.str(u"item"_s).toStdString());
+                });
+            };
+            QSet<QString> gone;
+            for (layout::Page &p : layout->pages) {
+                const bool hadItems = std::ranges::any_of(p.zones, [](const layout::Zone &z) {
+                    return std::ranges::any_of(z.actions, [](const layout::Action &a) { return a.type() == u"addItem"; });
+                });
+                p.zones.removeIf(stale);
+                const bool hasItems = std::ranges::any_of(p.zones, [](const layout::Zone &z) {
+                    return std::ranges::any_of(z.actions, [](const layout::Action &a) { return a.type() == u"addItem"; });
+                });
+                if (hadItems && !hasItems && p.kind == u"items")
+                    gone.insert(p.id);
+            }
+            layout->pages.removeIf([&](const layout::Page &p) { return gone.contains(p.id) || gone.contains(p.variantOf); });
+            for (layout::Page &p : layout->pages) {
+                p.zones.removeIf([&](const layout::Zone &z) {
+                    return std::ranges::any_of(z.actions, [&](const layout::Action &a) {
+                        return a.type() == u"jump" && gone.contains(a.str(u"page"_s));
+                    });
+                });
+            }
+        }
     }
     // --- past days, oldest first ---
     if (parts.history && !in.days.empty()) {

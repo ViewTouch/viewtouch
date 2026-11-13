@@ -88,7 +88,7 @@ TEST_CASE("Legacy import: a store's menu and sales, worked out before anything c
     const QVariantMap p = legacy::preview(store, in);
     CHECK(p.value(u"storeName"_s) == u"Casa Sample"_s);
     CHECK(p.value(u"items"_s).toInt() == 1457);
-    CHECK(p.value(u"categories"_s).toInt() == 16);
+    CHECK(p.value(u"categories"_s).toInt() == 15);   // (legacy's "Modifier" family: choices, not a section)
     CHECK(p.value(u"choices"_s).toInt() > 10);
     CHECK(p.value(u"days"_s).toInt() == 3);
     CHECK(p.value(u"checks"_s).toInt() == 6);        // the practice checks left out
@@ -176,7 +176,21 @@ TEST_CASE("Legacy import: the menu on Modern's own screens, the sales in its rep
     // The menu, in place of the store's: items, families, choices.
     CHECK(s->menu.size() == 1457);
     CHECK(sink.menu.size() == 1457);
-    CHECK(s->settings.menuCategories.size() == 16);
+    CHECK(s->settings.menuCategories.size() == 15);
+    CHECK(std::ranges::none_of(s->settings.menuCategories, [](const core::MenuCategory &c) { return c.name == "Modifier"; }));
+    // No button left for an item not on the menu (the old menu's pages gone or emptied).
+    std::set<std::string> ids;
+    for (const core::MenuItem &m : s->menu)
+        ids.insert(m.id);
+    for (const layout::Page &pg : l->pages)
+        for (const layout::Zone &z : pg.zones)
+            for (const layout::Action &a : z.actions)
+                if (a.type() == u"addItem") {
+                    INFO(pg.id.toStdString() << " " << z.id.toStdString());
+                    CHECK(ids.contains(a.str(u"item"_s).toStdString()));
+                }
+    INFO(l->validate().join(u'\n').toStdString());
+    CHECK(l->validate().isEmpty());
     CHECK(s->settings.modifierGroups.size() == in.modifierGroups.size());
     // Nothing else changed: the store's name, style, taxes, staff and pages are its own.
     CHECK(s->settings.storeName == before.storeName);
@@ -508,8 +522,11 @@ void everyDayAndItem(const QString &dat)
         REQUIRE(byName.contains(key));
         const core::MenuItem &m = *byName.at(key);
         CHECK(m.price.cents() == l.cost);
-        CHECK(family[m.family] == legacy::familyName(l.family).toStdString());
-        CHECK(m.isModifier == (l.type == 1 || l.type == 2));
+        if (l.family == 23)   // legacy's "Modifier" family: choices, not a section of the menu
+            CHECK(family[m.family].empty());
+        else
+            CHECK(family[m.family] == legacy::familyName(l.family).toStdString());
+        CHECK(m.isModifier == (l.type == 1 || l.type == 2 || l.family == 23));
         CHECK(m.available == !l.outOfStock);
         if (l.takeoutCost > 0 && l.takeoutCost != l.cost)
             CHECK(m.takeoutPrice.cents() == l.takeoutCost);

@@ -193,6 +193,10 @@ std::optional<core::Totals> fitDiscounts(core::Check &m, const core::TaxRates &r
     return std::nullopt;
 }
 
+// A modifier: legacy's modifier kinds, and what it kept in its "Modifier"
+// family (23), used only on modifier pages.
+bool modifier(const MenuItem &m) { return m.type == 1 || m.type == 2 || m.family == 23; }
+
 } // namespace
 
 QString familyName(int family)
@@ -229,6 +233,7 @@ Imported convert(const Store &store, const ImportContext &cx)
     QHash<QString, std::string> itemIds;   // legacy name, lower case -> Modern id
     const auto key = [](const QString &name) { return name.trimmed().toLower(); };
     QHash<int, std::string> categoryOf;    // legacy family -> category id
+    QSet<int> ordered;                     // families with items (not only modifiers)
     if (store.menu) {   // (the sales name items too)
         QSet<QString> taken;
         for (const MenuItem &m : store.menu->items) {
@@ -236,11 +241,15 @@ Imported convert(const Store &store, const ImportContext &cx)
                 continue;   // (legacy keys items by name: the first of a name is the one it finds)
             itemIds.insert(key(m.name), idFrom({}, m.name, taken));
             if (!categoryOf.contains(m.family))
-                categoryOf.insert(m.family, ss(u"family-%1"_s.arg(m.family)));
+                categoryOf.insert(m.family, ss(familyName(m.family)));   // (reports name a family by it)
+            if (!modifier(m))
+                ordered.insert(m.family);   // a family with something to order
         }
     }
     if (store.menu && parts.menu) {
         for (const auto &[family, id] : categoryOf.asKeyValueRange()) {
+            if (!ordered.contains(family))
+                continue;   // only modifiers (legacy's "Modifier" family): asked as choices, not a section
             core::MenuCategory c;
             c.id = id;
             c.name = ss(familyName(family));
@@ -269,7 +278,7 @@ Imported convert(const Store &store, const ImportContext &cx)
             i.taxClass = taxClassOf(m.salesType);
             i.noDiscount = m.salesType & (16 | 64);
             i.noStaffDiscount = m.salesType & 32;
-            i.isModifier = m.type == 1 || m.type == 2;
+            i.isModifier = modifier(m);
             int target = m.printer;
             if (target == 0 && store.settings && m.family >= 0 && m.family < 64)
                 target = store.settings->familyPrinter[m.family];   // "default": the family's
@@ -308,7 +317,7 @@ Imported convert(const Store &store, const ImportContext &cx)
             for (const Zone &z : p->zones) {
                 const QString name = z.fields.value(u"ItemName"_s).toString();
                 const MenuItem *m = byName.value(key(name));
-                if (!m || !(m->type == 1 || m->type == 2))
+                if (!m || !modifier(*m))
                     continue;
                 if (std::ranges::any_of(g.options, [&](const core::ModifierOption &o) { return o.itemId == itemIds.value(key(name)); }))
                     continue;
@@ -337,7 +346,7 @@ Imported convert(const Store &store, const ImportContext &cx)
                 const QString name = z.fields.value(u"ItemName"_s).toString();
                 const int jump = z.fields.value(u"JumpID"_s).toInt();
                 const MenuItem *m = byName.value(key(name));
-                if (!m || m->type == 1 || m->type == 2 || !jump || jump == p.id)
+                if (!m || modifier(*m) || !jump || jump == p.id)
                     continue;
                 const std::string g = groupFor(jump);
                 if (g.empty())
