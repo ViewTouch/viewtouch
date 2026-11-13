@@ -47,6 +47,28 @@ QString sampleFolder(QTemporaryDir &dir)
     return dir.filePath(u"dat"_s);
 }
 
+// The store's sink, keeping each closed day as the database does.
+struct DaySink : test::RecordingSink {
+    std::map<std::int64_t, app::PastDay> days;
+    void saveDay(const core::BusinessDay &d, const QJsonObject &reports) override
+    {
+        if (d.closedAt)
+            days[d.id] = {d, reports};
+    }
+};
+
+QQuickItem *findNamed(QQuickItem *in, const QString &name)
+{
+    if (!in)
+        return nullptr;
+    if (in->objectName() == name)
+        return in;
+    for (QQuickItem *child : in->childItems())
+        if (QQuickItem *found = findNamed(child, name))
+            return found;
+    return nullptr;
+}
+
 QQuickItem *findItem(QQuickItem *in, const char *type)
 {
     if (!in)
@@ -83,7 +105,7 @@ TEST_CASE("Legacy import on the screens: every page with its menu, Reports on it
     // The pages a store starts with (what ships), not the tests' own.
     auto l = layout::Layout::loadDirectory(QStringLiteral(VTM_SEED_DIR));
     REQUIRE(l);
-    test::RecordingSink sink;
+    DaySink sink;
     app::PosService pos(test::seedPosData(), &sink);
     legacy::ImportContext cx;
     cx.current = &pos.shared()->settings;
@@ -96,6 +118,16 @@ TEST_CASE("Legacy import on the screens: every page with its menu, Reports on it
             if (c.status == core::CheckStatus::Closed && c.closedAt >= from && c.closedAt < to)
                 out.push_back(c);
         return out;
+    };
+    // Only the newest days are kept in memory (60; here, to try it, one):
+    // an older one is read from the store by its date.
+    if (pos.shared()->pastDays.size() > 1 && in.days.size() < 60)
+        pos.shared()->pastDays.resize(1);
+    pos.shared()->olderDay = [&](std::int64_t from, std::int64_t to) -> std::optional<app::PastDay> {
+        for (const auto &[id, d] : sink.days)
+            if (d.day.closedAt >= from && d.day.closedAt < to)
+                return d;
+        return std::nullopt;
     };
     pos.shared()->settings.setupDone = true;
     LayoutController c(*l);
@@ -152,7 +184,7 @@ TEST_CASE("Legacy import on the screens: every page with its menu, Reports on it
     QQuickItem *reports = findItem(window->contentItem(), "WidgetReportView");
     REQUIRE(reports);
     const QVariantList days = reports->property("days").toList();
-    REQUIRE(days.size() == qsizetype(std::min<std::size_t>(in.days.size(), 60) + 1));   // today, then the days
+    REQUIRE(days.size() == qsizetype(pos.shared()->pastDays.size() + 1));   // today, then the days kept
     // The last day brought over: its own report, as it closed.
     const legacy::ImportedDay &last = in.days.back();
     for (const char *id : {"sales", "items", "categories", "hourly", "servers", "drawer"}) {
@@ -179,12 +211,40 @@ TEST_CASE("Legacy import on the screens: every page with its menu, Reports on it
         CHECK(rowsOf(reports->property("report")).value(u"Checks"_s).toInt() == int(d.checks.size()));
         shot(u"reports-day-40-back"_s);
     }
+    // The calendar: any day the store closed on, the oldest too (read from the store).
+    {
+        reports->setProperty("reportId", u"sales"_s);
+        REQUIRE(QMetaObject::invokeMethod(reports, "openCalendar", Q_ARG(QVariant, u"day"_s)));
+        QTest::qWait(60);
+        QQuickItem *calendar = findNamed(window->contentItem(), u"reportCalendar"_s);
+        REQUIRE(calendar);
+        CHECK(calendar->isVisible());
+        shot(u"reports-calendar"_s);
+        const legacy::ImportedDay &first = in.days.front();
+        const QDate date = QDateTime::fromMSecsSinceEpoch(first.closedAt - 5 * 3'600'000).date();
+        REQUIRE(QMetaObject::invokeMethod(reports, "pickDate",
+                                          Q_ARG(QVariant, QDateTime(date, QTime(12, 0)))));
+        QTest::qWait(80);
+        CHECK_FALSE(calendar->isVisible());
+        const QVariantMap day = reports->property("day").toMap();
+        CHECK(day.value(u"date"_s).toString() == date.toString(Qt::ISODate));
+        CHECK(rowsOf(reports->property("report")).value(u"Checks"_s).toInt() == int(first.checks.size()));
+        shot(u"reports-oldest-day"_s);
+        // A date nothing closed on: said, the view stays.
+        QString said;
+        QObject::connect(&pos, &app::PosService::notice, [&](const QString &m) { said = m; });
+        CHECK_FALSE(pos.openReportDate(u"2001-01-01"_s));
+        CHECK(said.startsWith(u"No day was closed on "_s));
+    }
     // A month brought over, read from its checks.
     const QDate end = QDateTime::fromMSecsSinceEpoch(last.closedAt).date();
     reports->setProperty("reportId", u"sales"_s);
+    reports->setProperty("period", u"custom"_s);
+    QTest::qWait(30);
+    CHECK(findNamed(window->contentItem(), u"reportFrom"_s));   // (no typing: each opens the calendar)
     reports->setProperty("fromDate", end.addDays(-30).toString(Qt::ISODate));
     reports->setProperty("toDate", end.toString(Qt::ISODate));
-    reports->setProperty("period", u"custom"_s);
+    QMetaObject::invokeMethod(reports, "refresh");
     for (int i = 0; i < 500 && pos.rangeReport().value(u"loading"_s).toBool(); ++i)
         QTest::qWait(20);
     QTest::qWait(50);

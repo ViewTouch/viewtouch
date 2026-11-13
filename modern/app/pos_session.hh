@@ -355,6 +355,8 @@ public:
         invoke(QStringLiteral("legacyImportRun"), {folder, parts});
     }
     Q_INVOKABLE void legacyClear() { invoke(QStringLiteral("legacyClear"), {}); }
+    // Reports: the day closed on a date ("2026-03-14") joins `days` (see PosService::openReportDate).
+    Q_INVOKABLE void openReportDate(const QString &date) { invoke(QStringLiteral("openReportDate"), {date}); }
     Q_INVOKABLE void removeStoreImage(const QString &ref) { invoke(QStringLiteral("removeStoreImage"), {ref}); }
     // "Logo Final.PNG" -> "store:logo-final.png" ("" if not a picture type).
     static QString storeImageRef(const QString &fileName);

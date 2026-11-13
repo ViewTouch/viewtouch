@@ -736,6 +736,31 @@ void SqlPosSink::savePunch(const TimePunch &p)
     });
 }
 
+std::optional<app::PastDay> closedDayBetween(const QString &dbPath, std::int64_t from, std::int64_t to)
+{
+    static QAtomicInt counter;
+    const QString name = u"vt-day-%1"_s.arg(counter.fetchAndAddRelaxed(1));
+    std::optional<app::PastDay> out;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, name);
+        db.setDatabaseName(dbPath);
+        db.setConnectOptions(u"QSQLITE_BUSY_TIMEOUT=5000"_s);
+        if (db.open()) {
+            QSqlQuery q(db);
+            q.prepare(u"SELECT id, opened_at, closed_at, reports FROM business_days WHERE closed_at >= ? "
+                      "AND closed_at < ? ORDER BY id DESC LIMIT 1"_s);
+            q.addBindValue(qint64(from));
+            q.addBindValue(qint64(to));
+            if (q.exec() && q.next())
+                out = app::PastDay{BusinessDay{q.value(0).toLongLong(), q.value(1).toLongLong(), q.value(2).toLongLong()},
+                                   parse(q.value(3))};
+            db.close();
+        }
+    }
+    QSqlDatabase::removeDatabase(name);
+    return out;
+}
+
 std::vector<core::Refund> refundsBetween(const QString &dbPath, std::int64_t from, std::int64_t to)
 {
     static QAtomicInt counter;

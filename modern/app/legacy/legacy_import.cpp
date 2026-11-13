@@ -619,6 +619,13 @@ Imported convert(const Store &store, const ImportContext &cx)
                 }
             }
             std::ranges::sort(day.checks, {}, &core::Check::closedAt);
+            // The first day legacy kept has no start: its first check's.
+            if (!day.openedAt) {
+                day.openedAt = day.closedAt;
+                for (const core::Check &c : day.checks)
+                    if (c.openedAt > 0)
+                        day.openedAt = std::min(day.openedAt, c.openedAt);
+            }
             previousEnd = day.closedAt;
             out.days.push_back(std::move(day));
         }

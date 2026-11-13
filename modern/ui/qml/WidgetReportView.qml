@@ -89,6 +89,38 @@ Item {
 
     property int dayIndex: 0
     readonly property var days: pos ? pos.days : []
+    // A date chosen on the calendar: shown once its day is among `days`
+    // (an old one is read from the store first).
+    property string wantDate: ""
+    onDaysChanged: showWanted()
+    function showWanted() {
+        if (wantDate === "") return
+        const i = days.findIndex(d => d.date === wantDate)
+        if (i >= 0) { dayIndex = i; wantDate = "" }
+    }
+    // The calendar: "day" (one day's reports), "from" or "to" (Dates…); "": closed.
+    property string picking: ""
+    property date calendarMonth: new Date()
+    function openCalendar(what) {
+        const at = what === "from" && fromDate !== "" ? new Date(fromDate + "T12:00:00")
+                 : what === "to" && toDate !== "" ? new Date(toDate + "T12:00:00")
+                 : what === "day" && (day.date ?? "") !== "" ? new Date(day.date + "T12:00:00") : new Date()
+        calendarMonth = isNaN(at.getTime()) ? new Date() : at
+        picking = what
+    }
+    function iso(d) { return Qt.formatDate(d, "yyyy-MM-dd") }
+    function pickDate(d) {
+        const date = iso(d)
+        const what = picking
+        picking = ""
+        if (what === "from") { fromDate = date; if (toDate !== "") refresh() }
+        else if (what === "to") { toDate = date; if (fromDate !== "") refresh() }
+        else {
+            wantDate = date
+            showWanted()
+            if (wantDate !== "" && pos) pos.openReportDate(date)   // older than the days kept: read it
+        }
+    }
     readonly property var day: days[Math.min(dayIndex, days.length - 1)] ?? { id: 0, label: "" }
     // "day" (one business day, above), or several: week, lastWeek, month,
     // lastMonth, year, custom - read from the saved checks, maybe beside
@@ -237,19 +269,22 @@ Item {
                 Layout.fillHeight: false
                 spacing: w.unit * 0.4
                 Text { textFormat: Text.PlainText; text: qsTr("From"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
-                TextField {
-                    implicitWidth: w.unit * 8
-                    placeholderText: "2026-09-01"
-                    inputMethodHints: Qt.ImhPreferNumbers
-                    onTextEdited: w.fromDate = text
+                WidgetKey {
+                    objectName: "reportFrom"
+                    Layout.preferredWidth: w.unit * 9
+                    Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(48) : 0)
+                    text: w.fromDate !== "" ? w.fromDate : qsTr("Choose…")
+                    fontScale: 0.34
+                    onClicked: w.openCalendar("from")
                 }
                 Text { textFormat: Text.PlainText; text: qsTr("to"); color: w.ink; font.family: w.face; font.pixelSize: w.unit * 0.8 }
-                TextField {
-                    implicitWidth: w.unit * 8
-                    placeholderText: "2026-09-30"
-                    inputMethodHints: Qt.ImhPreferNumbers
-                    onTextEdited: w.toDate = text
-                    onAccepted: w.refresh()
+                WidgetKey {
+                    objectName: "reportTo"
+                    Layout.preferredWidth: w.unit * 9
+                    Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(48) : 0)
+                    text: w.toDate !== "" ? w.toDate : qsTr("Choose…")
+                    fontScale: 0.34
+                    onClicked: w.openCalendar("to")
                 }
                 WidgetKey {
                     Layout.preferredWidth: w.unit * 5
@@ -278,8 +313,19 @@ Item {
                     baseColor: w.dayIndex < w.days.length - 1 ? Ui.key : "#23282f"
                     onClicked: if (w.dayIndex < w.days.length - 1) w.dayIndex++
                 }
+                // The day: touch it for a calendar (any day the store was open).
+                WidgetKey {
+                    objectName: "reportDay"
+                    visible: dayBar.oneDay
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: dayBar.rowH
+                    text: "📅  " + w.day.label
+                    fontScale: 0.36
+                    onClicked: w.openCalendar("day")
+                }
                 Text {
                     textFormat: Text.PlainText
+                    visible: !dayBar.oneDay
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: dayBar.oneDay ? w.day.label
@@ -677,6 +723,121 @@ Item {
                 contentX = item.x
             else if (item.x + item.width > contentX + width)
                 contentX = Math.min(contentWidth - width, item.x + item.width - width)
+        }
+    }
+
+    // The calendar: a month at a time; a day the store closed on is marked.
+    Rectangle {
+        id: calendar
+        objectName: "reportCalendar"
+        visible: w.picking !== ""
+        anchors.fill: parent
+        z: 20
+        color: "#cc0f1318"
+        MouseArea { anchors.fill: parent; onClicked: w.picking = "" }
+        readonly property int year: w.calendarMonth.getFullYear()
+        readonly property int month: w.calendarMonth.getMonth()
+        readonly property int firstColumn: (new Date(year, month, 1).getDay() - Qt.locale().firstDayOfWeek + 7) % 7
+        readonly property int daysIn: new Date(year, month + 1, 0).getDate()
+        readonly property var known: w.days.map(d => d.date ?? "")
+        readonly property real cell: Math.max(w.zone ? w.zone.touch(52) : 52, Math.min(box.width / 7.4, (parent.height * 0.9 - w.unit * 6) / 7))
+        function step(by) { w.calendarMonth = new Date(year, month + by, 1) }
+        Rectangle {
+            id: box
+            anchors.centerIn: parent
+            width: Math.min(parent.width * 0.96, w.unit * 30)
+            height: column.implicitHeight + w.unit * 1.6
+            radius: w.unit * 0.5
+            color: Ui.panel
+            border.color: Ui.line
+            MouseArea { anchors.fill: parent }
+            ColumnLayout {
+                id: column
+                anchors.fill: parent
+                anchors.margins: w.unit * 0.8
+                spacing: w.unit * 0.3
+                RowLayout {
+                    Layout.fillWidth: true
+                    WidgetKey {
+                        objectName: "calendarBack"
+                        Layout.preferredWidth: calendar.cell * 1.2
+                        Layout.preferredHeight: calendar.cell
+                        text: "◀"
+                        onClicked: calendar.step(-1)
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        objectName: "calendarTitle"
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Qt.locale().standaloneMonthName(calendar.month) + " " + calendar.year
+                        color: Ui.text
+                        font.family: w.face
+                        font.pixelSize: w.unit * 1.2
+                        font.bold: true
+                    }
+                    WidgetKey {
+                        objectName: "calendarNext"
+                        Layout.preferredWidth: calendar.cell * 1.2
+                        Layout.preferredHeight: calendar.cell
+                        text: "▶"
+                        onClicked: calendar.step(1)
+                    }
+                }
+                GridLayout {
+                    Layout.fillWidth: true
+                    columns: 7
+                    rowSpacing: 4
+                    columnSpacing: 4
+                    Repeater {
+                        model: 7
+                        delegate: Text {
+                            required property int index
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            text: Qt.locale().standaloneDayName((Qt.locale().firstDayOfWeek + index) % 7, Locale.ShortFormat)
+                            color: Ui.muted
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.7
+                        }
+                    }
+                    Repeater {
+                        model: 42
+                        delegate: Item {
+                            id: slot
+                            required property int index
+                            readonly property int dayNumber: index - calendar.firstColumn + 1
+                            readonly property bool real: dayNumber >= 1 && dayNumber <= calendar.daysIn
+                            readonly property date when: new Date(calendar.year, calendar.month, Math.max(1, dayNumber), 12)
+                            readonly property bool future: when.getTime() > Date.now()
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: index < calendar.firstColumn + calendar.daysIn || index < 35 ? calendar.cell : 0
+                            visible: Layout.preferredHeight > 0
+                            WidgetKey {
+                                objectName: slot.real ? "calendarDay-" + slot.dayNumber : ""
+                                anchors.fill: parent
+                                visible: slot.real
+                                enabled: !slot.future
+                                opacity: slot.future ? 0.35 : 1
+                                text: slot.real ? String(slot.dayNumber) : ""
+                                fontScale: 0.36
+                                // A day among those kept: marked (older ones are read when touched).
+                                baseColor: calendar.known.includes(w.iso(slot.when)) ? Ui.accent : Ui.key
+                                onClicked: w.pickDate(slot.when)
+                            }
+                        }
+                    }
+                }
+                WidgetKey {
+                    objectName: "calendarCancel"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: calendar.cell
+                    text: qsTr("Cancel")
+                    fontScale: 0.34
+                    onClicked: w.picking = ""
+                }
+            }
         }
     }
 }

@@ -91,6 +91,9 @@ std::vector<core::TimePunch> punchesBetween(const QString &dbPath, std::int64_t 
 // Closed checks, the newest first: closed in [from, to) (to 0: no end),
 // whose saved record contains any of `words` (none: every one), `limit`
 // of them from `offset`. Its own connection: for a worker thread.
+// The business day closed in [from, to), with its reports as they were kept
+// (the last one, when there are two); nullopt: none. Its own connection.
+std::optional<app::PastDay> closedDayBetween(const QString &dbPath, std::int64_t from, std::int64_t to);
 // Refunds made in [from, to), any check's. Its own connection: for a worker thread.
 std::vector<core::Refund> refundsBetween(const QString &dbPath, std::int64_t from, std::int64_t to);
 std::vector<core::Check> findClosedChecks(const QString &dbPath, std::int64_t from, std::int64_t to,

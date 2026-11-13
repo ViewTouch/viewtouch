@@ -204,6 +204,7 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"removeMessage"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeMessage(a.value(0).toString())); }},
         {u"cancelApproval"_s, [](PosService &p, const QVariantList &) { return QVariant(p.cancelApproval()); }},
         {u"setTraining"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setTraining(a.value(0).toBool())); }},
+        {u"openReportDate"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.openReportDate(a.value(0).toString())); }},
         {u"legacyPreview"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.legacyPreviewOf(a.value(0).toString())); }},
         {u"legacyImportRun"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.legacyImportRun(a.value(0).toString(), a.value(1).toMap())); }},
         {u"legacyClear"_s, [](PosService &p, const QVariantList &) { p.legacyClearState(); return QVariant(true); }},

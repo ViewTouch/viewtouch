@@ -1257,8 +1257,15 @@ bool PosService::clockOutPunch(qint64 punchId)
 QVariantList PosService::daysNow() const
 {
     QVariantList out{QVariantMap{{u"id"_s, qint64(0)}, {u"label"_s, tr("Today (since %1)").arg(clockText(s_->day.openedAt))}}};
+    // (Its date: the day it ended on, up to 5 AM counting as the night before.)
+    const auto dateOf = [](const BusinessDay &d) {
+        return QDateTime::fromMSecsSinceEpoch(d.closedAt - 5 * 3'600'000).date().toString(Qt::ISODate);
+    };
     for (const PastDay &p : s_->pastDays)
-        out.append(QVariantMap{{u"id"_s, qint64(p.day.id)}, {u"label"_s, dayLabel(p.day)}});
+        out.append(QVariantMap{{u"id"_s, qint64(p.day.id)}, {u"label"_s, dayLabel(p.day)}, {u"date"_s, dateOf(p.day)}});
+    if (olderDay_)   // one opened by its date, from before those
+        out.append(QVariantMap{{u"id"_s, qint64(olderDay_->day.id)}, {u"label"_s, dayLabel(olderDay_->day)},
+                               {u"date"_s, dateOf(olderDay_->day)}, {u"older"_s, true}});
     return out;
 }
 
@@ -1708,7 +1715,34 @@ QVariantMap PosService::report(const QString &id, qint64 dayId)
             return toVariant(pastReport(p.day, stored));
         }
     }
+    if (olderDay_ && olderDay_->day.id == dayId) {
+        const QJsonObject stored = olderDay_->reports.value(id).toObject();
+        if (stored.isEmpty())
+            return {{u"title"_s, tr("No report")}, {u"rows"_s, QVariantList()}};
+        return toVariant(pastReport(olderDay_->day, stored));
+    }
     return {{u"title"_s, tr("No such day")}, {u"rows"_s, QVariantList()}};
+}
+
+bool PosService::openReportDate(const QString &date)
+{
+    if (!require(perm::Manager, tr("Reports")))
+        return false;
+    const QDate day = QDate::fromString(date, Qt::ISODate);
+    if (!day.isValid())
+        return fail(tr("Choose a date."));
+    // The business day that ended on it: closed from 5 AM that day to 5 AM the next.
+    const std::int64_t from = QDateTime(day, QTime(5, 0)).toMSecsSinceEpoch();
+    const std::int64_t to = QDateTime(day.addDays(1), QTime(5, 0)).toMSecsSinceEpoch();
+    for (const PastDay &p : s_->pastDays)
+        if (p.day.closedAt >= from && p.day.closedAt < to)
+            return true;   // already among the days
+    std::optional<PastDay> found = s_->olderDay ? s_->olderDay(from, to) : std::nullopt;
+    if (!found)
+        return fail(tr("No day was closed on %1.").arg(i18n::locale().toString(day, QLocale::LongFormat)));
+    olderDay_ = std::move(found);
+    emit s_->dayChanged();
+    return true;
 }
 
 bool PosService::printReport(const QString &id, qint64 dayId)
@@ -1729,6 +1763,8 @@ bool PosService::printReport(const QString &id, qint64 dayId)
             if (p.day.id == dayId)
                 r = pastReport(p.day, p.reports.value(id).toObject());
         }
+        if (olderDay_ && olderDay_->day.id == dayId)
+            r = pastReport(olderDay_->day, olderDay_->reports.value(id).toObject());
     }
     s_->printer->printReport(s_->settings, r, receiptPrinter());
     emit notice(tr("Printing %1").arg(qs(r.title)));

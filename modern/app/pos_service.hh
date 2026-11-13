@@ -440,6 +440,9 @@ public:
     // legacy/legacy_apply.hh): its dat folder read and worked out, on any
     // thread, with a copy of the settings; then, here, what that found
     // ({preview}) or (apply) bringing it in ({done, error, backup}).
+    // A day closed long ago (only the newest 60 are kept in memory): the one
+    // closed in [from, to), with its reports. Set by the app (the database).
+    std::function<std::optional<PastDay>(std::int64_t from, std::int64_t to)> olderDay;
     std::function<std::any(const QString &folder, const QVariantMap &parts, const core::PosSettings &settings)> legacyRead;
     std::function<QVariantMap(const std::any &read, bool apply)> legacyFinish;
     // The store's computers and printers, for Manager -> Network (set by
@@ -816,6 +819,10 @@ public:
     bool countDrawerPieces(qint64 drawerId, const QVariantList &counts);
     // This person counts drawers blind (not seeing what should be there).
     bool blindCount() const;
+    // Reports -> a date ("2026-03-14"): the business day closed on it (up to
+    // 5 AM counts as the night before), found among the days in memory or,
+    // older, read from the database; it joins days(). False (and said): none.
+    bool openReportDate(const QString &date);
     bool endOfDay();
     // A business day closed elsewhere (a store brought over from legacy
     // ViewTouch), put in as the day now open and closed again as End of
@@ -1307,6 +1314,8 @@ private:
     core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
     QVariantMap legacy_;
+    // A day opened by its date from Reports, older than those kept in memory.
+    std::optional<PastDay> olderDay_;
     int legacyRequest_ = 0;
     bool legacyStart(const QString &folder, const QVariantMap &parts, bool apply);
     std::vector<core::Check> searchHits_;

@@ -897,6 +897,9 @@ int runStore(const Args &cli, const Options &o)
                 writer->flush();   // today's saved first
             return vt::storage::customerTrail(dbPath, id, digits);
         };
+        shared->olderDay = [dbPath](std::int64_t from, std::int64_t to) {
+            return vt::storage::closedDayBetween(dbPath, from, to);
+        };
         shared->refundHistory = [dbPath](std::int64_t from, std::int64_t to) {
             return vt::storage::refundsBetween(dbPath, from, to);
         };
