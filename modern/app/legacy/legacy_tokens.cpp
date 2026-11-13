@@ -19,14 +19,14 @@ QString tr(const char *s) { return QCoreApplication::translate("vt::legacy", s);
 constexpr qint64 kLimit = qint64(512) << 20;   // no legacy file is near this
 
 // Legacy's own digits (data_file.cc new_decode_table): -1 for any other byte.
-const std::array<signed char, 256> &digits()
+const std::array<int, 256> &digits()
 {
     static const auto table = [] {
-        std::array<signed char, 256> t{};
+        std::array<int, 256> t{};
         t.fill(-1);
         const char *d = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         for (int i = 0; i < 64; ++i)
-            t[static_cast<unsigned char>(d[i])] = static_cast<signed char>(i);
+            t[static_cast<unsigned char>(d[i])] = i;
         return t;
     }();
     return table;

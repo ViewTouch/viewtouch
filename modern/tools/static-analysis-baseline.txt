@@ -29,8 +29,6 @@ ui/qml/StressPanel.qml: [qmllint missing-property] Member "stats" not found on t
 ui/qml/WidgetDashboard.qml: [qmllint missing-property] Member "title" not found on type "QQuickItem"
 ui/qml/WidgetDecor.qml: [qmllint missing-property] Member "across" not found on type "Repeater"
 ui/qml/WidgetDecor.qml: [qmllint missing-property] Member "d" not found on type "Repeater"
-ui/qml/WidgetKey.qml: [qmllint missing-property] Member "st" not found on type "QQuickItem"
-ui/qml/WidgetKey.qml: [qmllint missing-property] Member "styleNormal" not found on type "QQuickItem"
 ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "gap" not found on type "QQuickItem"
 ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "sideW" not found on type "QQuickItem"
 ui/qml/WidgetReportView.qml: [qmllint missing-property] Member "unit" not found on type "QQuickItem"

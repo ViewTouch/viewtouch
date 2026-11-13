@@ -9,10 +9,10 @@ Item {
     id: w
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
-    readonly property var state: pos ? pos.legacyImport : ({})
-    readonly property var preview: state.preview ?? null
-    readonly property var done: state.done ?? []
-    readonly property string busy: state.busy ?? ""
+    readonly property var found: pos ? pos.legacyImport : ({})
+    readonly property var preview: found.preview ?? null
+    readonly property var done: found.done ?? []
+    readonly property string busy: found.busy ?? ""
     property var folders: []
     property string typed: ""
     // The parts to bring; history only into a store with no sales yet.
@@ -129,11 +129,11 @@ Item {
                 Label {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
-                    visible: (w.state.error ?? "") !== "" && w.done.length === 0
+                    visible: (w.found.error ?? "") !== "" && w.done.length === 0
                     wrapMode: Text.WordWrap
                     font.pixelSize: 16
                     color: "#d14343"
-                    text: w.state.error ?? ""
+                    text: w.found.error ?? ""
                 }
 
                 // --- 2. what it holds, and what comes over ---
@@ -155,7 +155,7 @@ Item {
                     color: w.ink
                     opacity: 0.6
                     wrapMode: Text.WrapAnywhere
-                    text: w.state.folder ?? ""
+                    text: w.found.folder ?? ""
                 }
                 Repeater {
                     model: w.preview && w.done.length === 0 ? [
@@ -245,7 +245,7 @@ Item {
                         text: qsTr("Bring It Over")
                         enabled: !!w.preview && w.busy === "" && (w.preview.errors ?? []).length === 0
                                  && (w.parts.menu || (w.parts.history && !w.preview.hasSales))
-                        onClicked: w.pos.legacyImport(w.state.folder,
+                        onClicked: w.pos.legacyBring(w.found.folder,
                                                       Object.assign({}, w.parts, { history: w.parts.history && !w.preview.hasSales }))
                     }
                 }
@@ -281,7 +281,7 @@ Item {
                     font.pixelSize: 14
                     color: w.ink
                     opacity: 0.8
-                    text: qsTr("The store as it was before is kept in a backup: %1.").arg(w.state.backup ?? "")
+                    text: qsTr("The store as it was before is kept in a backup: %1.").arg(w.found.backup ?? "")
                 }
             }
         }

@@ -157,7 +157,7 @@ class PosSession : public QObject {
     // server, customer, total, status}], selected: {..., lines, payments}}.
     Q_PROPERTY(QVariantMap checkSearch READ checkSearch NOTIFY sessionChanged)
     // Bringing a store over from legacy ViewTouch: {folder, preview, busy,
-    // done, error} (legacyPreview, legacyImport).
+    // done, error} (legacyPreview, legacyBring).
     Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
     // Manager -> Network: {role: main|single, term, terminals: [{name,
     // address, user, since}], standby: {address, since} | null, printers:
@@ -350,7 +350,7 @@ public:
     // [{path, label}], the likeliest first.
     Q_INVOKABLE QVariantList legacyFolders() const;
     Q_INVOKABLE void legacyPreview(const QString &folder) { invoke(QStringLiteral("legacyPreview"), {folder}); }
-    Q_INVOKABLE void legacyImport(const QString &folder, const QVariantMap &parts)
+    Q_INVOKABLE void legacyBring(const QString &folder, const QVariantMap &parts)
     {
         invoke(QStringLiteral("legacyImportRun"), {folder, parts});
     }
