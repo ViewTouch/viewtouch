@@ -87,6 +87,14 @@ QVariantMap PosService::storeCheck() const
                     .arg(samples.join(u", "_s)));
     }
 
+    // Still the sample café's name, or no sales tax: a store not set up yet.
+    if (const QString name = qs(s_->settings.storeName).trimmed(); name == u"ViewTouch Café" || name == u"ViewTouch" || name.isEmpty())
+        add(u"storeName"_s, false, tr("The store's name"),
+            tr("Still the sample's: receipts say \"%1\". Manager → Setup Guide, or Store Settings.").arg(name));
+    if (s_->settings.tax.foodPpm == 0 && s_->settings.tax.alcoholPpm == 0)
+        add(u"taxZero"_s, false, tr("Sales tax"),
+            tr("0%: nothing is charged. If your state has a sales tax, set it in Manager → Taxes."), true);
+
     // A newer ViewTouch to install (found once a day).
     if (!s_->newVersion.isEmpty())
         add(u"newVersion"_s, false, tr("New ViewTouch"),

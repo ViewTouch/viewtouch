@@ -34,7 +34,56 @@ QVariantMap PosService::setupInfo() const
         staff.append(QVariantMap{{u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)}, {u"sample"_s, e.sample}});
     }
     const auto pct = [](std::int64_t ppm) { return double(ppm) / 10000.0; };
-    return {{u"done"_s, s_->settings.setupDone}, {u"storeName"_s, qs(s_->settings.storeName)},
+    // Getting ready: what a new store still has to do before it opens, each
+    // with where it's done (a step of the guide, or a page). `need`: without
+    // it the store isn't ready; the rest are worth doing.
+    QVariantList ready;
+    int left = 0;
+    const auto row = [&](const char *id, bool done, bool need, const QString &title, const QString &text,
+                         const QString &step, const QString &page = {}) {
+        ready.append(QVariantMap{{u"id"_s, QString::fromLatin1(id)}, {u"done"_s, done}, {u"need"_s, need},
+                                 {u"title"_s, title}, {u"text"_s, text}, {u"step"_s, step}, {u"page"_s, page}});
+        left += !done && need;
+    };
+    const QString name = qs(s_->settings.storeName).trimmed();
+    row("name", !name.isEmpty() && name != u"ViewTouch" && name != u"ViewTouch Café", true, tr("Your store's name"),
+        tr("On every receipt and the login screen."), u"store"_s);
+    row("taxes", s_->settings.tax.foodPpm > 0 || !s_->settings.storeZip.empty(), true, tr("Sales tax"),
+        s_->settings.tax.foodPpm > 0 ? tr("Food %1%").arg(pct(s_->settings.tax.foodPpm))
+                                     : tr("0% now: type your ZIP code for the rate, or the rate itself."),
+        u"taxes"_s);
+    // (The sample café's menu: its burgers and salads are still on it.)
+    const bool sampleMenu = std::ranges::count_if(s_->menu, [](const MenuItem &m) {
+        return m.id == "classic-burger" || m.id == "cheeseburger" || m.id == "house-salad";
+    }) == 3;
+    row("menu", items > 0 && !sampleMenu, true, tr("Your menu"),
+        sampleMenu ? tr("Still the sample café's: type yours, or bring it in from a file or from legacy ViewTouch.")
+                   : tr("%n item(s)", nullptr, items),
+        u"menu"_s);
+    const bool ownManager = std::ranges::any_of(s_->employees, [](const Employee &e) {
+        return e.active && !e.sample && (e.role == "manager" || e.role == "admin" || e.role == "owner");
+    });
+    row("staff", ownManager && samples == 0, true, tr("Your team"),
+        !ownManager ? tr("Add yourself as a manager, with a PIN only you know.")
+        : samples > 0 ? tr("The sample staff are still on: their PINs (1234, 1111...) are public. Turn them off.")
+                      : tr("%n people", nullptr, int(staff.size())),
+        u"staff"_s);
+    const bool printer = std::ranges::any_of(s_->settings.printers, [](const PrinterConfig &p) { return p.type != "none"; });
+    row("printers", printer, false, tr("Printers"),
+        printer ? tr("Print a test on each: Manager → Printers.")
+                : tr("None yet: receipts and kitchen tickets show on screen only. Manager → Printers."),
+        {}, u"admin-printers"_s);
+    if (const QVariantMap n = s_->network ? s_->network() : QVariantMap(); n.contains(u"backups"_s)) {
+        const bool backedUp = n.value(u"lastBackup"_s).toLongLong() > 0;
+        row("backup", backedUp, false, tr("Backups"),
+            backedUp ? tr("Made every night. A second copy on a USB stick or another computer is safer: Store Settings → Backups.")
+                     : tr("None yet: one is made tonight. Make one now in Store Settings → Backups."),
+            {}, u"admin-store"_s);
+    }
+    row("tables", true, false, tr("Your tables and screens"),
+        tr("Arrange the dining room: Manager → Edit Pages. Other screens and tablets: Manager → Network."), {}, u"tables"_s);
+    return {{u"ready"_s, ready}, {u"left"_s, left},
+            {u"done"_s, s_->settings.setupDone}, {u"storeName"_s, qs(s_->settings.storeName)},
             {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"logo"_s, qs(s_->settings.displayLogo)},
             {u"receiptLogo"_s, s_->settings.receiptLogo}, {u"foodTax"_s, pct(s_->settings.tax.foodPpm)},
             {u"alcoholTax"_s, pct(s_->settings.tax.alcoholPpm)}, {u"families"_s, families}, {u"items"_s, items},

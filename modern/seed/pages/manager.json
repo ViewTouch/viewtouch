@@ -524,7 +524,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Setup Guide\u2026",
+      "label": "Setup Guide\u2026 {setup.left}",
       "actions": [
         {
           "type": "command",

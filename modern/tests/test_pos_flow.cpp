@@ -3321,13 +3321,47 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     s.tapItem(find("setupRetire"));
     QTest::qWait(80);
     CHECK(s.pos.setupInfo()[u"samples"_s].toInt() == 0);
-    next();                                                      // done
+    next();                                                      // getting ready: what's left
     s.shot("46-setup-done");
+    // Everything but the menu: it's still the sample café's (its burgers are on it).
+    const auto rowDone = [&](const QString &id) {
+        for (const QVariant &r : s.pos.setupInfo()[u"ready"_s].toList())
+            if (r.toMap()[u"id"_s] == id)
+                return r.toMap()[u"done"_s].toBool();
+        return false;
+    };
+    CHECK(rowDone(u"name"_s));
+    CHECK(rowDone(u"taxes"_s));
+    CHECK(rowDone(u"staff"_s));
+    CHECK_FALSE(rowDone(u"menu"_s));
+    CHECK(s.pos.setupInfo()[u"left"_s].toInt() == 1);
+    REQUIRE(find("setupReady-menu"));
+    // "Do It" on the menu goes back to the menu step.
+    s.tapItem(find("setupReadyGo-menu"));
+    QTest::qWait(60);
+    CHECK(guide->property("current").toString() == u"menu"_s);
+    CHECK(find("setupMenuFile"));
+    guide->setProperty("step", 7);
+    QTest::qWait(60);
+    next();                                                      // Close: not finished yet
+    CHECK_FALSE(s.c.setupOpen());
+    CHECK_FALSE(s.pos.shared()->settings.setupDone);
+    CHECK_FALSE(s.pos.loggedIn());                               // Morgan (a sample) is off now
+    REQUIRE(s.pos.loginWithPin(u"864213"_s));                      // Ana, the owner
+    QTest::qWait(120);
+    // It comes back, at the list (the store has its name), till the menu is hers.
+    REQUIRE(s.c.setupOpen());
+    guide = find("setupGuide");
+    REQUIRE(guide);
+    CHECK(guide->property("current").toString() == u"done"_s);
+    std::erase_if(s.pos.shared()->menu, [](const core::MenuItem &m) { return m.name != "Fish Tacos"; });
+    emit s.pos.shared()->adminChanged();
+    QTest::qWait(60);
+    CHECK(s.pos.setupInfo()[u"left"_s].toInt() == 0);
+    s.shot("46-setup-ready");
     next();                                                      // Finish
     CHECK_FALSE(s.c.setupOpen());
     CHECK(s.pos.shared()->settings.setupDone);
-    CHECK_FALSE(s.pos.loggedIn());                               // Morgan (a sample) is off now
-    CHECK(s.pos.loginWithPin(u"864213"_s));                        // Ana, the owner
 }
 
 TEST_CASE("UI: ready-made looks recolor every screen; one comes from the logo", "[flow][ui][looks]")
@@ -6823,7 +6857,8 @@ TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
     for (int step = 0; step < fields.size(); ++step) {
         s.shot(qPrintable(u"setup-phone-%1"_s.arg(step)));
         onScreen(u"setupNext"_s);
-        onScreen(u"setupLater"_s);
+        if (step < fields.size() - 1)   // (the last step's own button closes it)
+            onScreen(u"setupLater"_s);
         for (const QString &f : fields[step])
             onScreen(f);
         if (step + 1 < fields.size()) {

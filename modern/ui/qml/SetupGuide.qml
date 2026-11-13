@@ -12,7 +12,22 @@ Rectangle {
     readonly property PosService pos: controller ? controller.pos : null
     readonly property var info: pos ? pos.setup : ({})
     readonly property var steps: ["welcome", "store", "logo", "look", "taxes", "menu", "staff", "done"]
+    // Come back to it (Finish Later, or a manager's next login): at the
+    // list of what's left, once the store has its own name.
     property int step: 0
+    readonly property var ready: info.ready ?? []
+    function go(row) {
+        if ((row.step ?? "") !== "") {
+            step = Math.max(0, steps.indexOf(row.step))
+        } else if ((row.page ?? "") !== "") {
+            controller.closeSetup()
+            controller.showPage(row.page)
+        }
+    }
+    function leaveFor(page) {
+        controller.closeSetup()
+        controller.showPage(page)
+    }
     readonly property string current: steps[step]
     color: "#e6101318"
 
@@ -36,6 +51,8 @@ Rectangle {
         alcoholTax = String(info.alcoholTax ?? "")
         zip = info.zip ?? ""
         serviceMode = info.serviceMode || "restaurant"
+        if (ready.some(r => r.id === "name" && r.done))
+            step = steps.length - 1
     }
     // The rates found for the ZIP code: into the fields (still changeable).
     Connections {
@@ -56,7 +73,9 @@ Rectangle {
         case "logo": if (logoRef !== "") pos.setupLogo(logoRef, receiptLogo); break
         case "taxes": pos.setupTaxes(Number(foodTax) || 0, Number(alcoholTax) || 0); break
         case "done":
-            pos.setupFinish(true)
+            // Finished once nothing needed is left; till then it comes back
+            // (the sample manager who ran it is turned off either way).
+            pos.setupFinish((info.left ?? 0) === 0)
             controller.closeSetup()
             return
         }
@@ -452,6 +471,39 @@ Rectangle {
                         model: g.addedItems
                         delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
                     }
+                    // A whole menu at once, instead of typing it.
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        Layout.topMargin: 10
+                        wrapMode: Text.WordWrap
+                        color: Ui.textSoft
+                        font.pixelSize: 16
+                        text: qsTr("Have your menu already? Bring it all in at once (the guide waits for you on the Manager page):")
+                    }
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: g.narrow ? 1 : 2
+                        columnSpacing: 10
+                        rowSpacing: 8
+                        PosButton {
+                            objectName: "setupMenuFile"
+                            Layout.fillWidth: true
+                            implicitHeight: 56
+                            font.pixelSize: 17
+                            text: qsTr("From a File (Excel, CSV, Toast, Square, Clover)…")
+                            onClicked: g.leaveFor("menu-builder")
+                        }
+                        PosButton {
+                            objectName: "setupMenuLegacy"
+                            Layout.fillWidth: true
+                            implicitHeight: 56
+                            font.pixelSize: 17
+                            visible: g.pos && g.pos.can("owner")
+                            text: qsTr("From Legacy ViewTouch (menu and sales)…")
+                            onClicked: g.leaveFor("legacy-import")
+                        }
+                    }
                     Item { Layout.fillHeight: true }
                 }
 
@@ -559,25 +611,72 @@ Rectangle {
                     Item { Layout.fillHeight: true }
                 }
 
-                // Done
+                // Getting ready: what's done, what's left, and the way to each.
                 ColumnLayout {
-                    spacing: 14
+                    spacing: 8
                     Label {
                         textFormat: Text.PlainText
+                        objectName: "setupReadyTitle"
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
                         font.pixelSize: 24
                         font.bold: true
-                        text: qsTr("All set, %1!").arg(g.info.storeName ?? "")
+                        text: (g.info.left ?? 0) === 0 ? qsTr("Ready to open, %1!").arg(g.info.storeName ?? "")
+                                                       : qsTr("Almost there: %n thing(s) left before you open", "", g.info.left ?? 0)
+                    }
+                    Repeater {
+                        model: g.ready
+                        delegate: Rectangle {
+                            id: readyRow
+                            required property var modelData
+                            objectName: "setupReady-" + modelData.id
+                            Layout.fillWidth: true
+                            implicitHeight: Math.max(60, readyText.implicitHeight + 16)
+                            radius: 8
+                            color: Ui.sunken
+                            border.width: !modelData.done && modelData.need ? 2 : 0
+                            border.color: "#f5b940"
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 8
+                                spacing: 10
+                                Label {
+                                    textFormat: Text.PlainText
+                                    text: readyRow.modelData.done ? "✓" : readyRow.modelData.need ? "!" : "○"
+                                    color: readyRow.modelData.done ? "#7ee2a8" : readyRow.modelData.need ? "#f5b940" : Ui.muted
+                                    font.pixelSize: 24
+                                    font.bold: true
+                                    Layout.preferredWidth: 26
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                                ColumnLayout {
+                                    id: readyText
+                                    Layout.fillWidth: true
+                                    spacing: 0
+                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.title; color: "white"; font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
+                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.text; color: Ui.textSoft; font.pixelSize: 14; wrapMode: Text.WordWrap }
+                                }
+                                PosButton {
+                                    objectName: "setupReadyGo-" + readyRow.modelData.id
+                                    implicitWidth: 110
+                                    implicitHeight: 48
+                                    font.pixelSize: 16
+                                    highlighted: !readyRow.modelData.done && readyRow.modelData.need
+                                    text: readyRow.modelData.done ? qsTr("Change") : qsTr("Do It")
+                                    onClicked: g.go(readyRow.modelData)
+                                }
+                            }
+                        }
                     }
                     Label {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 18
-                        text: qsTr("Every screen can be rearranged: Manager -> Edit Pages. This guide stays on the Manager page as Setup Guide….")
+                        font.pixelSize: 15
+                        text: qsTr("This list stays on the Manager page as Setup Guide… until everything marked ! is done.")
                     }
                     Item { Layout.fillHeight: true }
                 }
@@ -591,6 +690,7 @@ Rectangle {
                 spacing: 12
                 PosButton {
                     objectName: "setupLater"
+                    visible: g.current !== "done"   // (the list's own button closes it)
                     text: qsTr("Finish Later")
                     font.pixelSize: 18
                     implicitHeight: 56
@@ -608,7 +708,7 @@ Rectangle {
                 }
                 PosButton {
                     objectName: "setupNext"
-                    text: g.current === "done" ? qsTr("Finish") : qsTr("Next ›")
+                    text: g.current === "done" ? ((g.info.left ?? 0) === 0 ? qsTr("Finish") : qsTr("Close")) : qsTr("Next ›")
                     highlighted: true
                     font.pixelSize: 18
                     implicitHeight: 56

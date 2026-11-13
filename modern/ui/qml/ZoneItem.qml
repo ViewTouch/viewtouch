@@ -177,6 +177,11 @@ Item {
             const n = p && p.storeCheck ? (p.storeCheck.unseen ?? 0) : 0
             values["problems"] = n > 0 ? "⚠ " + n : ""
         }
+        // What a new store still has to do (the setup guide): "· 2 left", or nothing.
+        if (text.indexOf("{setup.left}") >= 0) {
+            const n = p && p.setup ? (p.setup.left ?? 0) : 0
+            values["setup.left"] = n > 0 ? "· " + qsTr("%n left", "", n) : ""
+        }
         return text.replace(/\{([a-zA-Z.]+)\}/g, (m, k) => k in values ? String(values[k]) : m)
     }
 
