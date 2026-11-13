@@ -24,6 +24,7 @@
     }
   ],
   "storeName": "ViewTouch Caf\u00e9",
+  "closeWhenPaid": true,
   "currencySymbol": "$",
   "openingChecklist": [
     "Count the starting cash",

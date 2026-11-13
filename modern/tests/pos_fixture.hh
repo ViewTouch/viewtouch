@@ -34,6 +34,9 @@ inline app::PosData seedPosData(bool requiredChoices = false)
     // The drawer tests were written for a cash drawer per terminal; server
     // banks (the starter setting) have tests of their own.
     d.settings.cashMode = core::CashMode::TerminalDrawer;
+    // Paying and closing are tested a step at a time; cash closing a quick
+    // order by itself (the starter setting) has a test of its own.
+    d.settings.closeWhenPaid = false;
     // Prices must not depend on the time the tests run: meal-period prices
     // have tests of their own, with a fixed clock.
     for (core::MenuItem &m : d.menu)

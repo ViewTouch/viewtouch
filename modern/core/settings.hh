@@ -454,6 +454,10 @@ struct PosSettings {
     int laterLeadMinutes = 20;
     // After Send on a table's check: back to the floor plan (the next table).
     bool sendToTables = false;
+    // Cash that covers a quick or takeout order closes it (the change still
+    // shows): one touch less at the counter. Tables, tabs and cards stay
+    // open until closed (a tip may still come).
+    bool closeWhenPaid = false;
     // Phone orders: a name before Send (and an address for deliveries);
     // employees and terminals can say otherwise.
     bool requireOrderName = false;

@@ -1858,6 +1858,13 @@ bool PosService::tender(const QString &tenderId, std::optional<std::int64_t> amo
     else
         emit notice(tr("%1 applied").arg(qs(t->name)));
     changed(*c);
+    // Cash that covers a quick or takeout order: closed, one touch less.
+    if (s_->settings.closeWhenPaid && t->kind == TenderKind::Cash && after.balance.cents() <= 0 && !counterMode()
+        && (c->type == CheckType::Quick || c->type == CheckType::Takeout) && !c->training) {
+        const QString change = after.change.cents() > 0 ? format(after.change) : QString();
+        if (closeCheck() && !change.isEmpty())
+            emit notice(tr("Closed. Change due: %1").arg(change));
+    }
     return true;
 }
 

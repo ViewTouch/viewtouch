@@ -197,6 +197,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"laterLeadMinutes"_s, s_->settings.laterLeadMinutes},
              {u"requireOrderName"_s, s_->settings.requireOrderName}, {u"takeoutMinutes"_s, s_->settings.takeoutMinutes},
              {u"sendToTables"_s, s_->settings.sendToTables},
+             {u"closeWhenPaid"_s, s_->settings.closeWhenPaid},
              {u"deliveryMinutes"_s, s_->settings.deliveryMinutes},
              {u"minutesPerOrderWaiting"_s, s_->settings.minutesPerOrderWaiting},
              {u"deliveryFee"_s, double(s_->settings.deliveryFee.cents()) / 100.0},

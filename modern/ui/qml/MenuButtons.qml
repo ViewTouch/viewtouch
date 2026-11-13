@@ -90,8 +90,11 @@ Flickable {
         const W = width, H = height - headings * headerHeight
         if (W <= 0 || H <= 0)
             return 4
-        let best = 3, bestHeight = 0
-        for (let c = 2; c <= 7; ++c) {
+        // (Four across at least where there's room: two items aren't two
+        // screen-filling slabs, they sit top left at a size to touch.)
+        const least = W / 4 >= 150 ? 4 : 2
+        let best = Math.max(3, least), bestHeight = 0
+        for (let c = least; c <= 7; ++c) {
             const h = Math.min(W / c * (photos ? 0.9 : 0.62), H / rowsFor(c))
             if (h > bestHeight + 0.5) { best = c; bestHeight = h }
         }
@@ -105,7 +108,8 @@ Flickable {
                                      : sizeWidth > 0 ? cellWidth * (photos ? 0.95 : ({ small: 0.62, medium: 0.68, large: 0.72 })[buttonSize])
                                      : setColumns > 0 ? Math.min(cellWidth * (photos ? 0.9 : 0.6), Math.max(110, height / 3))
                                      : Math.max(90, Math.min(cellWidth * (photos ? 0.9 : 0.75),
-                                                             (height - headings * headerHeight) / rowsFor(columns)))
+                                                             (height - headings * headerHeight) / rowsFor(columns),
+                                                             Math.max(110, height / 3)))
 
     function categoryOf(id) { return categories.find(c => c.id === id) ?? ({}) }
     function img(ref) { return pos && ref ? (pos.imageRevision < 0 ? undefined : pos.imageUrl(ref)) : "" }

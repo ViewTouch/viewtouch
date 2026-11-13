@@ -10791,3 +10791,46 @@ TEST_CASE("UI: a store's Lottie animation is a picture: taken in, and playing on
     CHECK(player->property("endFrame").toInt() >= 29);
     CHECK(player->property("scale").toDouble() == Catch::Approx(2.0));   // 100 x 100 fitted to 300 x 200
 }
+
+TEST_CASE("Cash that covers a quick or takeout order closes it; tables and cards wait", "[flow][closewhenpaid]")
+{
+    test::RecordingSink sink;
+    app::PosService pos(test::seedPosData(), &sink);
+    pos.shared()->settings.closeWhenPaid = true;
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    for (const QChar ch : u"20000"_s)
+        pos.entryKey(QString(ch));
+    pos.openDrawerSession();
+    QStringList said;
+    QObject::connect(&pos, &app::PosService::notice, [&](const QString &m) { said << m; });
+    // A quick order, cash over the total: closed, the change said.
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.tender(u"cash"_s, 2000));
+    CHECK_FALSE(pos.currentCheck());
+    REQUIRE(pos.closedToday().size() == 1);
+    CHECK(said.last().startsWith(u"Closed. Change due: "_s));
+    // Not enough cash yet: still open.
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.tender(u"cash"_s, 500));
+    REQUIRE(pos.currentCheck());
+    REQUIRE(pos.tender(u"cash"_s, 2000));
+    CHECK_FALSE(pos.currentCheck());
+    CHECK(pos.closedToday().size() == 2);
+    // A table's check stays open (a tip, another round): closed by hand.
+    pos.selectTable(u"T1"_s);
+    if (!pos.currentCheck())
+        REQUIRE(pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(pos.currentCheck()->type == core::CheckType::DineIn);
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.tender(u"cash"_s, 2000));
+    REQUIRE(pos.currentCheck());
+    REQUIRE(pos.closeCheck());
+    // Turned off: as before.
+    pos.shared()->settings.closeWhenPaid = false;
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"classic-burger"_s));
+    REQUIRE(pos.tender(u"cash"_s, 2000));
+    CHECK(pos.currentCheck());
+}

@@ -1248,6 +1248,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"kitchenWarnMinutes"_s, s.kitchenWarnMinutes}, {u"kitchenLateMinutes"_s, s.kitchenLateMinutes},
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
         {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"sendToTables"_s, s.sendToTables},
+        {u"closeWhenPaid"_s, s.closeWhenPaid},
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
         {u"deliveryFee"_s, qint64(s.deliveryFee.cents())}, {u"deliveryFeeToDriver"_s, s.deliveryFeeToDriver},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
@@ -1560,6 +1561,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.laterLeadMinutes = std::clamp(o.value(u"laterLeadMinutes").toInt(20), 0, 240);
     s.requireOrderName = o.value(u"requireOrderName").toBool();
     s.sendToTables = o.value(u"sendToTables").toBool();
+    s.closeWhenPaid = o.value(u"closeWhenPaid").toBool();
     s.takeoutMinutes = std::clamp(o.value(u"takeoutMinutes").toInt(15), 0, 240);
     s.deliveryMinutes = std::clamp(o.value(u"deliveryMinutes").toInt(35), 0, 240);
     s.minutesPerOrderWaiting = std::clamp(o.value(u"minutesPerOrderWaiting").toInt(2), 0, 60);

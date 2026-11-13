@@ -479,6 +479,9 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             field(u"sendToTables"_s, tr("After Send, back to the tables"), u"bool"_s,
                   tr("Send on a table's check goes back to the floor plan, ready for the next table (bar tabs and "
                      "takeout stay on the order).")),
+            field(u"closeWhenPaid"_s, tr("Cash closes a quick or takeout order"), u"bool"_s,
+                  tr("When the cash covers it, the order closes by itself and the change shows: no Close to touch. "
+                     "Tables, tabs and card payments stay open until you close them (a tip may still come).")),
             field(u"requireOrderName"_s, tr("Phone orders need a name before Send"), u"bool"_s,
                   tr("Takeout and delivery: a name (and an address for deliveries) before the kitchen gets it. "
                      "Each person and each screen can say otherwise (Employees, Terminals).")),

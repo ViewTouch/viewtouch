@@ -470,7 +470,8 @@ void endToEnd(const QString &dat)
     const std::int64_t due = pos.totals().value(u"balanceCents"_s).toLongLong();
     CHECK(due > 0);
     REQUIRE(pos.tender(u"cash"_s, (due + 499) / 500 * 500));
-    REQUIRE(pos.closeCheck());
+    if (pos.currentCheck())   // (a new store: cash closes a quick order by itself)
+        REQUIRE(pos.closeCheck());
     REQUIRE(pos.shared()->closedToday.size() == 1);
     // The day ends, after all the days before it.
     for (const core::DrawerSession &d : std::vector<core::DrawerSession>(pos.shared()->drawers)) {

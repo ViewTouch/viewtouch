@@ -513,6 +513,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.requireOrderName = record.value(u"requireOrderName"_s).toBool();
         if (record.contains(u"sendToTables"_s))
             s_->settings.sendToTables = record.value(u"sendToTables"_s).toBool();
+        if (record.contains(u"closeWhenPaid"_s))
+            s_->settings.closeWhenPaid = record.value(u"closeWhenPaid"_s).toBool();
         if (record.contains(u"takeoutMinutes"_s))
             s_->settings.takeoutMinutes = std::clamp(record.value(u"takeoutMinutes"_s).toInt(), 0, 240);
         if (record.contains(u"deliveryMinutes"_s))
