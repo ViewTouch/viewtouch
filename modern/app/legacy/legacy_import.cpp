@@ -424,8 +424,8 @@ Imported convert(const Store &store, const ImportContext &cx)
                     s.closedAt = day.closedAt;
                 if (!s.openedAt)
                     s.openedAt = day.openedAt;
-                s.openedBy = staff.value(d.owner).first;
-                s.closedBy = staff.value(d.puller).first;
+                s.openedBy = staff.value(d.owner).second;    // (by name, as Modern's own)
+                s.closedBy = staff.value(d.puller).second;
                 for (const DrawerBalance &b : d.balances)
                     if (b.tenderType == 0)
                         s.counted += cents(b.entered);

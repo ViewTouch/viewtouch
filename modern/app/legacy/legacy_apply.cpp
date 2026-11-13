@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 
 using namespace Qt::StringLiterals;
@@ -30,6 +31,18 @@ Applied applyImport(app::PosService &pos, layout::Layout *layout, const Imported
         out.error = tr("This store already has sales: its past days can't go in before them. Bring over only the "
                        "menu, or the sales after a factory reset (it takes a backup).");
         return out;
+    }
+    // All its days or none: what importPastDay would refuse, found first.
+    if (parts.history) {
+        std::int64_t before = 0;
+        for (const ImportedDay &d : in.days) {
+            if (d.closedAt <= 0 || (d.openedAt > 0 && d.closedAt < d.openedAt) || d.closedAt < before) {
+                out.error = tr("Day %1 doesn't follow the day before it (its times are wrong in legacy's files): "
+                               "nothing was brought over.").arg(d.legacyId);
+                return out;
+            }
+            before = d.closedAt;
+        }
     }
     // --- the menu, in place of the store's ---
     if (parts.menu && !in.menu.empty()) {
@@ -105,30 +118,57 @@ Applied applyImport(app::PosService &pos, layout::Layout *layout, const Imported
     return out;
 }
 
-QVariantMap request(app::PosShared &shared, const QString &folder, const QVariantMap &parts, bool apply,
-                    const Request &how)
+namespace {
+
+// A folder read and worked out, between the two halves.
+struct Work {
+    QString error;
+    Imported in;
+    ImportParts parts;
+    QVariantMap preview;
+};
+
+} // namespace
+
+std::any read(const QString &folder, const QVariantMap &parts, const core::PosSettings &settings)
 {
-    if (!isDatFolder(folder))
-        return {{u"error"_s, tr("%1 isn't legacy ViewTouch's dat folder (no menu.dat, settings.dat or zone_db.dat).").arg(folder)}};
+    auto work = std::make_shared<Work>();
+    if (!isDatFolder(folder)) {
+        work->error = tr("%1 isn't legacy ViewTouch's dat folder (no menu.dat, settings.dat or zone_db.dat).").arg(folder);
+        return work;
+    }
     const Store legacy = readStore(folder);
     ImportContext cx;
-    cx.current = &shared.settings;
+    cx.current = &settings;
     if (parts.contains(u"menu"_s))
         cx.parts.menu = parts.value(u"menu"_s).toBool();
     if (parts.contains(u"history"_s))
         cx.parts.history = parts.value(u"history"_s).toBool();
-    const Imported in = convert(legacy, cx);
+    work->parts = cx.parts;
+    work->in = convert(legacy, cx);
+    work->preview = preview(legacy, work->in);
+    QStringList differ;
+    for (const Mismatch &m : work->in.mismatches)
+        differ << tr("Day %1, check %2 (%3): legacy $%4, here $%5")
+                      .arg(m.day)
+                      .arg(m.serial)
+                      .arg(m.label)
+                      .arg(m.legacy.cents() / 100.0, 0, 'f', 2)
+                      .arg(m.modern.cents() / 100.0, 0, 'f', 2);
+    work->preview.insert(u"differ"_s, differ);
+    return work;
+}
+
+QVariantMap finish(app::PosShared &shared, const std::any &read, bool apply, const Request &how)
+{
+    const auto *held = std::any_cast<std::shared_ptr<Work>>(&read);
+    if (!held || !*held)
+        return {{u"error"_s, tr("Nothing was read.")}};
+    const Work &work = **held;
+    if (!work.error.isEmpty())
+        return {{u"error"_s, work.error}};
     if (!apply) {
-        QVariantMap p = preview(legacy, in);
-        QStringList differ;
-        for (const Mismatch &m : in.mismatches)
-            differ << tr("Day %1, check %2 (%3): legacy $%4, here $%5")
-                          .arg(m.day)
-                          .arg(m.serial)
-                          .arg(m.label)
-                          .arg(m.legacy.cents() / 100.0, 0, 'f', 2)
-                          .arg(m.modern.cents() / 100.0, 0, 'f', 2);
-        p.insert(u"differ"_s, differ);
+        QVariantMap p = work.preview;
         p.insert(u"hasSales"_s, !shared.pastDays.empty() || !shared.closedToday.empty() || !shared.open.empty());
         return {{u"preview"_s, p}};
     }
@@ -140,12 +180,22 @@ QVariantMap request(app::PosShared &shared, const QString &folder, const QVarian
     std::optional<layout::Layout> pages;
     if (how.pages)
         pages = how.pages();
-    const Applied applied = applyImport(pos, pages ? &*pages : nullptr, in, cx.parts);
+    const Applied applied = applyImport(pos, pages ? &*pages : nullptr, work.in, work.parts);
     if (how.flush)
         how.flush();
     if (applied.error.isEmpty() && pages && how.savePages)
         error = how.savePages(*pages);
     return {{u"done"_s, applied.done}, {u"error"_s, applied.error.isEmpty() ? error : applied.error}, {u"backup"_s, backup}};
+}
+
+void install(app::PosShared &shared, Request how)
+{
+    shared.legacyRead = [](const QString &folder, const QVariantMap &parts, const core::PosSettings &settings) {
+        return read(folder, parts, settings);
+    };
+    shared.legacyFinish = [&shared, how = std::move(how)](const std::any &work, bool apply) {
+        return finish(shared, work, apply, how);
+    };
 }
 
 } // namespace vt::legacy

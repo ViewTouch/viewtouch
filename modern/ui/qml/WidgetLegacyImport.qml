@@ -12,6 +12,7 @@ Item {
     readonly property var state: pos ? pos.legacyImport : ({})
     readonly property var preview: state.preview ?? null
     readonly property var done: state.done ?? []
+    readonly property string busy: state.busy ?? ""
     property var folders: []
     property string typed: ""
     // The parts to bring; history only into a store with no sales yet.
@@ -48,11 +49,24 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 12
 
+                // Reading a year of days takes a few seconds: said, not a frozen screen.
+                Label {
+                    textFormat: Text.PlainText
+                    objectName: "legacyBusy"
+                    Layout.fillWidth: true
+                    visible: w.busy !== ""
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: 22
+                    font.bold: true
+                    color: w.ink
+                    text: w.busy
+                }
+
                 // --- 1. where its files are ---
                 Label {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
-                    visible: !w.preview && w.done.length === 0
+                    visible: !w.preview && w.done.length === 0 && w.busy === ""
                     wrapMode: Text.WordWrap
                     font.pixelSize: 16
                     color: w.ink
@@ -62,7 +76,7 @@ Item {
                                + "comes over before anything changes. The menu goes on this ViewTouch's own menu screens.")
                 }
                 Repeater {
-                    model: !w.preview && w.done.length === 0 ? w.folders : []
+                    model: !w.preview && w.done.length === 0 && w.busy === "" ? w.folders : []
                     delegate: PosButton {
                         required property var modelData
                         objectName: "legacyFolder-" + index
@@ -76,7 +90,7 @@ Item {
                 Label {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
-                    visible: !w.preview && w.done.length === 0 && w.folders.length === 0
+                    visible: !w.preview && w.done.length === 0 && w.busy === "" && w.folders.length === 0
                     wrapMode: Text.WordWrap
                     font.pixelSize: 16
                     color: "#f0b429"
@@ -85,7 +99,7 @@ Item {
                 }
                 RowLayout {
                     Layout.fillWidth: true
-                    visible: !w.preview && w.done.length === 0
+                    visible: !w.preview && w.done.length === 0 && w.busy === ""
                     spacing: 10
                     TextField {
                         id: path
@@ -229,7 +243,7 @@ Item {
                         implicitHeight: 72
                         palette.button: Ui.goDark
                         text: qsTr("Bring It Over")
-                        enabled: !!w.preview && (w.preview.errors ?? []).length === 0
+                        enabled: !!w.preview && w.busy === "" && (w.preview.errors ?? []).length === 0
                                  && (w.parts.menu || (w.parts.history && !w.preview.hasSales))
                         onClicked: w.pos.legacyImport(w.state.folder,
                                                       Object.assign({}, w.parts, { history: w.parts.history && !w.preview.hasSales }))

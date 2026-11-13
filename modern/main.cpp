@@ -1180,26 +1180,23 @@ int runStore(const Args &cli, const Options &o)
     // Legacy Store): what its dat folder has, then (a backup first) bringing
     // it in, its pages through the hub to every screen.
     if (havePosStore) {
-        shared->requestLegacyImport = [&cli, &o, &writer, &hub, shared](const QString &folder, const QVariantMap &parts,
-                                                                       bool apply) {
-            vt::legacy::Request r;
-            r.pages = [&hub] { return hub.layout(); };
-            r.savePages = [&hub](const vt::layout::Layout &l) {
-                QString error;
-                hub.save(l, &error, nullptr);
-                return error;
-            };
-            r.backup = [&cli, &o, &writer](QString *error) {
-                if (writer)
-                    writer->flush();
-                return backupBeforeReset(cli, o, error);
-            };
-            r.flush = [&writer] {
-                if (writer)
-                    writer->flush();
-            };
-            return vt::legacy::request(*shared, folder, parts, apply, r);
+        vt::legacy::Request r;
+        r.pages = [&hub] { return hub.layout(); };
+        r.savePages = [&hub](const vt::layout::Layout &l) {
+            QString error;
+            hub.save(l, &error, nullptr);
+            return error;
         };
+        r.backup = [&cli, &o, &writer](QString *error) {
+            if (writer)
+                writer->flush();
+            return backupBeforeReset(cli, o, error);
+        };
+        r.flush = [&writer] {
+            if (writer)
+                writer->flush();
+        };
+        vt::legacy::install(*shared, std::move(r));
     }
     std::unique_ptr<vt::net::PosServer> server;
     std::unique_ptr<vt::net::DiscoveryResponder> discovery;

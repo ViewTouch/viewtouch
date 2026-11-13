@@ -5,6 +5,8 @@
 
 #include "app/pos_admin_shared.hh"
 
+#include <QPointer>
+#include <QThreadPool>
 #include <QDateTime>
 #include <QRandomGenerator>
 #include <QTimer>
@@ -64,37 +66,55 @@ bool PosService::factoryReset(const QString &confirm, bool empty)
     return true;
 }
 
-bool PosService::legacyPreviewOf(const QString &folder)
+bool PosService::legacyStart(const QString &folder, const QVariantMap &parts, bool apply)
 {
     if (!require(perm::Owner, tr("A legacy store's menu and sales")))
         return false;
-    if (!s_->requestLegacyImport)
+    if (!s_->legacyRead || !s_->legacyFinish)
         return fail(tr("A legacy store's menu and sales are brought over on the computer that keeps the data."));
-    legacy_ = s_->requestLegacyImport(folder, {}, false);
+    if (legacy_.value(u"busy"_s).toBool())
+        return fail(tr("Still reading the folder."));
+    const int request = ++legacyRequest_;
+    legacy_.remove(u"error"_s);
     legacy_.insert(u"folder"_s, folder);
+    legacy_.insert(u"busy"_s, apply ? tr("Bringing it over...") : tr("Reading the folder..."));
     emit sessionChanged();
-    return !legacy_.contains(u"error"_s);
+    // Read and worked out away from the screen (a year of days takes
+    // seconds); brought in here.
+    QPointer<PosService> self(this);
+    QThreadPool::globalInstance()->start([self, request, folder, parts, apply, read = s_->legacyRead,
+                                          settings = s_->settings] {
+        const std::any work = read(folder, parts, settings);
+        QMetaObject::invokeMethod(self, [self, request, work, apply] {
+            if (!self || request != self->legacyRequest_)
+                return;
+            const QVariantMap result = self->s_->legacyFinish(work, apply);
+            self->legacy_.remove(u"busy"_s);
+            for (auto it = result.begin(); it != result.end(); ++it)
+                self->legacy_.insert(it.key(), it.value());
+            emit self->sessionChanged();
+            if (const QString error = result.value(u"error"_s).toString(); !error.isEmpty())
+                emit self->notice(error);
+            else if (apply)
+                emit self->notice(tr("Brought over from legacy ViewTouch."));
+        });
+    });
+    return true;
+}
+
+bool PosService::legacyPreviewOf(const QString &folder)
+{
+    return legacyStart(folder, {}, false);
 }
 
 bool PosService::legacyImportRun(const QString &folder, const QVariantMap &parts)
 {
-    if (!require(perm::Owner, tr("A legacy store's menu and sales")))
-        return false;
-    if (!s_->requestLegacyImport)
-        return fail(tr("A legacy store's menu and sales are brought over on the computer that keeps the data."));
-    const QVariantMap result = s_->requestLegacyImport(folder, parts, true);
-    legacy_.insert(u"done"_s, result.value(u"done"_s));
-    legacy_.insert(u"error"_s, result.value(u"error"_s));
-    legacy_.insert(u"backup"_s, result.value(u"backup"_s));
-    emit sessionChanged();
-    if (const QString error = result.value(u"error"_s).toString(); !error.isEmpty())
-        return fail(error);
-    emit notice(tr("Brought over from legacy ViewTouch."));
-    return true;
+    return legacyStart(folder, parts, true);
 }
 
 void PosService::legacyClearState()
 {
+    ++legacyRequest_;   // (an answer still on its way: not wanted)
     legacy_.clear();
     emit sessionChanged();
 }

@@ -21,6 +21,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+#include <any>
 #include <functional>
 #include <set>
 #include <unordered_set>
@@ -435,10 +436,12 @@ public:
     // database and starts again (`empty`: with an empty store). False: not
     // possible here.
     std::function<bool(bool empty)> requestFactoryReset;
-    // A store brought over from legacy ViewTouch (main sets it: it has the
-    // store's pages): what's in `folder` ({preview...}), or (apply) bringing
-    // `parts` of it in ({done, error}). Empty when not possible here.
-    std::function<QVariantMap(const QString &folder, const QVariantMap &parts, bool apply)> requestLegacyImport;
+    // A legacy ViewTouch store's menu and sales (the app sets these; see
+    // legacy/legacy_apply.hh): its dat folder read and worked out, on any
+    // thread, with a copy of the settings; then, here, what that found
+    // ({preview}) or (apply) bringing it in ({done, error, backup}).
+    std::function<std::any(const QString &folder, const QVariantMap &parts, const core::PosSettings &settings)> legacyRead;
+    std::function<QVariantMap(const std::any &read, bool apply)> legacyFinish;
     // The store's computers and printers, for Manager -> Network (set by
     // the app): {role, term, terminals, standby, printers}.
     std::function<QVariantMap()> network;
@@ -548,7 +551,9 @@ public:
     QVariantMap checkSearch() const override;
     QVariantMap legacyImport() const override { return legacy_; }
     // A legacy dat folder: what it would bring (nothing changed), then
-    // bringing it (owner or maintainer). Through requestLegacyImport.
+    // bringing it (owner or maintainer). The folder is read away from the
+    // screen: legacyImport() says {busy} until it has ({preview}, or
+    // {done, error, backup}). True: begun.
     bool legacyPreviewOf(const QString &folder);
     bool legacyImportRun(const QString &folder, const QVariantMap &parts);
     void legacyClearState();
@@ -816,7 +821,8 @@ public:
     // ViewTouch), put in as the day now open and closed again as End of
     // Day closes one: its checks, time punches and drawers get this store's
     // next ids (a check's drawerSession is an index into `drawers` plus
-    // one), and its reports are made and kept. Nothing is printed or said.
+    // one; a drawer with nothing counted is taken as balanced), and its
+    // reports are made and kept. Nothing is printed or said.
     // Only into a store with nothing open and nothing sold today; days
     // oldest first. False and `error` otherwise.
     bool importPastDay(std::int64_t openedAt, std::int64_t closedAt, std::vector<core::Check> checks,
@@ -1301,6 +1307,8 @@ private:
     core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
     QVariantMap legacy_;
+    int legacyRequest_ = 0;
+    bool legacyStart(const QString &folder, const QVariantMap &parts, bool apply);
     std::vector<core::Check> searchHits_;
     qint64 selectedHit_ = 0;
     int searchRequest_ = 0;

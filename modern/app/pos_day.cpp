@@ -1408,6 +1408,10 @@ bool PosService::importPastDay(std::int64_t openedAt, std::int64_t closedAt, std
     }
     for (DrawerSession &d : drawers) {
         d.expected = expectedCash(d, checks, rates);
+        // Not counted where it came from (legacy kept no count): taken as
+        // right, not as that much short.
+        if (d.counted.cents() == 0)
+            d.counted = d.expected;
         if (s_->sink)
             s_->sink->saveDrawer(d);
     }

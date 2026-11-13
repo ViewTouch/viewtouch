@@ -134,6 +134,7 @@ TEST_CASE("Legacy import: a store's menu and sales, worked out before anything c
     CHECK(d.punches.empty());                        // (the time clock is staff's: not brought over)
     REQUIRE(d.drawers.size() == 1);
     CHECK(d.drawers[0].counted.cents() == 22858);
+    CHECK(d.drawers[0].openedBy == "Pat Manager");   // by name, not legacy's number
     const core::Check &cash = d.checks[0];
     CHECK(cash.label == "5");
     CHECK(cash.serverName == "Sam Server");          // who served it, by name
@@ -232,6 +233,32 @@ TEST_CASE("Legacy import: the menu on Modern's own screens, the sales in its rep
     CHECK(closedChecks == 6);   // (and the one just begun, open)
     CHECK(sink.punches.empty());
     CHECK(s->day.openedAt == last.day.closedAt);
+
+    // A day out of order in legacy's files: none of its days come, nothing is written.
+    {
+        test::RecordingSink sink2;
+        app::PosService pos2(test::seedPosData(), &sink2);
+        legacy::Imported bad = in;
+        std::swap(bad.days[1].closedAt, bad.days[2].closedAt);
+        const legacy::Applied refused = legacy::applyImport(pos2, nullptr, bad, {});
+        CHECK(refused.error.contains(u"nothing was brought over"_s));
+        CHECK(pos2.shared()->pastDays.empty());
+        CHECK(sink2.checks.empty());
+        CHECK(pos2.shared()->menu.size() != 1457);
+    }
+    // A drawer legacy never counted comes in balanced, not short.
+    {
+        test::RecordingSink sink3;
+        app::PosService pos3(test::seedPosData(), &sink3);
+        legacy::Imported uncounted = in;
+        for (legacy::ImportedDay &day : uncounted.days)
+            for (core::DrawerSession &dr : day.drawers)
+                dr.counted = Money();
+        REQUIRE(legacy::applyImport(pos3, nullptr, uncounted, {}).error.isEmpty());
+        const auto drawer = lines(pos3.shared()->pastDays.front().reports[u"drawer"_s].toObject()[u"rows"_s].toArray().toVariantList());
+        for (const auto &[label, value] : drawer)
+            CHECK_FALSE(label.startsWith(u"Short"_s));
+    }
 }
 
 TEST_CASE("Legacy import: what it won't do", "[legacy][import]")
@@ -288,7 +315,7 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
     LayoutController c(*l);
     c.setPos(&pos);
     layout::Layout pages = *l;
-    pos.shared()->requestLegacyImport = [&](const QString &folder, const QVariantMap &parts, bool apply) {
+    {
         legacy::Request r;
         r.pages = [&] { return pages; };
         r.savePages = [&](const layout::Layout &saved) {
@@ -297,7 +324,13 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
             return QString();
         };
         r.backup = [&](QString *) { return dir.filePath(u"backup.db"_s); };
-        return legacy::request(*pos.shared(), folder, parts, apply, r);
+        legacy::install(*pos.shared(), std::move(r));
+    }
+    // (The folder is read away from the screen: wait for it.)
+    const auto settled = [&] {
+        for (int i = 0; i < 3000 && pos.legacyImport().value(u"busy"_s).toBool(); ++i)
+            QTest::qWait(10);
+        return !pos.legacyImport().contains(u"busy"_s);
     };
     // Only the owner (or the maintainer) brings it over.
     REQUIRE(pos.loginWithPin(u"1111"_s));   // a server
@@ -326,11 +359,14 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
     REQUIRE(c.showPage(u"legacy-import"_s));
     shot(u"legacy-import-1-choose"_s);
     // A folder that isn't one: said, nothing else.
-    CHECK_FALSE(pos.legacyPreviewOf(dir.filePath(u"dat/customers"_s)));
+    REQUIRE(pos.legacyPreviewOf(dir.filePath(u"dat/customers"_s)));
+    CHECK(pos.legacyImport().value(u"busy"_s).toString() == u"Reading the folder..."_s);
+    REQUIRE(settled());
     CHECK(pos.legacyImport().value(u"error"_s).toString().contains(u"isn't legacy ViewTouch's dat folder"_s));
     pos.legacyClearState();
     // The store's folder: what it holds, nothing changed yet.
     REQUIRE(pos.legacyPreviewOf(dat));
+    REQUIRE(settled());
     const QVariantMap preview = pos.legacyImport().value(u"preview"_s).toMap();
     CHECK(preview.value(u"items"_s).toInt() == 1457);
     CHECK_FALSE(preview.value(u"hasSales"_s).toBool());
@@ -338,6 +374,7 @@ TEST_CASE("Legacy import on the screen: choose the folder, see what comes, bring
     shot(u"legacy-import-2-preview"_s);
     // Bring it over: the menu and the sales, the screens as they were.
     REQUIRE(pos.legacyImportRun(dat, {}));
+    REQUIRE(settled());
     CHECK(pos.legacyImport().value(u"done"_s).toStringList().size() == 2);
     CHECK(pos.legacyImport().value(u"backup"_s).toString().endsWith(u"backup.db"_s));
     CHECK(pos.shared()->menu.size() == 1457);
