@@ -11,7 +11,7 @@ Rectangle {
     property LayoutController controller
     readonly property PosService pos: controller ? controller.pos : null
     readonly property var info: pos ? pos.setup : ({})
-    readonly property var steps: ["welcome", "store", "logo", "look", "taxes", "menu", "staff", "done"]
+    readonly property var steps: ["welcome", "store", "logo", "look", "taxes", "menu", "staff", "printers", "backups", "done"]
     // Come back to it (Finish Later, or a manager's next login): at the
     // list of what's left, once the store has its own name.
     property int step: 0
@@ -607,6 +607,123 @@ Rectangle {
                         color: "#f5b940"
                         font.pixelSize: 15
                         text: qsTr("The sample staff's PINs (1234, 1111...) are in the manual for anyone to read: turn them off once you've added yourself.")
+                    }
+                    Item { Layout.fillHeight: true }
+                }
+
+                // Printers: one for receipts, one for the kitchen, each tried.
+                ColumnLayout {
+                    spacing: 10
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: "white"
+                        font.pixelSize: 18
+                        text: qsTr("Receipt and kitchen printers on the store's network: type each one's address (it prints it on its self-test: hold Feed while turning it on), then Print a Test. No printer yet? Next: receipts and tickets show on screen.")
+                    }
+                    Repeater {
+                        model: [{ kind: "receipt", title: qsTr("Receipt printer") }, { kind: "kitchen", title: qsTr("Kitchen printer") }]
+                        delegate: GridLayout {
+                            id: printerRow
+                            required property var modelData
+                            readonly property var have: (g.info.printers ?? []).find(p => p.id === modelData.kind)
+                            Layout.fillWidth: true
+                            columns: g.narrow ? 2 : 4
+                            columnSpacing: 10
+                            rowSpacing: 6
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.columnSpan: g.narrow ? 2 : 1
+                                Layout.preferredWidth: g.narrow ? -1 : 190
+                                text: (printerRow.have ? "✓ " : "") + printerRow.modelData.title
+                                color: printerRow.have ? "#7ee2a8" : "white"
+                                font.pixelSize: 18
+                                font.bold: true
+                            }
+                            TextField {
+                                id: printerHost
+                                objectName: "setupPrinterHost-" + printerRow.modelData.kind
+                                Layout.fillWidth: true
+                                Layout.columnSpan: g.narrow ? 2 : 1
+                                font.pixelSize: 20
+                                inputMethodHints: Qt.ImhPreferNumbers
+                                placeholderText: "192.168.1.50"
+                                text: printerRow.have ? printerRow.have.where : ""
+                            }
+                            PosButton {
+                                objectName: "setupPrinterSave-" + printerRow.modelData.kind
+                                Layout.fillWidth: g.narrow
+                                implicitHeight: 52
+                                implicitWidth: 130
+                                font.pixelSize: 17
+                                highlighted: !printerRow.have
+                                enabled: printerHost.text.trim() !== ""
+                                text: printerRow.have ? qsTr("Change") : qsTr("Add")
+                                onClicked: g.pos.setupAddPrinter(printerRow.modelData.kind, printerHost.text)
+                            }
+                            PosButton {
+                                objectName: "setupPrinterTest-" + printerRow.modelData.kind
+                                Layout.fillWidth: g.narrow
+                                implicitHeight: 52
+                                implicitWidth: 170
+                                font.pixelSize: 17
+                                enabled: !!printerRow.have
+                                text: qsTr("Print a Test")
+                                onClicked: g.pos.testPrinter(printerRow.modelData.kind)
+                            }
+                        }
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Ui.textSoft
+                        font.pixelSize: 15
+                        text: qsTr("USB printers, a bar printer, label printers and what each prints: Manager → Printers.")
+                    }
+                    Item { Layout.fillHeight: true }
+                }
+
+                // Backups: made every night; one now, and where they go.
+                ColumnLayout {
+                    spacing: 12
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: "white"
+                        font.pixelSize: 18
+                        text: qsTr("ViewTouch backs up everything (sales, menu, staff, pages) every night by itself, and before anything risky.")
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        objectName: "setupBackupState"
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: (g.info.backup?.last ?? "") !== "" ? "#7ee2a8" : "#f5b940"
+                        font.pixelSize: 17
+                        text: !(g.info.backup?.folder) ? qsTr("Backups are made on the store's own computer (this screen is not it).")
+                              : (g.info.backup.last ?? "") !== "" ? qsTr("✓ Last backup: %1, in %2").arg(g.info.backup.last).arg(g.info.backup.folder)
+                              : qsTr("No backup yet. They go in %1").arg(g.info.backup.folder)
+                    }
+                    PosButton {
+                        objectName: "setupBackupNow"
+                        visible: !!(g.info.backup?.folder)
+                        implicitHeight: 56
+                        implicitWidth: 260
+                        font.pixelSize: 18
+                        highlighted: (g.info.backup?.last ?? "") === ""
+                        text: qsTr("Back Up Now")
+                        onClicked: g.pos.backupNow()
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Ui.textSoft
+                        font.pixelSize: 16
+                        text: qsTr("A backup on the same computer doesn't help if the computer is lost. Store Settings → Backups keeps a second copy on a USB stick or another computer, and can lock backups with a password.")
                     }
                     Item { Layout.fillHeight: true }
                 }

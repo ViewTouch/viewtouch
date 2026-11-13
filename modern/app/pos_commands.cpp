@@ -160,6 +160,8 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
              return QVariant(p.setupTaxes(a.value(0).toDouble(), a.value(1).toDouble())); }},
         {u"setupAddItem"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupAddItem(a.value(0).toString(), a.value(1).toDouble(), a.value(2).toString())); }},
+        {u"setupAddPrinter"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.setupAddPrinter(a.value(0).toString(), a.value(1).toString())); }},
         {u"setupAddEmployee"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupAddEmployee(a.value(0).toString(), a.value(1).toString(), a.value(2).toString())); }},
         {u"setupRetireSamples"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setupRetireSamples()); }},

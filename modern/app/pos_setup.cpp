@@ -1,9 +1,12 @@
 // PosService: the setup guide - a new store's name, logo, look, taxes, first
 // menu items and staff, a step at a time (SetupGuide.qml).
 
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 #include "app/tax_areas.hh"
+
+#include <QDateTime>
 
 #include <algorithm>
 
@@ -72,17 +75,29 @@ QVariantMap PosService::setupInfo() const
     row("printers", printer, false, tr("Printers"),
         printer ? tr("Print a test on each: Manager → Printers.")
                 : tr("None yet: receipts and kitchen tickets show on screen only. Manager → Printers."),
-        {}, u"admin-printers"_s);
+        u"printers"_s);
     if (const QVariantMap n = s_->network ? s_->network() : QVariantMap(); n.contains(u"backups"_s)) {
         const bool backedUp = n.value(u"lastBackup"_s).toLongLong() > 0;
         row("backup", backedUp, false, tr("Backups"),
             backedUp ? tr("Made every night. A second copy on a USB stick or another computer is safer: Store Settings → Backups.")
                      : tr("None yet: one is made tonight. Make one now in Store Settings → Backups."),
-            {}, u"admin-store"_s);
+            u"backups"_s);
     }
     row("tables", true, false, tr("Your tables and screens"),
         tr("Arrange the dining room: Manager → Edit Pages. Other screens and tablets: Manager → Network."), {}, u"tables"_s);
-    return {{u"ready"_s, ready}, {u"left"_s, left},
+    QVariantList printers;
+    for (const PrinterConfig &p : s_->settings.printers)
+        if (p.type != "none")
+            printers.append(QVariantMap{{u"id"_s, qs(p.id)}, {u"name"_s, qs(p.name)},
+                                        {u"where"_s, p.type == "network" ? qs(p.host) : qs(p.type)}});
+    QVariantMap backup;
+    if (const QVariantMap n = s_->network ? s_->network() : QVariantMap(); n.contains(u"backups"_s)) {
+        const std::int64_t last = n.value(u"lastBackup"_s).toLongLong();
+        backup = {{u"folder"_s, n.value(u"backups"_s)},
+                  {u"last"_s, last > 0 ? i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(last), u"ddd MMM d, h:mm AP"_s)
+                                       : QString()}};
+    }
+    return {{u"printers"_s, printers}, {u"backup"_s, backup}, {u"ready"_s, ready}, {u"left"_s, left},
             {u"done"_s, s_->settings.setupDone}, {u"storeName"_s, qs(s_->settings.storeName)},
             {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"logo"_s, qs(s_->settings.displayLogo)},
             {u"receiptLogo"_s, s_->settings.receiptLogo}, {u"foodTax"_s, pct(s_->settings.tax.foodPpm)},
@@ -169,6 +184,32 @@ bool PosService::setupAddEmployee(const QString &name, const QString &role, cons
     e.insert(u"role"_s, role);
     e.insert(u"pin"_s, pin);
     return adminSave(u"employees"_s, -1, e);
+}
+
+bool PosService::setupAddPrinter(const QString &kind, const QString &host)
+{
+    if (!require(perm::Manager, tr("Setting up the store")))
+        return false;
+    if (kind != u"receipt" && kind != u"kitchen")
+        return false;
+    const QString address = host.trimmed();
+    if (address.isEmpty())
+        return fail(tr("Type the printer's address (like 192.168.1.50)."));
+    int index = -1;
+    for (int i = 0; i < int(s_->settings.printers.size()); ++i)
+        if (qs(s_->settings.printers[i].id) == kind)
+            index = i;
+    QVariantMap record = index >= 0 ? adminRecords(u"printers"_s).value(index).toMap() : adminNewRecord(u"printers"_s);
+    if (index < 0) {
+        record.insert(u"id"_s, kind);
+        record.insert(u"name"_s, kind == u"receipt" ? tr("Receipts") : tr("Kitchen"));
+        record.insert(u"receipts"_s, kind == u"receipt");
+    }
+    record.insert(u"type"_s, u"network"_s);
+    record.insert(u"host"_s, address.section(u':', 0, 0));
+    if (const int port = address.section(u':', 1, 1).toInt(); port > 0)
+        record.insert(u"port"_s, port);
+    return adminSave(u"printers"_s, index, record);
 }
 
 bool PosService::setupRetireSamples()

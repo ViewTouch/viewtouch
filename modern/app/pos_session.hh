@@ -608,6 +608,10 @@ public:
     {
         invoke(QStringLiteral("setupAddItem"), {name, price, family});
     }
+    Q_INVOKABLE void setupAddPrinter(const QString &kind, const QString &host)
+    {
+        invoke(QStringLiteral("setupAddPrinter"), {kind, host});
+    }
     Q_INVOKABLE void setupAddEmployee(const QString &name, const QString &role, const QString &pin)
     {
         invoke(QStringLiteral("setupAddEmployee"), {name, role, pin});

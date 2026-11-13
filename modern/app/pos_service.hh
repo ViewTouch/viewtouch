@@ -953,6 +953,9 @@ public:
     bool setupTaxArea(const QString &zip);
     bool setupAddItem(const QString &name, double price, const QString &family);
     bool setupAddEmployee(const QString &name, const QString &role, const QString &pin);
+    // A network printer for receipts ("receipt") or kitchen tickets
+    // ("kitchen") at an address; one already there for it gets the address.
+    bool setupAddPrinter(const QString &kind, const QString &host);
     bool setupRetireSamples();
     bool setupFinish(bool done = true);
     bool addWeighed();

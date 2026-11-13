@@ -178,6 +178,39 @@ TEST_CASE("Legacy import on the screens: every page with its menu, Reports on it
     for (const QString &name : sections)
         CHECK_FALSE(name.startsWith(u"Family-"_s));
 
+    // A big family: a row of letters; one touched shows only the items starting with it.
+    {
+        const auto family = std::ranges::max_element(pos.shared()->settings.menuCategories, {}, [&](const core::MenuCategory &cat) {
+            return std::ranges::count_if(pos.shared()->menu, [&](const core::MenuItem &m) { return m.family == cat.id && !m.isModifier; });
+        });
+        REQUIRE(family != pos.shared()->settings.menuCategories.end());
+        const auto count = std::ranges::count_if(pos.shared()->menu, [&](const core::MenuItem &m) {
+            return m.family == family->id && !m.isModifier;
+        });
+        if (count > 40) {
+            c.setMenuCategory(QString::fromStdString(family->id));
+            REQUIRE(c.showPage(u"menu-all"_s));
+            QTest::qWait(60);
+            QQuickItem *grid = findItem(window->contentItem(), "WidgetMenuGrid");
+            REQUIRE(grid);
+            const QStringList letters = grid->property("letters").toStringList();
+            REQUIRE(letters.size() > 3);
+            CHECK(findNamed(window->contentItem(), u"menuLetters"_s)->isVisible());
+            shot(u"menu-letters"_s);
+            const qsizetype all = grid->property("shown").toList().size();
+            QQuickItem *key = findNamed(window->contentItem(), u"menuLetter-"_s + letters.at(1));
+            REQUIRE(key);
+            QTest::mouseClick(window, Qt::LeftButton, {}, key->mapToScene(QPointF(key->width() / 2, key->height() / 2)).toPoint());
+            QTest::qWait(60);
+            const QVariantList some = grid->property("shown").toList();
+            CHECK(some.size() > 0);
+            CHECK(some.size() < all);
+            for (const QVariant &i : some)
+                CHECK(i.toMap().value(u"name"_s).toString().toUpper().contains(letters.at(1)));
+            shot(u"menu-letter-chosen"_s);
+            grid->setProperty("letter", QString());
+        }
+    }
     // The Reports page on the days brought over.
     REQUIRE(c.showPage(u"reports"_s));
     QTest::qWait(50);

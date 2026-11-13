@@ -50,12 +50,33 @@ Item {
     function categoryOf(id) { return categories.find(c => c.id === id) ?? ({}) }
     // The category shown: its own button size, photos, prices (Menu Builder).
     readonly property var shownCategory: !search && !popular && !special ? categoryOf(family) : ({})
+    // A big family (over 40 items): a row of the letters its items start
+    // with; touching one shows only those (again, or All: every one).
+    readonly property var inFamily: items.filter(i => i.family === family)
+    function initial(i) {
+        const m = /[A-Za-z0-9]/.exec(i.name ?? "")
+        return m ? m[0].toUpperCase() : "#"
+    }
+    readonly property var letters: {
+        if (search || popular || special || arranging || inFamily.length <= 40)
+            return []
+        const seen = []
+        for (const i of inFamily) {
+            const c = initial(i)
+            if (!seen.includes(c)) seen.push(c)
+        }
+        return seen.sort()
+    }
+    property string letter: ""
+    onFamilyChanged: letter = ""
+    onLettersChanged: if (letter !== "" && !letters.includes(letter)) letter = ""
     // Searching: every family, best matches first (the name starts with it, then a word does).
     readonly property var shown: {
         if (popular)
             return (pos ? pos.popularItems : []).map(id => items.find(i => i.id === id)).filter(i => i !== undefined)
         if (!search)
-            return family === "★" ? favorites : family === "♥" ? mine : items.filter(i => i.family === family)
+            return family === "★" ? favorites : family === "♥" ? mine
+                 : letter === "" ? inFamily : inFamily.filter(i => w.initial(i) === letter)
         if (typed === "")
             return []
         const digits = /^[0-9]+$/.test(typed)
@@ -307,6 +328,39 @@ Item {
                     }
                 }
             }
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: w.gap * 0.5
+            Flickable {
+                id: letterStrip
+                objectName: "menuLetters"
+                visible: w.letters.length > 0
+                Layout.fillWidth: true
+                Layout.preferredHeight: keyH
+                contentWidth: letterRow.width
+                clip: true
+                flickableDirection: Flickable.HorizontalFlick
+                boundsBehavior: Flickable.StopAtBounds
+                readonly property real keyH: Math.max(52, w.zone ? w.zone.touch(48) : 52)
+                Row {
+                    id: letterRow
+                    spacing: 4
+                    Repeater {
+                        model: letterStrip.visible ? [""].concat(w.letters) : []
+                        delegate: WidgetKey {
+                            required property string modelData
+                            objectName: "menuLetter-" + (modelData === "" ? "all" : modelData)
+                            width: modelData === "" ? letterStrip.keyH * 1.5 : letterStrip.keyH
+                            height: letterStrip.keyH
+                            text: modelData === "" ? qsTr("All") : modelData
+                            fontScale: 0.36
+                            baseColor: w.letter === modelData ? Ui.accent : Ui.key
+                            onClicked: w.letter = w.letter === modelData ? "" : modelData
+                        }
+                    }
+                }
+            }
             MenuButtons {
                 id: grid
                 Layout.fillWidth: true
@@ -322,7 +376,7 @@ Item {
                 screenScale: w.zone ? w.zone.screenScale : 1
                 pagePhotos: w.pagePhotos
                 // Headings and spaces: one category, as arranged in the Menu Builder.
-                sectioned: !w.search && !w.popular && !w.special
+                sectioned: !w.search && !w.popular && !w.special && w.letter === ""
                 st: w.zone ? w.zone.st : ({})
                 face: w.face
                 gap: w.gap
@@ -336,6 +390,7 @@ Item {
                 }
                 // A manager holds one: changed right here.
                 onItemHeld: item => quickCard.edit(item)
+            }
             }
         }
         // Arranging: move the picked item, color it, Done.

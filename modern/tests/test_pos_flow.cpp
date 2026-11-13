@@ -3321,6 +3321,25 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     s.tapItem(find("setupRetire"));
     QTest::qWait(80);
     CHECK(s.pos.setupInfo()[u"samples"_s].toInt() == 0);
+    next();                                                      // printers
+    REQUIRE(find("setupPrinterHost-receipt"));
+    CHECK_FALSE(s.pos.setupAddPrinter(u"receipt"_s, u" "_s));    // an address is needed
+    REQUIRE(s.pos.setupAddPrinter(u"receipt"_s, u"192.168.1.50"_s));
+    REQUIRE(s.pos.setupAddPrinter(u"receipt"_s, u"192.168.1.51:9101"_s));   // changed, not a second one
+    {
+        const auto &printers = s.pos.shared()->settings.printers;
+        const auto receipt = std::ranges::find(printers, "receipt", &core::PrinterConfig::id);
+        REQUIRE(receipt != printers.end());
+        CHECK(receipt->host == "192.168.1.51");
+        CHECK(receipt->port == 9101);
+        CHECK(receipt->type == "network");
+        CHECK(std::ranges::count(printers, "receipt", &core::PrinterConfig::id) == 1);
+    }
+    QTest::qWait(60);
+    s.shot("46-setup-printers");
+    next();                                                      // backups
+    REQUIRE(find("setupBackupState"));
+    s.shot("46-setup-backups");
     next();                                                      // getting ready: what's left
     s.shot("46-setup-done");
     // Everything but the menu: it's still the sample café's (its burgers are on it).
@@ -3341,7 +3360,7 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     QTest::qWait(60);
     CHECK(guide->property("current").toString() == u"menu"_s);
     CHECK(find("setupMenuFile"));
-    guide->setProperty("step", 7);
+    guide->setProperty("step", 9);
     QTest::qWait(60);
     next();                                                      // Close: not finished yet
     CHECK_FALSE(s.c.setupOpen());
@@ -6853,7 +6872,9 @@ TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
     const QList<QStringList> fields = {{}, {u"setupStoreName"_s, u"setupReceipt"_s}, {u"setupLogoAdd"_s},
                                        {}, {u"setupZip"_s, u"setupFindRate"_s, u"setupFood"_s, u"setupAlcohol"_s},
                                        {u"setupItemName"_s, u"setupItemPrice"_s, u"setupItemFamily"_s, u"setupItemAdd"_s},
-                                       {u"setupStaffName"_s, u"setupStaffRole"_s, u"setupStaffPin"_s, u"setupStaffAdd"_s}, {}};
+                                       {u"setupStaffName"_s, u"setupStaffRole"_s, u"setupStaffPin"_s, u"setupStaffAdd"_s},
+                                       {u"setupPrinterHost-receipt"_s, u"setupPrinterSave-receipt"_s, u"setupPrinterTest-kitchen"_s},
+                                       {u"setupBackupState"_s}, {}};
     for (int step = 0; step < fields.size(); ++step) {
         s.shot(qPrintable(u"setup-phone-%1"_s.arg(step)));
         onScreen(u"setupNext"_s);
