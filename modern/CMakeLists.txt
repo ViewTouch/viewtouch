@@ -263,6 +263,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetLogoutPanel.qml
             ui/qml/WidgetStatusBar.qml
             ui/qml/WidgetAdminPanel.qml
+            ui/qml/AdminNewEmployee.qml
             ui/qml/WidgetReportView.qml
             ui/qml/WidgetDrawerPanel.qml
             ui/qml/WidgetEndOfDay.qml

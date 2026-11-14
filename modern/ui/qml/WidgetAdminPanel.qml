@@ -142,6 +142,19 @@ Item {
             draft = copy(records[index])
         }
     }
+    // + Add: someone new is asked about a question at a time (AdminNewEmployee);
+    // everything else, a new record's form.
+    property bool asking: false
+    function add() {
+        if (panel === "employees") addEmployee()
+        else choose(-1)
+    }
+    function addEmployee() {
+        choose(-1)
+        dirty = true
+        asking = true
+        newEmployee.begin()
+    }
     function remove() {
         pending = "delete"
         pos.adminDelete(panel, index)
@@ -173,6 +186,7 @@ Item {
     function open() {
         keepUnsaved()
         openPanel = panel
+        asking = false
         query = ""
         listQuery = ""
         sectionOpen = false
@@ -417,7 +431,7 @@ Item {
                     visible: !w.sectioned
                     Layout.fillWidth: true
                     text: qsTr("+ Add")
-                    onClicked: w.choose(-1)
+                    onClicked: w.add()
                 }
             }
 
@@ -484,7 +498,7 @@ Item {
                             highlighted: true
                             font.pixelSize: 17
                             text: qsTr("+ Add")
-                            onClicked: w.choose(-1)
+                            onClicked: w.add()
                         }
                     }
                 }
@@ -615,6 +629,14 @@ Item {
                     }
                 }
             }
+        }
+
+        AdminNewEmployee {
+            id: newEmployee
+            anchors.fill: parent
+            z: 50
+            visible: w.asking && w.panel === "employees"
+            panel: w
         }
     }
 }

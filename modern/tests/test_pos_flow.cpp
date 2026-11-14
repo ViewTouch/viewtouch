@@ -9779,6 +9779,106 @@ TEST_CASE("UI: the tip pool is one table: a row a job, its share", "[flow][ui][s
     CHECK(s.pos.shared()->settings.tipPool == want);
 }
 
+TEST_CASE("UI: Employees: someone new, one question at a time", "[flow][ui][newemployee]")
+{
+    const bool phone = GENERATE(false, true);
+    CAPTURE(phone);
+    Screen s(false, phone ? 412 : 1600, phone ? 915 : 900, phone ? u"phone"_s : QString());
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-employees"_s));
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto shown = [&](const QString &name) { QQuickItem *i = by(name); return i && i->isVisible(); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+    const auto type = [&](const QString &field, const char *text) {
+        tap(field);
+        QTest::keyClick(s.window, Qt::Key_A, Qt::ControlModifier);
+        for (const char *ch = text; *ch; ++ch)
+            QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+        QTest::qWait(30);
+    };
+    const auto employee = [&](const QString &name) -> const core::Employee * {
+        for (const core::Employee &e : s.pos.shared()->employees)
+            if (QString::fromStdString(e.name) == name)
+                return &e;
+        return nullptr;
+    };
+    const auto add = [&] {
+        // The list's + Add (a phone shows only the list until one is chosen).
+        QQuickItem *b = phone ? Screen::findBy(root, "text", u"+ Add"_s) : by(u"adminAddHere"_s);
+        REQUIRE(b);
+        s.tapItem(b);
+        QTest::qWait(120);
+    };
+    add();
+    REQUIRE(shown(u"newEmployeeName"_s));
+    CHECK_FALSE(by(u"newEmployeeNext"_s)->property("enabled").toBool());
+    type(u"newEmployeeName"_s, "Lucia");
+    s.shot(phone ? "phone-newemployee-1" : "newemployee-1");
+    tap(u"newEmployeeNext"_s);
+    REQUIRE(shown(u"newEmployeeRole-cashier"_s));
+    tap(u"newEmployeeRole-cashier"_s);
+    s.shot(phone ? "phone-newemployee-2" : "newemployee-2");
+    tap(u"newEmployeeNext"_s);
+    REQUIRE(shown(u"newEmployeePin"_s));
+    type(u"newEmployeePin"_s, "12");
+    CHECK_FALSE(by(u"newEmployeeNext"_s)->property("enabled").toBool());   // too short
+    type(u"newEmployeePin"_s, "4826");
+    s.shot(phone ? "phone-newemployee-3" : "newemployee-3");
+    tap(u"newEmployeeNext"_s);
+    QTest::qWait(200);
+    const core::Employee *lucia = employee(u"Lucia"_s);
+    REQUIRE(lucia);
+    CHECK(lucia->role == "cashier");
+    CHECK(lucia->active);
+    REQUIRE(shown(u"newEmployeeAdded"_s));
+    s.shot(phone ? "phone-newemployee-4" : "newemployee-4");
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"4826"_s));
+    CHECK(s.pos.userName() == u"Lucia"_s);
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+
+    // A manager's PIN is 6 numbers or more; Make One Up makes one.
+    REQUIRE(s.c.jumpTo(u"admin-employees"_s));
+    QTest::qWait(150);
+    root = s.window->contentItem();
+    add();
+    type(u"newEmployeeName"_s, "Rosa");   // a sample server's name: said
+    CHECK(shown(u"newEmployeeTwin"_s));
+    type(u"newEmployeeName"_s, "Marta");
+    CHECK_FALSE(shown(u"newEmployeeTwin"_s));
+    tap(u"newEmployeeNext"_s);
+    tap(u"newEmployeeRole-manager"_s);
+    CHECK(by(u"newEmployeeRole-manager"_s)->property("checked").toBool());
+    CHECK(by(u"newEmployee"_s)->property("role").toString() == u"manager"_s);
+    tap(u"newEmployeeNext"_s);
+    CHECK(by(u"newEmployee"_s)->property("role").toString() == u"manager"_s);
+    type(u"newEmployeePin"_s, "4444");
+    CHECK(by(u"newEmployee"_s)->property("role").toString() == u"manager"_s);
+    CHECK_FALSE(by(u"newEmployeeNext"_s)->property("enabled").toBool());
+    tap(u"newEmployeeMakeUp"_s);
+    CHECK(by(u"newEmployeePin"_s)->property("text").toString().size() == 6);
+    tap(u"newEmployeeNext"_s);
+    QTest::qWait(200);
+    REQUIRE(employee(u"Marta"_s));
+    CHECK(employee(u"Marta"_s)->role == "manager");
+
+    // All Settings: their form, with what was typed.
+    tap(u"newEmployeeAnother"_s);
+    type(u"newEmployeeName"_s, "Teo");
+    tap(u"newEmployeeAll"_s);
+    CHECK_FALSE(shown(u"newEmployeeName"_s));
+    CHECK(Screen::findBy(root, "text", u"Teo"_s));
+}
+
 TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
 {
     Screen s;
