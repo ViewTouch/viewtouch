@@ -137,6 +137,8 @@ Item {
                     TextField {
                         id: nameField
                         objectName: "newChoiceName"
+                        property string enterText: qsTr("Next ›")
+                        EnterKey.type: Qt.EnterKeyNext
                         Layout.fillWidth: true
                         Layout.maximumWidth: 560
                         implicitHeight: 60

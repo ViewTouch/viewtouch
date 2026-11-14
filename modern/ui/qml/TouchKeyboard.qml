@@ -14,6 +14,10 @@ Rectangle {
     readonly property bool numeric: target !== null && (target.inputMethodHints
         & (Qt.ImhDigitsOnly | Qt.ImhFormattedNumbersOnly | Qt.ImhDecimalNumbersOnly | Qt.ImhDialableCharactersOnly)) !== 0
     property bool shifted: false
+    // The enter key's words: a field's own (enterText: "Next ›" in a walk-through),
+    // else Done on a number pad, ⏎ on letters.
+    readonly property string enterText: target && typeof target.enterText === "string" && target.enterText !== ""
+                                        ? target.enterText : numeric ? qsTr("Done") : "⏎"
     property bool symbols: false
 
     readonly property var letters: [
@@ -86,11 +90,14 @@ Rectangle {
             if (target.hasOwnProperty("wrapMode") && target.hasOwnProperty("textDocument"))
                 type("\n")
             else {
-                if (target.accepted)
-                    target.accepted()
-                if (target.editingFinished)
-                    target.editingFinished()
-                dismissed()
+                const was = target
+                if (was.accepted)
+                    was.accepted()
+                if (was.editingFinished)
+                    was.editingFinished()
+                // On to the next question's field (Next ›): the keys stay.
+                if (was.activeFocus)
+                    dismissed()
             }
             return
         }
@@ -146,7 +153,7 @@ Rectangle {
                             anchors.centerIn: parent
                             width: key.width - 6
                             horizontalAlignment: Text.AlignHCenter
-                            text: ({ shift: "⇧", back: "⌫", enter: kb.numeric ? qsTr("Done") : "⏎", hide: "⌨▾",
+                            text: ({ shift: "⇧", back: "⌫", enter: kb.enterText, hide: "⌨▾",
                                      space: qsTr("space") })[key.modelData]
                                   ?? (kb.shifted ? key.modelData.toUpperCase() : key.modelData)
                             color: "white"

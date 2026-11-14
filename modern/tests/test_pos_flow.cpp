@@ -8331,10 +8331,23 @@ TEST_CASE("UI: Menu Builder: the new item's questions with the on-screen keyboar
     s.shot("newitem-keys-name");
     // The name's field stays in sight above the keys.
     QQuickItem *keys = Screen::findBy(root, "objectName", u"screenKeyboard"_s);
-    if (keys && keys->isVisible()) {
+    REQUIRE(keys);
+    REQUIRE(keys->isVisible());
+    {
         const qreal fieldBottom = by(u"newItemName"_s)->mapToScene(QPointF(0, by(u"newItemName"_s)->height())).y();
         CHECK(fieldBottom <= keys->mapToScene(QPointF(0, 0)).y() + 1);
     }
+    for (const char *ch = "Agua"; *ch; ++ch)
+        QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+    // The keyboard's enter key is the question's Next: on to the price, the keys still up.
+    QQuickItem *next = Screen::findBy(keys, "text", u"Next ›"_s);
+    REQUIRE(next);
+    s.tapItem(next);
+    QTest::qWait(150);
+    CHECK(by(u"newItemPrice"_s)->hasActiveFocus());
+    CHECK(keys->isVisible());
+    CHECK(Screen::findBy(keys, "text", u"Next ›"_s));
+    s.shot("newitem-keys-price");
 }
 
 TEST_CASE("UI: Menu Builder: the new item's questions: a new category, and All Settings", "[flow][ui][menubuild][newitem]")

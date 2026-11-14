@@ -425,6 +425,9 @@ Rectangle {
                         TextField {
                             id: itemName
                             objectName: "setupItemName"
+                            property string enterText: qsTr("Next ›")
+                            EnterKey.type: Qt.EnterKeyNext
+                            onAccepted: itemPrice.forceActiveFocus()
                             Layout.fillWidth: true
                             Layout.columnSpan: g.narrow ? 2 : 1
                             font.pixelSize: 20
@@ -433,6 +436,8 @@ Rectangle {
                         TextField {
                             id: itemPrice
                             objectName: "setupItemPrice"
+                            property string enterText: qsTr("Add")
+                            onAccepted: if (itemAdd.enabled) itemAdd.clicked()
                             Layout.preferredWidth: g.narrow ? -1 : 140
                             Layout.fillWidth: g.narrow
                             font.pixelSize: 20
@@ -450,6 +455,7 @@ Rectangle {
                             model: g.info.families ?? []
                         }
                         PosButton {
+                            id: itemAdd
                             objectName: "setupItemAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -539,6 +545,9 @@ Rectangle {
                         TextField {
                             id: staffName
                             objectName: "setupStaffName"
+                            property string enterText: qsTr("Next ›")
+                            EnterKey.type: Qt.EnterKeyNext
+                            onAccepted: staffPin.forceActiveFocus()
                             Layout.fillWidth: true
                             Layout.columnSpan: g.narrow ? 2 : 1
                             font.pixelSize: 20
@@ -559,6 +568,8 @@ Rectangle {
                         TextField {
                             id: staffPin
                             objectName: "setupStaffPin"
+                            property string enterText: qsTr("Add")
+                            onAccepted: if (staffAdd.enabled) staffAdd.clicked()
                             Layout.preferredWidth: g.narrow ? -1 : 140
                             Layout.fillWidth: g.narrow
                             font.pixelSize: 20
@@ -568,6 +579,7 @@ Rectangle {
                             validator: RegularExpressionValidator { regularExpression: /[0-9]{0,8}/ }
                         }
                         PosButton {
+                            id: staffAdd
                             objectName: "setupStaffAdd"
                             Layout.columnSpan: g.narrow ? 2 : 1
                             Layout.fillWidth: g.narrow
@@ -658,6 +670,8 @@ Rectangle {
                             TextField {
                                 id: printerHost
                                 objectName: "setupPrinterHost-" + printerRow.modelData.kind
+                                property string enterText: printerSave.text
+                                onAccepted: if (printerSave.enabled) printerSave.clicked()
                                 Layout.fillWidth: true
                                 Layout.columnSpan: g.narrow ? 2 : 1
                                 font.pixelSize: 20
@@ -666,6 +680,7 @@ Rectangle {
                                 text: printerRow.have ? printerRow.have.where : ""
                             }
                             PosButton {
+                                id: printerSave
                                 objectName: "setupPrinterSave-" + printerRow.modelData.kind
                                 Layout.fillWidth: g.narrow
                                 implicitHeight: 52

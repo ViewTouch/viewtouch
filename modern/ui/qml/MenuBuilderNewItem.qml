@@ -213,6 +213,8 @@ Rectangle {
                     TextField {
                         id: nameField
                         objectName: "newItemName"
+                        property string enterText: qsTr("Next ›")
+                        EnterKey.type: Qt.EnterKeyNext
                         Layout.fillWidth: true
                         Layout.maximumWidth: 560
                         implicitHeight: 60
@@ -309,6 +311,8 @@ Rectangle {
                         TextField {
                             id: newCategoryField
                             objectName: "newItemCategoryName"
+                            property string enterText: qsTr("Add")
+                            EnterKey.type: Qt.EnterKeyNext
                             Layout.fillWidth: true
                             implicitHeight: 56
                             font.pixelSize: 18
@@ -345,6 +349,8 @@ Rectangle {
                         TextField {
                             id: priceField
                             objectName: "newItemPrice"
+                            property string enterText: qsTr("Next ›")
+                            EnterKey.type: Qt.EnterKeyNext
                             Layout.preferredWidth: 220
                             implicitHeight: 68
                             font.pixelSize: 30

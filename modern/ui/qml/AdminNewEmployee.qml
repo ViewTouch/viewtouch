@@ -169,6 +169,8 @@ Rectangle {
                     TextField {
                         id: nameField
                         objectName: "newEmployeeName"
+                        property string enterText: qsTr("Next ›")
+                        EnterKey.type: Qt.EnterKeyNext
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
                         implicitHeight: 56
@@ -249,6 +251,8 @@ Rectangle {
                         TextField {
                             id: pinField
                             objectName: "newEmployeePin"
+                            property string enterText: qsTr("Add")
+                            EnterKey.type: Qt.EnterKeyNext
                             Layout.preferredWidth: 220
                             implicitHeight: 64
                             font.pixelSize: 28
