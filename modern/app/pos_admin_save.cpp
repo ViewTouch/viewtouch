@@ -601,6 +601,15 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.backupCopyDir = ss(record.value(u"backupCopyDir"_s).toString().trimmed());
         if (record.contains(u"askReasons"_s))
             s_->settings.askReasons = record.value(u"askReasons"_s).toBool();
+        if (record.contains(u"watch"_s))
+            s_->settings.watch = record.value(u"watch"_s).toBool();
+        for (const auto &[key, amount] : {std::pair{u"watchVoid", &s_->settings.watchVoid}, std::pair{u"watchComp", &s_->settings.watchComp}})
+            if (record.contains(QString::fromUtf16(key))) {
+                const double v = number(record, key);
+                if (v < 0 || v > 100000)
+                    return fail(tr("Write the alert amounts in dollars, like 20."));
+                *amount = Money::fromCents(std::llround(v * 100));
+            }
         if (record.contains(u"labelPrinter"_s))
             s_->settings.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         if (record.contains(u"targetFoodCostPercent"_s))

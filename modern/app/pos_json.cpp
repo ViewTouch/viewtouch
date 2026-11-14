@@ -1249,6 +1249,8 @@ QJsonObject toJson(const PosSettings &s)
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
         {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"sendToTables"_s, s.sendToTables},
         {u"closeWhenPaid"_s, s.closeWhenPaid},
+        {u"watch"_s, s.watch}, {u"watchVoid"_s, qint64(s.watchVoid.cents())}, {u"watchComp"_s, qint64(s.watchComp.cents())},
+        {u"alertsSeenAt"_s, qint64(s.alertsSeenAt)},
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
         {u"deliveryFee"_s, qint64(s.deliveryFee.cents())}, {u"deliveryFeeToDriver"_s, s.deliveryFeeToDriver},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
@@ -1562,6 +1564,12 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.requireOrderName = o.value(u"requireOrderName").toBool();
     s.sendToTables = o.value(u"sendToTables").toBool();
     s.closeWhenPaid = o.value(u"closeWhenPaid").toBool();
+    s.watch = o.value(u"watch").toBool(true);
+    if (o.contains(u"watchVoid"))
+        s.watchVoid = money(o.value(u"watchVoid"));
+    if (o.contains(u"watchComp"))
+        s.watchComp = money(o.value(u"watchComp"));
+    s.alertsSeenAt = i64(o.value(u"alertsSeenAt"));
     s.takeoutMinutes = std::clamp(o.value(u"takeoutMinutes").toInt(15), 0, 240);
     s.deliveryMinutes = std::clamp(o.value(u"deliveryMinutes").toInt(35), 0, 240);
     s.minutesPerOrderWaiting = std::clamp(o.value(u"minutesPerOrderWaiting").toInt(2), 0, 60);

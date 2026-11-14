@@ -88,6 +88,9 @@ private:
 // own: safe on a worker thread while the POS runs. For reports over a range.
 // Time punches clocked in between from and to (Manager -> Time Punches, older ones).
 std::vector<core::TimePunch> punchesBetween(const QString &dbPath, std::int64_t from, std::int64_t to);
+// Cash drawers and server banks opened in [from, to), with their movements
+// (no sales, paid in and out), on its own connection: any thread.
+std::vector<core::DrawerSession> drawersBetween(const QString &dbPath, std::int64_t from, std::int64_t to);
 // Closed checks, the newest first: closed in [from, to) (to 0: no end),
 // whose saved record contains any of `words` (none: every one), `limit`
 // of them from `offset`. Its own connection: for a worker thread.

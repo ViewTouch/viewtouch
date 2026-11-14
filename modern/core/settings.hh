@@ -458,6 +458,14 @@ struct PosSettings {
     // shows): one touch less at the counter. Tables, tabs and cards stay
     // open until closed (a tip may still come).
     bool closeWhenPaid = false;
+    // Loss alerts (Dashboard): a void of an item already sent of at least
+    // watchVoid, a discount or comp of at least watchComp (or half its check),
+    // a payment taken back after the check printed, a cash check reopened, a
+    // refund, a third no-sale in an hour by one person. Off: none.
+    bool watch = true;
+    Money watchVoid = Money::fromCents(2000);
+    Money watchComp = Money::fromCents(2500);
+    std::int64_t alertsSeenAt = 0;   // the managers have seen the alerts up to then
     // Phone orders: a name before Send (and an address for deliveries);
     // employees and terminals can say otherwise.
     bool requireOrderName = false;

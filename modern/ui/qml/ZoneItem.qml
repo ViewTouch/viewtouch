@@ -177,6 +177,11 @@ Item {
             const n = p && p.storeCheck ? (p.storeCheck.unseen ?? 0) : 0
             values["problems"] = n > 0 ? "⚠ " + n : ""
         }
+        // New loss alerts for the managers (Dashboard): "⚠ 2", or nothing.
+        if (text.indexOf("{alerts}") >= 0) {
+            const n = p && p.lossAlerts ? p.lossAlerts.filter(a => a.new).length : 0
+            values["alerts"] = n > 0 ? "⚠ " + n : ""
+        }
         // What a new store still has to do (the setup guide): "· 2 left", or nothing.
         if (text.indexOf("{setup.left}") >= 0) {
             const n = p && p.setup ? (p.setup.left ?? 0) : 0

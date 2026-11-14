@@ -289,6 +289,8 @@ public:
     std::int64_t todayLastId = 0;
     // Older time punches from the store (Time Punches reaches a month back).
     std::function<std::vector<core::TimePunch>(std::int64_t from, std::int64_t to)> punchHistory;
+    // Drawers opened in [from, to) (the Exceptions and Loss Watch reports' no sales).
+    std::function<std::vector<core::DrawerSession>(std::int64_t from, std::int64_t to)> drawerHistory;
     std::vector<core::TimePunch> olderPunches;   // loaded from it for editing
     std::vector<core::Shift> shifts;   // from two weeks back on
     std::int64_t lastShiftId = 0;
@@ -943,6 +945,10 @@ public:
     bool addCustomColor(const QString &color);   // kept for the store's color pickers
     QVariantMap stockLeft() const override;
     QVariantMap dashboard() const override;
+    QVariantList lossAlerts() const override;
+    QVariantList lossAlertsNow() const;
+    bool alertsSeen();
+    static bool watchesEvent(const char *kind);
     QVariantMap checklists() const override;
     bool tickChecklist(const QString &list, int index);
     core::Report checklistReport(const core::ReportContext &ctx) const;
@@ -1346,7 +1352,8 @@ private:
     core::Report rangeCapableReport(const QString &id, const std::vector<core::Check> &closed,
                                     const core::ReportContext &ctx, const std::vector<core::Refund> *refunds = nullptr,
                                     const core::DayMoney *day = nullptr,
-                                    const std::vector<core::TimePunch> *punches = nullptr) const;
+                                    const std::vector<core::TimePunch> *punches = nullptr,
+                                    const std::vector<core::DrawerSession> *drawers = nullptr) const;
     qint64 addParty(const QVariantMap &r, bool reservation);
     core::Party *party(qint64 id);
     void saveParty(const core::Party &p);

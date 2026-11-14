@@ -63,6 +63,7 @@ Item {
         { label: qsTr("Checks"), reports: [
             { id: "audit", label: qsTr("Audit"), range: true },
             { id: "exceptions", label: qsTr("Exceptions"), range: true },
+            { id: "losswatch", label: qsTr("Loss Watch"), range: true },
             { id: "changes", label: qsTr("Changes"), range: false },
             { id: "irs8027", label: qsTr("IRS 8027"), range: true } ] },
     ]

@@ -26,6 +26,27 @@ Item {
         w.pos.searchChecks(query, days, offset)
     }
     function fresh(query) { offsets = [0]; run(query, 0) }
+    // Sent from elsewhere (a Dashboard alert): that check, found and shown.
+    property var wanted: 0
+    Component.onCompleted: {
+        const sent = zone && zone.controller ? zone.controller.take("findCheck") : undefined
+        if (sent) {
+            days = 0
+            wanted = sent.id
+            fresh(sent.query)
+        }
+    }
+    onFoundChanged: if (wanted && found.some(r => r.id === wanted)) showWanted.start()
+    // (After the results are in: choosing one changes them.)
+    Timer {
+        id: showWanted
+        interval: 0
+        onTriggered: {
+            const id = w.wanted
+            w.wanted = 0
+            if (id) w.pos.selectFoundCheck(id)
+        }
+    }
     function older() {
         offsets = offsets.concat([info.nextOffset])
         run(asked, info.nextOffset)

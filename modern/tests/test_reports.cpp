@@ -374,6 +374,91 @@ TEST_CASE("Exceptions: someone far above everyone else on shift is flagged", "[r
     CHECK(std::ranges::find(alone, "Unusual: voids") == alone.end());
 }
 
+TEST_CASE("Loss Watch: rates per $1,000 sold, not counts; the outlier with what they did", "[reports][losswatch][watch]")
+{
+    core::PosSettings settings;
+    core::ReportContext ctx{settings, "Last 4 weeks", [](std::int64_t) { return std::string("9:00 PM"); }};
+    ctx.dayOf = [](std::int64_t ms) { return int(ms / 86'400'000); };
+    std::int64_t id = 0;
+    // Each server's sales over some days, and the voids they made.
+    const auto shift = [&](const char *server, std::int64_t dollars, int day, int voids) {
+        core::Check c;
+        c.id = ++id;
+        c.label = "T" + std::to_string(id);
+        c.serverName = server;
+        c.status = core::CheckStatus::Closed;
+        c.closedAt = std::int64_t(day) * 86'400'000 + 3'600'000;
+        core::OrderLine l;
+        l.itemId = "plate";
+        l.name = "Plate";
+        l.unitPrice = Money::fromCents(dollars * 100);
+        c.lines.push_back(l);
+        for (int i = 0; i < voids; ++i)
+            c.note(c.closedAt, server, "Voided Cobb ($12.50)", "void", Money::fromCents(1250), "Wrong item");
+        return c;
+    };
+    std::vector<core::Check> all;
+    // Jo works a lot: $20,000 over 20 days, 8 voids (0.4 per $1,000).
+    for (int d = 0; d < 20; ++d)
+        all.push_back(shift("Jo", 1000, d, d < 8 ? 1 : 0));
+    // Sam works a little: $2,000 over 2 days, 6 voids (3 per $1,000).
+    for (int d = 0; d < 2; ++d)
+        all.push_back(shift("Sam", 1000, d, 3));
+    // Casey: $10,000, 4 voids.
+    for (int d = 0; d < 10; ++d)
+        all.push_back(shift("Casey", 1000, d, d < 4 ? 1 : 0));
+    std::vector<const core::Check *> ptrs;
+    for (const core::Check &c : all)
+        ptrs.push_back(&c);
+    const core::Report r = core::lossWatchReport(ptrs, {}, ctx);
+    // Jo has the most voids, but not for what they sell; Sam stands out.
+    CHECK(r.find("Jo") == std::vector<std::string>{"Jo", "$20000.00", "8", "0", "0", "0", "0"});
+    CHECK(r.find("Sam") == std::vector<std::string>{"Sam", "$2000.00", "6 ⚠", "0", "0", "0", "0"});
+    CHECK(r.find("Casey")[2] == "4");
+    bool section = false;
+    int listed = 0;
+    for (const core::ReportRow &row : r.rows) {
+        if (row.kind == core::ReportRow::Kind::Section && row.cells[0].starts_with("Sam: voids"))
+            section = true;
+        if (row.kind == core::ReportRow::Kind::Note && row.cells[0].find("Wrong item") != std::string::npos)
+            ++listed;
+    }
+    CHECK(section);
+    CHECK(listed == 6);   // what Sam did, each
+
+    // Drawers opened with no sale: per day worked.
+    core::DrawerSession d;
+    d.name = "Bar";
+    for (int i = 0; i < 5; ++i) {
+        core::CashMovement m;
+        m.kind = core::CashMovement::Kind::NoSale;
+        m.by = "Sam";
+        m.at = 3'600'000 + i;
+        d.movements.push_back(m);
+    }
+    core::CashMovement jo;
+    jo.kind = core::CashMovement::Kind::NoSale;
+    jo.by = "Jo";
+    jo.at = 5 * 86'400'000;
+    d.movements.push_back(jo);
+    const core::Report withDrawers = core::lossWatchReport(ptrs, {d}, ctx);
+    CHECK(withDrawers.find("Sam")[6] == "5 ⚠");
+    CHECK(withDrawers.find("Jo")[6] == "1");
+
+    // Everyone alike: nobody flagged.
+    std::vector<core::Check> even;
+    for (const char *who : {"Jo", "Sam", "Casey"})
+        for (int dd = 0; dd < 5; ++dd)
+            even.push_back(shift(who, 1000, dd, dd < 2 ? 1 : 0));
+    std::vector<const core::Check *> evenPtrs;
+    for (const core::Check &c : even)
+        evenPtrs.push_back(&c);
+    const core::Report calm = core::lossWatchReport(evenPtrs, {}, ctx);
+    for (const core::ReportRow &row : calm.rows)
+        for (const std::string &cell : row.cells)
+            CHECK(cell.find("⚠") == std::string::npos);
+}
+
 TEST_CASE("Labor cost: the rows add up to the total, to the cent", "[reports][labor][books]")
 {
     core::PosSettings settings;

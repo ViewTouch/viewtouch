@@ -2076,4 +2076,137 @@ Report irs8027Report(const std::vector<Check> &closed, const std::vector<TimePun
     return r;
 }
 
+Report lossWatchReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
+                       const ReportContext &ctx)
+{
+    Report r;
+    r.id = "losswatch";
+    r.title = "Loss Watch";
+    r.subtitle = ctx.period;
+    r.columns = {"Employee", "Sales", "Voids", "Comps", "Taken back", "Reopened", "No sales"};
+
+    // The kinds: what counts, and its name in a sentence.
+    struct Kind { std::vector<std::string> kinds; const char *name; bool perDay; };
+    const Kind kinds[] = {
+        {{"void"}, "voids of items already sent", false},
+        {{"discount"}, "discounts and comps", false},
+        {{"unpay", "undiscount"}, "payments and discounts taken back", false},
+        {{"reopen"}, "reopened checks", false},
+        {{"noSale"}, "drawer openings with no sale", true},
+    };
+    constexpr int K = 5;
+    struct Did { std::int64_t at; std::string check, what, reason; Money amount; };
+    struct Person {
+        Money sales;
+        std::set<int> days;
+        std::int64_t times[K] = {};
+        std::vector<Did> did[K];
+    };
+    std::map<std::string, Person> people;
+    for (const Check *c : checks) {
+        if (c->training)
+            continue;
+        const std::string label = c->label.empty() ? "#" + std::to_string(c->id) : c->label;
+        if (!c->serverName.empty() && c->status == CheckStatus::Closed) {
+            Person &p = people[c->serverName];
+            p.sales += c->totals(ctx.settings.tax).netSales();
+            if (ctx.dayOf)
+                p.days.insert(ctx.dayOf(c->closedAt ? c->closedAt : c->openedAt));
+        }
+        for (const CheckEvent &e : c->events) {
+            if (e.who.empty())
+                continue;
+            for (int k = 0; k < K - 1; ++k)
+                if (std::ranges::find(kinds[k].kinds, e.kind) != kinds[k].kinds.end()) {
+                    Person &p = people[e.who];
+                    ++p.times[k];
+                    p.did[k].push_back({e.at, label, e.what, e.reason, e.amount});
+                    if (ctx.dayOf)
+                        p.days.insert(ctx.dayOf(e.at));
+                }
+        }
+    }
+    for (const DrawerSession &d : drawers)
+        for (const CashMovement &m : d.movements)
+            if (m.kind == CashMovement::Kind::NoSale && !m.by.empty()) {
+                Person &p = people[m.by];
+                ++p.times[K - 1];
+                p.did[K - 1].push_back({m.at, d.name, "Drawer opened with no sale", {}, {}});
+                if (ctx.dayOf)
+                    p.days.insert(ctx.dayOf(m.at));
+            }
+    if (people.empty()) {
+        r.note("Nothing to compare yet.");
+        return r;
+    }
+
+    // The store's rates: per $1,000 sold (per day worked for no sales).
+    Money allSales;
+    std::int64_t allDays = 0, all[K] = {};
+    for (const auto &[who, p] : people) {
+        allSales += p.sales;
+        allDays += std::max<std::int64_t>(1, std::int64_t(p.days.size()));
+        for (int k = 0; k < K; ++k)
+            all[k] += p.times[k];
+    }
+    const auto rate = [&](std::int64_t times, Money sales, std::int64_t days, bool perDay) {
+        if (perDay)
+            return double(times) / double(std::max<std::int64_t>(1, days));
+        return sales.cents() > 0 ? double(times) * 100'000.0 / double(sales.cents()) : (times > 0 ? 1e9 : 0.0);
+    };
+    double storeRate[K];
+    for (int k = 0; k < K; ++k)
+        storeRate[k] = rate(all[k], allSales, allDays, kinds[k].perDay);
+    const auto rateText = [](double v, bool perDay) {
+        char b[48];
+        std::snprintf(b, sizeof b, perDay ? "%.1f a day" : "%.1f per $1,000 sold", v);
+        return std::string(b);
+    };
+
+    struct Flag { std::string who; int k; double theirs; };
+    std::vector<Flag> flags;
+    std::vector<std::pair<std::string, const Person *>> sorted;
+    for (const auto &[who, p] : people)
+        sorted.emplace_back(who, &p);
+    std::ranges::stable_sort(sorted, [](const auto &a, const auto &b) { return a.second->sales > b.second->sales; });
+    for (const auto &[who, p] : sorted) {
+        std::vector<std::string> row{who, ctx.money(p->sales)};
+        for (int k = 0; k < K; ++k) {
+            const double theirs = rate(p->times[k], p->sales, std::max<std::int64_t>(1, std::int64_t(p->days.size())),
+                                       kinds[k].perDay);
+            // Against the store's rate (everyone's, theirs included).
+            const bool flagged = p->times[k] >= 3 && people.size() > 1 && storeRate[k] > 0
+                                 && theirs >= 2.5 * storeRate[k];
+            if (flagged)
+                flags.push_back({who, k, theirs});
+            row.push_back(std::to_string(p->times[k]) + (flagged ? " ⚠" : ""));
+        }
+        r.line(row);
+    }
+    std::vector<std::string> totals{"All", ctx.money(allSales)};
+    for (int k = 0; k < K; ++k)
+        totals.push_back(std::to_string(all[k]));
+    r.total(totals);
+
+    if (flags.empty()) {
+        r.note("Nobody stands out: everyone is close to the store's usual.");
+    } else {
+        r.note("⚠ Worth a look: 2.5 times the store's usual or more. Often there's a good reason; here's what they did.");
+        for (const Flag &f : flags) {
+            const Person &p = people.at(f.who);
+            r.section(f.who + ": " + kinds[f.k].name + ", " + rateText(f.theirs, kinds[f.k].perDay) + " (the store: "
+                      + rateText(storeRate[f.k], kinds[f.k].perDay) + ")");
+            std::vector<Did> list = p.did[f.k];
+            std::ranges::sort(list, {}, &Did::at);
+            for (const Did &d : list) {
+                const std::string when = (ctx.date ? ctx.date(d.at) + ", " : std::string()) + ctx.clock(d.at);
+                r.note(when + " · " + d.check + " · " + d.what + (d.amount.cents() ? " · " + ctx.money(d.amount) : "")
+                       + (d.reason.empty() ? "" : " · " + d.reason));
+            }
+        }
+    }
+    r.note("Voids, comps, taken back and reopened: per $1,000 each person sold. No sales: per day they worked.");
+    return r;
+}
+
 } // namespace vt::core

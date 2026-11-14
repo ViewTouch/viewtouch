@@ -24,6 +24,8 @@ QString timeOf(std::int64_t ms)
 void PosService::noteEvent(Check &c, const QString &what, const char *kind, Money amount, const std::string &reason)
 {
     c.note(now(), user() ? user()->name : std::string(), ss(what), kind, amount, reason);
+    if (watchesEvent(kind))
+        emit s_->dayChanged();   // the managers' alerts (Dashboard) look again
 }
 
 // Servers manage their own checks; managers anyone's.

@@ -147,7 +147,7 @@ inline QVariantList storeSections(const QVariantList &fields)
          {"startPage.server", "startPage.bartender", "startPage.cashier", "startPage.host", "startPage.manager"}},
         {"cash", PosService::tr("Cash"), {"cashMode", "terminalsHaveDrawer", "checkoutNeedsClosedChecks", "blindDrawerCount", "cashDenominations",
           "expenseCategories"}},
-        {"reasons", PosService::tr("Voids and comps"), {"askReasons", "voidReasons", "compReasons"}},
+        {"reasons", PosService::tr("Voids and comps"), {"askReasons", "voidReasons", "compReasons", "watch", "watchVoid", "watchComp"}},
         {"hours", PosService::tr("Staff hours"),
          {"laborState", "paidBreaks", "overtimeDailyHours", "doubleTimeDailyHours", "seventhDayRule", "overtimeWeeklyHours", "mealBreakAfterHours", "restBreakEveryHours", "scheduleNoticeDays", "restBetweenShiftsHours", "giftCardCashBelow", "tipAllocation", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes", "checksPerServerHour"}},
         {"tips", PosService::tr("Tips"),
@@ -178,7 +178,7 @@ inline QVariantList storeSections(const QVariantList &fields)
     static const std::pair<const char *, const char *> when[] = {
         {"clockInEarlyMinutes", "scheduleRequired"}, {"gratuityMinGuests", "gratuityPercent"},
         {"offlineCardMax", "offlineCards"}, {"offlineCardTotal", "offlineCards"},
-        {"pointsPerDollar", "loyaltyEnabled"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
+        {"pointsPerDollar", "loyaltyEnabled"}, {"watchVoid", "watch"}, {"watchComp", "watch"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
     };
     // Numbers: what 0 means, and a bigger step where 1 is too fine.
     struct Number {

@@ -910,6 +910,9 @@ int runStore(const Args &cli, const Options &o)
         shared->punchHistory = [dbPath](std::int64_t from, std::int64_t to) {
             return vt::storage::punchesBetween(dbPath, from, to);
         };
+        shared->drawerHistory = [dbPath](std::int64_t from, std::int64_t to) {
+            return vt::storage::drawersBetween(dbPath, from, to);
+        };
     }
 
     // Printing: a worker thread delivers tickets; "file" printers write under

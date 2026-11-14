@@ -627,6 +627,92 @@ TEST_CASE("Exceptions report: voids, comps, payments taken back, reopened, no sa
     CHECK(app::checkFromJson(app::toJson(c))->events == c.events);
 }
 
+TEST_CASE("Loss alerts: big voids, comps, payments taken back, refunds and no sales, for managers", "[m4][watch]")
+{
+    Pos p;
+    p.pos.shared()->settings.watchVoid = Money::fromCents(1000);   // $10
+    p.pos.shared()->settings.watchComp = Money::fromCents(2500);
+    p.login("1234");                                   // Morgan, a manager
+    p.openDrawer("10000");
+    const auto texts = [&] {
+        QStringList out;
+        for (const QVariant &v : p.pos.lossAlertsNow())
+            out << v.toMap().value(u"text"_s).toString();
+        return out;
+    };
+    CHECK(texts().isEmpty());
+
+    REQUIRE(p.pos.startCheck(core::CheckType::Quick));
+    p.pos.addItem(u"cobb"_s);                          // 12.50
+    p.pos.addItem(u"caesar"_s);                        // 9.75
+    p.pos.finishChoosing();
+    REQUIRE(p.pos.sendOrder());
+    REQUIRE(p.pos.voidItem());                         // the Caesar: 9.75, under $10: no alert
+    CHECK(texts().isEmpty());
+    p.pos.addItem(u"cobb"_s);
+    REQUIRE(p.pos.sendOrder());
+    REQUIRE(p.pos.voidItem());                         // a Cobb: 12.50, sent: an alert
+    REQUIRE(texts().size() == 1);
+    CHECK(texts()[0].contains(u"voided $12.50"_s));
+    CHECK(texts()[0].contains(u"after it was sent"_s));
+    CHECK(p.pos.lossAlertsNow()[0].toMap().value(u"new"_s).toBool());
+
+    // A comp of the whole check (half or more of it): an alert though under $25.
+    REQUIRE(p.pos.tender(u"comp"_s));
+    REQUIRE(texts().size() == 2);
+    CAPTURE(texts());
+    CHECK(texts()[0].contains(u"took $12.50 off"_s));
+    // A payment taken back after the check printed.
+    REQUIRE(p.pos.removePayment());
+    p.entry("500");
+    REQUIRE(p.pos.tender(u"cash"_s));
+    REQUIRE(p.pos.printReceipt());
+    REQUIRE(p.pos.removePayment());
+    CAPTURE(texts());
+    CAPTURE(p.pos.shared()->open.begin()->second.events.size());
+    REQUIRE(texts().size() == 3);
+    CHECK(texts()[0].contains(u"after it printed"_s));
+    p.entry("2000");
+    REQUIRE(p.pos.tender(u"cash"_s));
+    REQUIRE(p.pos.closeCheck());
+
+    // A refund: always worth a look.
+    {
+        const core::Check &closed = p.pos.shared()->closedToday.back();
+        const auto cash = std::ranges::find_if(closed.payments, [](const core::Payment &x) { return x.kind == core::TenderKind::Cash; });
+        REQUIRE(cash != closed.payments.end());
+        p.clock += 60'000;
+        REQUIRE(p.pos.refundPayment(closed.id, cash->id, 300, u"Cold food"_s));
+        REQUIRE(texts().size() == 4);
+        CHECK(texts()[0].contains(u"refunded $3.00"_s));
+        CHECK(texts()[0].contains(u"Cold food"_s));
+    }
+    // Three no sales within an hour: one alert; two don't.
+    REQUIRE(p.pos.noSale());
+    p.clock += 10 * 60'000;
+    REQUIRE(p.pos.noSale());
+    CHECK(texts().size() == 4);
+    p.clock += 10 * 60'000;
+    REQUIRE(p.pos.noSale());
+    REQUIRE(texts().size() == 5);
+    CHECK(texts()[0].contains(u"no sale 3 times"_s));
+
+    // Seen: nothing new now, the alerts still listed.
+    p.clock += 60'000;
+    REQUIRE(p.pos.alertsSeen());
+    CHECK(texts().size() == 5);
+    CHECK(std::ranges::none_of(p.pos.lossAlertsNow(), [](const QVariant &v) { return v.toMap().value(u"new"_s).toBool(); }));
+
+    // Not for a server's eyes; and off when the store says so.
+    p.pos.logout();
+    p.login("1111");
+    CHECK(p.pos.lossAlertsNow().isEmpty());
+    p.pos.logout();
+    p.login("1234");
+    p.pos.shared()->settings.watch = false;
+    CHECK(p.pos.lossAlertsNow().isEmpty());
+}
+
 TEST_CASE("Deposit report: cash to the bank, card batch, and the books balance", "[m4][reports][deposit]")
 {
     Pos p;

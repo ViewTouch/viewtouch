@@ -900,6 +900,30 @@ std::vector<Check> closedChecksBetween(const QString &dbPath, std::int64_t from,
     return out;
 }
 
+std::vector<DrawerSession> drawersBetween(const QString &dbPath, std::int64_t from, std::int64_t to)
+{
+    static QAtomicInt counter;
+    const QString name = u"vt-drawers-%1"_s.arg(counter.fetchAndAddRelaxed(1));
+    std::vector<DrawerSession> out;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, name);
+        db.setDatabaseName(dbPath);
+        db.setConnectOptions(u"QSQLITE_BUSY_TIMEOUT=5000"_s);
+        if (db.open()) {
+            QSqlQuery q(db);
+            q.prepare(u"SELECT json FROM drawer_sessions WHERE opened_at >= ? AND opened_at < ? ORDER BY id"_s);
+            q.addBindValue(qint64(from));
+            q.addBindValue(qint64(to));
+            if (q.exec())
+                while (q.next())
+                    out.push_back(app::drawerFromJson(QJsonDocument::fromJson(q.value(0).toByteArray()).object()));
+            db.close();
+        }
+    }
+    QSqlDatabase::removeDatabase(name);
+    return out;
+}
+
 std::vector<TimePunch> punchesBetween(const QString &dbPath, std::int64_t from, std::int64_t to)
 {
     static QAtomicInt counter;

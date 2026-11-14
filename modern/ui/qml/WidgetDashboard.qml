@@ -13,6 +13,20 @@ Item {
     readonly property var sales: d.sales ?? ({})
     readonly property var labor: d.labor ?? ({})
     readonly property var kitchen: d.kitchen ?? ({})
+    // Today's loss alerts (big voids, comps, refunds...), newest first.
+    readonly property var alerts: pos ? pos.lossAlerts : []
+    // An alert's check, in Find a Check (its items, payments and history).
+    function openAlert(a) {
+        if (!a.checkId) return
+        zone.controller.keep("findCheck", { query: "#" + a.checkId, id: a.checkId })
+        zone.controller.showPage("find-check")
+    }
+    // Seen once the Dashboard shows them (the Manager page's count goes).
+    Timer {
+        interval: 1500
+        running: w.visible && w.alerts.some(a => a.new)
+        onTriggered: w.pos.alertsSeen()
+    }
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the numbers two a row, the lists one a row, scrolled.
@@ -115,6 +129,49 @@ Item {
         width: parent.width
         height: w.narrow ? implicitHeight : w.height
         spacing: w.unit * 0.6
+
+        // Worth a look: today's alerts, the newest in full.
+        Rectangle {
+            objectName: "dashAlerts"
+            visible: w.alerts.length > 0
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: visible ? alertRow.implicitHeight + w.unit * 0.8 : 0
+            radius: 10
+            color: Qt.rgba(0.8, 0.2, 0.2, 0.22)
+            border.color: w.bad
+            RowLayout {
+                id: alertRow
+                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: w.unit * 0.5 }
+                spacing: w.unit * 0.5
+                Text {
+                    textFormat: Text.PlainText
+                    text: "⚠"
+                    color: w.bad
+                    font.pixelSize: w.unit * 1.2
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    objectName: "dashAlertText"
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
+                    text: w.alerts.length ? w.alerts[0].time + "  " + w.alerts[0].text : ""
+                    color: w.ink
+                    font.family: w.face
+                    font.pixelSize: w.unit * 0.9
+                    font.bold: true
+                    MouseArea { anchors.fill: parent; onClicked: w.openAlert(w.alerts[0]) }
+                }
+                PosButton {
+                    objectName: "dashAlertsAll"
+                    text: qsTr("See All (%1)").arg(w.alerts.length)
+                    font.pixelSize: w.unit * 0.8
+                    onClicked: alertList.open()
+                }
+            }
+        }
 
         // The numbers
         GridLayout {
@@ -300,5 +357,46 @@ Item {
             }
         }
     }
+    }
+
+    Popup {
+        id: alertList
+        objectName: "dashAlertList"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 700, 760)
+        height: Math.min(parent ? parent.height - 48 : 600, 640)
+        modal: true
+        padding: 16
+        contentItem: ColumnLayout {
+            spacing: 8
+            Label { textFormat: Text.PlainText; text: qsTr("Worth a look today"); font.pixelSize: 20; font.bold: true }
+            Label {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                opacity: 0.75
+                text: qsTr("Often there's a good reason. Touch one to see its check and its history. What counts: Store Settings → Voids and comps.")
+            }
+            ListView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: 6
+                model: w.alerts
+                delegate: PosButton {
+                    required property var modelData
+                    width: ListView.view.width
+                    lines: 2
+                    font.bold: false
+                    text: modelData.time + "   " + modelData.text
+                    onClicked: {
+                        alertList.close()
+                        w.openAlert(modelData)
+                    }
+                }
+            }
+            PosButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: alertList.close() }
+        }
     }
 }

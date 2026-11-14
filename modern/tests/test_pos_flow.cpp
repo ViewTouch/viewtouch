@@ -10027,6 +10027,42 @@ TEST_CASE("UI: Your Tables: rooms, how many, names, a look, then the floor plan"
     root = s.window->contentItem();
 }
 
+TEST_CASE("UI: loss alerts: Manager's count, the Dashboard's bar, and the check behind one", "[flow][ui][watch]")
+{
+    Screen s;
+    s.pos.shared()->settings.watchVoid = Money::fromCents(500);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    s.pos.finishChoosing();
+    REQUIRE(s.pos.sendOrder());
+    REQUIRE(s.pos.voidItem());
+    const qint64 checkId = s.pos.lossAlertsNow().value(0).toMap().value(u"checkId"_s).toLongLong();
+    REQUIRE(checkId > 0);
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    CHECK(Screen::findBy(root, "text", u"Dashboard ⚠ 1"_s));
+    s.c.activate(u"dashboard"_s);
+    QTest::qWait(200);
+    root = s.window->contentItem();
+    QQuickItem *bar = Screen::findBy(root, "objectName", u"dashAlerts"_s);
+    REQUIRE(bar);
+    CHECK(bar->isVisible());
+    CHECK(Screen::findBy(root, "objectName", u"dashAlertText"_s)->property("text").toString().contains(u"voided"_s));
+    s.shot("dashboard-alerts");
+    QTest::qWait(1800);   // seen
+    CHECK(std::ranges::none_of(s.pos.lossAlertsNow(), [](const QVariant &v) { return v.toMap().value(u"new"_s).toBool(); }));
+    // Touched: its check, in Find a Check.
+    s.tapItem(Screen::findBy(root, "objectName", u"dashAlertText"_s));
+    for (int i = 0; i < 60 && s.pos.checkSearch().value(u"selected"_s).toMap().value(u"id"_s).toLongLong() != checkId; ++i)
+        QTest::qWait(50);
+    CHECK(s.c.pageId() == u"find-check"_s);
+    CHECK(s.pos.checkSearch().value(u"selected"_s).toMap().value(u"id"_s).toLongLong() == checkId);
+    s.shot("dashboard-alert-check");
+}
+
 TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
 {
     Screen s;

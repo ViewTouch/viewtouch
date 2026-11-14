@@ -132,6 +132,14 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
 Report changesReport(const std::vector<Change> &changes, const ReportContext &ctx);
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
                         const ReportContext &ctx, const std::vector<Refund> &refunds = {});
+// Loss Watch: each person's voids of items already sent, comps and discounts,
+// payments and discounts taken back and reopened checks (each per $1,000 they
+// sold), and drawers opened with no sale (per day they worked), against the
+// whole store's. Anyone at 2.5 times the store's or more (and 3 times or more)
+// is worth a look, with what they did listed. Rates, not counts: someone who
+// works more isn't flagged for that.
+Report lossWatchReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
+                       const ReportContext &ctx);
 // The original's Deposit / Book Balance: the cash to take to the bank (each
 // drawer counted, less the starting cash kept for tomorrow), card payments
 // to settle, and whether what was collected matches what was sold.
