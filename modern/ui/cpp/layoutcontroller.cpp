@@ -1,4 +1,6 @@
 #include "layoutcontroller.hh"
+
+#include "layout/floor_builder.hh"
 #ifdef Q_OS_ANDROID
 #include <QCoreApplication>
 #include <QJniObject>
@@ -1538,6 +1540,88 @@ bool LayoutController::addItemButton(const QString &pageId, const QString &itemI
     }
     replaceLayout(l);
     setStatus(tr("%1 is on %2 now").arg(label, p->name));
+    return true;
+}
+
+QVariantMap LayoutController::previewFloor(const QVariantMap &answers) const
+{
+    const vt::layout::floorplan::Answers a = vt::layout::floorplan::fromMap(answers);
+    const vt::layout::floorplan::Plan plan = vt::layout::floorplan::build(a);
+    QVariantList zones;
+    for (const vt::layout::Zone &z : plan.zones)
+        zones.append(QVariantMap{{u"kind"_s, z.kind}, {u"label"_s, z.label}, {u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()},
+                                 {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}, {u"shape"_s, z.shape},
+                                 {u"props"_s, z.props.toVariantMap()}});
+    const QStringList names = vt::layout::floorplan::names(a);
+    return {{u"w"_s, plan.size.width()}, {u"h"_s, plan.size.height()}, {u"zones"_s, zones},
+            {u"names"_s, names}, {u"count"_s, int(names.size())}};
+}
+
+bool LayoutController::buildFloor(const QVariantMap &answers)
+{
+    if (!pos_ || !pos_->can(QString::fromLatin1(vt::core::perm::EditLayout))) {
+        setStatus(tr("Changing the tables needs a manager who can edit pages."));
+        return false;
+    }
+    if (editing()) {
+        setStatus(tr("Finish editing pages first."));
+        return false;
+    }
+    const vt::layout::floorplan::Answers a = vt::layout::floorplan::fromMap(answers);
+    const QStringList names = vt::layout::floorplan::names(a);
+    if (names.isEmpty()) {
+        setStatus(tr("Say how many tables there are first."));
+        return false;
+    }
+    // A table with an open check keeps its name: it can't go.
+    QStringList busy;
+    for (const QVariant &v : pos_->openChecks()) {
+        const QVariantMap c = v.toMap();
+        const QString label = c.value(u"label"_s).toString();
+        if (c.value(u"type"_s).toString() == u"dineIn" && !label.isEmpty()
+            && !names.contains(label, Qt::CaseInsensitive) && !busy.contains(label))
+            busy << label;
+    }
+    if (!busy.isEmpty()) {
+        setStatus(tr("%1 has an open check: close it first, or keep a table by that name.").arg(busy.join(u", "_s)));
+        return false;
+    }
+    Layout l = layout_;
+    if (vt::layout::floorplan::apply(l, a) == 0) {
+        setStatus(tr("There's no tables page to change."));
+        return false;
+    }
+    pos_->backupNow();   // the store as it was, in case
+    if (saver_) {
+        QString error;
+        if (!saver_(l, &error)) {
+            setStatus(tr("Could not save: %1").arg(error));
+            return false;
+        }
+    }
+    floorUndo_ = layout_;
+    emit floorUndoChanged();
+    replaceLayout(l);
+    setStatus(tr("%n table(s) are on the floor plan now", nullptr, int(names.size())));
+    return true;
+}
+
+bool LayoutController::undoFloor()
+{
+    if (!floorUndo_ || !pos_ || !pos_->can(QString::fromLatin1(vt::core::perm::EditLayout)) || editing())
+        return false;
+    Layout before = *floorUndo_;
+    if (saver_) {
+        QString error;
+        if (!saver_(before, &error)) {
+            setStatus(tr("Could not save: %1").arg(error));
+            return false;
+        }
+    }
+    floorUndo_.reset();
+    emit floorUndoChanged();
+    replaceLayout(before);
+    setStatus(tr("The tables are back as they were"));
     return true;
 }
 

@@ -321,6 +321,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"schedule"_s, QT_TR_NOOP("Schedule")},
         {u"factoryReset"_s, QT_TR_NOOP("Start over (erase)")},
         {u"legacyImport"_s, QT_TR_NOOP("Legacy menu and sales")},
+        {u"tablesSetup"_s, QT_TR_NOOP("Tables, a question at a time")},
         {u"messageComposer"_s, QT_TR_NOOP("Messages")},
         {u"network"_s, QT_TR_NOOP("Network")},
         {u"receiveDelivery"_s, QT_TR_NOOP("Receive a delivery")},

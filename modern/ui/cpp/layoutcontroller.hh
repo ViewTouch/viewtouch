@@ -18,6 +18,7 @@
 #include <QtQml/qqmlregistration.h>
 
 #include <functional>
+#include <optional>
 
 namespace vt::storage { class LayoutStore; }
 namespace vt::app { struct MenuImport; }
@@ -253,6 +254,15 @@ public:
     // A button for the item on that page, like its other item buttons, in
     // the next free place; saved like the page editor saves.
     Q_INVOKABLE bool addItemButton(const QString &pageId, const QString &itemId, const QString &label);
+    // Tables from a few answers (TablesWizard; layout/floor_builder.hh):
+    // the plan as it would be ({w, h, zones, names, count}), then made on the
+    // floor pages (a backup first; not while a table that goes has an open
+    // check), and put back as it was.
+    Q_INVOKABLE QVariantMap previewFloor(const QVariantMap &answers) const;
+    Q_INVOKABLE bool buildFloor(const QVariantMap &answers);
+    Q_INVOKABLE bool undoFloor();
+    Q_PROPERTY(bool canUndoFloor READ canUndoFloor NOTIFY floorUndoChanged)
+    bool canUndoFloor() const { return floorUndo_.has_value(); }
     // An item taken off the menu: its buttons on pages built by hand go too
     // (saved like the page editor saves). Returns how many.
     Q_INVOKABLE int removeItemButtons(const QString &itemId);
@@ -320,6 +330,7 @@ public:
     Q_INVOKABLE bool leaveEditMode(bool save);
 
 signals:
+    void floorUndoChanged();
     void pageChanged();
     void formFactorChanged();
     // A manager asked to close ViewTouch (the closeApp command).
@@ -386,6 +397,7 @@ private:
     QString exportDir_;
 
     vt::layout::Layout layout_;
+    std::optional<vt::layout::Layout> floorUndo_;   // before the last buildFloor
     vt::app::Navigator nav_;
     ZoneModel zones_;
     QString status_;

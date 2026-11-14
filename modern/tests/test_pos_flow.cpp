@@ -9892,6 +9892,68 @@ TEST_CASE("UI: Employees: someone new, one question at a time", "[flow][ui][newe
     CHECK(Screen::findBy(root, "text", u"Teo"_s));
 }
 
+TEST_CASE("UI: Your Tables: rooms, how many, names, a look, then the floor plan", "[flow][ui][tablessetup]")
+{
+    const bool phone = GENERATE(false, true);
+    CAPTURE(phone);
+    Screen s(false, phone ? 412 : 1600, phone ? 915 : 900, phone ? u"phone"_s : QString());
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto shown = [&](const QString &name) { QQuickItem *i = by(name); return i && i->isVisible(); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        scrollTo(it);
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+    // From Manager (Store: Your Tables…).
+    s.c.activate(u"tables-setup"_s);
+    QTest::qWait(150);
+    REQUIRE(s.c.pageId() == u"tables-setup"_s);
+    root = s.window->contentItem();
+    REQUIRE(shown(u"tablesRoom-dining"_s));
+    tap(u"tablesRoom-bar"_s);
+    s.shot(phone ? "phone-tables-1-rooms" : "tables-1-rooms");
+    tap(u"tablesNext"_s);
+    // Dining: 2 for two, 6 for four, 1 for six to start; one fewer for four. Bar: 6 seats, 2 for two.
+    REQUIRE(shown(u"tablesLess-dining-four"_s));
+    tap(u"tablesLess-dining-four"_s);
+    CHECK(by(u"tablesCount-dining-four"_s)->property("text").toString() == u"5"_s);
+    s.shot(phone ? "phone-tables-2-count" : "tables-2-count");
+    tap(u"tablesNext"_s);
+    tap(u"tablesNumbers-room"_s);
+    s.shot(phone ? "phone-tables-3-names" : "tables-3-names");
+    tap(u"tablesNext"_s);
+    REQUIRE(shown(u"tablesPreview"_s));
+    CHECK(by(u"tablesSummary"_s)->property("text").toString().startsWith(u"16 tables"_s));
+    s.shot(phone ? "phone-tables-4-look" : "tables-4-look");
+    tap(u"tablesNext"_s);
+    REQUIRE(shown(u"tablesMade"_s));
+    s.shot(phone ? "phone-tables-5-made" : "tables-5-made");
+    QStringList names;
+    for (const QVariant &t : s.c.tables())
+        names << t.toMap().value(u"name"_s).toString();
+    CHECK(names.size() == 16);
+    CHECK(names.contains(u"D8"_s));
+    CHECK(names.contains(u"B2"_s));
+    CHECK(names.contains(u"Bar 6"_s));
+    CHECK_FALSE(names.contains(u"P1"_s));
+    // On the floor plan.
+    tap(u"tablesSee"_s);
+    QTest::qWait(150);
+    s.shot(phone ? "phone-tables-6-floor" : "tables-6-floor");
+    CHECK(s.c.pageId().startsWith(u"tables"_s));
+    // Put back as they were.
+    REQUIRE(s.c.jumpTo(u"tables-setup"_s));
+    QTest::qWait(150);
+    root = s.window->contentItem();
+}
+
 TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
 {
     Screen s;

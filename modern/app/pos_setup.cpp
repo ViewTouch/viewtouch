@@ -84,7 +84,8 @@ QVariantMap PosService::setupInfo() const
             u"backups"_s);
     }
     row("tables", true, false, tr("Your tables and screens"),
-        tr("Arrange the dining room: Manager → Edit Pages. Other screens and tablets: Manager → Network."), {}, u"tables"_s);
+        tr("A few questions and your tables are drawn for you (Manager → Your Tables). Other screens and tablets: Manager → Network."),
+        {}, u"tables-setup"_s);
     QVariantList printers;
     for (const PrinterConfig &p : s_->settings.printers)
         if (p.type != "none")

@@ -58,8 +58,9 @@ def source_phrases():
         s = joined(run.group(0))
         if re.search(r"[A-Za-z]", s) and (s[:1].isupper() or s[:1] in "(“" or " " in s) and not s.startswith("#"):
             out.append(s)
-    text = (ROOT / "main.cpp").read_text()
-    out += [joined(m.group(1)) for rx, kind in CALLS if kind == "cpp" for m in rx.finditer(text)]
+    for path in [ROOT / "main.cpp", ROOT / "layout/floor_builder.cpp"]:   # the tables' names and rooms
+        text = path.read_text()
+        out += [joined(m.group(1)) for rx, kind in CALLS if kind == "cpp" for m in rx.finditer(text)]
     return out
 
 

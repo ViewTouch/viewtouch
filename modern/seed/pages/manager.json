@@ -193,7 +193,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Find a Check\u2026",
+      "label": "Find a Check…",
       "actions": [
         {
           "type": "jump",
@@ -282,7 +282,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Sold Out (86)\u2026",
+      "label": "Sold Out (86)…",
       "actions": [
         {
           "type": "jump",
@@ -434,7 +434,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Customers\u2026",
+      "label": "Customers…",
       "actions": [
         {
           "type": "jump",
@@ -454,7 +454,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Gift Cards\u2026",
+      "label": "Gift Cards…",
       "actions": [
         {
           "type": "jump",
@@ -574,11 +574,31 @@
       ]
     },
     {
-      "id": "admin-terminals",
+      "id": "tables-setup",
       "kind": "button",
       "rect": {
         "x": 1152,
         "y": 544,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Your Tables…",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "tables-setup"
+        }
+      ]
+    },
+    {
+      "id": "admin-terminals",
+      "kind": "button",
+      "rect": {
+        "x": 1152,
+        "y": 642,
         "w": 352,
         "h": 92
       },
@@ -600,13 +620,13 @@
       "kind": "button",
       "rect": {
         "x": 1152,
-        "y": 642,
+        "y": 740,
         "w": 352,
         "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Network\u2026",
+      "label": "Network…",
       "actions": [
         {
           "type": "jump",
@@ -620,7 +640,7 @@
       "kind": "button",
       "rect": {
         "x": 1152,
-        "y": 740,
+        "y": 838,
         "w": 352,
         "h": 92
       },
@@ -642,13 +662,13 @@
       "kind": "button",
       "rect": {
         "x": 1152,
-        "y": 838,
+        "y": 936,
         "w": 352,
         "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Log Waste\u2026",
+      "label": "Log Waste…",
       "actions": [
         {
           "type": "jump",
@@ -798,7 +818,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Setup Guide\u2026 {setup.left}",
+      "label": "Setup Guide… {setup.left}",
       "actions": [
         {
           "type": "command",
@@ -846,7 +866,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Factory Reset\u2026",
+      "label": "Factory Reset…",
       "actions": [
         {
           "type": "jump",
@@ -871,7 +891,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "\u2039 Back",
+      "label": "‹ Back",
       "actions": [
         {
           "type": "jump",
@@ -1040,25 +1060,25 @@
       },
       "admin-terminals": {
         "x": 1152,
-        "y": 560,
+        "y": 658,
         "w": 352,
         "h": 92
       },
       "network": {
         "x": 1152,
-        "y": 658,
+        "y": 756,
         "w": 352,
         "h": 92
       },
       "admin-inventory": {
         "x": 1152,
-        "y": 756,
+        "y": 854,
         "w": 352,
         "h": 92
       },
       "waste-log": {
         "x": 1152,
-        "y": 854,
+        "y": 952,
         "w": 352,
         "h": 92
       },
@@ -1120,6 +1140,12 @@
         "x": 16,
         "y": 16,
         "w": 200,
+        "h": 92
+      },
+      "tables-setup": {
+        "x": 1152,
+        "y": 560,
+        "w": 352,
         "h": 92
       }
     }

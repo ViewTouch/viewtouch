@@ -7,6 +7,10 @@
   "one": "%1: added %n item. Change any of it as you like.",
   "other": "%1: added %n items. Change any of it as you like."
  },
+ "%n business day(s) of sales": {
+  "one": "%n business day of sales",
+  "other": "%n business days of sales"
+ },
  "%n changed": {
   "one": "%n changed",
   "other": "%n changed"
@@ -14,6 +18,10 @@
  "%n check(s)": {
   "one": "%n check",
   "other": "%n checks"
+ },
+ "%n check(s) come to a little more or less here than legacy took (legacy worked some discounts out its own way); each closes for what legacy took, the difference a \"Legacy difference\" discount:": {
+  "one": "%n check comes to a little more or less here than legacy took (legacy worked some discounts out its own way); it closes for what legacy took, the difference a \"Legacy difference\" discount:",
+  "other": "%n checks come to a little more or less here than legacy took (legacy worked some discounts out its own way); each closes for what legacy took, the difference a \"Legacy difference\" discount:"
  },
  "%n check(s) made offline go to the store's computer once it's back.": {
   "one": "%n check made offline goes to the store's computer once it's back.",
@@ -31,9 +39,21 @@
   "one": "%n chosen",
   "other": "%n chosen"
  },
+ "%n closed day(s), %1 to %2: %3 checks, %4, with their reports": {
+  "one": "%n closed day, %1 to %2: %3 checks, %4, with their reports",
+  "other": "%n closed days, %1 to %2: %3 checks, %4, with their reports"
+ },
  "%n closing task(s) not done yet": {
   "one": "%n closing task not done yet",
   "other": "%n closing tasks not done yet"
+ },
+ "%n expense(s) recorded in legacy aren't brought over.": {
+  "one": "%n expense recorded in legacy isn't brought over.",
+  "other": "%n expenses recorded in legacy aren't brought over."
+ },
+ "%n famil(ies)": {
+  "one": "%n family",
+  "other": "%n families"
  },
  "%n guest(s)": {
   "one": "%n guest",
@@ -63,9 +83,17 @@
   "one": "%n item imported. Tick the next ones.",
   "other": "%n items imported. Tick the next ones."
  },
+ "%n item(s) in %1 families and %2 choice groups (its modifier pages), with their prices, taxes and printers, in place of this store's menu, on its menu screens": {
+  "one": "%n item in %1 families and %2 choice groups (its modifier pages), with their prices, taxes and printers, in place of this store's menu, on its menu screens",
+  "other": "%n items in %1 families and %2 choice groups (its modifier pages), with their prices, taxes and printers, in place of this store's menu, on its menu screens"
+ },
  "%n item(s) removed from the menu": {
   "one": "%n item removed from the menu",
   "other": "%n items removed from the menu"
+ },
+ "%n menu item(s)": {
+  "one": "%n menu item",
+  "other": "%n menu items"
  },
  "%n modifier option(s) left out: the file doesn't say which items they go with. Make them in Choice Groups.": {
   "one": "%n modifier option left out: the file doesn't say which items it goes with. Make it in Choice Groups.",
@@ -143,6 +171,18 @@
   "one": "%n size",
   "other": "%n sizes"
  },
+ "%n table(s) are on the floor plan now": {
+  "one": "%n table is on the floor plan now",
+  "other": "%n tables are on the floor plan now"
+ },
+ "%n table(s) in all.": {
+  "one": "%n table in all.",
+  "other": "%n tables in all."
+ },
+ "%n table(s): %1.": {
+  "one": "%n table: %1.",
+  "other": "%n tables: %1."
+ },
  "%n tap(s) waiting for the store's computer were let go: add them again once it's back.": {
   "one": "%n tap waiting for the store's computer was let go: add it again once it's back.",
   "other": "%n taps waiting for the store's computer were let go: add them again once it's back."
@@ -174,6 +214,10 @@
  "Added %n item(s); already on the menu: %1": {
   "one": "Added %n item; already on the menu: %1",
   "other": "Added %n items; already on the menu: %1"
+ },
+ "Almost there: %n thing(s) left before you open": {
+  "one": "Almost there: one thing left before you open",
+  "other": "Almost there: %n things left before you open"
  },
  "Another round: %n drink(s)": {
   "one": "Another round: %n drink",
@@ -255,6 +299,10 @@
   "one": "It took over from another main server once.",
   "other": "It took over from another main server %n times."
  },
+ "Legacy's day isn't closed: %n check(s) are still open. Close the day in legacy ViewTouch first (End Day), then bring the store over.": {
+  "one": "Legacy's day isn't closed: %n check is still open. Close the day in legacy ViewTouch first (End Day), then bring the store over.",
+  "other": "Legacy's day isn't closed: %n checks are still open. Close the day in legacy ViewTouch first (End Day), then bring the store over."
+ },
  "Move %n item(s) to": {
   "one": "Move %n item to",
   "other": "Move %n items to"
@@ -263,6 +311,18 @@
   "one": "Move or remove its item first.",
   "other": "Move or remove its %n items first."
  },
+ "No backup in %n day(s)": {
+  "one": "No backup in %n day",
+  "other": "No backup in %n days"
+ },
+ "Price of %n item(s)": {
+  "one": "Price of %n item",
+  "other": "Price of %n items"
+ },
+ "Price tags for %n item(s)": {
+  "one": "Price tags for %n item",
+  "other": "Price tags for %n items"
+ },
  "Print %n label(s)": {
   "one": "Print %n label",
   "other": "Print %n labels"
@@ -270,6 +330,10 @@
  "Printing %n label(s): %1": {
   "one": "Printing %n label: %1",
   "other": "Printing %n labels: %1"
+ },
+ "Printing %n price tag(s)": {
+  "one": "Printing %n price tag",
+  "other": "Printing %n price tags"
  },
  "Printing %n receipt(s)": {
   "one": "Printing %n receipt",
@@ -311,13 +375,25 @@
   "one": "Staffing fits: about %n check the next hour, ",
   "other": "Staffing fits: about %n checks the next hour, "
  },
+ "Tax for %n item(s)": {
+  "one": "Tax for %n item",
+  "other": "Tax for %n items"
+ },
  "The connection was out too long: %n tap(s) made meanwhile didn't go in. Open the check and add them again.": {
   "one": "The connection was out too long: %n tap made meanwhile didn't go in. Open the check and add it again.",
   "other": "The connection was out too long: %n taps made meanwhile didn't go in. Open the check and add them again."
  },
+ "Too many wrong PINs. Try again in %n second(s).": {
+  "one": "Too many wrong PINs. Try again in %n second.",
+  "other": "Too many wrong PINs. Try again in %n seconds."
+ },
  "Too many wrong PINs: try again in %n second(s).": {
   "one": "Too many wrong PINs: try again in %n second.",
   "other": "Too many wrong PINs: try again in %n seconds."
+ },
+ "ViewTouch stopped by itself %n time(s) today": {
+  "one": "ViewTouch stopped by itself %n time today",
+  "other": "ViewTouch stopped by itself %n times today"
  },
  "We're making it now: ready in about %n minute(s). Please pay at the counter.": {
   "one": "We're making it now: ready in about %n minute. Please pay at the counter.",
@@ -342,6 +418,10 @@
  "⚠ %n to look at": {
   "one": "⚠ %n to look at",
   "other": "⚠ %n to look at"
+ },
+ "✓ %n table(s) are on the floor plan.": {
+  "one": "✓ %n table is on the floor plan.",
+  "other": "✓ %n tables are on the floor plan."
  },
  "✓ Ready (%n note(s))": {
   "one": "✓ Ready (%n note)",

@@ -61,6 +61,7 @@ if(Qt6_FOUND)
         layout/schema.hh layout/schema.cpp
         layout/reflow.hh layout/reflow.cpp
         layout/menu_screens.hh layout/menu_screens.cpp
+        layout/floor_builder.hh layout/floor_builder.cpp
         app/navigator.hh app/navigator.cpp
     )
     target_include_directories(vtm_layout PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -216,6 +217,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetSchedule.qml
             ui/qml/WidgetFactoryReset.qml
             ui/qml/WidgetLegacyImport.qml
+            ui/qml/WidgetTablesSetup.qml
             ui/qml/WidgetNetwork.qml
             ui/qml/WidgetReceiveDelivery.qml
             ui/qml/WidgetStockCount.qml
