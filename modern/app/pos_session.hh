@@ -159,6 +159,10 @@ class PosSession : public QObject {
     // Bringing a store over from legacy ViewTouch: {folder, preview, busy,
     // done, error} (legacyPreview, legacyBring).
     Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
+    // Looking for printers on the store's network (findPrinters): {busy,
+    // done, found: [{host, port, answered, printer}]} (printer: the name of
+    // the store's printer at that address, if one is).
+    Q_PROPERTY(QVariantMap printerSearch READ printerSearch NOTIFY sessionChanged)
     // Manager -> Network: {role: main|single, term, terminals: [{name,
     // address, user, since}], standby: {address, since} | null, printers:
     // [{name, type, where, status: ok|failed|unknown, error, at}]}.
@@ -387,6 +391,7 @@ public:
     virtual QVariantMap prepLabels() const = 0;
     virtual QVariantMap checkSearch() const = 0;
     virtual QVariantMap legacyImport() const = 0;
+    virtual QVariantMap printerSearch() const = 0;
     virtual QVariantMap networkInfo() const = 0;
     virtual QVariantList printerAlerts() const = 0;
     virtual bool training() const = 0;
@@ -612,6 +617,10 @@ public:
     {
         invoke(QStringLiteral("setupAddPrinter"), {kind, host});
     }
+    // The printers on the store's network (printerSearch), and a page on one
+    // of them saying its address, to tell which is which.
+    Q_INVOKABLE void findPrinters() { invoke(QStringLiteral("findPrinters"), {}); }
+    Q_INVOKABLE void printWhoAmI(const QString &host) { invoke(QStringLiteral("printWhoAmI"), {host}); }
     Q_INVOKABLE void setupAddEmployee(const QString &name, const QString &role, const QString &pin)
     {
         invoke(QStringLiteral("setupAddEmployee"), {name, role, pin});

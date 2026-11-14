@@ -7,6 +7,8 @@
 #include "app/tax_areas.hh"
 
 #include <QDateTime>
+#include <QThreadPool>
+#include <QPointer>
 
 #include <algorithm>
 
@@ -187,11 +189,73 @@ bool PosService::setupAddEmployee(const QString &name, const QString &role, cons
     return adminSave(u"employees"_s, -1, e);
 }
 
+bool PosService::findPrinters()
+{
+    if (!require(perm::Manager, tr("Setting up printers")))
+        return false;
+    if (!s_->searchPrinters)
+        return fail(tr("Printers are looked for on the computer that keeps the data."));
+    if (printerSearch_.value(u"busy"_s).toBool())
+        return true;
+    printerSearch_ = {{u"busy"_s, true}};
+    emit sessionChanged();
+    // A second or two of trying every address: away from the screen.
+    QPointer<PosService> self(this);
+    QThreadPool::globalInstance()->start([self, search = s_->searchPrinters] {
+        const QVariantList found = search();
+        QMetaObject::invokeMethod(self, [self, found] {
+            if (!self)
+                return;
+            QVariantList rows;
+            for (const QVariant &v : found) {
+                QVariantMap f = v.toMap();
+                // Already one of the store's printers: which.
+                for (const PrinterConfig &p : self->s_->settings.printers)
+                    if (p.type == "network" && qs(p.host) == f.value(u"host"_s).toString() && p.port == f.value(u"port"_s).toInt())
+                        f.insert(u"printer"_s, qs(p.name));
+                rows.append(f);
+            }
+            self->printerSearch_ = {{u"done"_s, true}, {u"found"_s, rows}};
+            emit self->sessionChanged();
+            emit self->notice(rows.isEmpty() ? tr("No printers found on this network.")
+                                             : tr("%n printer(s) found", nullptr, int(rows.size())));
+        });
+    });
+    return true;
+}
+
+bool PosService::printWhoAmI(const QString &host)
+{
+    if (!require(perm::Manager, tr("Setting up printers")))
+        return false;
+    if (!s_->printWhoAmI)
+        return fail(tr("Printers are looked for on the computer that keeps the data."));
+    // Only one that was found (not any address someone types).
+    int port = 0;
+    for (const QVariant &v : printerSearch_.value(u"found"_s).toList())
+        if (v.toMap().value(u"host"_s).toString() == host)
+            port = v.toMap().value(u"port"_s).toInt();
+    if (port <= 0)
+        return fail(tr("Look for printers first."));
+    QPointer<PosService> self(this);
+    const QString title = qs(s_->settings.storeName).trimmed().isEmpty() ? u"ViewTouch"_s : qs(s_->settings.storeName);
+    const QString line = tr("This printer is %1").arg(host);
+    QThreadPool::globalInstance()->start([self, host, port, title, line, print = s_->printWhoAmI] {
+        const QString error = print(host, port, title, line);
+        QMetaObject::invokeMethod(self, [self, host, error] {
+            if (self)
+                emit self->notice(error.isEmpty() ? tr("Look for the page that says %1.").arg(host)
+                                                  : tr("%1 didn't take the page: %2").arg(host, error));
+        });
+    });
+    return true;
+}
+
 bool PosService::setupAddPrinter(const QString &kind, const QString &host)
 {
     if (!require(perm::Manager, tr("Setting up the store")))
         return false;
-    if (kind != u"receipt" && kind != u"kitchen")
+    if (kind != u"receipt" && kind != u"kitchen" && kind != u"bar")
         return false;
     const QString address = host.trimmed();
     if (address.isEmpty())
@@ -203,14 +267,30 @@ bool PosService::setupAddPrinter(const QString &kind, const QString &host)
     QVariantMap record = index >= 0 ? adminRecords(u"printers"_s).value(index).toMap() : adminNewRecord(u"printers"_s);
     if (index < 0) {
         record.insert(u"id"_s, kind);
-        record.insert(u"name"_s, kind == u"receipt" ? tr("Receipts") : tr("Kitchen"));
+        record.insert(u"name"_s, kind == u"receipt" ? tr("Receipts") : kind == u"bar" ? tr("Bar") : tr("Kitchen"));
         record.insert(u"receipts"_s, kind == u"receipt");
     }
     record.insert(u"type"_s, u"network"_s);
     record.insert(u"host"_s, address.section(u':', 0, 0));
     if (const int port = address.section(u':', 1, 1).toInt(); port > 0)
         record.insert(u"port"_s, port);
-    return adminSave(u"printers"_s, index, record);
+    if (!adminSave(u"printers"_s, index, record))
+        return false;
+    // Found printers say which of the store's they are now.
+    if (printerSearch_.contains(u"found"_s)) {
+        QVariantList rows = printerSearch_.value(u"found"_s).toList();
+        for (QVariant &v : rows) {
+            QVariantMap f = v.toMap();
+            f.remove(u"printer"_s);
+            for (const PrinterConfig &p : s_->settings.printers)
+                if (p.type == "network" && qs(p.host) == f.value(u"host"_s).toString() && p.port == f.value(u"port"_s).toInt())
+                    f.insert(u"printer"_s, qs(p.name));
+            v = f;
+        }
+        printerSearch_.insert(u"found"_s, rows);
+        emit sessionChanged();
+    }
+    return true;
 }
 
 bool PosService::setupRetireSamples()

@@ -1,6 +1,9 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include "print/printer_finder.hh"
+#include <QTcpSocket>
+#include <QTcpServer>
 
 #include "net/build_info.hh"
 #include "net/stress.hh"
@@ -6858,6 +6861,76 @@ TEST_CASE("Setup guide: the store's ZIP code finds its tax rates", "[ui][setup][
     CHECK(s.pos.shared()->settings.storeZip == "90012");
     CHECK(s.pos.shared()->settings.laborState == "CA");
     s.shot("setup-tax-zip");
+}
+
+TEST_CASE("Setup guide: Find My Printers, Print Its Address, and what it's for", "[ui][setup][findprinters]")
+{
+    // Two things on port P: a printer (says its status) and something that
+    // doesn't answer; and an address with nothing there.
+    QTcpServer printer, silent;
+    REQUIRE(printer.listen(QHostAddress(u"127.0.0.1"_s)));
+    const int port = printer.serverPort();
+    REQUIRE(silent.listen(QHostAddress(u"127.0.0.2"_s), quint16(port)));
+    QByteArray printed;
+    QObject::connect(&printer, &QTcpServer::newConnection, [&] {
+        while (QTcpSocket *c = printer.nextPendingConnection())
+            QObject::connect(c, &QTcpSocket::readyRead, c, [&, c] {
+                const QByteArray got = c->readAll();
+                if (got.startsWith(QByteArray("\x10\x04", 2)))
+                    c->write(QByteArray("\x12", 1));   // online, nothing wrong
+                else
+                    printed += got;
+            });
+    });
+    QObject::connect(&silent, &QTcpServer::newConnection, [&] { silent.nextPendingConnection(); });
+    vt::print::setSearchForTests({QHostAddress(u"127.0.0.1"_s), QHostAddress(u"127.0.0.2"_s), QHostAddress(u"127.0.0.3"_s)}, port);
+
+    Screen s;
+    vt::print::installFinder(*s.pos.shared());
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.c.openSetup();
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    QQuickItem *guide = by(u"setupGuide"_s);
+    REQUIRE(guide);
+    guide->setProperty("step", 7);   // printers
+    QTest::qWait(100);
+    REQUIRE(by(u"findPrinters"_s));
+    s.tapItem(by(u"findPrinters"_s));
+    for (int i = 0; i < 100 && !s.pos.printerSearch().value(u"done"_s).toBool(); ++i)
+        QTest::qWait(50);
+    const QVariantList found = s.pos.printerSearch().value(u"found"_s).toList();
+    REQUIRE(found.size() == 2);
+    CHECK(found[0].toMap().value(u"host"_s) == u"127.0.0.1"_s);
+    CHECK(found[0].toMap().value(u"answered"_s).toBool());
+    CHECK(found[1].toMap().value(u"host"_s) == u"127.0.0.2"_s);
+    CHECK_FALSE(found[1].toMap().value(u"answered"_s).toBool());
+    QTest::qWait(100);
+    s.shot("setup-find-printers");
+
+    // Its address on paper, then it's the kitchen's.
+    REQUIRE(by(u"foundPrinterTest-127.0.0.1"_s));
+    s.tapItem(by(u"foundPrinterTest-127.0.0.1"_s));
+    const QByteArray cut("\x1d\x56\x42\x00", 4);
+    for (int i = 0; i < 100 && !printed.endsWith(cut); ++i)
+        QTest::qWait(30);
+    CHECK(printed.contains("This printer is 127.0.0.1"));
+    CHECK(printed.contains(QByteArray("\x1d\x21\x11", 3)));   // big
+    CHECK(printed.endsWith(cut));                                 // and cut, whole
+    s.tapItem(by(u"foundPrinterUse-kitchen-127.0.0.1"_s));
+    QTest::qWait(150);
+    const auto kitchen = std::ranges::find_if(s.pos.shared()->settings.printers,
+                                              [](const core::PrinterConfig &p) { return p.id == "kitchen"; });
+    REQUIRE(kitchen != s.pos.shared()->settings.printers.end());
+    CHECK(kitchen->type == "network");
+    CHECK(kitchen->host == "127.0.0.1");
+    CHECK(kitchen->port == port);
+    CHECK(s.pos.printerSearch().value(u"found"_s).toList()[0].toMap().value(u"printer"_s).toString() == u"Kitchen"_s);
+    s.shot("setup-find-printers-kitchen");
+    // Only a printer that was found gets a page.
+    s.pos.printWhoAmI(u"10.9.9.9"_s);
+    vt::print::setSearchForTests({}, 0);
 }
 
 TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")

@@ -445,6 +445,11 @@ public:
     std::function<std::optional<PastDay>(std::int64_t from, std::int64_t to)> olderDay;
     std::function<std::any(const QString &folder, const QVariantMap &parts, const core::PosSettings &settings)> legacyRead;
     std::function<QVariantMap(const std::any &read, bool apply)> legacyFinish;
+    // Printers on the store's network (set by the app: print/printer_finder.hh),
+    // on any thread: [{host, port, answered}]; and a page on one saying its
+    // address ("" when it went, else why not).
+    std::function<QVariantList()> searchPrinters;
+    std::function<QString(const QString &host, int port, const QString &title, const QString &line)> printWhoAmI;
     // The store's computers and printers, for Manager -> Network (set by
     // the app): {role, term, terminals, standby, printers}.
     std::function<QVariantMap()> network;
@@ -553,6 +558,9 @@ public:
     bool reprintCheck(qint64 id);   // a copy of a found check's receipt
     QVariantMap checkSearch() const override;
     QVariantMap legacyImport() const override { return legacy_; }
+    QVariantMap printerSearch() const override { return printerSearch_; }
+    bool findPrinters();
+    bool printWhoAmI(const QString &host);
     // A legacy dat folder: what it would bring (nothing changed), then
     // bringing it (owner or maintainer). The folder is read away from the
     // screen: legacyImport() says {busy} until it has ({preview}, or
@@ -1317,6 +1325,7 @@ private:
     core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
     QVariantMap legacy_;
+    QVariantMap printerSearch_;
     // A day opened by its date from Reports, older than those kept in memory.
     std::optional<PastDay> olderDay_;
     int legacyRequest_ = 0;

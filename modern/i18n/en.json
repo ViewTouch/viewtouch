@@ -139,6 +139,10 @@
   "one": "%n price changed",
   "other": "%n prices changed"
  },
+ "%n printer(s) found": {
+  "one": "%n printer found",
+  "other": "%n printers found"
+ },
  "%n request(s) waiting: Schedule → Requests": {
   "one": "%n request waiting: Schedule → Requests",
   "other": "%n requests waiting: Schedule → Requests"

@@ -110,6 +110,7 @@ if(Qt6_FOUND)
         print/ticket_printer.hh print/ticket_printer.cpp
         print/raster.hh print/raster.cpp
         print/printer_monitor.hh print/printer_monitor.cpp
+        print/printer_finder.hh print/printer_finder.cpp
     )
     target_link_libraries(vtm_print PUBLIC vtm_pos Qt6::Network Qt6::Gui)
 
@@ -218,6 +219,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetFactoryReset.qml
             ui/qml/WidgetLegacyImport.qml
             ui/qml/WidgetTablesSetup.qml
+            ui/qml/PrinterFinder.qml
             ui/qml/WidgetNetwork.qml
             ui/qml/WidgetReceiveDelivery.qml
             ui/qml/WidgetStockCount.qml

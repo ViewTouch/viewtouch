@@ -500,6 +500,17 @@ Item {
                             text: qsTr("+ Add")
                             onClicked: w.add()
                         }
+                        // Printers: the ones on the network, without typing addresses.
+                        PosButton {
+                            objectName: "adminFindPrinters"
+                            visible: w.panel === "printers"
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: 280
+                            implicitHeight: 54
+                            font.pixelSize: 17
+                            text: qsTr("Find My Printers…")
+                            onClicked: printerFinder.open()
+                        }
                     }
                 }
 
@@ -628,6 +639,33 @@ Item {
                         }
                     }
                 }
+            }
+        }
+
+        Popup {
+            id: printerFinder
+            objectName: "adminPrinterFinder"
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 24, 900)
+            height: Math.min(parent.height - 24, 640)
+            modal: true
+            padding: 16
+            contentItem: ColumnLayout {
+                spacing: 10
+                Label { textFormat: Text.PlainText; text: qsTr("Printers on this network"); font.pixelSize: 20; font.bold: true }
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    contentWidth: availableWidth
+                    PrinterFinder {
+                        width: parent ? parent.width : 0
+                        pos: w.pos
+                        ink: Ui.text
+                        small: w.narrow
+                    }
+                }
+                PosButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: printerFinder.close() }
             }
         }
 

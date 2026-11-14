@@ -416,7 +416,31 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         color: "white"
                         font.pixelSize: 18
-                        text: qsTr("The menu has %1 items. Add yours here: they show on the Everything page right away. Prices, photos and choices: Manager -> Menu.").arg(g.info.items ?? 0)
+                        text: qsTr("The menu has %1 items. The easiest way to add yours: Step by Step asks each item's name, price, choices and where its order goes.").arg(g.info.items ?? 0)
+                    }
+                    // An item with its choices and where its order goes: the Menu
+                    // Builder's questions, one at a time.
+                    PosButton {
+                        objectName: "setupMenuNewItem"
+                        Layout.fillWidth: true
+                        implicitHeight: 64
+                        highlighted: true
+                        font.pixelSize: 18
+                        lines: 2
+                        text: qsTr("Step by Step: an Item With Its Choices and Kitchen…")
+                        onClicked: {
+                            g.controller.keep("menuBuilderNewItem", true)
+                            g.leaveFor("menu-builder")
+                        }
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        Layout.topMargin: 6
+                        wrapMode: Text.WordWrap
+                        color: Ui.textSoft
+                        font.pixelSize: 16
+                        text: qsTr("Or just a name and a price, here (they show on the Everything page right away):")
                     }
                     GridLayout {
                         columns: g.narrow ? 2 : 4
@@ -476,20 +500,6 @@ Rectangle {
                     Repeater {
                         model: g.addedItems
                         delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
-                    }
-                    // An item with its choices and where its order goes: the Menu
-                    // Builder's questions, one at a time.
-                    PosButton {
-                        objectName: "setupMenuNewItem"
-                        Layout.fillWidth: true
-                        Layout.topMargin: 6
-                        implicitHeight: 56
-                        font.pixelSize: 17
-                        text: qsTr("Step by Step: an Item With Its Choices and Kitchen…")
-                        onClicked: {
-                            g.controller.keep("menuBuilderNewItem", true)
-                            g.leaveFor("menu-builder")
-                        }
                     }
                     // A whole menu at once, instead of typing it.
                     Label {
@@ -646,7 +656,12 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         color: "white"
                         font.pixelSize: 18
-                        text: qsTr("Receipt and kitchen printers on the store's network: type each one's address (it prints it on its self-test: hold Feed while turning it on), then Print a Test. No printer yet? Next: receipts and tickets show on screen.")
+                        text: qsTr("Receipt and kitchen printers on the store's network: Find My Printers looks for them, or type each one's address (it prints it on its self-test: hold Feed while turning it on), then Print a Test. No printer yet? Next: receipts and tickets show on screen.")
+                    }
+                    PrinterFinder {
+                        Layout.fillWidth: true
+                        pos: g.pos
+                        small: g.narrow
                     }
                     Repeater {
                         model: [{ kind: "receipt", title: qsTr("Receipt printer") }, { kind: "kitchen", title: qsTr("Kitchen printer") }]

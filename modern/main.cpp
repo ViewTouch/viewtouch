@@ -17,6 +17,7 @@
 #include "net/stress.hh"
 #include "print/printer_monitor.hh"
 #include "print/spooler.hh"
+#include "print/printer_finder.hh"
 #include "print/ticket_printer.hh"
 #include "storage/async_writer.hh"
 #include "app/pos_demo.hh"
@@ -1201,6 +1202,7 @@ int runStore(const Args &cli, const Options &o)
         };
         vt::legacy::install(*shared, std::move(r));
     }
+    vt::print::installFinder(*shared);   // Find My Printers (setup guide, Manager -> Printers)
     std::unique_ptr<vt::net::PosServer> server;
     std::unique_ptr<vt::net::DiscoveryResponder> discovery;
     std::unique_ptr<QLocalServer> control;

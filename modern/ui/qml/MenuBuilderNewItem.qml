@@ -520,7 +520,10 @@ Rectangle {
                         Layout.fillWidth: true
                         spacing: 8
                         Repeater {
-                            model: wiz.menu ? wiz.menu.printers : []
+                            // The kitchen's and the bar's first; the receipt printer (at the
+                            // counter) last: a small place may print everything there.
+                            model: wiz.menu ? wiz.menu.printers.filter(p => p.id !== "receipt")
+                                                  .concat(wiz.menu.printers.filter(p => p.id === "receipt")) : []
                             delegate: MenuTouchButton {
                                 required property var modelData
                                 objectName: "newItemPrinter-" + modelData.id
@@ -531,7 +534,8 @@ Rectangle {
                                 checkable: true
                                 checked: wiz.draft.printer === modelData.id
                                 text: qsTranslate("Data", String(modelData.name ?? ""))
-                                      + (usual ? "\n" + qsTr("usual for %1").arg(qsTranslate("Data", String(wiz.category.name ?? ""))) : "")
+                                      + (usual ? "\n" + qsTr("usual for %1").arg(qsTranslate("Data", String(wiz.category.name ?? "")))
+                                         : modelData.id === "receipt" ? "\n" + qsTr("the one at the counter") : "")
                                 onClicked: wiz.menu.set("printer", modelData.id)
                             }
                         }
