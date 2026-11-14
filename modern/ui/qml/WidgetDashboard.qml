@@ -21,6 +21,44 @@ Item {
         zone.controller.keep("findCheck", { query: "#" + a.checkId, id: a.checkId })
         zone.controller.showPage("find-check")
     }
+    // The profit coach: ways to earn more, from the last 4 weeks.
+    readonly property var coach: pos ? pos.coach : ({})
+    readonly property var tips: coach.tips ?? []
+    // A tip's button: what it says, and what it does.
+    function tipAction(t) {
+        switch (t.kind) {
+        case "raise": return qsTr("Change the Price…")
+        case "gem": return qsTr("Make It a Favorite")
+        case "weak": case "never": return qsTr("Open It")
+        case "quiet": return qsTr("Set Up a Happy Hour…")
+        case "discounts": return qsTr("See Who Gave Them")
+        default: return ""
+        }
+    }
+    function doTip(t) {
+        const c = zone.controller
+        switch (t.kind) {
+        case "raise":
+            c.keep("menuBuilderOpen", t.item)
+            c.keep("menuBuilderPrice", t.price)   // filled in; nothing changes until Save
+            c.showPage("menu-builder")
+            break
+        case "gem":
+            w.pos.changeMenuItems([t.item], { favorite: true })
+            break
+        case "weak": case "never":
+            c.keep("menuBuilderOpen", t.item)
+            c.showPage("menu-builder")
+            break
+        case "quiet":
+            c.showPage("admin-meal-periods")
+            break
+        case "discounts":
+            c.keep("reportOpen", "exceptions")
+            c.showPage("reports")
+            break
+        }
+    }
     // Seen once the Dashboard shows them (the Manager page's count goes).
     Timer {
         interval: 1500
@@ -169,6 +207,50 @@ Item {
                     text: qsTr("See All (%1)").arg(w.alerts.length)
                     font.pixelSize: w.unit * 0.8
                     onClicked: alertList.open()
+                }
+            }
+        }
+
+        // Ways to earn more: the best tip, the rest a touch away.
+        Rectangle {
+            objectName: "dashCoach"
+            visible: w.tips.length > 0
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: visible ? coachRow.implicitHeight + w.unit * 0.8 : 0
+            radius: 10
+            color: Qt.rgba(0.2, 0.7, 0.4, 0.18)
+            border.color: w.good
+            RowLayout {
+                id: coachRow
+                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: w.unit * 0.5 }
+                spacing: w.unit * 0.5
+                Text {
+                    textFormat: Text.PlainText
+                    text: "$"
+                    color: w.good
+                    font.pixelSize: w.unit * 1.2
+                    font.bold: true
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    objectName: "dashCoachText"
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
+                    text: w.tips.length ? w.tips[0].title + (w.tips[0].worthText ? "  ·  " + w.tips[0].worthText : "") : ""
+                    color: w.ink
+                    font.family: w.face
+                    font.pixelSize: w.unit * 0.9
+                    font.bold: true
+                    MouseArea { anchors.fill: parent; onClicked: tipList.open() }
+                }
+                PosButton {
+                    objectName: "dashCoachAll"
+                    text: qsTr("Ways to Earn More (%1)").arg(w.tips.length)
+                    font.pixelSize: w.unit * 0.8
+                    onClicked: tipList.open()
                 }
             }
         }
@@ -397,6 +479,103 @@ Item {
                 }
             }
             PosButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: alertList.close() }
+        }
+    }
+
+    Popup {
+        id: tipList
+        objectName: "dashTipList"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 760, 820)
+        height: Math.min(parent ? parent.height - 48 : 640, 700)
+        modal: true
+        padding: 16
+        contentItem: ColumnLayout {
+            spacing: 8
+            Label { textFormat: Text.PlainText; text: qsTr("Ways to earn more"); font.pixelSize: 20; font.bold: true }
+            Label {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                opacity: 0.75
+                text: qsTr("From your own last 4 weeks of sales and costs. The money is an estimate. Not Now hides a tip for a month.")
+            }
+            ListView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: 10
+                model: w.tips
+                delegate: Rectangle {
+                    id: tipCard
+                    required property var modelData
+                    width: ListView.view.width
+                    implicitHeight: tipBody.implicitHeight + 20
+                    radius: 8
+                    color: Qt.rgba(1, 1, 1, 0.06)
+                    border.color: Qt.rgba(1, 1, 1, 0.16)
+                    ColumnLayout {
+                        id: tipBody
+                        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
+                        spacing: 6
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: 17
+                                font.bold: true
+                                text: tipCard.modelData.title
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                visible: text !== ""
+                                color: w.good
+                                font.pixelSize: 16
+                                font.bold: true
+                                text: tipCard.modelData.worthText ?? ""
+                            }
+                        }
+                        Label {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            opacity: 0.85
+                            font.pixelSize: 15
+                            text: tipCard.modelData.why
+                        }
+                        RowLayout {
+                            spacing: 8
+                            PosButton {
+                                objectName: "tipDo-" + tipCard.modelData.id
+                                visible: text !== ""
+                                highlighted: true
+                                text: w.tipAction(tipCard.modelData)
+                                onClicked: {
+                                    const t = tipCard.modelData
+                                    tipList.close()
+                                    w.doTip(t)
+                                }
+                            }
+                            PosButton {
+                                objectName: "tipNotNow-" + tipCard.modelData.id
+                                text: qsTr("Not Now")
+                                onClicked: w.pos.coachNotNow(tipCard.modelData.id)
+                            }
+                        }
+                    }
+                }
+            }
+            Label {
+                textFormat: Text.PlainText
+                visible: w.tips.length === 0
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: w.coach.waiting ?? qsTr("Nothing to change: the menu, its prices and the week look healthy.")
+            }
+            PosButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: tipList.close() }
         }
     }
 }

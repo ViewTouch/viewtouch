@@ -69,6 +69,7 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
              return QVariant(p.printPriceTags(a.value(0).toStringList(), a.value(1, 1).toInt())); }},
         {u"problemsSeen"_s, [](PosService &p, const QVariantList &) { return QVariant(p.problemsSeen()); }},
         {u"alertsSeen"_s, [](PosService &p, const QVariantList &) { return QVariant(p.alertsSeen()); }},
+        {u"coachNotNow"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.coachNotNow(a.value(0).toString())); }},
         {u"logWaste"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.logWaste(a.value(0).toMap())); }},
         {u"saveStockCount"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.saveStockCount(a.value(0).toMap())); }},
         {u"setExpenseCategory"_s, [](PosService &p, const QVariantList &a) { p.setExpenseCategory(a.value(0).toString()); return QVariant(true); }},

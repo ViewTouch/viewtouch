@@ -1251,6 +1251,12 @@ QJsonObject toJson(const PosSettings &s)
         {u"closeWhenPaid"_s, s.closeWhenPaid},
         {u"watch"_s, s.watch}, {u"watchVoid"_s, qint64(s.watchVoid.cents())}, {u"watchComp"_s, qint64(s.watchComp.cents())},
         {u"alertsSeenAt"_s, qint64(s.alertsSeenAt)},
+        {u"coachDismissed"_s, [&] {
+             QJsonObject o;
+             for (const auto &[id, until] : s.coachDismissed)
+                 o.insert(qs(id), qint64(until));
+             return o;
+         }()},
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
         {u"deliveryFee"_s, qint64(s.deliveryFee.cents())}, {u"deliveryFeeToDriver"_s, s.deliveryFeeToDriver},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
@@ -1570,6 +1576,10 @@ PosSettings settingsFromJson(const QJsonObject &o)
     if (o.contains(u"watchComp"))
         s.watchComp = money(o.value(u"watchComp"));
     s.alertsSeenAt = i64(o.value(u"alertsSeenAt"));
+    s.coachDismissed.clear();
+    const QJsonObject dismissed = o.value(u"coachDismissed").toObject();
+    for (auto it = dismissed.begin(); it != dismissed.end(); ++it)
+        s.coachDismissed[ss(it.key())] = it.value().toInteger();
     s.takeoutMinutes = std::clamp(o.value(u"takeoutMinutes").toInt(15), 0, 240);
     s.deliveryMinutes = std::clamp(o.value(u"deliveryMinutes").toInt(35), 0, 240);
     s.minutesPerOrderWaiting = std::clamp(o.value(u"minutesPerOrderWaiting").toInt(2), 0, 60);

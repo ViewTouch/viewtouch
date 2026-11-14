@@ -118,6 +118,7 @@ public:
     QVariantMap stockLeft() const override { return v(u"stockLeft").toMap(); }
     QVariantMap dashboard() const override { return v(u"dashboard").toMap(); }
     QVariantList lossAlerts() const override { return v(u"lossAlerts").toList(); }
+    QVariantMap coach() const override { return v(u"coach").toMap(); }
     QVariantMap checklists() const override { return v(u"checklists").toMap(); }
     QString checkFilter() const override { return v(u"checkFilter").toString(); }
     QVariantList kitchenTickets() const override { return v(u"kitchenTickets").toList(); }

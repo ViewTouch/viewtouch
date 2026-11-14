@@ -76,6 +76,9 @@ Item {
             if (i) {
                 categoryId = i.family
                 editItem(i)
+                // From the profit coach (Change the Price…): the new price filled in, not saved.
+                const price = zone.controller.take("menuBuilderPrice")
+                if (price !== undefined) set("price", String(price))
             } else {
                 waitingFor = String(open)   // not here yet: opened when it is
             }

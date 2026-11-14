@@ -1455,6 +1455,8 @@ bool PosService::importPastDay(std::int64_t openedAt, std::int64_t closedAt, std
 Report PosService::buildReport(const QString &id) const
 {
     const ReportContext ctx = reportContext(dayPeriod(s_->day));
+    if (id == u"coach")
+        return coachReport(ctx);
     if (id == u"items")
         return itemSales(s_->closedToday, s_->menu, ctx);
     if (id == u"checklists")

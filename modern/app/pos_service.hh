@@ -946,6 +946,12 @@ public:
     QVariantMap stockLeft() const override;
     QVariantMap dashboard() const override;
     QVariantList lossAlerts() const override;
+    // The profit coach (app/pos_coach.cpp): {tips: [{id, kind, title, why,
+    // worth, worthText, item, price}], days} or {waiting} or {busy}.
+    QVariantMap coach() const override;
+    QVariantMap coachFrom(const std::vector<core::Check> &closed) const;
+    bool coachNotNow(const QString &id);
+    core::Report coachReport(const core::ReportContext &ctx) const;
     QVariantList lossAlertsNow() const;
     bool alertsSeen();
     static bool watchesEvent(const char *kind);
@@ -1467,6 +1473,11 @@ private:
     std::string clockWho_;
     // The dashboard's "same day last week, by this time" (read from the store; kept a few minutes).
     mutable std::int64_t lastWeekAt_ = 0;
+    // The profit coach's tips, when they were worked out, and for which day.
+    void refreshCoach() const;
+    mutable QVariantMap coach_;
+    mutable std::int64_t coachAt_ = 0;
+    mutable std::int64_t coachDay_ = 0;
     mutable Money lastWeekNet_;
     mutable int lastWeekChecks_ = -1;    // the Time Clock screen: whose PIN was typed (not logged in)
     bool clockOutFor(const core::Employee &e);

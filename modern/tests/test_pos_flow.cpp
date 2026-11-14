@@ -10063,6 +10063,71 @@ TEST_CASE("UI: loss alerts: Manager's count, the Dashboard's bar, and the check 
     s.shot("dashboard-alert-check");
 }
 
+TEST_CASE("UI: the profit coach on the Dashboard: Change the Price… fills it in, Not Now hides it", "[flow][ui][coach]")
+{
+    Screen s;
+    auto &shared = *s.pos.shared();
+    // The Classic Burger costs a lot to make and outsells everything for four weeks.
+    core::Ingredient pricey;
+    pricey.id = "wagyu";
+    pricey.name = "Wagyu patty";
+    pricey.cost = Money::fromCents(800);
+    shared.ingredients.push_back(pricey);
+    for (core::MenuItem &m : shared.menu)
+        if (m.id == "classic-burger")
+            m.recipe = {{"wagyu", 1}};
+    std::vector<core::Check> weeks;
+    std::int64_t id = 5000;
+    const QDate today = QDate::currentDate();
+    for (int d = 1; d <= 28; ++d)
+        for (int h : {12, 13, 18, 19, 20}) {
+            core::Check c;
+            c.id = ++id;
+            c.status = core::CheckStatus::Closed;
+            c.serverName = "Sam";
+            c.closedAt = QDateTime(today.addDays(-d), QTime(h, 5)).toMSecsSinceEpoch();
+            for (const char *item : {"classic-burger", "classic-burger", "cheeseburger"}) {
+                core::OrderLine l;
+                l.id = qint64(c.lines.size()) + 1;
+                l.itemId = item;
+                l.name = s.pos.findItem(QString::fromLatin1(item))->name;
+                l.unitPrice = s.pos.findItem(QString::fromLatin1(item))->price;
+                c.lines.push_back(l);
+            }
+            weeks.push_back(c);
+        }
+    shared.history = [weeks](std::int64_t, std::int64_t) { return weeks; };
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"dashboard"_s));
+    for (int i = 0; i < 100 && s.pos.coach().value(u"tips"_s).toList().isEmpty(); ++i)
+        QTest::qWait(30);
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    REQUIRE(by(u"dashCoach"_s));
+    CHECK(by(u"dashCoach"_s)->isVisible());
+    CHECK(by(u"dashCoachText"_s)->property("text").toString().contains(u"Classic Burger"_s));
+    s.shot("dashboard-coach");
+    s.tapItem(by(u"dashCoachAll"_s));
+    QTest::qWait(150);
+    s.shot("dashboard-coach-tips");
+    REQUIRE(by(u"tipDo-raise-classic-burger"_s));
+    const Money before = s.pos.findItem(u"classic-burger"_s)->price;
+    s.tapItem(by(u"tipDo-raise-classic-burger"_s));
+    QTest::qWait(250);
+    CHECK(s.c.pageId() == u"menu-builder"_s);
+    root = s.window->contentItem();
+    REQUIRE(by(u"builderPrice"_s));
+    CHECK(by(u"builderPrice"_s)->property("text").toString() == u"12.50"_s);
+    CHECK(s.pos.findItem(u"classic-burger"_s)->price == before);   // nothing saved yet
+    s.shot("dashboard-coach-price");
+
+    // Not Now: that tip gone from the list for a month.
+    REQUIRE(s.pos.coachNotNow(u"raise-classic-burger"_s));
+    for (const QVariant &v : s.pos.coach().value(u"tips"_s).toList())
+        CHECK(v.toMap().value(u"id"_s) != u"raise-classic-burger"_s);
+}
+
 TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
 {
     Screen s;

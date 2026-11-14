@@ -387,6 +387,10 @@
   "one": "The connection was out too long: %n tap made meanwhile didn't go in. Open the check and add it again.",
   "other": "The connection was out too long: %n taps made meanwhile didn't go in. Open the check and add them again."
  },
+ "Tips start after two weeks of sales (%n day(s) so far).": {
+  "one": "Tips start after two weeks of sales (%n day so far).",
+  "other": "Tips start after two weeks of sales (%n days so far)."
+ },
  "Too many wrong PINs. Try again in %n second(s).": {
   "one": "Too many wrong PINs. Try again in %n second.",
   "other": "Too many wrong PINs. Try again in %n seconds."

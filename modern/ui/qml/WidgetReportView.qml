@@ -38,6 +38,7 @@ Item {
             { id: "categories", label: qsTr("Categories"), range: true },
             { id: "hourly", label: qsTr("By Hour"), range: true },
             { id: "engineering", label: qsTr("Menu Mix"), range: true },
+            { id: "coach", label: qsTr("Profit Coach"), range: false },
             { id: "forecast", label: qsTr("Forecast"), range: false } ] },
         { label: qsTr("Staff"), reports: [
             { id: "servers", label: qsTr("Servers"), range: true },
@@ -72,6 +73,11 @@ Item {
     readonly property var current: reportIds.find(r => r.id === reportId) ?? reportIds[0]
 
     property string reportId: zone && zone.props && zone.props.report ? zone.props.report : "sales"
+    // Sent from elsewhere (the Dashboard's tips): that report.
+    Component.onCompleted: {
+        const sent = zone && zone.controller ? zone.controller.take("reportOpen") : undefined
+        if (sent) pick(sent)
+    }
     function pick(id) {
         const r = reportIds.find(x => x.id === id)
         if (!r)
