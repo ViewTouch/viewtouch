@@ -228,6 +228,8 @@ if(Qt6_FOUND)
             ui/qml/WidgetMenuCategories.qml
             ui/qml/WidgetMenuBuilder.qml
             ui/qml/MenuBuilderImport.qml
+            ui/qml/MenuBuilderNewItem.qml
+            ui/qml/MenuBuilderNewChoice.qml
             ui/qml/MenuBuilderCheck.qml
             ui/qml/MenuBuilderStarter.qml
             ui/qml/MenuBuilderSeveral.qml

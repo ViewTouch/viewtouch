@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "net/build_info.hh"
 #include "net/stress.hh"
@@ -1542,6 +1543,7 @@ TEST_CASE("UI: Menu Builder: a new item like another", "[flow][ui][menubuild][li
     };
     tap(u"builderCategory-burgers"_s);
     tap(u"builderAddItem"_s);
+    tap(u"newItemAll"_s);   // the card, not the questions
     tap(u"builderLike"_s);
     tap(u"builderLike-cheeseburger"_s);
     tap(u"builderName"_s);
@@ -1695,6 +1697,7 @@ TEST_CASE("UI: Menu Builder: a printed menu, as a PDF", "[flow][ui][printmenu]")
         s.tapItem(it);
         QTest::qWait(60);
     };
+    tap(u"builderTools"_s);   // More Tools…: what each does, said
     s.shot("89-builder-print-key");
     tap(u"builderPrintMenu"_s);
     QQuickItem *preview = nullptr;
@@ -1762,7 +1765,7 @@ TEST_CASE("UI: Menu Builder: an import ticked into categories, a few at a time",
         items << QVariantMap{{u"row"_s, 2}, {u"name"_s, name}, {u"price"_s, price}, {u"category"_s, QString()}};
     // The dialog is the builder's (a Popup: not among the window's items).
     QObject *dialog = nullptr;
-    for (QQuickItem *at = by(u"builderImport"_s); at && !dialog; at = at->parentItem())
+    for (QQuickItem *at = by(u"builderTools"_s); at && !dialog; at = at->parentItem())
         dialog = at->findChild<QObject *>(u"builderImportDialog"_s, Qt::FindDirectChildrenOnly);
     REQUIRE(dialog);
     dialog->setProperty("read", QVariantMap{{u"items"_s, items}, {u"from"_s, u"Toast"_s}, {u"problems"_s, QStringList{}}});
@@ -3360,6 +3363,7 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     QTest::qWait(60);
     CHECK(guide->property("current").toString() == u"menu"_s);
     CHECK(find("setupMenuFile"));
+    CHECK(find("setupMenuNewItem"));
     guide->setProperty("step", 9);
     QTest::qWait(60);
     next();                                                      // Close: not finished yet
@@ -4378,8 +4382,12 @@ TEST_CASE("UI: Menu Builder keys fit, in English and Spanish", "[flow][ui][i18n]
         QTest::qWait(150);
         QQuickItem *root = s.window->contentItem();
         if (std::string(lang) == "es")
-            CHECK(Screen::findBy(root, "text", u"Imprimir…"_s));
-        for (const QString &name : {u"builderImport"_s, u"builderExport"_s, u"builderTemplates"_s, u"builderPrintMenu"_s}) {
+            CHECK(Screen::findBy(root, "text", u"Más herramientas…"_s));
+        REQUIRE(Screen::findBy(root, "objectName", u"builderTools"_s));
+        s.tapItem(Screen::findBy(root, "objectName", u"builderTools"_s));
+        QTest::qWait(150);
+        for (const QString &name : {u"builderTools"_s, u"builderImport"_s, u"builderExportFile"_s, u"builderExportSheet"_s,
+                                    u"builderTemplates"_s, u"builderPrintMenu"_s}) {
             QQuickItem *key = Screen::findBy(root, "objectName", name);
             REQUIRE(key);
             INFO(lang << ": " << key->property("text").toString().toStdString());
@@ -8160,6 +8168,251 @@ TEST_CASE("UI: a new item shows up on the menu screen by itself", "[flow][ui][me
     CHECK(s.pos.lines()[0].toMap()[u"name"_s].toString() == u"Fish Tacos"_s);
 }
 
+TEST_CASE("UI: Menu Builder: a new item, one question at a time", "[flow][ui][menubuild][newitem]")
+{
+    const bool phone = GENERATE(false, true);
+    CAPTURE(phone);
+    Screen s(false, phone ? 412 : 1600, phone ? 915 : 900, phone ? u"phone"_s : QString());
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto shown = [&](const QString &name) { QQuickItem *i = by(name); return i && i->isVisible(); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        scrollTo(it);
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+    const auto type = [&](const QString &field, const char *text) {
+        tap(field);
+        QTest::keyClick(s.window, Qt::Key_A, Qt::ControlModifier);
+        for (const char *ch = text; *ch; ++ch)
+            QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+        QTest::qWait(30);
+    };
+    const auto item = [&](const QString &name) {
+        for (const QVariant &m : s.pos.menuItems())
+            if (m.toMap()[u"name"_s] == name)
+                return m.toMap();
+        return QVariantMap{};
+    };
+    tap(u"builderCategory-burgers"_s);
+    tap(u"builderAddItem"_s);
+    REQUIRE(shown(u"newItemName"_s));
+
+    // 1: no name, no Next; a name that's taken is said.
+    CHECK_FALSE(by(u"newItemNext"_s)->property("enabled").toBool());
+    type(u"newItemName"_s, "Classic Burger");
+    CHECK(shown(u"newItemSameName"_s));
+    CHECK_FALSE(by(u"newItemNext"_s)->property("enabled").toBool());
+    type(u"newItemName"_s, "Fish Burger");
+    CHECK_FALSE(shown(u"newItemSameName"_s));
+    s.shot(phone ? "phone-newitem-1-name" : "newitem-1-name");
+    tap(u"newItemNext"_s);
+
+    // 2: a price, or free.
+    REQUIRE(shown(u"newItemPrice"_s));
+    CHECK_FALSE(by(u"newItemNext"_s)->property("enabled").toBool());
+    type(u"newItemPrice"_s, "4.50");
+    s.shot(phone ? "phone-newitem-2-price" : "newitem-2-price");
+    tap(u"newItemNext"_s);
+
+    // 3: a new choice, with one option that costs extra.
+    REQUIRE(shown(u"newItemNewChoice"_s));
+    s.shot(phone ? "phone-newitem-3-choices" : "newitem-3-choices");
+    tap(u"newItemNewChoice"_s);
+    REQUIRE(shown(u"newChoiceName"_s));
+    type(u"newChoiceName"_s, "Tartar");
+    s.shot(phone ? "phone-newchoice-1" : "newchoice-1");
+    tap(u"newChoiceNext"_s);
+    REQUIRE(shown(u"newChoiceKind-one"_s));
+    tap(u"newChoiceOptional"_s);
+    s.shot(phone ? "phone-newchoice-2" : "newchoice-2");
+    tap(u"newChoiceNext"_s);
+    REQUIRE(shown(u"newChoiceOption-0"_s));
+    CHECK_FALSE(by(u"newChoiceNext"_s)->property("enabled").toBool());   // no options yet
+    type(u"newChoiceOption-0"_s, "Regular");
+    type(u"newChoiceOption-1"_s, "Spicy");
+    type(u"newChoiceExtra-1"_s, "0.50");
+    s.shot(phone ? "phone-newchoice-3" : "newchoice-3");
+    tap(u"newChoiceNext"_s);
+    QTest::qWait(150);
+    QVariantMap tartar;
+    for (const QVariant &g : s.pos.choiceGroups())
+        if (g.toMap()[u"name"_s] == u"Tartar"_s)
+            tartar = g.toMap();
+    REQUIRE_FALSE(tartar.isEmpty());
+    CHECK(tartar[u"min"_s].toInt() == 0);
+    CHECK(tartar[u"max"_s].toInt() == 1);
+    const QVariantList options = tartar[u"options"_s].toList();
+    REQUIRE(options.size() == 2);
+    CHECK(options[0].toMap()[u"price"_s].toDouble() == 0.0);
+    CHECK(options[1].toMap()[u"name"_s] == u"Spicy"_s);
+    CHECK(options[1].toMap()[u"price"_s].toDouble() == 0.5);
+    // Back on the item's choices, with it chosen.
+    REQUIRE(shown(u"newItemGroup-"_s + tartar[u"id"_s].toString()));
+    tap(u"newItemNext"_s);
+
+    // 4: where its order goes: its category's, then changed.
+    REQUIRE(shown(u"newItemPrinter-kitchen"_s));
+    CHECK(by(u"newItemPrinter-kitchen"_s)->property("checked").toBool());
+    CHECK(by(u"newItemStation-grill"_s)->property("checked").toBool());   // Burgers are the grill's
+    tap(u"newItemStation-fryer"_s);
+    s.shot(phone ? "phone-newitem-4-where" : "newitem-4-where");
+    tap(u"newItemNext"_s);
+
+    // 5: a look, then saved.
+    REQUIRE(shown(u"newItemLook-0"_s));
+    s.shot(phone ? "phone-newitem-5-look" : "newitem-5-look");
+    CHECK(item(u"Fish Burger"_s).isEmpty());
+    tap(u"newItemNext"_s);
+    QTest::qWait(200);
+    const QVariantMap fish = item(u"Fish Burger"_s);
+    REQUIRE_FALSE(fish.isEmpty());
+    CHECK(fish[u"price"_s] == u"$4.50"_s);
+    CHECK(fish[u"family"_s] == u"burgers"_s);
+    CHECK(fish[u"printer"_s] == u"kitchen"_s);
+    CHECK(fish[u"station"_s] == u"fryer"_s);
+    CHECK(fish[u"groups"_s].toStringList() == QStringList{tartar[u"id"_s].toString()});
+    REQUIRE(shown(u"newItemSaved"_s));
+    s.shot(phone ? "phone-newitem-6-saved" : "newitem-6-saved");
+
+    // Another like it: the same choices and fryer, a new name and price.
+    tap(u"newItemAnotherLike"_s);
+    REQUIRE(shown(u"newItemName"_s));
+    type(u"newItemName"_s, "Shrimp Burger");
+    tap(u"newItemNext"_s);
+    tap(u"newItemFree"_s);
+    tap(u"newItemNext"_s);
+    tap(u"newItemNext"_s);
+    tap(u"newItemNext"_s);
+    tap(u"newItemNext"_s);
+    QTest::qWait(200);
+    const QVariantMap shrimp = item(u"Shrimp Burger"_s);
+    REQUIRE_FALSE(shrimp.isEmpty());
+    CHECK(shrimp[u"price"_s] == u"$0.00"_s);
+    CHECK(shrimp[u"station"_s] == u"fryer"_s);
+    CHECK(shrimp[u"groups"_s].toStringList() == QStringList{tartar[u"id"_s].toString()});
+    // Done: its card, like any item's.
+    tap(u"newItemNext"_s);
+    CHECK_FALSE(shown(u"newItemSaved"_s));
+    CHECK(by(u"builderName"_s)->property("text").toString() == u"Shrimp Burger"_s);
+    s.shot(phone ? "phone-newitem-7-card" : "newitem-7-card");
+
+    // Rung in with the option that costs extra: the item and 50 cents.
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(fish[u"id"_s].toString());
+    REQUIRE(s.pos.chooseOption(tartar[u"id"_s].toString(), 1));
+    QStringList rung;
+    for (const QVariant &l : s.pos.lines())
+        rung << l.toMap()[u"name"_s].toString() + u' ' + l.toMap()[u"price"_s].toString();
+    CAPTURE(rung);
+    CHECK(rung == QStringList{u"Fish Burger $5.00"_s});   // 4.50 and Spicy's 0.50
+    s.pos.releaseCheck();
+}
+
+TEST_CASE("UI: Menu Builder: the new item's questions with the on-screen keyboard", "[flow][ui][menubuild][newitem][keys]")
+{
+    Screen s(true, 1600, 900);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    s.tapItem(by(u"builderAddItem"_s));
+    QTest::qWait(150);
+    REQUIRE(by(u"newItemName"_s));
+    s.tapItem(by(u"newItemName"_s));
+    QTest::qWait(300);
+    s.shot("newitem-keys-name");
+    // The name's field stays in sight above the keys.
+    QQuickItem *keys = Screen::findBy(root, "objectName", u"screenKeyboard"_s);
+    if (keys && keys->isVisible()) {
+        const qreal fieldBottom = by(u"newItemName"_s)->mapToScene(QPointF(0, by(u"newItemName"_s)->height())).y();
+        CHECK(fieldBottom <= keys->mapToScene(QPointF(0, 0)).y() + 1);
+    }
+}
+
+TEST_CASE("UI: Menu Builder: the new item's questions: a new category, and All Settings", "[flow][ui][menubuild][newitem]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto shown = [&](const QString &name) { QQuickItem *i = by(name); return i && i->isVisible(); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+    const auto type = [&](const QString &field, const char *text) {
+        tap(field);
+        QTest::keyClick(s.window, Qt::Key_A, Qt::ControlModifier);
+        for (const char *ch = text; *ch; ++ch)
+            QTest::sendKeyEvent(QTest::Click, s.window, Qt::Key_unknown, *ch, Qt::NoModifier);
+        QTest::qWait(30);
+    };
+    tap(u"builderCategory-burgers"_s);
+    tap(u"builderAddItem"_s);
+    type(u"newItemName"_s, "Agua Fresca");
+    // A category that isn't there yet: made, and the item goes in it.
+    tap(u"newItemAddCategory"_s);
+    type(u"newItemCategoryName"_s, "Aguas");
+    tap(u"newItemCategoryAdd"_s);
+    QTest::qWait(150);
+    REQUIRE(by(u"newItemCategory-aguas"_s));
+    tap(u"newItemNext"_s);
+    type(u"newItemPrice"_s, "3");
+    // All Settings: the card, with what was typed.
+    tap(u"newItemAll"_s);
+    CHECK_FALSE(shown(u"newItemPrice"_s));
+    REQUIRE(shown(u"builderName"_s));
+    CHECK(by(u"builderName"_s)->property("text").toString() == u"Agua Fresca"_s);
+    CHECK(by(u"builderPrice"_s)->property("text").toString() == u"3"_s);
+    // On the card: where its order goes, in the open.
+    REQUIRE(by(u"builderPrinter-bar"_s));
+    scrollTo(by(u"builderPrinter-bar"_s));
+    tap(u"builderPrinter-bar"_s);
+    tap(u"builderStation-cold"_s);
+    s.shot("builder-card-where");
+    tap(u"builderSave"_s);
+    QTest::qWait(150);
+    QVariantMap agua;
+    for (const QVariant &m : s.pos.menuItems())
+        if (m.toMap()[u"name"_s] == u"Agua Fresca"_s)
+            agua = m.toMap();
+    REQUIRE_FALSE(agua.isEmpty());
+    CHECK(agua[u"family"_s] == u"aguas"_s);
+    CHECK(agua[u"price"_s] == u"$3.00"_s);
+    CHECK(agua[u"printer"_s] == u"bar"_s);
+    CHECK(agua[u"station"_s] == u"cold"_s);
+
+    // Cancel with something typed asks; Don't Save leaves nothing behind.
+    tap(u"builderAddItem"_s);
+    type(u"newItemName"_s, "Nothing");
+    tap(u"newItemBack"_s);
+    REQUIRE(shown(u"builderLeaveDiscard"_s));
+    tap(u"builderLeaveDiscard"_s);
+    CHECK_FALSE(shown(u"newItemName"_s));
+    CHECK(s.pos.findItem(u"Nothing"_s) == nullptr);
+
+    // From the setup guide (Step by Step…): the Menu Builder opens on the questions.
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    s.c.keep(u"menuBuilderNewItem"_s, true);
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(150);
+    root = s.window->contentItem();
+    CHECK(shown(u"newItemName"_s));
+}
+
 TEST_CASE("UI: the Menu Builder adds an item, with what's on it, and a category", "[flow][ui][menubuild]")
 {
     Screen s(false, 1280, 800);
@@ -8182,6 +8435,8 @@ TEST_CASE("UI: the Menu Builder adds an item, with what's on it, and a category"
     QTest::qWait(60);
     REQUIRE(by(u"builderItem-classic-burger"_s));
     s.tapItem(by(u"builderAddItem"_s));
+    QTest::qWait(60);
+    s.tapItem(by(u"newItemAll"_s));   // the card, not the questions
     QTest::qWait(60);
     type(u"builderName"_s, "Patty Melt");
     type(u"builderPrice"_s, "12.75");
@@ -8559,6 +8814,9 @@ TEST_CASE("UI: the Menu Builder asks before dropping changes; a new choice group
     s.tapItem(by(u"builderLeaveDiscard"_s));
     QTest::qWait(100);
     CHECK(priceOf(u"classic-burger"_s) == before);
+    REQUIRE(shown(u"newItemName"_s));   // the new item's questions
+    s.tapItem(by(u"newItemAll"_s));
+    QTest::qWait(60);
     CHECK(by(u"builderName"_s)->property("text").toString().isEmpty());   // the new item's card
 
     // Changed again: Save keeps it, then goes on.
@@ -8572,6 +8830,8 @@ TEST_CASE("UI: the Menu Builder asks before dropping changes; a new choice group
     QTest::qWait(150);
     CHECK(priceOf(u"classic-burger"_s) == u"$13.25"_s);
     CHECK_FALSE(shown(u"builderLeaveSave"_s));
+    s.tapItem(by(u"newItemAll"_s));
+    QTest::qWait(60);
 
     // + New Choice Group from an item: made, then back to the item with it chosen,
     // the item's unsaved name kept.

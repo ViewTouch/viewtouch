@@ -471,6 +471,20 @@ Rectangle {
                         model: g.addedItems
                         delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
                     }
+                    // An item with its choices and where its order goes: the Menu
+                    // Builder's questions, one at a time.
+                    PosButton {
+                        objectName: "setupMenuNewItem"
+                        Layout.fillWidth: true
+                        Layout.topMargin: 6
+                        implicitHeight: 56
+                        font.pixelSize: 17
+                        text: qsTr("Step by Step: an Item With Its Choices and Kitchen…")
+                        onClicked: {
+                            g.controller.keep("menuBuilderNewItem", true)
+                            g.leaveFor("menu-builder")
+                        }
+                    }
                     // A whole menu at once, instead of typing it.
                     Label {
                         textFormat: Text.PlainText

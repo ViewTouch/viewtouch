@@ -81,6 +81,11 @@ Item {
             }
             return
         }
+        // From the setup guide (Step by Step…): straight to a new item's questions.
+        if (zone && zone.controller && zone.controller.take("menuBuilderNewItem")) {
+            startWizard("")
+            return
+        }
         // A code scanned that nothing had (Add an Item With It): a new item with it.
         const code = zone && zone.controller ? zone.controller.take("menuBuilderNewCode") : undefined
         if (code) {
@@ -294,6 +299,62 @@ Item {
         editingItem = true
         stage = "card"
     }
+    // + Add Item: asked one question at a time (MenuBuilderNewItem), over the
+    // new item's card; All Settings there shows the card itself.
+    property bool wizard: false
+    property var wizardIds: null     // the items before its save: the new one is the one that wasn't
+    property var wizardSaved: null   // the item it added
+    // keep: "" nothing | "where" the last one's printer and station | "choices" its choices too
+    function startWizard(keep) {
+        const last = keep && wizardSaved ? allItems.find(i => i.id === wizardSaved.id) : null
+        if (last) categoryId = last.family
+        editItem(null)
+        if (last) {
+            const d = copy(draft)
+            d.printer = last.printer
+            d.station = last.station
+            d.taxClass = last.taxClass
+            if (keep === "choices") d.groups = last.groups.slice()
+            draft = d
+        }
+        wizardSaved = null
+        wizardIds = null
+        wizard = true
+        newItemWizard.begin()
+    }
+    function closeWizard(drop) {
+        wizard = false
+        wizardIds = null
+        wizardSaved = null
+        if (drop) {
+            editingItem = false
+            stage = "items"
+        }
+    }
+    function saveWizard() {
+        wizardIds = allItems.map(i => i.id)
+        saveItem()
+        waitingFor = ""
+        wizardGiveUp.restart()
+    }
+    function openSizes(i) { sizesDialog.openFor(i) }
+    // A choice group's options in a line, with what each adds: "Mild, Hot +$0.50".
+    function optionsOf(g) {
+        const sym = pos ? (pos.currencySymbol || "$") : "$"
+        return g.options.map(o => o.name + (o.price ? " +" + sym + Number(o.price).toFixed(2) : "")).join(", ")
+    }
+    // Pages of buttons placed by hand don't fill themselves: a new item's
+    // button goes on the page with its category's items.
+    function placeButton(added) {
+        const c = zone ? zone.controller : null
+        if (c && c.menuScreensHandBuilt && pos && pos.can("layout.edit")) {
+            const page = c.categoryPage(added.family)
+            if (page !== "")
+                c.addItemButton(page, added.id, added.name)
+        }
+    }
+    // A save the store refused (it says why): Save can be touched again.
+    Timer { id: wizardGiveUp; interval: 10000; onTriggered: w.wizardIds = null }
     function editItem(i) {
         returnToItem = null
         draft = itemDraft(i)
@@ -412,6 +473,18 @@ Item {
             if (i) set("price", i.priceValue.toFixed(2))
             syncPrice = ""
         }
+        if (wizardIds) {
+            const added = allItems.find(i => !wizardIds.includes(i.id))
+            if (added) {
+                wizardIds = null
+                wizardGiveUp.stop()
+                categoryId = added.family
+                editItem(added)
+                placeButton(added)
+                wizardSaved = added
+            }
+            return
+        }
         if (idsBefore) {
             const copy = allItems.find(i => !idsBefore.includes(i.id))
             if (copy) {
@@ -428,14 +501,7 @@ Item {
             waitingFor = ""
             categoryId = added.family
             editItem(added)
-            // Pages of buttons placed by hand don't fill themselves: its
-            // button goes on the page with its category's items.
-            const c = zone ? zone.controller : null
-            if (c && c.menuScreensHandBuilt && pos && pos.can("layout.edit")) {
-                const page = c.categoryPage(added.family)
-                if (page !== "")
-                    c.addItemButton(page, added.id, added.name)
-            }
+            placeButton(added)
         }
     }
     function saveItem() {
@@ -458,6 +524,7 @@ Item {
     }
 
     Item {
+        id: zoomed
         width: w.width / w.zoom
         height: w.height / w.zoom
         scale: w.zoom
@@ -789,85 +856,14 @@ Item {
                     TouchButton { Layout.preferredWidth: w.fingers(52); text: "▲"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, -1) }
                     TouchButton { Layout.preferredWidth: w.fingers(52); text: "▼"; enabled: !!w.category; onClicked: w.pos.moveCategory(w.categoryId, 1) }
                 }
-                // Many at once: from a spreadsheet, or a starter menu; the
-                // printed menu. One row, or two when the words are longer
-                // (Spanish) than the keys.
-                GridLayout {
+                // The rest, a touch away with what each does said: a menu from
+                // a file, the menu as a file, a starter menu, the printed menu.
+                TouchButton {
+                    objectName: "builderTools"
                     visible: w.mode === "menu"
                     Layout.fillWidth: true
-                    columnSpacing: 6
-                    rowSpacing: 6
-                    // (Each label and its padding: a key's own minimum is wider than needed.)
-                    function room(k) { return k.implicitContentWidth + k.leftPadding + k.rightPadding }
-                    columns: room(importKey) + room(exportKey) + room(startersKey) + room(printKey)
-                             + 3 * columnSpacing <= width ? 4 : 2
-                    TouchButton {
-                        id: importKey
-                        objectName: "builderImport"
-                        font.pixelSize: 13
-                        font.bold: false   // four in a row: plain, as they fit
-                        leftPadding: 2
-                        rightPadding: 2
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: implicitWidth
-                        text: qsTr("Import…")
-                        ToolTip.visible: hovered
-                        ToolTip.text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's")
-                        onClicked: importFile.open()
-                    }
-                    TouchButton {
-                        id: exportKey
-                        objectName: "builderExport"
-                        font.pixelSize: 13
-                        font.bold: false   // four in a row: plain, as they fit
-                        leftPadding: 2
-                        rightPadding: 2
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: implicitWidth
-                        text: qsTr("Export")
-                        ToolTip.visible: hovered
-                        ToolTip.text: qsTr("The whole menu as a file, for Import… at another store, or as a spreadsheet")
-                        onClicked: exportMenuChoice.open()
-                        Menu {
-                            id: exportMenuChoice
-                            MenuItem {
-                                objectName: "builderExportFile"
-                                text: qsTr("For Another ViewTouch")
-                                onTriggered: w.zone.controller.exportMenu()
-                            }
-                            MenuItem {
-                                objectName: "builderExportSheet"
-                                text: qsTr("As a Spreadsheet (.csv)")
-                                onTriggered: w.zone.controller.exportMenuSheet()
-                            }
-                        }
-                    }
-                    TouchButton {
-                        id: startersKey
-                        objectName: "builderTemplates"
-                        font.pixelSize: 13
-                        font.bold: false   // four in a row: plain, as they fit
-                        leftPadding: 2
-                        rightPadding: 2
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: implicitWidth
-                        text: qsTr("Starter…")
-                        onClicked: templateDialog.open()
-                    }
-                    TouchButton {
-                        id: printKey
-                        objectName: "builderPrintMenu"
-                        font.pixelSize: 13
-                        font.bold: false   // four in a row: plain, as they fit
-                        leftPadding: 2
-                        rightPadding: 2
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: implicitWidth
-                        text: qsTr("Print…")
-                        ToolTip.visible: hovered
-                        ToolTip.text: qsTr("The menu with today's prices as a PDF, to print or hand out")
-                        onClicked: w.leave(() => printDialog.open())
-                    }
+                    text: qsTr("More Tools…")
+                    onClicked: toolsDialog.open()
                 }
             }
 
@@ -1159,7 +1155,8 @@ Item {
                                     textFormat: Text.PlainText
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
-                                    text: modelData.add ? qsTr("+ Add Item") : qsTranslate("Data", String(modelData.name ?? ""))
+                                    text: modelData.add ? (w.items.length === 0 ? qsTr("+ Add the First Item") : qsTr("+ Add Item"))
+                                                        : qsTranslate("Data", String(modelData.name ?? ""))
                                     color: StoreColors.ink(parent.parent.tint)
                                     font.pixelSize: 18
                                     font.bold: true
@@ -1200,7 +1197,7 @@ Item {
                                     // Taken now: after a Save in the prompt this tile (and
                                     // what it can see) may be gone.
                                     const item = modelData.add ? null : modelData, b = w
-                                    b.leave(() => b.editItem(item))
+                                    b.leave(() => item ? b.editItem(item) : b.startWizard(""))
                                 }
                                 // Held: dragged to another place in the category, or onto another.
                                 onPressAndHold: m => {
@@ -1276,7 +1273,9 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: w.mode === "choices" ? qsTr("Touch a choice group to change it, or + Choice Group.")
                         : w.selecting ? qsTr("Touch items to choose them (in any category), then move, color, sell out or remove them together.")
-                        : qsTr("Touch an item to change it, or + Add Item.")
+                        : w.categories.length === 0 ? qsTr("Start with a category, like Tacos or Drinks: touch + Category. Or touch More Tools… to bring a whole menu in from a file.")
+                        : w.items.length === 0 && w.category ? qsTr("%1 has no items yet. Touch + Add the First Item: it asks for its name, its price, and where its order goes.").arg(w.category.name)
+                        : qsTr("Touch an item to change it, or + Add Item for a new one.")
                     opacity: 0.6
                     font.pixelSize: 18
                 }
@@ -1533,6 +1532,90 @@ Item {
                                 }
                             }
 
+                            // Its choices, from the list.
+                            Label { textFormat: Text.PlainText; text: qsTr("Choices it asks for"); font.pixelSize: 18; font.bold: true }
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: 6
+                                Repeater {
+                                    model: w.groups
+                                    delegate: TouchButton {
+                                        required property var modelData
+                                        objectName: "builderGroup-" + modelData.id
+                                        checkable: true
+                                        checked: (w.draft.groups ?? []).includes(modelData.id)
+                                        highlighted: checked
+                                        // Its options too, and what each adds: "Mild, Hot +$0.50".
+                                        implicitHeight: w.fingers(60)
+                                        width: parent.width   // a row each: its options fit
+                                        lines: 2
+                                        text: modelData.name + "  ·  " + modelData.rule + "\n" + w.optionsOf(modelData)
+                                        onClicked: w.toggleIn("groups", modelData.id)
+                                    }
+                                }
+                                TouchButton {
+                                    objectName: "builderNewGroup"
+                                    text: qsTr("+ New Choice Group…")
+                                    onClicked: {
+                                        const d = w.copy(w.draft)
+                                        w.editGroup(null)
+                                        w.returnToItem = d
+                                    }
+                                }
+                            }
+
+                            // Where its order goes: the ticket's printer, and who makes it.
+                            Label { textFormat: Text.PlainText; text: qsTr("Where its order goes"); font.pixelSize: 18; font.bold: true }
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: 6
+                                Label {
+                                    textFormat: Text.PlainText
+                                    height: w.fingers(48)
+                                    verticalAlignment: Text.AlignVCenter
+                                    opacity: 0.75
+                                    text: qsTr("Its ticket prints on")
+                                }
+                                Repeater {
+                                    model: w.printers
+                                    delegate: TouchButton {
+                                        required property var modelData
+                                        objectName: "builderPrinter-" + modelData.id
+                                        implicitHeight: w.fingers(48)
+                                        checkable: true
+                                        checked: w.draft.printer === modelData.id
+                                        highlighted: checked
+                                        text: qsTranslate("Data", String(modelData.name ?? ""))
+                                        onClicked: w.set("printer", modelData.id)
+                                    }
+                                }
+                            }
+                            Flow {
+                                visible: w.stations.length > 0
+                                Layout.fillWidth: true
+                                spacing: 6
+                                Label {
+                                    textFormat: Text.PlainText
+                                    height: w.fingers(48)
+                                    verticalAlignment: Text.AlignVCenter
+                                    opacity: 0.75
+                                    text: qsTr("Made by")
+                                }
+                                Repeater {
+                                    model: [{ id: "", name: qsTr("Anyone") }].concat(w.stations)
+                                    delegate: TouchButton {
+                                        required property var modelData
+                                        objectName: "builderStation-" + (modelData.id || "any")
+                                        implicitHeight: w.fingers(48)
+                                        checkable: true
+                                        checked: (w.draft.station ?? "") === modelData.id
+                                        highlighted: checked
+                                        text: modelData.id === "" ? modelData.name : qsTranslate("Data", String(modelData.name ?? ""))
+                                        onClicked: w.set("station", modelData.id)
+                                    }
+                                }
+                            }
+
                             // What's on it.
                             Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: 18; font.bold: true }
                             Label {
@@ -1593,41 +1676,13 @@ Item {
                                 }
                             }
 
-                            // Its choices, from the list.
-                            Label { textFormat: Text.PlainText; text: qsTr("Choices it asks for"); font.pixelSize: 18; font.bold: true }
-                            Flow {
-                                Layout.fillWidth: true
-                                spacing: 6
-                                Repeater {
-                                    model: w.groups
-                                    delegate: TouchButton {
-                                        required property var modelData
-                                        objectName: "builderGroup-" + modelData.id
-                                        checkable: true
-                                        checked: (w.draft.groups ?? []).includes(modelData.id)
-                                        highlighted: checked
-                                        text: modelData.name + "  ·  " + modelData.rule
-                                        onClicked: w.toggleIn("groups", modelData.id)
-                                    }
-                                }
-                                TouchButton {
-                                    objectName: "builderNewGroup"
-                                    text: qsTr("+ New Choice Group…")
-                                    onClicked: {
-                                        const d = w.copy(w.draft)
-                                        w.editGroup(null)
-                                        w.returnToItem = d
-                                    }
-                                }
-                            }
-
                             // The rest most kitchens set: folded away until wanted.
                             TouchButton {
                                 id: moreButton
                                 objectName: "builderMore"
                                 Layout.fillWidth: true
                                 flat: true
-                                text: (w.moreOpen ? "▾ " : "▸ ") + qsTr("More: kiosk, kitchen, number, other prices")
+                                text: (w.moreOpen ? "▾ " : "▸ ") + qsTr("More: kiosk, kitchen name, number, other prices")
                                 onClicked: {
                                     w.moreOpen = !w.moreOpen
                                     // Opened: scrolled up into view, once laid out.
@@ -1765,22 +1820,6 @@ Item {
                                             onClicked: w.set("textSize", modelData.pct)
                                         }
                                     }
-                                }
-                                Label { textFormat: Text.PlainText; text: qsTr("Kitchen ticket"); Layout.preferredWidth: 110 }
-                                ComboBox {
-                                    objectName: "builderItemPrinter"
-                                    Layout.fillWidth: true
-                                    model: w.printers.map(p => p.name)
-                                    currentIndex: w.printers.findIndex(p => p.id === w.draft.printer)
-                                    onActivated: i => w.set("printer", w.printers[i].id)
-                                }
-                                Label { textFormat: Text.PlainText; text: qsTr("Made at"); Layout.preferredWidth: 110 }
-                                ComboBox {
-                                    Layout.fillWidth: true
-                                    readonly property var opts: [{ id: "", name: qsTr("(anywhere)") }].concat(w.stations)
-                                    model: opts.map(s => s.name)
-                                    currentIndex: Math.max(0, opts.findIndex(s => s.id === (w.draft.station ?? "")))
-                                    onActivated: i => w.set("station", opts[i].id)
                                 }
                                 Label { textFormat: Text.PlainText; text: qsTr("Tax"); Layout.preferredWidth: 110 }
                                 ComboBox {
@@ -2315,6 +2354,70 @@ Item {
         id: severalDialog
         menu: w
     }
+    MenuBuilderNewItem {
+        id: newItemWizard
+        parent: zoomed   // in the form's own units, over all of it
+        anchors.fill: parent
+        z: 50
+        visible: w.wizard
+        menu: w
+    }
+    Popup {
+        id: toolsDialog
+        objectName: "builderToolsDialog"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 32 : 560, 560)
+        modal: true
+        padding: 16
+        contentItem: ColumnLayout {
+            spacing: 6
+            Label { textFormat: Text.PlainText; text: qsTr("More tools"); font.pixelSize: 20; font.bold: true }
+            Repeater {
+                model: [
+                    { id: "builderImport", name: qsTr("Bring a Menu In…"),
+                      text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's") },
+                    { id: "builderTemplates", name: qsTr("Starter Menu…"),
+                      text: qsTr("A ready-made menu for a kind of restaurant, to change into yours") },
+                    { id: "builderPrintMenu", name: qsTr("Print the Menu…"),
+                      text: qsTr("The menu with today's prices as a PDF, to print or hand out") },
+                    { id: "builderExportFile", name: qsTr("Save the Menu for Another ViewTouch"),
+                      text: qsTr("The whole menu as a file, for Bring a Menu In… at another store") },
+                    { id: "builderExportSheet", name: qsTr("Save the Menu as a Spreadsheet"),
+                      text: qsTr("Every item and price in a .csv file, for Excel") }]
+                delegate: ColumnLayout {
+                    id: toolRow
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: 2
+                    TouchButton {
+                        objectName: toolRow.modelData.id
+                        Layout.fillWidth: true
+                        text: toolRow.modelData.name
+                        onClicked: {
+                            const id = toolRow.modelData.id, b = w
+                            toolsDialog.close()
+                            if (id === "builderImport") importFile.open()
+                            else if (id === "builderTemplates") templateDialog.open()
+                            else if (id === "builderPrintMenu") b.leave(() => printDialog.open())
+                            else if (id === "builderExportFile") b.zone.controller.exportMenu()
+                            else b.zone.controller.exportMenuSheet()
+                        }
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: 6
+                        wrapMode: Text.WordWrap
+                        opacity: 0.75
+                        font.pixelSize: 14
+                        text: toolRow.modelData.text
+                    }
+                }
+            }
+            TouchButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: toolsDialog.close() }
+        }
+    }
     MenuBuilderPrices {
         id: pricesDialog
         menu: w
@@ -2639,7 +2742,7 @@ Item {
         modal: true
         standardButtons: Dialog.Yes | Dialog.Cancel
         onAboutToShow: DialogWords.apply(this)
-        Label { textFormat: Text.PlainText; text: qsTr("It comes off every menu screen. Checks it's already on keep it.") }
+        Label { textFormat: Text.PlainText; text: qsTr("It comes off every menu screen. Checks it's already on keep it. Undo brings it back.") }
         onAccepted: {
             w.pos.deleteMenuItemCard(w.draft.id)
             w.zone.controller.removeItemButtons(w.draft.id)

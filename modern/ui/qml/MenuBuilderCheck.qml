@@ -24,6 +24,14 @@ Dialog {
             wrapMode: Text.WordWrap
             text: qsTr("Every item has a price and a category, every choice it asks for is there, and its kitchen ticket goes to a printer that's set up.")
         }
+        Label {
+            textFormat: Text.PlainText
+            visible: checkDialog.problems.length > 0
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.8
+            text: qsTr("Touch one to go fix it. The ones with ⚠ would get in the way of an order.")
+        }
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
