@@ -373,6 +373,22 @@ struct PosSettings {
     int screenSaverMinutes = 10;
     // A table seated longer than this is marked on the floor plan.
     int tableLongMinutes = 90;
+    // A table seated this long with nothing ordered: its server is reminded.
+    int orderWaitMinutes = 8;
+    // This long since the server last sent, took a payment or checked on the table: reminded.
+    int checkBackMinutes = 20;
+    // Expo (or the last station) bumps an order: its server is told.
+    bool foodReadyNotice = true;
+    // Cash Exact and $20 beside Pay on bar tabs, to-go and quick sales.
+    bool fastCash = true;
+    // Alcohol asks the server to check the guest's ID, once a check.
+    bool idCheck = true;
+    // How old a guest must be to drink.
+    int idAge = 21;
+    // Kitchen and bar screens chime for new and late orders.
+    bool kitchenSounds = true;
+    // A table waiting this long to be cleaned is marked.
+    int busMinutes = 5;
     // Clock in only near a scheduled shift (managers excepted), from this
     // many minutes before it starts until it ends.
     bool scheduleRequired = false;

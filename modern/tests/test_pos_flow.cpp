@@ -11464,3 +11464,117 @@ TEST_CASE("Cash that covers a quick or takeout order closes it; tables and cards
     REQUIRE(pos.tender(u"cash"_s, 2000));
     CHECK(pos.currentCheck());
 }
+
+TEST_CASE("UI: servers: × then an item rings that many; a note on the item; the food is up", "[flow][ui][floorstaff]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    QTest::qWait(60);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        CAPTURE(name);
+        QQuickItem *it = find(name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        s.tapItem(it);
+        QTest::qWait(60);
+    };
+    const auto line = [&](int i) { return s.pos.lines().value(i).toMap(); };
+
+    // × 6, then the Classic: one line of six.
+    s.shot("floorstaff-order");
+    tap(u"nextQuantity"_s);
+    s.shot("floorstaff-qty-pad");
+    tap(u"quantity-6"_s);
+    CHECK(s.pos.nextQuantity() == 6);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"×6"_s));
+    s.tapItem(Screen::findBy(s.window->contentItem(), "text", u"Classic Burger"_s));
+    QTest::qWait(80);
+    REQUIRE(s.pos.lines().size() == 1);
+    CHECK(line(0)[u"quantity"_s] == 6);
+    CHECK(s.pos.nextQuantity() == 1);
+    // The count on the touched line: a pad too.
+    tap(u"lineQuantity"_s);
+    tap(u"quantity-3"_s);
+    CHECK(line(0)[u"quantity"_s] == 3);
+
+    // Note: for the Classic, with a quick note.
+    REQUIRE(s.c.jumpTo(u"note"_s));
+    QTest::qWait(80);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Note for Classic Burger"_s));
+    s.tapItem(Screen::findBy(s.window->contentItem(), "text", u"No onions"_s));
+    QTest::qWait(60);
+    CHECK(s.pos.textEntry() == u"No onions"_s);
+    s.shot("floorstaff-note");
+    s.tapItem(Screen::findBy(s.window->contentItem(), "text", u"Add to Classic Burger"_s));
+    QTest::qWait(80);
+    CHECK(line(0)[u"note"_s] == u"No onions"_s);
+    CHECK(s.pos.lines().size() == 1);
+    QQuickItem *note = find(u"lineNote"_s);
+    REQUIRE(note);
+    CHECK(note->isVisible());
+
+    // Sent and made: the server's screen says so, green, until Got It.
+    REQUIRE(s.pos.chooseLine(line(0)[u"id"_s].toLongLong()));
+    REQUIRE(s.pos.chooseOption(u"temperature"_s, 1));
+    REQUIRE(s.pos.chooseOption(u"side"_s, 2));
+    REQUIRE(s.pos.finishChoosing());
+    REQUIRE(s.pos.sendOrder());
+    const QVariantMap t = s.pos.kitchenTickets().first().toMap();
+    REQUIRE(s.pos.bumpTicket(t[u"checkId"_s].toLongLong(), t[u"sentAt"_s].toLongLong()));
+    QTest::qWait(100);
+    QQuickItem *ok = find(u"messageOk"_s);
+    REQUIRE(ok);
+    CHECK(ok->isVisible());
+    CHECK(ok->property("text").toString() == u"Got It"_s);
+    s.shot("floorstaff-food-up");
+    s.tapItem(ok);
+    QTest::qWait(60);
+    CHECK_FALSE(find(u"messageOk"_s));   // (gone: only shown ones are found)
+}
+
+TEST_CASE("UI: bartenders: Check ID before a beer goes; Cash Exact closes the tab; the tabs' cards", "[flow][ui][floorstaff][bar]")
+{
+    Screen s;
+    s.pos.shared()->settings.idCheck = true;
+    for (core::ModifierGroup &g : s.pos.shared()->settings.modifierGroups)
+        g.min = 0;   // (which beer: not asked here)
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.pos.openTab(u"Riley"_s));
+    REQUIRE(s.pos.addItem(u"draft-beer"_s));
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    QTest::qWait(100);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    QQuickItem *ok = find(u"idOk"_s);
+    REQUIRE(ok);
+    CHECK(find(u"idBornBy"_s)->property("text").toString().contains(QString::number(QDate::currentDate().year() - 21)));
+    s.shot("floorstaff-idcheck");
+    s.tapItem(ok);
+    QTest::qWait(80);
+    CHECK_FALSE(find(u"idOk"_s));
+    CHECK(s.pos.checkInfo()[u"idAsk"_s].isNull());
+
+    // Sent, a round later: the tabs page shows it.
+    REQUIRE(s.pos.sendOrder());
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"tabs"_s));
+    QTest::qWait(100);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Riley"_s));
+    s.shot("floorstaff-tabs");
+
+    // Back on it: Cash Exact, and it's closed.
+    s.c.openCheck(s.pos.openChecks().first().toMap()[u"id"_s].toLongLong());
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    QTest::qWait(100);
+    QQuickItem *exact = find(u"fastCashExact"_s);
+    REQUIRE(exact);
+    s.shot("floorstaff-fastcash");
+    s.tapItem(exact);
+    QTest::qWait(100);
+    CHECK_FALSE(s.pos.hasCheck());
+    CHECK(s.pos.openChecks().isEmpty());
+}

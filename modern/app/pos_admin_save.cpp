@@ -430,6 +430,22 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.screensUpdate = record.value(u"screensUpdate"_s).toBool();
         if (record.contains(u"tableLongMinutes"_s))
             s_->settings.tableLongMinutes = std::clamp(record.value(u"tableLongMinutes"_s).toInt(), 10, 600);
+        if (record.contains(u"orderWaitMinutes"_s))
+            s_->settings.orderWaitMinutes = std::clamp(record.value(u"orderWaitMinutes"_s).toInt(), 3, 60);
+        if (record.contains(u"checkBackMinutes"_s))
+            s_->settings.checkBackMinutes = std::clamp(record.value(u"checkBackMinutes"_s).toInt(), 5, 120);
+        if (record.contains(u"foodReadyNotice"_s))
+            s_->settings.foodReadyNotice = record.value(u"foodReadyNotice"_s).toBool();
+        if (record.contains(u"fastCash"_s))
+            s_->settings.fastCash = record.value(u"fastCash"_s).toBool();
+        if (record.contains(u"idCheck"_s))
+            s_->settings.idCheck = record.value(u"idCheck"_s).toBool();
+        if (record.contains(u"idAge"_s))
+            s_->settings.idAge = std::clamp(record.value(u"idAge"_s).toInt(), 16, 25);
+        if (record.contains(u"kitchenSounds"_s))
+            s_->settings.kitchenSounds = record.value(u"kitchenSounds"_s).toBool();
+        if (record.contains(u"busMinutes"_s))
+            s_->settings.busMinutes = std::clamp(record.value(u"busMinutes"_s).toInt(), 1, 60);
         if (record.contains(u"loyaltyEnabled"_s))
             s_->settings.loyaltyEnabled = record.value(u"loyaltyEnabled"_s).toBool();
         if (record.contains(u"pointsPerDollar"_s))

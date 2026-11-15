@@ -72,7 +72,7 @@ QVariantList PosService::kitchenTicketsNow() const
                 lines.append(QVariantMap{{u"name"_s, qs(l->isComment() ? l->name : l->kitchenText())},
                                          {u"color"_s, qs(l->kitchenColor)}, {u"quantity"_s, l->quantity},
                                          {u"contains"_s, allergenNames(allergyHits(*t.check, *l))},
-                                         {u"modifiers"_s, mods}, {u"comment"_s, l->isComment()},
+                                         {u"modifiers"_s, mods}, {u"comment"_s, l->isComment()}, {u"note"_s, qs(l->note)},
                                          {u"printer"_s, qs(l->printerOf())}, {u"station"_s, qs(stationOf(*l))},
                                          {u"seat"_s, l->seat}, {u"course"_s, l->course}});
             // Its parts made at other stations (a combo's fries): lines of their own there.
@@ -206,6 +206,7 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
     s_->bumped.push_back({checkId, sentAt, where});
     if (s_->sink)
         s_->sink->saveCheck(*c);
+    tellFoodReady(*c, sentAt);
     emit s_->checksChanged();
     // A food truck's order, all made: the window calls it.
     if (c->orderNumber > 0 && !c->readyAt && std::ranges::none_of(c->lines, [](const OrderLine &l) {
@@ -213,6 +214,39 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
         }))
         callOrder(*c);
     return true;
+}
+
+// Everything sent in one go is made: its server hears "T5: food is up" on
+// their screens (a food truck's window calls its number instead).
+void PosService::tellFoodReady(const Check &c, std::int64_t sentAt)
+{
+    if (!s_->settings.foodReadyNotice || c.training || c.orderNumber > 0 || c.serverName.empty())
+        return;
+    QStringList items;
+    int count = 0;
+    for (const OrderLine &l : c.lines) {
+        if (!l.sent || l.voided || l.sentAt != sentAt || l.isComment() || !l.forKitchen())
+            continue;
+        if (!allMade(l))
+            return;   // not all of it yet
+        ++count;
+        if (items.size() < 3)
+            items << (l.quantity > 1 ? u"%1 %2"_s.arg(l.quantity).arg(qs(l.kitchenText())) : qs(l.kitchenText()));
+    }
+    if (count == 0)
+        return;
+    for (const PosShared::Message &m : s_->messages)   // told already (a recall, bumped again)
+        if (m.kind == "ready" && m.to == c.serverName && m.text.starts_with(c.label + ":") && now() - m.at < 60'000)
+            return;
+    QString what = items.join(u", "_s);
+    if (count > items.size())
+        what += u" "_s + tr("+%1 more").arg(count - items.size());
+    PosShared::Message m{++s_->lastMessageId, now(), ss(tr("Kitchen")), c.serverName,
+                         ss(tr("%1: food is up (%2)").arg(qs(c.label), what)), "ready"};
+    s_->messages.push_back(m);
+    if (s_->messages.size() > 50)
+        s_->messages.erase(s_->messages.begin());
+    emit s_->dayChanged();   // every screen looks
 }
 
 // --- the expediter -------------------------------------------------------------------------
@@ -271,7 +305,7 @@ QVariantList PosService::expoTicketsNow() const
                 if (!m.kitchenHide)
                     mods << qs(m.kitchenText());
             lines.append(QVariantMap{{u"name"_s, qs(l->kitchenText())}, {u"quantity"_s, l->quantity},
-                                     {u"modifiers"_s, mods}, {u"station"_s, station}, {u"made"_s, allMade(*l)},
+                                     {u"modifiers"_s, mods}, {u"station"_s, station}, {u"made"_s, allMade(*l)}, {u"note"_s, qs(l->note)},
                                      {u"seat"_s, l->seat}, {u"color"_s, qs(l->kitchenColor)}});
             if (!l->made && !waitingOn.contains(station))
                 waitingOn << station;

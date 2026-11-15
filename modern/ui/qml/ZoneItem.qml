@@ -97,6 +97,7 @@ Item {
     readonly property bool colorSafe: !!(pos && !editing && pos.userPrefs.colorSafe)
     readonly property var safeColors: ({
         tableMine: "#0072b2", tableOpen: "#e69f00", tableCurrent: "#56b4e9", tableLong: "#f0e442",
+        tableWaiting: "#e69f00", tableLate: "#d55e00",
         tableReserved: "#cc79a7", tableDirty: "#6b5d52", tableFree: "#0072b2",
         kitchenNew: "#0072b2", kitchenWarn: "#f0e442", kitchenLate: "#d55e00", kitchenReady: "#009e73",
         soldOut: "#d55e00", low: "#f0e442"
@@ -181,6 +182,12 @@ Item {
         if (text.indexOf("{alerts}") >= 0) {
             const n = p && p.lossAlerts ? p.lossAlerts.filter(a => a.new).length : 0
             values["alerts"] = n > 0 ? "⚠ " + n : ""
+        }
+        // The Note page: on the touched item, not sent yet ("Note for Cobb Salad").
+        if (text.indexOf("{note.") >= 0) {
+            const item = p && p.hasCheck ? p.lines.find(l => l.selected && !l.sent && !l.comment && !l.voided) : undefined
+            values["note.title"] = item ? qsTr("Note for %1").arg(item.name) : qsTr("Note for the kitchen")
+            values["note.add"] = item ? qsTr("Add to %1").arg(item.name) : qsTr("Add Note")
         }
         // What a new store still has to do (the setup guide): "· 2 left", or nothing.
         if (text.indexOf("{setup.left}") >= 0) {

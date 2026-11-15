@@ -17,6 +17,7 @@ Item {
         { name: qsTr("Needs bussing"), color: zone ? zone.statusColor("tableDirty", "#7a3b3b") : "#7a3b3b" }
     ].concat(zone && zone.props && zone.props.long === false ? []
              : [{ name: qsTr("Seated long"), color: "transparent", edge: zone ? zone.statusColor("tableLong", "#ff4d4d") : "#ff4d4d" }])
+      .concat([{ name: qsTr("Check on it"), color: "transparent", edge: zone ? zone.statusColor("tableWaiting", "#ff9f1a") : "#ff9f1a" }])
     // The words' size: one row on a wide screen, two on a phone's.
     readonly property int rows: width < 1200 ? 2 : 1
     TextMetrics { id: names; font.family: w.face; font.pixelSize: 100; text: w.keys.map(k => k.name).join("") }

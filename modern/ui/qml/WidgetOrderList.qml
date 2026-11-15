@@ -99,6 +99,9 @@ Item {
     ColumnLayout {
         id: body
         parent: w.whole && wholeArea.visible ? wholeArea : w
+        // Under the panel's sheet (how many, move, fire): off, or a key under
+        // one of the sheet's (Again under 3) took the same touch.
+        enabled: !sheet.visible && !idSheet.visible
         anchors.fill: parent
         anchors.margins: w.unit * 0.6
         spacing: w.unit * 0.3
@@ -119,6 +122,19 @@ Item {
                 fontSizeMode: Text.HorizontalFit   // "#1 Alexandria" on a narrow check: smaller before "…"
                 minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
+            }
+            // The table's reminder (nothing ordered, time to check back): touched, it starts again.
+            WidgetKey {
+                objectName: "checkedOn"
+                readonly property var table: w.pos && w.pos.hasCheck && w.check.type === "dineIn" && w.pos.checksRevision >= 0
+                                             ? w.pos.tableStatus(w.check.label ?? "") : ({})
+                visible: (table.nudgeLevel ?? 0) > 0 && w.zone.keyShown("checkedOn")
+                Layout.preferredWidth: w.unit * 6.4
+                Layout.preferredHeight: Math.max(w.unit * 1.5, w.tapH)
+                text: qsTr("Checked On ✓")
+                baseColor: (table.nudgeLevel ?? 0) > 1 ? "#c53030" : "#c26a00"
+                fontScale: 0.5
+                onClicked: w.pos.checkedOn()
             }
             // The drinks sent last, again (tabs and tables).
             WidgetKey {
@@ -445,8 +461,8 @@ Item {
         Item {
             id: bar
             // (Nothing in it on a food truck's or a shop's check: no row at all.)
-            visible: w.controls && w.pos && w.pos.hasCheck && !w.folded
-                     && (w.zone.keyShown("course") || w.zone.keyShown("fire"))
+            visible: w.controls && w.pos && !w.folded
+                     && ((w.pos.hasCheck && (w.zone.keyShown("course") || w.zone.keyShown("fire"))) || w.zone.keyShown("quantity"))
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             Layout.fillHeight: false
@@ -456,9 +472,24 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 height: parent.height
                 spacing: bar.key * 0.15
+                // How many of the next item: 6, then Bud Light (touched again: as usual).
+                WidgetKey {
+                    objectName: "nextQuantity"
+                    visible: w.zone.keyShown("quantity")
+                    width: Math.max(bar.key * 1.6, w.tapH); height: parent.height
+                    text: (w.pos?.nextQuantity ?? 1) > 1 ? "×" + w.pos.nextQuantity : qsTr("Qty")
+                    fontScale: 0.4
+                    accent: (w.pos?.nextQuantity ?? 1) > 1
+                    onClicked: {
+                        if (w.pos.nextQuantity > 1)
+                            w.pos.setNextQuantity(1)
+                        else
+                            sheet.askQuantity(0)
+                    }
+                }
                 Text {
                     textFormat: Text.PlainText
-                    visible: w.zone.keyShown("course")
+                    visible: w.zone.keyShown("course") && !!w.pos?.hasCheck
                     anchors.verticalCenter: parent.verticalCenter
                     text: w.zone.keyText("course", qsTr("Course"))
                     color: Ui.muted
@@ -470,7 +501,7 @@ Item {
                     delegate: WidgetKey {
                         required property int modelData
                         objectName: "course" + modelData
-                        visible: w.zone.keyShown("course")
+                        visible: w.zone.keyShown("course") && !!w.pos?.hasCheck
                         width: Math.max(bar.key, w.tapH); height: parent.height
                         text: modelData
                         accent: (w.check.course ?? 1) === modelData
@@ -493,7 +524,7 @@ Item {
             }
             WidgetKey {
                 id: fireKey
-                visible: w.nextCourse > 0 && w.zone.keyShown("fire")
+                visible: w.nextCourse > 0 && w.zone.keyShown("fire") && !!w.pos?.hasCheck
                 anchors.right: parent.right
                 width: bar.key * 2.25
                 height: parent.height
@@ -681,6 +712,22 @@ Item {
                         font.bold: true
                         elide: Text.ElideRight
                     }
+                    // Its note for the kitchen ("no onions").
+                    Text {
+                        objectName: "lineNote"
+                        textFormat: Text.PlainText
+                        visible: (row.modelData.note ?? "") !== ""
+                        Layout.fillWidth: true
+                        Layout.leftMargin: w.unit * 1.6
+                        text: "✎ " + (row.modelData.note ?? "")
+                        color: "#f5b940"
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.8
+                        font.italic: true
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                    }
                     Repeater {
                         model: row.modelData.modifiers
                         delegate: RowLayout {
@@ -726,7 +773,9 @@ Item {
                             text: "−"
                             onClicked: w.pos.lineLess(row.modelData.id)
                         }
+                        // How many: touched, a pad to type it (12 instead of + eleven times).
                         Text {
+                            objectName: "lineQuantity"
                             textFormat: Text.PlainText
                             visible: !row.modelData.sent
                             width: qtyBar.key * 1.1
@@ -738,6 +787,8 @@ Item {
                             font.family: w.face
                             font.pixelSize: qtyBar.key * 0.6
                             font.bold: true
+                            font.underline: true
+                            TapHandler { onTapped: sheet.askQuantity(row.modelData.id) }
                         }
                         WidgetKey {
                             objectName: "lineMore"
@@ -858,6 +909,101 @@ Item {
             Cell { text: qsTr("Balance due"); visible: w.paid; Layout.fillWidth: true }
             Cell { text: w.totals.balance ?? ""; visible: w.paid }
         }
+        // A quick sale at the bar: paid in cash and closed, without the Pay screen.
+        RowLayout {
+            objectName: "fastCashRow"
+            Layout.fillWidth: true
+            visible: w.controls && w.pos && w.pos.hasCheck && (w.check.fastCash ?? false) && (w.totals.balanceCents ?? 0) > 0
+                     && w.zone.keyShown("fastCash") && !w.folded
+            spacing: w.unit * 0.3
+            WidgetKey {
+                objectName: "fastCashExact"
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
+                text: qsTr("Cash Exact")
+                baseColor: Ui.go
+                fontScale: 0.42
+                onClicked: w.pos.fastCash(0)
+            }
+            WidgetKey {
+                objectName: "fastCash20"
+                // Only when a $20 covers it.
+                visible: (w.totals.balanceCents ?? 0) <= 2000
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
+                text: (w.pos?.currencySymbol ?? "$") + "20"
+                baseColor: Ui.go
+                fontScale: 0.42
+                onClicked: w.pos.fastCash(2000)
+            }
+        }
+    }
+
+    // A drink on a check whose guest's ID wasn't checked: asked once, before it goes.
+    Rectangle {
+        id: idSheet
+        objectName: "idSheet"
+        parent: body.parent
+        z: 2
+        anchors.fill: parent
+        visible: !!(w.pos && w.pos.hasCheck && w.check.idAsk)
+        color: Qt.rgba(0.06, 0.07, 0.09, 0.96)
+        radius: 8
+        MouseArea { anchors.fill: parent }   // only its keys
+        readonly property real big: w.zone && w.zone.controller && w.zone.controller.formFactor === "phone" ? 1.8 : 1
+        Column {
+            anchors.centerIn: parent
+            width: parent.width * 0.85
+            spacing: w.unit * 0.5
+            Text {
+                textFormat: Text.PlainText
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: "🪪 " + qsTr("Check ID")
+                color: "white"
+                font.family: w.face
+                font.pixelSize: w.unit * 1.4 * idSheet.big
+                font.bold: true
+            }
+            Text {
+                textFormat: Text.PlainText
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr("For %1, the guest must be born on or before").arg(w.check.idAsk?.item ?? "")
+                color: Ui.textSoft
+                font.family: w.face
+                font.pixelSize: w.unit * 0.8 * idSheet.big
+            }
+            Text {
+                objectName: "idBornBy"
+                textFormat: Text.PlainText
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: w.check.idAsk?.bornBy ?? ""
+                color: "#ffd43b"
+                font.family: w.face
+                font.pixelSize: w.unit * 1.1 * idSheet.big
+                font.bold: true
+            }
+            WidgetKey {
+                objectName: "idOk"
+                width: parent.width; height: w.unit * 2.4 * idSheet.big
+                fontScale: 0.42
+                text: qsTr("ID OK ✓")
+                baseColor: Ui.go
+                onClicked: w.pos.idChecked(true)
+            }
+            WidgetKey {
+                objectName: "idUnderAge"
+                width: parent.width; height: w.unit * 2 * idSheet.big
+                fontScale: 0.4
+                text: qsTr("Under Age: Take It Off")
+                baseColor: "#b83232"
+                onClicked: w.pos.idChecked(false)
+            }
+        }
     }
 
     // Choices over the panel: the table's tools, or where to move the touched line.
@@ -868,7 +1014,7 @@ Item {
         parent: body.parent
         z: 1
         anchors.fill: parent
-        visible: mode !== "" && w.pos && w.pos.hasCheck
+        visible: mode !== "" && w.pos && (w.pos.hasCheck || mode === "quantity")
         color: Qt.rgba(0.06, 0.07, 0.09, 0.94)
         radius: 8
         MouseArea { anchors.fill: parent; onClicked: sheet.mode = "" }   // outside the keys: close
@@ -880,6 +1026,20 @@ Item {
         function run(action) {
             mode = ""
             action()
+        }
+        // How many: of the next item (line 0), or of the touched line.
+        property real quantityLine: 0
+        function askQuantity(lineId) {
+            quantityLine = lineId
+            mode = "quantity"
+        }
+        function setQuantity(n) {
+            const line = quantityLine
+            mode = ""
+            if (line)
+                w.pos.setLineQuantity(line, n)
+            else
+                w.pos.setNextQuantity(n)
         }
         function fireIn(minutes) {   // 0: now; -1: not on a timer after all
             mode = ""
@@ -934,6 +1094,8 @@ Item {
                     : sheet.mode === "pager" ? qsTr("The pager's number (0: none)")
                     : sheet.mode === "move" ? qsTr("Move %1 to…").arg(w.pos.lines.find(l => l.selected)?.name ?? "")
                     : sheet.mode === "fire" ? qsTr("Fire course %1").arg(w.nextCourse)
+                    : sheet.mode === "quantity" ? (sheet.quantityLine ? qsTr("How many %1?").arg(w.pos.lines.find(l => l.id === sheet.quantityLine)?.name ?? "")
+                                                                      : qsTr("How many of the next item?"))
                     : (w.check.label ?? "")
                 color: "white"
                 font.family: w.face
@@ -1030,6 +1192,26 @@ Item {
                     onClicked: sheet.fireIn(-1)
                 }
             }
+            // How many
+            Grid {
+                visible: sheet.mode === "quantity"
+                width: parent.width
+                columns: 4
+                spacing: w.unit * 0.3
+                Repeater {
+                    model: sheet.mode === "quantity" ? (sheet.quantityLine ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 24]
+                                                                           : [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 20, 24]) : []
+                    delegate: WidgetKey {
+                        required property int modelData
+                        objectName: "quantity-" + modelData
+                        width: (parent.width - w.unit * 0.9) / 4
+                        height: sheet.key
+                        fontScale: 0.45
+                        text: modelData
+                        onClicked: sheet.setQuantity(modelData)
+                    }
+                }
+            }
             // Move the touched line
             Flow {
                 visible: sheet.mode === "move"
@@ -1084,7 +1266,7 @@ Item {
         }
         Connections {   // another check, or none: nothing to choose for
             target: w.pos
-            function onCheckChanged() { if (!w.pos.hasCheck) sheet.mode = "" }
+            function onCheckChanged() { if (!w.pos.hasCheck && sheet.mode !== "quantity") sheet.mode = "" }
         }
     }
 }

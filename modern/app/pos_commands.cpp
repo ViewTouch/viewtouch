@@ -169,7 +169,8 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"setupRetireSamples"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setupRetireSamples()); }},
         {u"setupFinish"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setupFinish(a.value(0).toBool())); }},
         {u"setDueAt"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setDueAt(a.value(0).toLongLong())); }},
-        {u"addComment"_s, [](PosService &p, const QVariantList &) { return QVariant(p.addComment()); }},
+        {u"addComment"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.addComment(a.value(0).toBool())); }},
+        {u"addText"_s, [](PosService &p, const QVariantList &a) { p.addText(a.value(0).toString()); return QVariant(true); }},
         {u"tender"_s, [](PosService &p, const QVariantList &a) {
              const QVariant amount = a.value(1);
              return QVariant(p.tender(a.value(0).toString(), amount.isValid() && !amount.isNull()
@@ -266,6 +267,10 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
              return QVariant(p.partyGone(a.value(0).toLongLong(), a.value(1).toBool())); }},
         {u"payOnAccount"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.payOnAccount(a.value(0).toString(), a.value(1).toLongLong())); }},
+        {u"idChecked"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.idChecked(a.value(0).toBool())); }},
+        {u"fastCash"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.fastCash(a.value(0).toLongLong())); }},
+        {u"checkedOn"_s, [](PosService &p, const QVariantList &) { return QVariant(p.checkedOn()); }},
+        {u"setNextQuantity"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setNextQuantity(a.value(0).toInt())); }},
         {u"setSeat"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setSeat(a.value(0).toInt())); }},
         {u"saveCategory"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.saveCategory(a.value(0).toMap())); }},
         {u"moveCategory"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.moveCategory(a.value(0).toString(), a.value(1).toInt())); }},

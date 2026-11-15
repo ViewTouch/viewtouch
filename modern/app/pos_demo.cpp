@@ -85,6 +85,8 @@ struct Demo {
     {
         if (!pos.addItem(QString::fromStdString(id)))
             return;
+        if (pos.checkInfo().contains(u"idAsk"_s) && !pos.checkInfo().value(u"idAsk"_s).isNull())
+            pos.idChecked(true);   // a drink: the server looked at the ID
         for (int guard = 0; guard < 8; ++guard) {
             const QVariantMap info = pos.choosingInfo();
             if (!info.value(u"active"_s).toBool())

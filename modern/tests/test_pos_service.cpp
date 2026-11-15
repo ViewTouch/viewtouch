@@ -267,6 +267,12 @@ TEST_CASE("Comments come from the keyboard entry", "[pos]")
         t.pos.textKey(k);
     CHECK(t.pos.textEntry() == u"No feta"_s);
     REQUIRE(t.pos.addComment());
-    CHECK(t.pos.lines().last().toMap()[u"comment"_s].toBool());
+    // On the salad just rung (Note for Greek Salad)...
+    CHECK(t.pos.lines().size() == 1);
+    CHECK(t.pos.lines().last().toMap()[u"note"_s] == u"No feta"_s);
     CHECK(t.pos.textEntry().isEmpty());
+    // ...or a line of its own (For the Whole Order).
+    t.pos.textKey(u"X"_s);
+    REQUIRE(t.pos.addComment(true));
+    CHECK(t.pos.lines().last().toMap()[u"comment"_s].toBool());
 }

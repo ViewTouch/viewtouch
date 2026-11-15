@@ -402,7 +402,8 @@ public:
     std::vector<Bump> bumped;
     std::vector<Bump> served;   // expediter bumps, newest last
     // Messages between screens ("86 salmon", "need a runner"), newest last.
-    struct Message { std::int64_t id; std::int64_t at; std::string from; std::string to; std::string text; };
+    struct Message { std::int64_t id; std::int64_t at; std::string from; std::string to; std::string text;
+                     std::string kind = {}; };   // "ready": a server's food is up
     std::vector<Message> messages;
     std::int64_t lastMessageId = 0;
 
@@ -633,6 +634,12 @@ public:
 
     bool addItem(const QString &idOrName);
     void setQualifier(const QString &qualifier);   // same one again clears it
+    bool setNextQuantity(int quantity);
+    bool checkedOn();   // the server looked in on the table: its reminder starts again
+    bool idChecked(bool ofAge);   // the answer to Check ID: of age, or the drinks come off
+    bool needsId(const core::MenuItem &item) const;
+    bool idPending(const core::Check &c) const;
+    void addText(const QString &text);            // the next item touched: this many (1: as usual)
     void selectLine(qint64 lineId) override;
     void selectPayment(qint64 paymentId) override;
     bool voidItem();
@@ -669,13 +676,16 @@ public:
     bool allMade(const core::OrderLine &l) const;
     bool atStation(const core::OrderLine &l, const std::string &station) const;
     bool partAt(const core::OrderLine &l, const core::Modifier &m, const std::string &station) const;
-    bool addComment();
+    bool addComment(bool wholeOrder = false);   // on the touched unsent item, or a line of its own
     // Amount: explicit cents, else the keypad entry, else the balance due.
     bool tender(const QString &tenderId, std::optional<std::int64_t> amountCents = std::nullopt);
     bool removePayment();
     // A discount of the amount typed: dollars (cents typed) or a percent.
     bool customDiscount(bool percent);
     bool closeCheck();
+    // Cash Exact (0) or a bill: paid and closed from the order screen (tabs, to-go, quick sales).
+    bool fastCash(std::int64_t cents);
+    bool fastCashFor(const core::Check &c) const;
     // The current check, else the last one closed on this terminal.
     bool printReceipt();
     bool noSale();   // open the cash drawer without a sale
@@ -891,6 +901,7 @@ public:
     int entryGuests() const override;
     QString textEntry() const override { return text_; }
     QString pendingQualifier() const override;
+    int nextQuantity() const override { return nextQty_; }
     QString pendingTable() const override { return pendingTable_; }
     bool hasCheck() const override { return currentCheck() != nullptr; }
     QVariantMap checkInfo() const override;
@@ -1455,6 +1466,7 @@ private:
     QVariantMap serviceShown_;   // serviceInfo() as last told
     int nextOrderNumber() const;
     void callOrder(core::Check &c);   // ready: the screens say so (and which pager to buzz)
+    void tellFoodReady(const core::Check &c, std::int64_t sentAt);   // all made: its server is told
     QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees
@@ -1612,6 +1624,10 @@ private:
     void rememberChange(const core::Check &c, const core::OrderLine &before, bool removed, const QString &text);
     qint64 selectedPayment_ = 0;
     core::Qualifier qualifier_ = core::Qualifier::None;
+    int nextQty_ = 1;   // the × key: how many the next item rings
+    // A drink rung on a check whose guest's ID wasn't checked yet: asked (Check ID).
+    std::int64_t idAskCheck_ = 0;
+    std::int64_t idAskLine_ = 0;
     std::int64_t lastClosedId_ = 0;
     QString checkFilter_;
     QString pin_;

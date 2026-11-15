@@ -80,7 +80,7 @@ QVariantMap PosSession::snapshot() const
         {u"clockedInSince"_s, clockedInSince()}, {u"storeName"_s, storeName()},
         {u"currencySymbol"_s, currencySymbol()}, {u"customColors"_s, customColors()}, {u"priceChanges"_s, priceChanges()}, {u"pinLength"_s, pinLength()}, {u"entry"_s, entry()},
         {u"entryAmount"_s, entryAmount()}, {u"entryGuests"_s, entryGuests()}, {u"textEntry"_s, textEntry()},
-        {u"pendingQualifier"_s, pendingQualifier()}, {u"pendingTable"_s, pendingTable()},
+        {u"pendingQualifier"_s, pendingQualifier()}, {u"nextQuantity"_s, nextQuantity()}, {u"pendingTable"_s, pendingTable()},
         {u"hasCheck"_s, hasCheck()}, {u"check"_s, checkInfo()}, {u"tableChecks"_s, tableChecks()}, {u"undoText"_s, undoText()}, {u"lines"_s, lines()}, {u"totals"_s, totals()},
         {u"payments"_s, payments()}, {u"selectedLine"_s, selectedLine()}, {u"selectedPayment"_s, selectedPayment()},
         {u"openChecks"_s, openChecks()}, {u"openChecksShared"_s, openChecksShared()}, {u"openChecksViewer"_s, openChecksViewer()}, {u"floor"_s, floor()}, {u"deliveries"_s, deliveries()}, {u"drivers"_s, drivers()}, {u"popularItems"_s, popularItems()}, {u"myUsuals"_s, myUsuals()}, {u"stockLeft"_s, stockLeft()}, {u"dashboard"_s, dashboard()}, {u"lossAlerts"_s, lossAlerts()}, {u"coach"_s, coach()}, {u"checklists"_s, checklists()}, {u"checkFilter"_s, checkFilter()}, {u"kitchenTickets"_s, kitchenTickets()}, {u"rushRadar"_s, rushRadar()},
@@ -169,8 +169,10 @@ QVariantMap PosSession::tableStatus(const QString &label) const
     }
     // The host stand: needs bussing, held for a party, or pushed together with another table.
     const QVariantMap f = tables_->floor.value(label).toMap();
-    if (count > 0)
+    if (count > 0) {
         status.insert(u"nudge"_s, f.value(u"nudge"_s));   // nothing ordered, or a while since the last order
+        status.insert(u"nudgeLevel"_s, f.value(u"nudgeLevel"_s).toInt());   // 1 orange, 2 red
+    }
     const QString state = f.value(u"state"_s).toString();
     if (count == 0 && (state == u"dirty" || state == u"reserved")) {
         status.insert(u"floor"_s, state);

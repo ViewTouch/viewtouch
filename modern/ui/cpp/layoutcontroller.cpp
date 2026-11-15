@@ -2351,6 +2351,15 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
         return;
     }
 
+    // A quick note ("No onions"), in the screen's language, after what's typed.
+    if (name == u"noteText") {
+        const QString text = args.value(u"text"_s).toString();
+        if (!pos_ || text.isEmpty())
+            return done(false);
+        return call(u"addText"_s, {QCoreApplication::translate("Page", text.toUtf8().constData())},
+                    [done](const QVariant &) { done(true); });
+    }
+
     // Manager screens are pages ("admin-menu", "reports"...). Kept as a
     // command so buttons made before those pages existed still work.
     if (name == u"openAdmin") {
@@ -2389,7 +2398,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
         {u"voidItem"_s, {u"voidItem"_s, {}}}, {u"lineMore"_s, {u"lineMore"_s, {0}}},
         {u"lineLess"_s, {u"lineLess"_s, {0}}}, {u"repeatLine"_s, {u"repeatLine"_s, {0}}},
         {u"undoLast"_s, {u"undoLast"_s, {}}}, {u"anotherRound"_s, {u"anotherRound"_s, {}}}, {u"timeClockDone"_s, {u"timeClockDone"_s, {}}},
-        {u"amountOff"_s, {u"customDiscount"_s, {false}}}, {u"percentOff"_s, {u"customDiscount"_s, {true}}}, {u"addComment"_s, {u"addComment"_s, {}}},
+        {u"amountOff"_s, {u"customDiscount"_s, {false}}}, {u"percentOff"_s, {u"customDiscount"_s, {true}}}, {u"addComment"_s, {u"addComment"_s, {}}}, {u"addOrderNote"_s, {u"addComment"_s, {true}}},
         {u"removePayment"_s, {u"removePayment"_s, {}}}, {u"closeCheck"_s, {u"closeCheck"_s, {}}},
         {u"printReceipt"_s, {u"printReceipt"_s, {}}}, {u"noSale"_s, {u"noSale"_s, {}}},
         {u"openDrawer"_s, {u"noSale"_s, {}}}, {u"openDrawerSession"_s, {u"openDrawerSession"_s, {}}},
@@ -2699,6 +2708,8 @@ QString LayoutController::describeAction(const Action &a) const
             {u"undoLast"_s, QT_TR_NOOP("Puts back the item just taken off.")},
             {u"repeatLine"_s, QT_TR_NOOP("Adds one more of the touched item, made the same way.")},
             {u"addComment"_s, QT_TR_NOOP("Adds a note for the kitchen.")},
+            {u"addOrderNote"_s, QT_TR_NOOP("Adds a note for the kitchen on a line of its own (for the whole order).")},
+            {u"noteText"_s, QT_TR_NOOP("Adds a quick note to what's typed.")},
             {u"rush"_s, QT_TR_NOOP("Tells the kitchen to make this check first.")},
             {u"allergies"_s, QT_TR_NOOP("Marks what the guest is allergic to: the kitchen sees it, and items with it are marked.")},
             {u"vip"_s, QT_TR_NOOP("Marks this check VIP for the kitchen.")},

@@ -28,6 +28,8 @@ Item {
     readonly property int seatedMinutes: (w.status.open ?? false) && w.status.since
                                          ? Math.max(0, Math.floor((w.now - w.status.since) / 60000)) : 0
     readonly property bool seatedLong: (w.status.open ?? false) && seatedMinutes >= (w.status.longAfter ?? 90)
+    // Its server's reminder (nothing ordered, time to check back): orange, red at twice as long.
+    readonly property int nudgeLevel: (w.status.open ?? false) ? (w.status.nudgeLevel ?? 0) : 0
     function minutesText(m) { return m < 60 ? m + "m" : Math.floor(m / 60) + "h " + (m % 60) + "m" }
 
     // props.chairs: a chair for each seat around the table, the top inside them.
@@ -94,9 +96,12 @@ Item {
         anchors.fill: parent
         anchors.margins: w.chairDepth
         shape: w.zone.shape
-        // Seated past the store's mark: a red frame.
+        // Seated past the store's mark: a red frame. Waiting on its server: orange (red when long).
         st: Object.assign({}, w.zone.st, { fill: tap.pressed ? Qt.lighter(w.tint, 1.3) : w.tint },
-                          w.seatedLong ? { frame: "border", borderColor: w.zone.statusColor("tableLong", "#ff4d4d"), frameWidth: 6 } : {})
+                          w.seatedLong ? { frame: "border", borderColor: w.zone.statusColor("tableLong", "#ff4d4d"), frameWidth: 6 } : {},
+                          w.nudgeLevel > 0 ? { frame: "border", frameWidth: 8,
+                                               borderColor: w.nudgeLevel > 1 ? w.zone.statusColor("tableLate", "#ff3b30")
+                                                                             : w.zone.statusColor("tableWaiting", "#ff9f1a") } : {})
     }
 
     // Upright however the table is turned; as wide as it looks.

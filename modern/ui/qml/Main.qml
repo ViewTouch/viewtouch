@@ -1084,6 +1084,7 @@ ApplicationWindow {
         z: 55
         pos: root.controller.pos as PosService
         kitchenScreen: root.controller.pageKind === "kitchen"
+        onChime: root.controller.chime()
     }
 
     // A manager's PIN for something this person may not do on their own.

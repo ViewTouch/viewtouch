@@ -132,6 +132,8 @@ QJsonObject toJson(const Check &c)
             lo.insert(u"kitchenName"_s, qs(l.kitchenName));
         if (!l.kitchenColor.empty())
             lo.insert(u"kitchenColor"_s, qs(l.kitchenColor));
+        if (!l.note.empty())
+            lo.insert(u"note"_s, qs(l.note));
         if (!l.allergens.empty())
             lo.insert(u"allergens"_s, strings(l.allergens));
         if (l.kitchenHide)
@@ -206,7 +208,7 @@ QJsonObject toJson(const Check &c)
             return QJsonValue(QJsonObject{{u"reference"_s, qs(c.hold.reference)}, {u"processor"_s, qs(c.hold.processor)},
                                           {u"brand"_s, qs(c.hold.cardBrand)}, {u"last4"_s, qs(c.hold.last4)},
                                           {u"amount"_s, qint64(c.hold.amount.cents())}, {u"at"_s, qint64(c.hold.at)}});
-        }()}, {u"kiosk"_s, c.kiosk}, {u"orderNumber"_s, c.orderNumber}, {u"pager"_s, c.pager}, {u"readyAt"_s, qint64(c.readyAt)}, {u"pickedUpAt"_s, qint64(c.pickedUpAt)}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
+        }()}, {u"kiosk"_s, c.kiosk}, {u"orderNumber"_s, c.orderNumber}, {u"pager"_s, c.pager}, {u"readyAt"_s, qint64(c.readyAt)}, {u"pickedUpAt"_s, qint64(c.pickedUpAt)}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)}, {u"checkedOnAt"_s, qint64(c.checkedOnAt)}, {u"idCheckedAt"_s, qint64(c.idCheckedAt)}, {u"idCheckedBy"_s, qs(c.idCheckedBy)},
         {u"promisedAt"_s, qint64(c.promisedAt)},
         {u"refunds"_s, [&] {
              QJsonArray a;
@@ -266,6 +268,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         l.course = std::max(1, lo.value(u"course").toInt(1));
         l.kitchenName = ss(lo.value(u"kitchenName").toString());
         l.kitchenColor = ss(lo.value(u"kitchenColor").toString());
+        l.note = ss(lo.value(u"note").toString());
         l.allergens = strings(lo.value(u"allergens").toArray());
         l.kitchenHide = lo.value(u"kitchenHide").toBool();
         l.noDiscount = lo.value(u"noDiscount").toBool();
@@ -345,6 +348,9 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.offlineId = ss(o.value(u"offlineId").toString());
     c.dueAt = o.value(u"dueAt").toInteger(0);
     c.fireAt = o.value(u"fireAt").toInteger(0);
+    c.checkedOnAt = o.value(u"checkedOnAt").toInteger(0);
+    c.idCheckedAt = o.value(u"idCheckedAt").toInteger(0);
+    c.idCheckedBy = ss(o.value(u"idCheckedBy").toString());
     c.promisedAt = o.value(u"promisedAt").toInteger(0);
     for (const QJsonValue &v : o.value(u"refunds").toArray())
         c.refunds.push_back(refundFromJson(v.toObject()));
@@ -435,6 +441,8 @@ QJsonObject toJson(const MenuItem &m)
         o.insert(u"soldOutToday"_s, true);
     if (!m.kitchenName.empty())
         o.insert(u"kitchenName"_s, qs(m.kitchenName));
+    if (!m.idCheck.empty())
+        o.insert(u"idCheck"_s, qs(m.idCheck));
     if (!m.kitchenColor.empty())
         o.insert(u"kitchenColor"_s, qs(m.kitchenColor));
     if (m.kitchenHide)
@@ -501,6 +509,8 @@ MenuItem menuItemFromJson(const QJsonObject &o)
     m.soldOutToday = o.value(u"soldOutToday").toBool();
     m.kitchenName = ss(o.value(u"kitchenName").toString().trimmed());
     m.kitchenColor = ss(o.value(u"kitchenColor").toString());
+    if (const QString id = o.value(u"idCheck").toString(); id == u"yes" || id == u"no")
+        m.idCheck = ss(id);
     m.kitchenHide = o.value(u"kitchenHide").toBool();
     m.description = ss(o.value(u"description").toString().trimmed());
     m.takeoutPrice = Money::fromCents(centsFromDecimal(o.value(u"takeoutPrice").toDouble()));
@@ -1090,6 +1100,14 @@ QJsonObject toJson(const PosSettings &s)
         {u"backupKey"_s, qs(s.backupKey)}, {u"backupSalt"_s, qs(s.backupSalt)},
         {u"waitMinutesPerParty"_s, s.waitMinutesPerParty}, {u"hostsTakePayments"_s, s.hostsTakePayments},
         {u"autoLogoutMinutes"_s, s.autoLogoutMinutes}, {u"phoneLockSeconds"_s, s.phoneLockSeconds}, {u"tableLongMinutes"_s, s.tableLongMinutes},
+        {u"orderWaitMinutes"_s, s.orderWaitMinutes},
+        {u"checkBackMinutes"_s, s.checkBackMinutes},
+        {u"foodReadyNotice"_s, s.foodReadyNotice},
+        {u"fastCash"_s, s.fastCash},
+        {u"idCheck"_s, s.idCheck},
+        {u"idAge"_s, s.idAge},
+        {u"kitchenSounds"_s, s.kitchenSounds},
+        {u"busMinutes"_s, s.busMinutes},
         {u"screensUpdate"_s, s.screensUpdate}, {u"style"_s, qs(s.style)},
         {u"screenSaverMinutes"_s, s.screenSaverMinutes},
         {u"replicaKey"_s, qs(s.replicaKey)}, {u"language"_s, qs(s.language)},
@@ -1440,6 +1458,14 @@ PosSettings settingsFromJson(const QJsonObject &o)
                             ss(b.value(u"commit").toString()), b.value(u"at").toInteger()});
     }
     s.tableLongMinutes = std::clamp(o.value(u"tableLongMinutes").toInt(90), 10, 600);
+    s.orderWaitMinutes = std::clamp(o.value(u"orderWaitMinutes").toInt(8), 3, 60);
+    s.checkBackMinutes = std::clamp(o.value(u"checkBackMinutes").toInt(20), 5, 120);
+    s.foodReadyNotice = o.value(u"foodReadyNotice").toBool(true);
+    s.fastCash = o.value(u"fastCash").toBool(true);
+    s.idCheck = o.value(u"idCheck").toBool(true);
+    s.idAge = std::clamp(o.value(u"idAge").toInt(21), 16, 25);
+    s.kitchenSounds = o.value(u"kitchenSounds").toBool(true);
+    s.busMinutes = std::clamp(o.value(u"busMinutes").toInt(5), 1, 60);
     const QJsonObject display = o.value(u"display").toObject();
     s.displayLogo = ss(display.value(u"logo").toString());
     s.receiptLogo = o.value(u"receiptLogo").toBool();

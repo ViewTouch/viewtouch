@@ -275,6 +275,17 @@ bool PosService::setCourse(int course)
     return true;
 }
 
+bool PosService::checkedOn()
+{
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    c->checkedOnAt = now();
+    emit notice(tr("%1: checked on").arg(qs(c->label)));
+    changed(*c);
+    return true;
+}
+
 bool PosService::fireCourse()
 {
     if (!require(perm::Order, tr("Firing courses")))

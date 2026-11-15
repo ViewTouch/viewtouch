@@ -55,6 +55,7 @@ struct OrderLine {
     std::int64_t madeAt = 0;
     int seat = 0;                // 0: not for a seat in particular
     int course = 1;              // later courses wait until they are fired
+    std::string note;            // for the kitchen, on this item ("no onions")
     // How the kitchen sees it (copied from the menu item when ordered).
     std::string kitchenName;     // instead of the name ("BCN BGR")
     std::string kitchenColor;    // highlight on the kitchen screen: red, orange...
@@ -328,6 +329,9 @@ struct Check {
     std::int64_t dueAt = 0;
     // Course pacing: the next held course fires by itself at this time (0: when someone fires it).
     std::int64_t fireAt = 0;
+    std::int64_t checkedOnAt = 0;   // its server last looked in on the table (Checked On)
+    std::int64_t idCheckedAt = 0;   // the guest's ID was checked (alcohol), by whom
+    std::string idCheckedBy;
     // Money given back after it was paid (newest last).
     std::vector<Refund> refunds;
     Money refunded(std::int64_t paymentId) const

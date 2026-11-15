@@ -22,10 +22,27 @@ Rectangle {
                 || (me !== "" && m.to === me)))
     }
     readonly property var shown: waiting.length ? waiting[waiting.length - 1] : null   // the oldest first
+    // "T5: food is up": green, with a chime when it comes.
+    readonly property bool ready: shown !== null && shown.kind === "ready"
+    signal chime()
+    property var chimed: ({})
+    onWaitingChanged: {
+        let fresh = false
+        const c = Object.assign({}, chimed)
+        for (const m of waiting)
+            if (m.kind === "ready" && !c[m.id]) {
+                c[m.id] = true
+                fresh = true
+            }
+        if (fresh) {
+            chimed = c
+            chime()
+        }
+    }
 
     visible: shown !== null
     height: visible ? (compact ? 48 : 74) : 0
-    color: Ui.accent
+    color: ready ? Ui.go : Ui.accent
     border.color: "white"
     border.width: 2
 
@@ -78,7 +95,7 @@ Rectangle {
             Layout.preferredWidth: banner.compact ? 72 : 120
             Layout.fillHeight: true
             Layout.margins: banner.compact ? 4 : 8
-            text: qsTr("OK")
+            text: banner.ready ? qsTr("Got It") : qsTr("OK")
             baseColor: Ui.goDark
             fontScale: 0.4
             onClicked: {

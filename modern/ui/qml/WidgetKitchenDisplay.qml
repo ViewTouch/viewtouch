@@ -222,6 +222,21 @@ Item {
                 font.pixelSize: 22 * w.k
             }
         }
+        // The server's note on this item ("no onions").
+        Text {
+            objectName: "kdsLineNote"
+            textFormat: Text.PlainText
+            visible: !!line.line.note
+            width: line.width
+            leftPadding: 28 * w.k
+            wrapMode: Text.WordWrap
+            text: "** " + (line.line.note ?? "") + " **"
+            color: "#b83232"
+            font.family: w.face
+            font.pixelSize: 22 * w.k
+            font.bold: true
+            font.italic: true
+        }
         Text {
             textFormat: Text.PlainText
             visible: (line.line.contains ?? []).length > 0

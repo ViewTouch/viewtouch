@@ -96,6 +96,7 @@ public:
     int entryGuests() const override { return v(u"entryGuests").toInt(); }
     QString textEntry() const override { return v(u"textEntry").toString(); }
     QString pendingQualifier() const override { return v(u"pendingQualifier").toString(); }
+    int nextQuantity() const override { return v(u"nextQuantity").toInt() > 0 ? v(u"nextQuantity").toInt() : 1; }
     QString pendingTable() const override { return v(u"pendingTable").toString(); }
     bool hasCheck() const override { return v(u"hasCheck").toBool(); }
     QVariantMap checkInfo() const override { return v(u"check").toMap(); }

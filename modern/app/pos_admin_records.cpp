@@ -168,6 +168,14 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"style"_s, qs(s_->settings.style)},
              {u"screenSaverMinutes"_s, s_->settings.screenSaverMinutes},
              {u"tableLongMinutes"_s, s_->settings.tableLongMinutes},
+             {u"orderWaitMinutes"_s, s_->settings.orderWaitMinutes},
+             {u"checkBackMinutes"_s, s_->settings.checkBackMinutes},
+             {u"foodReadyNotice"_s, s_->settings.foodReadyNotice},
+             {u"fastCash"_s, s_->settings.fastCash},
+             {u"idCheck"_s, s_->settings.idCheck},
+             {u"idAge"_s, s_->settings.idAge},
+             {u"kitchenSounds"_s, s_->settings.kitchenSounds},
+             {u"busMinutes"_s, s_->settings.busMinutes},
              {u"loyaltyEnabled"_s, s_->settings.loyaltyEnabled}, {u"pointsPerDollar"_s, s_->settings.pointsPerDollar},
              {u"rewards"_s, [&] {
                   QStringList l;
@@ -314,7 +322,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"price"_s, 0.0}, {u"family"_s, QString()},
                 {u"taxClass"_s, u"food"_s}, {u"printer"_s, u"kitchen"_s}, {u"station"_s, QString()}, {u"byWeight"_s, false}, {u"weightUnit"_s, u"lb"_s}, {u"substitute"_s, false}, {u"substitutePrice"_s, 0.0}, {u"ticketCapacity"_s, 0}, {u"eventAt"_s, QString()}, {u"modifier"_s, false}, {u"available"_s, true},
                 {u"modifierGroups"_s, QString()}, {u"periodPrices"_s, QString()}, {u"recipe"_s, QString()},
-                {u"kitchenName"_s, QString()}, {u"kitchenColor"_s, QString()}, {u"kitchenHide"_s, false},
+                {u"kitchenName"_s, QString()}, {u"kitchenColor"_s, QString()}, {u"idCheck"_s, QString()}, {u"kitchenHide"_s, false},
                 {u"kioskHide"_s, false}, {u"description"_s, QString()}, {u"image"_s, QString()},
                 {u"takeoutPrice"_s, 0.0}, {u"deliveryPrice"_s, 0.0}, {u"noDiscount"_s, false}, {u"noStaffDiscount"_s, false}};
     if (panel == u"employees")
@@ -381,6 +389,7 @@ QVariantMap PosService::menuRecord(const MenuItem &m) const
     r.remove(u"autoSoldOut"_s);
     r.insert(u"kitchenName"_s, qs(m.kitchenName));
     r.insert(u"kitchenColor"_s, qs(m.kitchenColor));
+    r.insert(u"idCheck"_s, qs(m.idCheck));
     r.insert(u"kitchenHide"_s, m.kitchenHide);
     r.insert(u"kioskHide"_s, m.kioskHide);
     r.insert(u"takeoutPrice"_s, m.takeoutPrice.cents() / 100.0);

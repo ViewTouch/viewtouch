@@ -707,7 +707,7 @@ QVariantList PosService::messages() const
         if (now() - it->at > 60 * 60'000)
             break;
         out.append(QVariantMap{{u"id"_s, qint64(it->id)}, {u"from"_s, qs(it->from)}, {u"to"_s, qs(it->to)},
-                               {u"text"_s, qs(it->text)}, {u"time"_s, timeOfDay(it->at)}});
+                               {u"text"_s, qs(it->text)}, {u"time"_s, timeOfDay(it->at)}, {u"kind"_s, qs(it->kind)}});
     }
     return out;
 }
@@ -903,6 +903,7 @@ void PosService::logout()
     approved_.reset();
     clearEntry();
     qualifier_ = Qualifier::None;
+    nextQty_ = 1;
     emit qualifierChanged();
     if (counterMode())
         counterUser_.clear();   // who was working left: the next PIN says who works now
@@ -1264,6 +1265,7 @@ void PosService::releaseCheck()
     selectedPayment_ = 0;
     pendingTable_.clear();
     qualifier_ = Qualifier::None;
+    nextQty_ = 1;
     emit qualifierChanged();
     emit checkChanged();
     emit s_->checksChanged();
@@ -1381,6 +1383,24 @@ bool PosService::addItem(const QString &idOrName)
         }
         line.seat = seat_;
         line.course = course_;
+        // The × key: this many at once (6 Bud Light), one line.
+        if (nextQty_ > 1 && line.weight == 0 && !line.isGiftCard()) {
+            if (item->ticketCapacity > 0 && ticketsLeft(*item) < nextQty_) {
+                c.removeLine(line.id);
+                return fail(tr("%1: only %2 tickets left.").arg(qs(item->name)).arg(ticketsLeft(*item)));
+            }
+            line.quantity = nextQty_;
+        }
+        if (nextQty_ != 1) {
+            nextQty_ = 1;
+            emit qualifierChanged();
+        }
+        // A drink: the guest's ID, once a check (unless asked already).
+        if (s_->settings.idCheck && c.idCheckedAt == 0 && needsId(*item) && !idPending(c) && !c.training && !c.kiosk
+            && !selfOrder_) {
+            idAskCheck_ = c.id;
+            idAskLine_ = line.id;
+        }
         selectedLine_ = line.id;
         lineTouched_ = false;
         // Items with modifier groups ask for their choices next.
@@ -1396,6 +1416,27 @@ bool PosService::addItem(const QString &idOrName)
         emit qualifierChanged();
     }
     changed(c);
+    return true;
+}
+
+void PosService::addText(const QString &text)
+{
+    // A quick note ("No onions"): after what's typed.
+    const QString t = text.trimmed();
+    if (t.isEmpty())
+        return;
+    text_ = text_.trimmed().isEmpty() ? t : text_.trimmed() + u", "_s + t;
+    emit entryChanged();
+}
+
+bool PosService::setNextQuantity(int quantity)
+{
+    if (!require(perm::Order, tr("Ordering")))
+        return false;
+    nextQty_ = std::clamp(quantity, 1, 99);
+    emit qualifierChanged();
+    if (nextQty_ > 1)
+        emit notice(tr("×%1: now touch the item").arg(nextQty_));
     return true;
 }
 
@@ -1719,11 +1760,54 @@ int PosService::fireDueOrders()
     return fired;
 }
 
+bool PosService::idPending(const Check &c) const
+{
+    // (The drink taken off again: nothing to ask.)
+    return idAskCheck_ == c.id && idAskLine_ != 0
+           && std::ranges::any_of(c.lines, [&](const OrderLine &l) { return l.id == idAskLine_ && !l.sent; });
+}
+
+bool PosService::needsId(const MenuItem &item) const
+{
+    return item.idCheck == "yes" || (item.idCheck.empty() && item.taxClass == TaxClass::Alcohol);
+}
+
+bool PosService::idChecked(bool ofAge)
+{
+    Check *c = current();
+    if (!c || !idPending(*c))
+        return fail(tr("No ID to check."));
+    idAskCheck_ = idAskLine_ = 0;
+    if (ofAge) {
+        c->idCheckedAt = now();
+        c->idCheckedBy = user() ? user()->name : std::string();
+        noteEvent(*c, tr("ID checked"), "id");
+    } else {
+        // Under age: the drinks not sent yet come off.
+        QStringList off;
+        std::vector<std::int64_t> ids;
+        for (const OrderLine &l : c->lines)
+            if (!l.sent && !l.isComment())
+                if (const MenuItem *m = findItem(qs(l.itemId)); m && needsId(*m)) {
+                    ids.push_back(l.id);
+                    off << qs(l.displayName());
+                }
+        for (const std::int64_t id : ids)
+            c->removeLine(id);
+        noteEvent(*c, tr("Under age: %1 taken off").arg(off.join(u", "_s)), "id");
+        emit notice(tr("Under age: %1 taken off").arg(off.join(u", "_s)));
+    }
+    changed(*c);
+    return true;
+}
+
 bool PosService::sendOrder()
 {
     Check *c = current();
     if (!c)
         return fail(tr("No check is open."));
+    if (idPending(*c))
+        return fail(tr("Check the guest's ID first."));
     if (const QString who = missingWho(*c); !who.isEmpty() && c->unsentCount() > 0)
         return fail(who);
     if (waitsNameless(*c, s_->settings) && c->unsentCount() > 0)
@@ -1768,16 +1852,29 @@ bool PosService::sendOrder()
     return true;
 }
 
-bool PosService::addComment()
+bool PosService::addComment(bool wholeOrder)
 {
     if (!require(perm::Order, tr("Adding notes")))
         return false;
-    const QString text = text_.trimmed();
+    QString text = text_.trimmed();
     if (text.isEmpty())
         return fail(tr("Type the note first."));
     if (!current() && !startCheck(CheckType::Quick))
         return false;
     Check &c = *current();
+    // On the touched item ("no onions" on the Cobb): goes with it to the kitchen.
+    if (OrderLine *item = c.line(selectedLine_); !wholeOrder && item && !item->isComment() && !item->voided) {
+        if (!item->sent) {
+            item->note = item->note.empty() ? ss(text) : item->note + "; " + ss(text);
+            text_.clear();
+            emit entryChanged();
+            emit notice(tr("Note on %1: %2").arg(qs(item->displayName()), text));
+            changed(c);
+            return true;
+        }
+        if (lineTouched_)   // already sent: a line of its own that says which
+            text = tr("For %1: %2").arg(qs(item->kitchenText()), text);
+    }
     OrderLine &note = c.addComment(ss(text));
     note.seat = seat_;
     note.course = course_;
@@ -1950,6 +2047,8 @@ bool PosService::closeCheck()
     Check *c = current();
     if (!c)
         return fail(tr("No check is open."));
+    if (idPending(*c))
+        return fail(tr("Check the guest's ID first."));
     const Totals t = c->totals(s_->settings.tax);
     if (t.balance.cents() > 0)
         return fail(tr("%1 is still due.").arg(format(t.balance)));
@@ -2116,6 +2215,39 @@ QString PosService::pendingQualifier() const
     return qs(toString(qualifier_));
 }
 
+bool PosService::fastCashFor(const Check &c) const
+{
+    const Employee *e = user();
+    return s_->settings.fastCash && e && permissionsOf(*e).contains(perm::Settle) && !c.kiosk
+           && (c.type == CheckType::Tab || c.type == CheckType::Takeout || c.type == CheckType::Quick);
+}
+
+bool PosService::fastCash(std::int64_t cents)
+{
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    if (!fastCashFor(*c))
+        return fail(tr("Pay on the Pay screen."));
+    if (idPending(*c))
+        return fail(tr("Check the guest's ID first."));
+    const Money balance = c->totals(s_->settings.tax).balance;
+    if (balance.cents() <= 0)
+        return fail(tr("Nothing is owed on this check."));
+    if (cents > 0 && cents < balance.cents())
+        return fail(tr("%1 doesn't cover %2: Pay for the rest.").arg(format(Money::fromCents(cents)), format(balance)));
+    const std::int64_t id = c->id;
+    if (!tender(u"cash"_s, cents > 0 ? std::optional<std::int64_t>(cents) : std::nullopt))
+        return false;
+    const Check *after = current();
+    const Money change = after && after->id == id ? after->totals(s_->settings.tax).change : Money();
+    if (after && after->id == id && !closeCheck())
+        return false;
+    if (change.cents() > 0)
+        emit notice(tr("Change due: %1").arg(format(change)));
+    return true;
+}
+
 QVariantMap PosService::checkInfo() const
 {
     const Check *c = currentCheck();
@@ -2128,6 +2260,13 @@ QVariantMap PosService::checkInfo() const
         {u"heldCount"_s, c->heldCount()}, {u"roundSize"_s, int(lastRound(*c).size())},
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
         {u"taxExempt"_s, qs(c->taxExempt)},
+        // Cash Exact and $20 on the order screen: tabs, to-go and quick sales.
+        {u"fastCash"_s, fastCashFor(*c)},
+        // Check ID: the drink just rung, and the birthday that's old enough.
+        {u"idAsk"_s, idPending(*c) ? QVariantMap{
+             {u"item"_s, [&] { const OrderLine *l = c->line(idAskLine_); return l ? qs(l->displayName()) : QString(); }()},
+             {u"bornBy"_s, i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(now()).date().addYears(-s_->settings.idAge),
+                                                    QLocale::LongFormat)}} : QVariant()},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
         // Seat -> its guest's allergen ids ({"2": ["peanuts"]}).
         {u"seatAllergies"_s, [c] {
@@ -2174,7 +2313,7 @@ QVariantList PosService::lines() const
         out.append(QVariantMap{
             {u"id"_s, qint64(l.id)}, {u"name"_s, qs(l.displayName())}, {u"quantity"_s, l.quantity},
             {u"price"_s, l.isComment() ? QString() : format(l.total())}, {u"comment"_s, l.isComment()},
-            {u"sent"_s, l.sent}, {u"voided"_s, l.voided}, {u"modifiers"_s, mods},
+            {u"sent"_s, l.sent}, {u"voided"_s, l.voided}, {u"modifiers"_s, mods}, {u"note"_s, qs(l.note)},
             // − / + / Again apply (not a comment, gift card or weighed item).
             {u"countable"_s, !l.isComment() && !l.isGiftCard() && !l.isFee() && !l.voided && l.weight == 0 && !l.isShare()},
             {u"fee"_s, l.isFee()},
@@ -2387,6 +2526,12 @@ QVariantList PosService::openChecksSharedNow() const
              }()},
             {u"unsent"_s, c.unsentCount()},
             {u"customer"_s, qs(c.customer.name)}, {u"due"_s, c.dueAt ? dueText(c.dueAt) : QString()},
+            // A tab's card, held: whose, how much, and whether the tab is near it.
+            {u"hold"_s, c.hold.empty() ? QString()
+                                       : (c.hold.cardBrand.empty() && c.hold.last4.empty() ? tr("Card")
+                                                                                          : qs(c.hold.cardBrand + " " + c.hold.last4).trimmed())
+                                             + u" · "_s + tr("held %1").arg(format(c.hold.amount))},
+            {u"nearHold"_s, !c.hold.empty() && c.hold.amount.cents() > 0 && total.cents() * 10 >= c.hold.amount.cents() * 8},
         });
     }
     return out;

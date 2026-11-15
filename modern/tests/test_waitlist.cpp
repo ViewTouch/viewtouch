@@ -266,8 +266,16 @@ TEST_CASE("The floor: when tables free up, nudges for their servers, and who's n
     CHECK(t1[u"stage"_s] == u"eating"_s);
     CHECK(t1[u"nudge"_s].toString().isEmpty());
     clock += 30 * 60'000;
-    CHECK(floorOf(u"T1"_s)[u"nudge"_s].toString() == u"Last order 30m ago"_s);
-    CHECK(pos.tableStatus(u"T1"_s)[u"nudge"_s].toString() == u"Last order 30m ago"_s);   // on their table button
+    CHECK(floorOf(u"T1"_s)[u"nudge"_s].toString() == u"Check back · 30m"_s);
+    CHECK(pos.tableStatus(u"T1"_s)[u"nudge"_s].toString() == u"Check back · 30m"_s);   // on their table button
+    CHECK(floorOf(u"T1"_s)[u"nudgeLevel"_s].toInt() == 1);   // orange: past 20 minutes
+    clock += 10 * 60'000;
+    CHECK(floorOf(u"T1"_s)[u"nudgeLevel"_s].toInt() == 2);   // red: twice that
+    // Sam looks in: nothing to nudge about, until 20 minutes on.
+    REQUIRE(pos.checkedOn());
+    CHECK(floorOf(u"T1"_s)[u"nudge"_s].toString().isEmpty());
+    clock += 21 * 60'000;
+    CHECK(floorOf(u"T1"_s)[u"nudge"_s].toString() == u"Check back · 21m"_s);
 
     // The check printed: nearly free, and nothing to nudge about.
     pos.notePrinted(check);

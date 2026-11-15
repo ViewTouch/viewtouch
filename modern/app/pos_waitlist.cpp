@@ -339,19 +339,23 @@ QVariantMap PosService::floorNow() const
                 lastSent = std::max(lastSent, l.sentAt);
         const int left = typicalMinutes(c.guests) - seatedFor;
         int freeIn = paying ? 3 : printed ? std::clamp(left, 3, 8) : lastSent == 0 ? std::max(left, 30) : std::max(left, 5);
-        // A nudge for its server: nothing ordered yet, or a while since the last order.
+        // A nudge for its server: nothing ordered yet, or a while since anyone
+        // looked in (sent an order, or touched Checked On). Orange; red at twice.
         QString nudge;
+        int nudgeLevel = 0;
         if (!paying && !printed) {
-            if (lastSent == 0 && seatedFor >= 8)
+            const auto level = [](std::int64_t minutes, int limit) { return minutes >= 2 * limit ? 2 : minutes >= limit ? 1 : 0; };
+            const std::int64_t since = (t - std::max({c.openedAt, lastSent, c.checkedOnAt})) / kMinute;
+            if (lastSent == 0 && (nudgeLevel = level(since, s_->settings.orderWaitMinutes)) > 0)
                 nudge = tr("Nothing ordered · %1m").arg(seatedFor);
-            else if (lastSent > 0 && (t - lastSent) / kMinute >= 25)
-                nudge = tr("Last order %1m ago").arg((t - lastSent) / kMinute);
+            else if (lastSent > 0 && (nudgeLevel = level(since, s_->settings.checkBackMinutes)) > 0)
+                nudge = tr("Check back · %1m").arg(since);
         }
         out.insert(label, QVariantMap{{u"state"_s, u"seated"_s}, {u"guests"_s, c.guests},
                                       {u"server"_s, qs(c.serverName)}, {u"serverId"_s, qs(c.serverId)},
                                       {u"minutes"_s, seatedFor}, {u"freeIn"_s, freeIn},
                                       {u"stage"_s, paying ? u"paying"_s : printed ? u"check"_s : lastSent ? u"eating"_s : u"ordering"_s},
-                                      {u"nudge"_s, nudge}, {u"party"_s, qs(c.customer.name)}});
+                                      {u"nudge"_s, nudge}, {u"nudgeLevel"_s, nudgeLevel}, {u"party"_s, qs(c.customer.name)}});
     }
     // Who gets the next table: of the servers on the clock, the one with the
     // fewest guests seated now, and then the one seated longest ago.

@@ -334,6 +334,8 @@ Document kitchenTicket(const Check &check, const std::vector<OrderLine> &lines, 
             if (!m.kitchenHide)
                 d.text("   > " + m.kitchenText(), Document::Align::Left, true);
         }
+        if (!l.note.empty())
+            d.text("   ** " + l.note + " **", Document::Align::Left, true);
     }
     d.rule();
     return d;

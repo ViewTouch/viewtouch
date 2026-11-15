@@ -12,6 +12,8 @@ Item {
     property ZoneItem zone
     readonly property PosService pos: zone ? zone.pos : null
     readonly property string face: zone.st.font ?? Ui.font
+    function lastRoundText(m) { return m < 1 ? qsTr("last round just now") : qsTr("last round %1 ago").arg(minutesText(m)) }
+    function minutesText(m) { return m < 60 ? qsTr("%1m").arg(m) : qsTr("%1h %2m").arg(Math.floor(m / 60)).arg(m % 60) }
     readonly property string mode: zone && zone.props && zone.props.mode ? zone.props.mode : ""
     readonly property var checks: {
         if (!pos) return []
@@ -137,7 +139,8 @@ Item {
                 Text {
                     textFormat: Text.PlainText
                     text: card.modelData.total
-                    color: "white"
+                    // A tab near its card's hold: orange (time for a bigger hold, or to close).
+                    color: w.mode === "tabs" && card.modelData.nearHold ? "#ffb347" : "white"
                     font.family: w.face
                     font.pixelSize: 26
                 }
@@ -146,12 +149,28 @@ Item {
                     width: parent.width
                     text: (card.modelData.customer && card.modelData.customer !== card.modelData.label
                            ? card.modelData.customer + " · " : "")
-                          + (w.mode === "closed"
+                          + (w.mode === "tabs"
+                             // Open 1h 20m · last round 12m ago
+                             ? qsTr("open %1").arg(w.minutesText(card.modelData.minutes))
+                               + (card.modelData.lastSentAt > 0 ? " · " + w.lastRoundText(Math.max(0, Math.floor((Date.now() - card.modelData.lastSentAt) / 60000))) : "")
+                             : w.mode === "closed"
                              ? qsTr("%1 · closed %2 · #%3").arg(card.modelData.server).arg(card.modelData.closed).arg(card.modelData.id)
                              : card.modelData.due ? qsTr("%1 · ready %2").arg(card.modelData.server).arg(card.modelData.due)
                              : qsTr("%1 · %2 min").arg(card.modelData.server).arg(card.modelData.minutes))
                           + (card.modelData.busyOn ? " · " + qsTr("on %1").arg(card.modelData.busyOn) : "")
                     color: Ui.textSoft
+                    font.family: w.face
+                    font.pixelSize: 20
+                    elide: Text.ElideRight
+                }
+                // The card held for the tab.
+                Text {
+                    objectName: "tabHold"
+                    textFormat: Text.PlainText
+                    visible: w.mode === "tabs" && !!card.modelData.hold
+                    width: parent.width
+                    text: "💳 " + (card.modelData.hold ?? "")
+                    color: card.modelData.nearHold ? "#ffb347" : Ui.textSoft
                     font.family: w.face
                     font.pixelSize: 20
                     elide: Text.ElideRight

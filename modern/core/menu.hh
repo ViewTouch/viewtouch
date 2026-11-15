@@ -54,6 +54,8 @@ struct MenuItem {
     // color, or nothing at all.
     std::string kitchenName;
     std::string kitchenColor;
+    // Asks the server to check the guest's ID: "" alcohol does, "yes" always, "no" never.
+    std::string idCheck;
     bool kitchenHide = false;
     // On the self-order kiosk: a line about it and a photo (an image file on
     // the computer showing the kiosk); or not shown there at all.

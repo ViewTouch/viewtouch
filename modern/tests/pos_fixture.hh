@@ -43,6 +43,7 @@ inline app::PosData seedPosData(bool requiredChoices = false)
         m.periodPrices.clear();
     d.settings.promotions.clear();   // they depend on the day and time: their own tests set a clock
     d.settings.setupDone = true;     // the setup guide has tests of its own
+    d.settings.idCheck = false;      // asking for ID with a drink: tests of its own
     if (!requiredChoices) {
         for (core::ModifierGroup &g : d.settings.modifierGroups)
             g.min = 0;

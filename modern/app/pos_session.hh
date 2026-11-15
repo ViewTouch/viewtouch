@@ -50,6 +50,7 @@ class PosSession : public QObject {
     Q_PROPERTY(int entryGuests READ entryGuests NOTIFY entryChanged)
     Q_PROPERTY(QString textEntry READ textEntry NOTIFY entryChanged)
     Q_PROPERTY(QString pendingQualifier READ pendingQualifier NOTIFY qualifierChanged)
+    Q_PROPERTY(int nextQuantity READ nextQuantity NOTIFY qualifierChanged)
     Q_PROPERTY(QString pendingTable READ pendingTable NOTIFY checkChanged)
 
     Q_PROPERTY(bool hasCheck READ hasCheck NOTIFY checkChanged)
@@ -299,6 +300,7 @@ public:
     virtual int entryGuests() const = 0;
     virtual QString textEntry() const = 0;
     virtual QString pendingQualifier() const = 0;
+    virtual int nextQuantity() const = 0;
     virtual QString pendingTable() const = 0;
     virtual bool hasCheck() const = 0;
     virtual QVariantMap checkInfo() const = 0;
@@ -470,6 +472,7 @@ public:
     Q_INVOKABLE void entryKey(const QString &key) { invoke(QStringLiteral("entryKey"), {key}); }
     Q_INVOKABLE void adjustGuests(int delta) { invoke(QStringLiteral("adjustGuests"), {delta}); }
     Q_INVOKABLE void textKey(const QString &key) { invoke(QStringLiteral("textKey"), {key}); }
+    Q_INVOKABLE void addText(const QString &text) { invoke(QStringLiteral("addText"), {text}); }
     Q_INVOKABLE void splitLine(qint64 targetCheckId, bool all = false) { invoke(QStringLiteral("splitLine"), {targetCheckId, all}); }
     Q_INVOKABLE void shareLine(int parts) { invoke(QStringLiteral("shareLine"), {parts}); }
     Q_INVOKABLE void splitEvenly(int ways) { invoke(QStringLiteral("splitEvenly"), {ways}); }
@@ -502,6 +505,10 @@ public:
     Q_INVOKABLE void orderReady(qint64 checkId) { invoke(QStringLiteral("orderReady"), {checkId}); }
     Q_INVOKABLE void orderPickedUp(qint64 checkId) { invoke(QStringLiteral("orderPickedUp"), {checkId}); }
     Q_INVOKABLE void setSeat(int seat) { invoke(QStringLiteral("setSeat"), {seat}); }
+    Q_INVOKABLE void setNextQuantity(int quantity) { invoke(QStringLiteral("setNextQuantity"), {quantity}); }
+    Q_INVOKABLE void checkedOn() { invoke(QStringLiteral("checkedOn"), {}); }
+    Q_INVOKABLE void fastCash(qint64 cents) { invoke(QStringLiteral("fastCash"), {cents}); }
+    Q_INVOKABLE void idChecked(bool ofAge) { invoke(QStringLiteral("idChecked"), {ofAge}); }
     // Another check at this table (a guest paying on their own), made current.
     // How many of a line (0: the selected one); − / + (a sent line: + is a new line); Again.
     Q_INVOKABLE void setLineQuantity(qint64 lineId, int quantity) { invoke(QStringLiteral("setLineQuantity"), {lineId, quantity}); }

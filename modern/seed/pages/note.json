@@ -21,16 +21,151 @@
       },
       "shape": "rect",
       "behavior": "none",
-      "label": "Note for the kitchen"
+      "label": "{note.title}"
+    },
+    {
+      "id": "chip-0",
+      "kind": "button",
+      "rect": {
+        "x": 592,
+        "y": 184,
+        "w": 249,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "No onions",
+      "actions": [
+        {
+          "type": "command",
+          "name": "noteText",
+          "args": {
+            "text": "No onions"
+          }
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
+    },
+    {
+      "id": "chip-1",
+      "kind": "button",
+      "rect": {
+        "x": 857,
+        "y": 184,
+        "w": 249,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "On the side",
+      "actions": [
+        {
+          "type": "command",
+          "name": "noteText",
+          "args": {
+            "text": "On the side"
+          }
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
+    },
+    {
+      "id": "chip-2",
+      "kind": "button",
+      "rect": {
+        "x": 1122,
+        "y": 184,
+        "w": 249,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Well done",
+      "actions": [
+        {
+          "type": "command",
+          "name": "noteText",
+          "args": {
+            "text": "Well done"
+          }
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
+    },
+    {
+      "id": "chip-3",
+      "kind": "button",
+      "rect": {
+        "x": 1387,
+        "y": 184,
+        "w": 249,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Extra crispy",
+      "actions": [
+        {
+          "type": "command",
+          "name": "noteText",
+          "args": {
+            "text": "Extra crispy"
+          }
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
+    },
+    {
+      "id": "chip-4",
+      "kind": "button",
+      "rect": {
+        "x": 1652,
+        "y": 184,
+        "w": 249,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "No ice",
+      "actions": [
+        {
+          "type": "command",
+          "name": "noteText",
+          "args": {
+            "text": "No ice"
+          }
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
     },
     {
       "id": "keyboard",
       "kind": "keyboard",
       "rect": {
         "x": 592,
-        "y": 192,
+        "y": 280,
         "w": 1312,
-        "h": 560
+        "h": 500
       },
       "shape": "rect",
       "behavior": "none"
@@ -41,7 +176,7 @@
       "rect": {
         "x": 592,
         "y": 800,
-        "w": 420,
+        "w": 400,
         "h": 120
       },
       "shape": "rect",
@@ -55,17 +190,40 @@
       ]
     },
     {
-      "id": "add-note",
+      "id": "add-order-note",
       "kind": "button",
       "rect": {
-        "x": 1484,
+        "x": 1048,
         "y": 800,
-        "w": 420,
+        "w": 400,
         "h": 120
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Add Note",
+      "label": "For the Whole Order",
+      "actions": [
+        {
+          "type": "command",
+          "name": "addOrderNote"
+        },
+        {
+          "type": "jump",
+          "mode": "back"
+        }
+      ]
+    },
+    {
+      "id": "add-note",
+      "kind": "button",
+      "rect": {
+        "x": 1504,
+        "y": 800,
+        "w": 400,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "{note.add}",
       "actions": [
         {
           "type": "command",
