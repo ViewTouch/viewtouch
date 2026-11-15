@@ -1334,7 +1334,7 @@ QJsonObject toJson(const PosSettings &s)
          }()},
         {u"kitchenWarnMinutes"_s, s.kitchenWarnMinutes}, {u"kitchenLateMinutes"_s, s.kitchenLateMinutes},
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
-        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"sendToTables"_s, s.sendToTables},
+        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"afterSendTables"_s, s.sendToTables},
         {u"closeWhenPaid"_s, s.closeWhenPaid},
         {u"watch"_s, s.watch}, {u"watchVoid"_s, qint64(s.watchVoid.cents())}, {u"watchComp"_s, qint64(s.watchComp.cents())},
         {u"alertsSeenAt"_s, qint64(s.alertsSeenAt)},
@@ -1683,7 +1683,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.kitchenLateMinutes = std::clamp(o.value(u"kitchenLateMinutes").toInt(15), s.kitchenWarnMinutes, 240);
     s.laterLeadMinutes = std::clamp(o.value(u"laterLeadMinutes").toInt(20), 0, 240);
     s.requireOrderName = o.value(u"requireOrderName").toBool();
-    s.sendToTables = o.value(u"sendToTables").toBool();
+    s.sendToTables = o.value(u"afterSendTables").toBool(true);
     s.closeWhenPaid = o.value(u"closeWhenPaid").toBool();
     s.watch = o.value(u"watch").toBool(true);
     if (o.contains(u"watchVoid"))

@@ -37,6 +37,7 @@ inline app::PosData seedPosData(bool requiredChoices = false)
     // Paying and closing are tested a step at a time; cash closing a quick
     // order by itself (the starter setting) has a test of its own.
     d.settings.closeWhenPaid = false;
+    d.settings.sendToTables = false;   // a test sends, then pays on the same screen (its own tests turn it on)
     // Prices must not depend on the time the tests run: meal-period prices
     // have tests of their own, with a fixed clock.
     for (core::MenuItem &m : d.menu)

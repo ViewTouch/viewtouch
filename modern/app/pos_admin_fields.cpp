@@ -482,8 +482,8 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             with(with(field(u"laterLeadMinutes"_s, tr("Orders for later go to the kitchen (minutes before)"), u"int"_s,
                             tr("An order for 6:30 with 20 here reaches the kitchen at 6:10.")), u"min"_s, 0), u"max"_s, 240),
             field(u"sendToTables"_s, tr("After Send, back to the tables"), u"bool"_s,
-                  tr("Send on a table's check goes back to the floor plan, ready for the next table (bar tabs and "
-                     "takeout stay on the order).")),
+                  tr("On: Send on a table's check goes back to the floor plan for the next table. Takeout, quick "
+                     "orders, tabs and the food truck stay on the order.")),
             field(u"closeWhenPaid"_s, tr("Cash closes a quick or takeout order"), u"bool"_s,
                   tr("When the cash covers it, the order closes by itself and the change shows: no Close to touch. "
                      "Tables, tabs and card payments stay open until you close them (a tip may still come).")),

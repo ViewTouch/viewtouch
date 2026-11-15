@@ -2580,7 +2580,9 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
             }
             const QVariantMap check = pos_->checkInfo();
             const QVariantMap prefs = pos_->userPrefs();
+            // A restaurant's table only (never a food truck's or a shop's screen).
             const bool toTables = prefs.value(u"sendToTables"_s).toBool()
+                                  && pos_->serviceInfo().value(u"mode"_s).toString() == u"restaurant"
                                   && check.value(u"type"_s).toString() == u"dineIn"
                                   && !check.value(u"label"_s).toString().isEmpty();
             // An order called by its number (a food truck's): put away, it

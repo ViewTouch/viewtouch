@@ -489,7 +489,9 @@ struct PosSettings {
     // Orders for later go to the kitchen this long before they're due.
     int laterLeadMinutes = 20;
     // After Send on a table's check: back to the floor plan (the next table).
-    bool sendToTables = false;
+    // On to start (saved as "afterSendTables"; the old "sendToTables" was
+    // only ever its default, so it's read as on).
+    bool sendToTables = true;
     // Cash that covers a quick or takeout order closes it (the change still
     // shows): one touch less at the counter. Tables, tabs and cards stay
     // open until closed (a tip may still come).

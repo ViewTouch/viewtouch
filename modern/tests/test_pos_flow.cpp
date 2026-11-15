@@ -12004,3 +12004,70 @@ TEST_CASE("UI: Aa sets my text size and effect; the screens follow it", "[flow][
     QTest::qWait(200);
     s.shot("look-pay");
 }
+
+TEST_CASE("After Send: a table's check goes back to the tables; takeout and the food truck stay", "[flow][ui][sendtables]")
+{
+    // On to start, and for a store that saved the old setting (it was only ever its default).
+    CHECK(core::PosSettings{}.sendToTables);
+    CHECK(app::settingsFromJson(QJsonObject{{u"sendToTables"_s, false}}).sendToTables);
+    CHECK_FALSE(app::settingsFromJson(QJsonObject{{u"afterSendTables"_s, false}}).sendToTables);
+    core::PosSettings off;
+    off.sendToTables = false;
+    CHECK_FALSE(app::settingsFromJson(app::toJson(off)).sendToTables);
+
+    Session s;
+    for (core::ModifierGroup &g : s.pos.shared()->settings.modifierGroups)
+        g.min = 0;
+    s.pos.shared()->settings.sendToTables = true;   // as a store has it (the test data turns it off)
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+
+    // A table: sent, back to the floor plan.
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK_FALSE(s.pos.hasCheck());
+    CHECK(s.c.pageId() == u"tables"_s);
+
+    // Takeout: sent, still on the order (to be paid).
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    REQUIRE(s.pos.setCustomer({{u"name"_s, u"Ann"_s}, {u"phone"_s, u"5551234"_s}}));
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK(s.pos.hasCheck());
+    CHECK(s.c.pageId() == u"index-lunch"_s);
+    s.pos.releaseCheck();
+
+    // The setting off: a table's check stays on the order.
+    s.pos.shared()->settings.sendToTables = false;
+    REQUIRE(s.pos.selectTable(u"T5"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK(s.pos.hasCheck());
+    CHECK(s.c.pageId() == u"index-lunch"_s);
+    s.pos.releaseCheck();
+    s.pos.shared()->settings.sendToTables = true;
+
+    // A food truck: sent, the next order starts on the order page (never the tables).
+    s.pos.logout();
+    s.pos.shared()->settings.serviceMode = "foodTruck";
+    s.pos.shared()->settings.truckNoLogin = true;
+    emit s.pos.shared()->adminChanged();
+    REQUIRE(s.pos.loggedIn());
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    const QString page = s.c.pageId();
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    REQUIRE(s.pos.setCustomer({{u"name"_s, u"Bo"_s}}));
+    s.c.activate(u"flow-send"_s);
+    QCoreApplication::processEvents();
+    CHECK_FALSE(s.pos.hasCheck());   // put away: it waits on Orders
+    CHECK(s.c.pageId() == page);
+    CHECK(s.c.pageId() != u"tables"_s);
+}
