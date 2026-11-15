@@ -258,7 +258,12 @@ Item {
                     color: w.editingSection === modelData.name ? Qt.darker(modelData.color, 1.2) : "#262b33"
                     border.color: modelData.color
                     border.width: 3
-                    TapHandler { onTapped: w.editingSection = w.editingSection === sectionRow.modelData.name ? "" : sectionRow.modelData.name }
+                    TapHandler {
+                        onTapped: {
+                            if (TouchGuard.covered(point.scenePressPosition)) return
+                            w.editingSection = w.editingSection === sectionRow.modelData.name ? "" : sectionRow.modelData.name
+                        }
+                    }
                     ColumnLayout {
                         id: sectionCol
                         anchors.left: parent.left

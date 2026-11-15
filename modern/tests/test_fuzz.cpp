@@ -189,6 +189,7 @@ TEST_CASE("Fuzz: a server's odd commands never change the settings, the staff or
         Fuzz f(seed * 7919);
         auto before = guarded(pos);
         before.erase("settings.tableStates");
+        before.erase("settings.sections");
         before.erase("settings.notices");
         for (int call = 0; call < 300; ++call) {
             const QString method = names[f.pick(int(names.size()))];
@@ -202,12 +203,18 @@ TEST_CASE("Fuzz: a server's odd commands never change the settings, the staff or
             // Table states (clean, dirty, seated) are the floor's, kept with the
             // settings: staff change them all service long.
             now.erase("settings.tableStates");
+            // Server sections too: the host draws them and says who works each.
+            now.erase("settings.sections");
+            for (const auto &x : pos.shared()->settings.sections)
+                REQUIRE((x.serverId.empty() || pos.shared()->employee(x.serverId)));
             // Posted messages: anyone's (the kitchen's screen too), a few, a month at most.
             REQUIRE(pos.shared()->settings.notices.size() <= 20);
             for (const auto &n : pos.shared()->settings.notices)
                 REQUIRE(n.until <= pos.shared()->now() + 31LL * 24 * 3'600'000);
             now.erase("settings.notices");
             // A kitchen screen sets its own station (nobody logs in there): that, and only that.
+            if (method == u"setKitchenSound" && now != before)
+                before = now;   // its own sound, on or off
             if (method == u"setKitchenStation" && now != before) {
                 const QString station = pos.kitchenStation();
                 REQUIRE((station.isEmpty() || std::ranges::any_of(pos.kitchenStations(), [&](const QVariant &v) {

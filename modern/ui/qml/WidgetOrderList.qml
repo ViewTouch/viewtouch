@@ -788,7 +788,7 @@ Item {
                             font.pixelSize: qtyBar.key * 0.6
                             font.bold: true
                             font.underline: true
-                            TapHandler { onTapped: sheet.askQuantity(row.modelData.id) }
+                            TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; sheet.askQuantity(row.modelData.id) } }
                         }
                         WidgetKey {
                             objectName: "lineMore"

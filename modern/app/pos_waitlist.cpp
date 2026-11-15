@@ -553,6 +553,8 @@ bool PosService::saveSection(const QString &name, const QStringList &tables, con
     const std::string n = ss(name.trimmed());
     if (n.empty())
         return fail(tr("Give the section a name."));
+    if (!serverId.isEmpty() && !s_->employee(ss(serverId)))
+        return fail(tr("Pick someone on the staff."));
     auto &list = s_->settings.sections;
     auto it = std::ranges::find_if(list, [&](const PosSettings::Section &x) { return x.name == n; });
     if (it == list.end()) {

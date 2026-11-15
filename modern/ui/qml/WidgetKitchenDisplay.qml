@@ -851,8 +851,11 @@ Item {
                         // Touched: sold out (86) from here too.
                         TapHandler {
                             enabled: allDayRow.modelData.item !== ""
-                            onTapped: w.lineMenu = { checkId: 0, line: { name: allDayRow.modelData.name, quantity: allDayRow.modelData.count,
-                                                                         item: allDayRow.modelData.item } }
+                            onTapped: {
+                                if (TouchGuard.covered(point.scenePressPosition)) return
+                                w.lineMenu = { checkId: 0, line: { name: allDayRow.modelData.name, quantity: allDayRow.modelData.count,
+                                                                   item: allDayRow.modelData.item } }
+                            }
                         }
                         Text {
                             textFormat: Text.PlainText
