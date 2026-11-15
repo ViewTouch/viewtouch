@@ -12,7 +12,7 @@ Item {
     readonly property int done: pos ? (pos.checklists[list + "Done"] ?? 0) : 0
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: Math.max(14, Math.min(w.width / 26, w.height / 20))
+    readonly property real unit: (Math.max(14, Math.min(w.width / 26, w.height / 20))) * Ui.textScale
     // A phone: each task a finger tall at least (it's the box to tick).
     readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
 

@@ -342,7 +342,7 @@ ApplicationWindow {
                     : backupAt > 0 && (root.station.role === "store" || root.station.role === "server")
                       ? "✓ " + qsTr("Backed up %1").arg(Qt.locale().toString(new Date(backupAt), "ddd h:mm AP"))
                       : ""
-                color: problems.length > 0 ? "#f5b940" : "#8fd19e"
+                color: problems.length > 0 ? Ui.warn : "#8fd19e"
                 font.pixelSize: root.u * 0.95
                 elide: Text.ElideRight
                 Layout.maximumWidth: root.width * 0.3
@@ -894,7 +894,7 @@ ApplicationWindow {
                 objectName: "stationProblems"
                 readonly property var problems: root.station.status.problems ?? []
                 text: problems.length === 0 ? qsTr("Nothing: all is well.") : problems.map(p => "⚠ " + p).join("\n")
-                color: problems.length === 0 ? "#8fd19e" : "#f5b940"
+                color: problems.length === 0 ? "#8fd19e" : Ui.warn
             }
             // For whoever helps: the last week of ViewTouch's logs on a USB stick.
             Section { text: qsTr("Help from someone else") }

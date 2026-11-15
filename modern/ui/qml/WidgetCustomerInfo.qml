@@ -58,7 +58,7 @@ Item {
                 textFormat: Text.PlainText
                 text: w.pos && w.pos.hasCheck ? w.check.label : qsTr("No check open")
                 font.bold: true
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
             }
 
             component Entry: ColumnLayout {

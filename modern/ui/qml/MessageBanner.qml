@@ -59,7 +59,7 @@ Rectangle {
                                  + Qt.escapeHtml(String(banner.shown.text)) : ""
             textFormat: Text.StyledText
             color: "white"
-            font.pixelSize: 17
+            font.pixelSize: Ui.px(17)
             elide: Text.ElideRight
         }
         Column {
@@ -71,14 +71,14 @@ Rectangle {
                     : banner.shown.posted ? qsTr("From %1 · until %2").arg(banner.shown.from).arg(banner.shown.until)
                     : qsTr("From %1 · %2").arg(banner.shown.from).arg(banner.shown.time)
                 color: "#d8e4ff"
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
             }
             Text {
                 textFormat: Text.PlainText
                 width: parent.width
                 text: banner.shown ? banner.shown.text : ""
                 color: "white"
-                font.pixelSize: 26
+                font.pixelSize: Ui.px(26)
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -88,7 +88,7 @@ Rectangle {
             visible: banner.waiting.length > 1
             text: qsTr("+%1 more").arg(banner.waiting.length - 1)
             color: "white"
-            font.pixelSize: 16
+            font.pixelSize: Ui.px(16)
         }
         WidgetKey {
             objectName: "messageOk"

@@ -51,7 +51,7 @@ Item {
         visible: w.phone
         anchors { left: parent.left; right: parent.right; top: parent.top; margins: 8 }
         height: Math.max(48, w.height * 0.25)
-        font.pixelSize: 18
+        font.pixelSize: Ui.px(18)
         placeholderText: w.hint
         // Qt 6.12: a phone held sideways keeps the page in view, not a
         // full-screen box over it.

@@ -74,7 +74,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: qsTr("Count %1").arg(sheet.title)
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -83,7 +83,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: qsTr("Touch a row, type how many, then Next.")
                 color: Ui.muted
-                font.pixelSize: 15
+                font.pixelSize: Ui.px(15)
                 wrapMode: Text.WordWrap
             }
 
@@ -132,7 +132,7 @@ Rectangle {
                                         Layout.preferredWidth: 110
                                         text: line.modelData.text
                                         color: "white"
-                                        font.pixelSize: 22
+                                        font.pixelSize: Ui.px(22)
                                         font.bold: true
                                     }
                                     Text {
@@ -140,13 +140,13 @@ Rectangle {
                                         Layout.fillWidth: true
                                         text: "× " + (sheet.counts[line.index] || (line.current ? "_" : "0"))
                                         color: "white"
-                                        font.pixelSize: 22
+                                        font.pixelSize: Ui.px(22)
                                     }
                                     Text {
                                         textFormat: Text.PlainText
                                         text: sheet.money(line.n * line.modelData.cents)
                                         color: line.n > 0 ? "white" : "#5d6676"
-                                        font.pixelSize: 20
+                                        font.pixelSize: Ui.px(20)
                                     }
                                 }
                                 TapHandler { onTapped: sheet.row = line.index }
@@ -188,14 +188,14 @@ Rectangle {
                     Layout.fillWidth: true
                     text: qsTr("Counted")
                     color: "white"
-                    font.pixelSize: 22
+                    font.pixelSize: Ui.px(22)
                 }
                 Text {
                     textFormat: Text.PlainText
                     objectName: "countTotal"
                     text: sheet.money(sheet.cents())
                     color: "white"
-                    font.pixelSize: 28
+                    font.pixelSize: Ui.px(28)
                     font.bold: true
                 }
             }

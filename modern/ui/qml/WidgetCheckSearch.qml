@@ -90,7 +90,7 @@ Item {
                     objectName: "searchQuery"
                     Layout.fillWidth: true
                     implicitHeight: w.fingers(48)
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     placeholderText: qsTr("#123, 17.62, a name, phone, table, server, item…")
                     onAccepted: if (text.trim().length > 1) w.fresh(text.trim())
                 }
@@ -100,7 +100,7 @@ Item {
                     highlighted: true
                     implicitHeight: w.fingers(48)
                     implicitWidth: 120
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                     enabled: query.text.trim().length > 1
                     onClicked: w.fresh(query.text.trim())
                 }
@@ -109,7 +109,7 @@ Item {
                     text: qsTr("Show All")
                     implicitHeight: w.fingers(48)
                     implicitWidth: 120
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                     onClicked: { query.text = ""; w.fresh("") }
                 }
             }
@@ -125,7 +125,7 @@ Item {
                         objectName: "range-" + modelData[0]
                         text: modelData[1]
                         implicitHeight: w.fingers(38)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         highlighted: w.days === modelData[0]
                         onClicked: {
                             w.days = modelData[0]
@@ -194,8 +194,8 @@ Item {
                             spacing: 0
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { textFormat: Text.PlainText; text: "#" + row.modelData.id + "  " + row.modelData.label; font.bold: true; font.pixelSize: 15; Layout.fillWidth: true; elide: Text.ElideRight }
-                                Label { textFormat: Text.PlainText; text: row.modelData.total; font.bold: true; font.pixelSize: 15 }
+                                Label { textFormat: Text.PlainText; text: "#" + row.modelData.id + "  " + row.modelData.label; font.bold: true; font.pixelSize: Ui.px(15); Layout.fillWidth: true; elide: Text.ElideRight }
+                                Label { textFormat: Text.PlainText; text: row.modelData.total; font.bold: true; font.pixelSize: Ui.px(15) }
                             }
                             Label {
                                 textFormat: Text.PlainText
@@ -204,7 +204,7 @@ Item {
                                       + (row.modelData.customer ? "  ·  " + row.modelData.customer : "")
                                       + (row.modelData.status !== "closed" ? "  ·  " + row.modelData.status : "")
                                 opacity: 0.65
-                                font.pixelSize: 12
+                                font.pixelSize: Ui.px(12)
                                 elide: Text.ElideRight
                             }
                         }
@@ -235,7 +235,7 @@ Item {
                             text: qsTr("‹ Results")
                             onClicked: w.pos.selectFoundCheck(0)
                         }
-                        Label { textFormat: Text.PlainText; text: w.check ? "#" + w.check.id + "  " + w.check.label : ""; font.bold: true; font.pixelSize: 20 }
+                        Label { textFormat: Text.PlainText; text: w.check ? "#" + w.check.id + "  " + w.check.label : ""; font.bold: true; font.pixelSize: Ui.px(20) }
                         Label {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
@@ -249,7 +249,7 @@ Item {
                             Layout.fillWidth: true
                             text: w.check ? qsTr("Opened %1").arg(w.check.opened) + (w.check.closed ? "  ·  " + qsTr("closed %1").arg(w.check.closed) : "") : ""
                             opacity: 0.6
-                            font.pixelSize: 12
+                            font.pixelSize: Ui.px(12)
                             elide: Text.ElideRight
                         }
                         ListView {
@@ -320,7 +320,7 @@ Item {
                                         visible: detailRow.type === "payment" && !!detailRow.modelData.refundable
                                         text: qsTr("Refund…")
                                         implicitHeight: w.fingers(34)
-                                        font.pixelSize: 13
+                                        font.pixelSize: Ui.px(13)
                                         onClicked: w.askRefund(detailRow.modelData)
                                     }
                                 }
@@ -338,7 +338,7 @@ Item {
                                                                          + (detailRow.modelData.reference ? "  ·  " + detailRow.modelData.reference : "")
                                         : ""
                                     opacity: 0.6
-                                    font.pixelSize: 12
+                                    font.pixelSize: Ui.px(12)
                                     elide: Text.ElideRight
                                 }
                                 // The audit trail: when, who, what.
@@ -349,14 +349,14 @@ Item {
                                         textFormat: Text.PlainText
                                         text: detailRow.modelData.when ?? ""
                                         opacity: 0.55
-                                        font.pixelSize: 12
+                                        font.pixelSize: Ui.px(12)
                                         Layout.preferredWidth: 150
                                     }
                                     Label {
                                         textFormat: Text.PlainText
                                         Layout.fillWidth: true
                                         text: (detailRow.modelData.who ? detailRow.modelData.who + ": " : "") + (detailRow.modelData.what ?? "")
-                                        font.pixelSize: 13
+                                        font.pixelSize: Ui.px(13)
                                         wrapMode: Text.WordWrap
                                     }
                                 }
@@ -364,14 +364,14 @@ Item {
                         }
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { textFormat: Text.PlainText; text: qsTr("Total"); font.bold: true; font.pixelSize: 18; Layout.fillWidth: true }
-                            Label { textFormat: Text.PlainText; text: w.check ? w.check.total : ""; font.bold: true; font.pixelSize: 18 }
+                            Label { textFormat: Text.PlainText; text: qsTr("Total"); font.bold: true; font.pixelSize: Ui.px(18); Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: w.check ? w.check.total : ""; font.bold: true; font.pixelSize: Ui.px(18) }
                         }
                         PosButton {
                             objectName: "reprint"
                             Layout.fillWidth: true
                             implicitHeight: 50
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             text: qsTr("Reprint Receipt")
                             onClicked: w.pos.reprintCheck(w.check.id)
                         }
@@ -381,7 +381,7 @@ Item {
                             visible: !!w.check && w.check.closedSale === true && w.pos.service.mode === "retail"
                             Layout.fillWidth: true
                             implicitHeight: 50
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             text: qsTr("Return Items…")
                             onClicked: {
                                 w.pos.startReturn(w.check.id)
@@ -414,7 +414,7 @@ Item {
                 textFormat: Text.PlainText
                 text: w.refunding ? qsTr("Refund %1").arg(w.refunding.name) : ""
                 font.bold: true
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
             }
@@ -441,7 +441,7 @@ Item {
                 objectName: "refundAmount"
                 Layout.fillWidth: true
                 implicitHeight: w.fingers(48)
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
                 inputMethodHints: Qt.ImhDecimalNumbersOnly
             }
             Label { textFormat: Text.PlainText; text: qsTr("Why") }
@@ -453,7 +453,7 @@ Item {
                     delegate: PosButton {
                         required property string modelData
                         text: modelData
-                        font.pixelSize: 13
+                        font.pixelSize: Ui.px(13)
                         onClicked: refundReason.text = modelData
                     }
                 }

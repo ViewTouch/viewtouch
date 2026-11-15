@@ -245,6 +245,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         t.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         t.textSize = record.value(u"textSize"_s).toString().isEmpty() ? 0
                                                                     : std::clamp(record.value(u"textSize"_s).toInt(), 80, 160);
+        t.textEffect = textEffectFrom(record.value(u"textEffect"_s).toString());
         t.colorSafe = record.value(u"colorSafe"_s).toBool();
         if (index >= 0 && index < int(list.size()))
             list[index] = t;
@@ -428,6 +429,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         }
         if (record.contains(u"screensUpdate"_s))
             s_->settings.screensUpdate = record.value(u"screensUpdate"_s).toBool();
+        if (record.contains(u"textEffect"_s))
+            s_->settings.textEffect = textEffectFrom(record.value(u"textEffect"_s).toString());
         if (record.contains(u"tableLongMinutes"_s))
             s_->settings.tableLongMinutes = std::clamp(record.value(u"tableLongMinutes"_s).toInt(), 10, 600);
         if (record.contains(u"prepLowAt"_s))
@@ -959,6 +962,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     e.otherJobs = otherJobs;
     e.language = ss(language);
     e.textSize = std::clamp(record.value(u"textSize"_s, e.textSize).toInt(), 80, 160);
+    e.textEffect = textEffectFrom(record.value(u"textEffect"_s, qs(e.textEffect)).toString());
     e.leftHanded = record.value(u"leftHanded"_s, e.leftHanded).toBool();
     e.colorSafe = record.value(u"colorSafe"_s, e.colorSafe).toBool();
     e.buzz = record.value(u"buzz"_s, e.buzz).toBool();

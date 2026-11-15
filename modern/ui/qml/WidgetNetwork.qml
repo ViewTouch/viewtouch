@@ -24,7 +24,7 @@ Item {
     }
     component Heading: Label {
         textFormat: Text.PlainText
-        font.pixelSize: 22
+        font.pixelSize: Ui.px(22)
         font.bold: true
         Layout.topMargin: 14
     }
@@ -58,7 +58,7 @@ Item {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: w.serving
                               ? qsTr("%1 is the main server: it keeps the store's data and serves the other screens.").arg(w.net.machine ?? "")
                               : qsTr("This computer runs the store on its own (it doesn't serve other screens).")
@@ -70,7 +70,7 @@ Item {
                     visible: !!w.net.build
                     Layout.fillWidth: true
                     opacity: 0.7
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     text: qsTr("This computer runs ViewTouch %1.").arg(w.net.build ?? "")
                 }
                 Label {
@@ -79,7 +79,7 @@ Item {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     opacity: 0.7
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     text: qsTr("It took over from another main server %n time(s).", "", w.net.term ?? 0)
                 }
 
@@ -93,7 +93,7 @@ Item {
                         objectName: "standbyText"
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: w.standby
                               ? qsTr("In sync: %1 has a live copy of everything (since %2). If this computer stops, it takes over within about 20 seconds.")
                                     .arg(w.standby.address).arg(w.time(w.standby.since))
@@ -108,7 +108,7 @@ Item {
                     visible: w.serving && (w.net.terminals ?? []).length === 0
                     text: qsTr("None right now.")
                     opacity: 0.6
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                 }
                 Repeater {
                     model: w.serving ? (w.net.terminals ?? []) : []
@@ -124,12 +124,12 @@ Item {
                             anchors.rightMargin: 14
                             spacing: 14
                             Dot { status: "ok" }
-                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
-                            Label { textFormat: Text.PlainText; text: modelData.address; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180 }
+                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: Ui.px(18); font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
+                            Label { textFormat: Text.PlainText; text: modelData.address; font.pixelSize: Ui.px(16); opacity: 0.7; Layout.preferredWidth: 180 }
                             Label {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
-                                font.pixelSize: 16
+                                font.pixelSize: Ui.px(16)
                                 elide: Text.ElideRight
                                 text: modelData.user ? qsTr("%1 is logged in").arg(modelData.user) : qsTr("Nobody logged in")
                             }
@@ -137,8 +137,8 @@ Item {
                             Label {
                                 textFormat: Text.PlainText
                                 objectName: "screenBuild-" + modelData.name
-                                font.pixelSize: 16
-                                color: modelData.behind || modelData.ahead ? "#f5b940" : "white"
+                                font.pixelSize: Ui.px(16)
+                                color: modelData.behind || modelData.ahead ? Ui.warn : "white"
                                 opacity: modelData.behind || modelData.ahead ? 1 : 0.6
                                 text: !modelData.build ? qsTr("older version")
                                     : modelData.behind ? (modelData.hasUpdate ? qsTr("build %1 · update ready").arg(modelData.build)
@@ -146,7 +146,7 @@ Item {
                                     : modelData.ahead ? qsTr("build %1 · newer than this computer").arg(modelData.build)
                                     : qsTr("build %1").arg(modelData.build)
                             }
-                            Label { textFormat: Text.PlainText; text: qsTr("since %1").arg(w.time(modelData.since)); font.pixelSize: 16; opacity: 0.6 }
+                            Label { textFormat: Text.PlainText; text: qsTr("since %1").arg(w.time(modelData.since)); font.pixelSize: Ui.px(16); opacity: 0.6 }
                         }
                     }
                 }
@@ -159,7 +159,7 @@ Item {
                     visible: w.serving
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     opacity: 0.8
                     text: (w.net.updates ?? []).length
                           ? qsTr("Ready: %1. A manager on a screen that's behind gets the update there.")
@@ -174,7 +174,7 @@ Item {
                     visible: (w.net.printers ?? []).length === 0
                     text: qsTr("No printers set up (Manager → Printers).")
                     opacity: 0.6
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                 }
                 Repeater {
                     model: w.net.printers ?? []
@@ -191,13 +191,13 @@ Item {
                             anchors.rightMargin: 14
                             spacing: 14
                             Dot { status: modelData.status }
-                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
-                            Label { textFormat: Text.PlainText; text: modelData.where || modelData.type; font.pixelSize: 16; opacity: 0.7; Layout.preferredWidth: 180; elide: Text.ElideMiddle }
+                            Label { textFormat: Text.PlainText; text: modelData.name; font.pixelSize: Ui.px(18); font.bold: true; Layout.preferredWidth: 260; elide: Text.ElideRight }
+                            Label { textFormat: Text.PlainText; text: modelData.where || modelData.type; font.pixelSize: Ui.px(16); opacity: 0.7; Layout.preferredWidth: 180; elide: Text.ElideMiddle }
                             Label {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
-                                font.pixelSize: 16
+                                font.pixelSize: Ui.px(16)
                                 color: modelData.status === "failed" || modelData.problem ? "#ff9a9e" : "white"
                                 // What the printer itself says first (out of paper, cover open...).
                                 text: modelData.problem === "paperOut" ? qsTr("Out of paper")

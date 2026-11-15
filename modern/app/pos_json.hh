@@ -80,6 +80,8 @@ QJsonObject toJson(const core::Party &p);
 core::Party partyFromJson(const QJsonObject &o);
 
 QJsonObject toJson(const core::PosSettings &s);
+// A text effect as kept: "none", "embossed", "outline", or empty (not set: the next one's).
+std::string textEffectFrom(const QString &value);
 core::PosSettings settingsFromJson(const QJsonObject &o);
 
 QJsonArray modifierGroupsToJson(const std::vector<core::ModifierGroup> &groups);

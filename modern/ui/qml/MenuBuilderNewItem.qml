@@ -165,7 +165,7 @@ Rectangle {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 opacity: 0.7
-                font.pixelSize: 15
+                font.pixelSize: Ui.px(15)
                 text: wiz.at === 5 ? "" : (wiz.at > 0 && wiz.name !== "" ? wiz.name + "  ·  " : qsTr("A new item") + "  ·  ")
                                           + qsTr("%1 of 5").arg(wiz.at + 1)
             }
@@ -218,7 +218,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 560
                         implicitHeight: 60
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         placeholderText: qsTr("e.g. Fish Tacos")
                         onTextEdited: {
                             wiz.sameNameOk = false
@@ -235,8 +235,8 @@ Rectangle {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
-                            color: "#f5b940"
-                            font.pixelSize: 15
+                            color: Ui.warn
+                            font.pixelSize: Ui.px(15)
                             text: wiz.twin ? qsTr("There's already a %1 on the menu. Change that one, or have two with the same name?").arg(wiz.twin.name) : ""
                         }
                         MenuTouchButton {
@@ -278,7 +278,7 @@ Rectangle {
                                 height: 60
                                 radius: 6
                                 color: modelData.color || "#3a4658"
-                                border.color: on ? "#f5b940" : Qt.darker(color, 1.4)
+                                border.color: on ? Ui.warn : Qt.darker(color, 1.4)
                                 border.width: on ? 4 : 1
                                 Text {
                                     id: chipText
@@ -286,7 +286,7 @@ Rectangle {
                                     anchors.centerIn: parent
                                     text: (chip.on ? "✓ " : "") + qsTranslate("Data", String(chip.modelData.name ?? ""))
                                     color: StoreColors.ink(chip.color)
-                                    font.pixelSize: 18
+                                    font.pixelSize: Ui.px(18)
                                     font.bold: true
                                 }
                                 MouseArea { anchors.fill: parent; onClicked: wiz.pickCategory(chip.modelData) }
@@ -315,7 +315,7 @@ Rectangle {
                             EnterKey.type: Qt.EnterKeyNext
                             Layout.fillWidth: true
                             implicitHeight: 56
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             placeholderText: qsTr("A new category, e.g. Tacos or Drinks")
                             onAccepted: wiz.addCategory()
                         }
@@ -345,7 +345,7 @@ Rectangle {
                     }
                     RowLayout {
                         spacing: 10
-                        Label { textFormat: Text.PlainText; text: wiz.sym; font.pixelSize: 30; font.bold: true; opacity: wiz.free ? 0.4 : 1 }
+                        Label { textFormat: Text.PlainText; text: wiz.sym; font.pixelSize: Ui.px(30); font.bold: true; opacity: wiz.free ? 0.4 : 1 }
                         TextField {
                             id: priceField
                             objectName: "newItemPrice"
@@ -353,7 +353,7 @@ Rectangle {
                             EnterKey.type: Qt.EnterKeyNext
                             Layout.preferredWidth: 220
                             implicitHeight: 68
-                            font.pixelSize: 30
+                            font.pixelSize: Ui.px(30)
                             enabled: !wiz.free
                             placeholderText: "0.00"
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
@@ -384,7 +384,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("Before tax. If it comes in sizes (Small, Large), type the smallest one's price: the sizes are added after it's saved.")
                     }
                 }
@@ -407,7 +407,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: wiz.chosen.length === 0
                               ? qsTr("Like which salsa, what size, or extra cheese. Touch the ones it asks for; with none, it's rung in with one touch.")
                               : qsTr("It asks for these when it's ordered, in this order.")
@@ -445,7 +445,7 @@ Rectangle {
                                     textFormat: Text.PlainText
                                     Layout.preferredWidth: 30
                                     horizontalAlignment: Text.AlignHCenter
-                                    font.pixelSize: 22
+                                    font.pixelSize: Ui.px(22)
                                     font.bold: true
                                     text: groupRow.on ? "✓" : ""
                                 }
@@ -457,7 +457,7 @@ Rectangle {
                                         textFormat: Text.PlainText
                                         width: parent.width
                                         elide: Text.ElideRight
-                                        font.pixelSize: 18
+                                        font.pixelSize: Ui.px(18)
                                         font.bold: true
                                         text: qsTranslate("Data", String(groupRow.modelData.name ?? "")) + "  ·  " + groupRow.modelData.rule
                                     }
@@ -468,7 +468,7 @@ Rectangle {
                                         maximumLineCount: 2
                                         wrapMode: Text.WordWrap
                                         opacity: 0.8
-                                        font.pixelSize: 14
+                                        font.pixelSize: Ui.px(14)
                                         text: wiz.optionsOf(groupRow.modelData)
                                     }
                                 }
@@ -487,7 +487,7 @@ Rectangle {
                                     Layout.preferredWidth: 34
                                     horizontalAlignment: Text.AlignHCenter
                                     opacity: 0.8
-                                    font.pixelSize: 15
+                                    font.pixelSize: Ui.px(15)
                                     text: qsTr("#%1").arg(groupRow.place + 1)
                                 }
                             }
@@ -580,7 +580,7 @@ Rectangle {
                         Layout.topMargin: 6
                         wrapMode: Text.WordWrap
                         opacity: 0.85
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: wiz.whereText
                     }
                 }
@@ -625,7 +625,7 @@ Rectangle {
                                     elide: Text.ElideRight
                                     text: wiz.name
                                     color: StoreColors.ink(lookTile.color)
-                                    font.pixelSize: 20
+                                    font.pixelSize: Ui.px(20)
                                     font.bold: true
                                 }
                                 Text {
@@ -635,7 +635,7 @@ Rectangle {
                                     text: wiz.free || wiz.priceValue === 0 ? qsTr("Free") : wiz.money(wiz.priceValue)
                                     color: StoreColors.ink(lookTile.color)
                                     opacity: 0.9
-                                    font.pixelSize: 17
+                                    font.pixelSize: Ui.px(17)
                                 }
                             }
                         }
@@ -664,16 +664,16 @@ Rectangle {
                                         id: lookWords
                                         anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 12; rightMargin: 12 }
                                         spacing: 10
-                                        Label { textFormat: Text.PlainText; Layout.preferredWidth: 78; opacity: 0.7; font.pixelSize: 15; text: lookRow.modelData.what }
+                                        Label { textFormat: Text.PlainText; Layout.preferredWidth: 78; opacity: 0.7; font.pixelSize: Ui.px(15); text: lookRow.modelData.what }
                                         Label {
                                             textFormat: Text.PlainText
                                             Layout.fillWidth: true
                                             wrapMode: Text.WordWrap
-                                            font.pixelSize: 17
+                                            font.pixelSize: Ui.px(17)
                                             font.bold: true
                                             text: lookRow.modelData.text
                                         }
-                                        Label { textFormat: Text.PlainText; opacity: 0.7; font.pixelSize: 15; text: qsTr("Change ›") }
+                                        Label { textFormat: Text.PlainText; opacity: 0.7; font.pixelSize: Ui.px(15); text: qsTr("Change ›") }
                                     }
                                 }
                             }
@@ -701,7 +701,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.8
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: qsTr("Its button is on the order screen now. What next?")
                     }
                     Flow {
@@ -749,8 +749,8 @@ Rectangle {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignRight
             visible: text !== "" && wiz.at < 5
-            color: "#f5b940"
-            font.pixelSize: 15
+            color: Ui.warn
+            font.pixelSize: Ui.px(15)
             text: wiz.missing
         }
         // Back, All Settings and Next in a row; a phone: All Settings above them.
@@ -779,7 +779,7 @@ Rectangle {
                 Layout.columnSpan: wiz.small ? 2 : 1
                 Layout.alignment: Qt.AlignLeft
                 flat: true
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 text: qsTr("All Settings")
                 onClicked: wiz.menu.closeWizard(false)
             }

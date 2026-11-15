@@ -123,7 +123,7 @@ Rectangle {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 opacity: 0.7
-                font.pixelSize: 15
+                font.pixelSize: Ui.px(15)
                 text: (ne.at > 0 && ne.name !== "" ? ne.name : qsTr("Someone new")) + "  ·  " + qsTr("%1 of 3").arg(ne.at + 1)
             }
             Row {
@@ -174,7 +174,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
                         implicitHeight: 56
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         placeholderText: qsTr("e.g. Ana")
                         onTextEdited: ne.set("name", text)
                         onAccepted: ne.next()
@@ -184,7 +184,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("As it shows on checks and reports: a first name is enough.")
                     }
                     Label {
@@ -193,8 +193,8 @@ Rectangle {
                         visible: ne.twin
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: "#f5b940"
-                        font.pixelSize: 15
+                        color: Ui.warn
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("There's already a %1 on the staff. Add a last initial (%1 M.) so checks and reports tell them apart.").arg(ne.name)
                     }
                 }
@@ -222,7 +222,7 @@ Rectangle {
                                 objectName: "newEmployeeRole-" + modelData.value
                                 implicitHeight: 76
                                 implicitWidth: ne.small ? body.width : Math.min(380, (body.width - 8) / 2)
-                                font.pixelSize: 15
+                                font.pixelSize: Ui.px(15)
                                 lines: 2
                                 checkable: true
                                 checked: ne.role === modelData.value
@@ -255,7 +255,7 @@ Rectangle {
                             EnterKey.type: Qt.EnterKeyNext
                             Layout.preferredWidth: 220
                             implicitHeight: 64
-                            font.pixelSize: 28
+                            font.pixelSize: Ui.px(28)
                             font.letterSpacing: 4
                             maximumLength: 8
                             placeholderText: ne.boss ? "000000" : "0000"
@@ -275,7 +275,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: ne.boss ? qsTr("6 to 8 numbers: a manager can do the most, so theirs is harder to guess. Only they should know it.")
                                       : qsTr("4 to 8 numbers. Only they should know it; a manager can give them a new one any time.")
                     }
@@ -300,7 +300,7 @@ Rectangle {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("Their PIN is %1. Tell them, then it's theirs to keep.").arg(ne.addedPin)
                     }
                     Flow {
@@ -331,8 +331,8 @@ Rectangle {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignRight
             visible: text !== "" && ne.at < 3
-            color: "#f5b940"
-            font.pixelSize: 15
+            color: Ui.warn
+            font.pixelSize: Ui.px(15)
             text: ne.missing
         }
         GridLayout {
@@ -365,7 +365,7 @@ Rectangle {
                 Layout.columnSpan: ne.small ? 2 : 1
                 Layout.alignment: Qt.AlignLeft
                 flat: true
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 text: qsTr("All Settings")
                 onClicked: ne.panel.asking = false
             }

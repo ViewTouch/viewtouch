@@ -33,7 +33,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: qsTr("Notes from the last shift")
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 font.bold: true
             }
             Flickable {
@@ -58,14 +58,14 @@ Rectangle {
                                 Layout.fillWidth: true
                                 text: modelData.from + "  ·  " + modelData.when
                                 color: Ui.muted
-                                font.pixelSize: 15
+                                font.pixelSize: Ui.px(15)
                             }
                             Text {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.text
                                 color: "white"
-                                font.pixelSize: 20
+                                font.pixelSize: Ui.px(20)
                                 wrapMode: Text.WordWrap
                             }
                         }

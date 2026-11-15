@@ -162,7 +162,7 @@ Flickable {
                     text: qsTranslate("Page", block.modelData.title)
                     color: mb.st.textColor ?? "#c8d0dc"
                     font.family: mb.face
-                    font.pixelSize: 24
+                    font.pixelSize: Ui.px(24)
                     font.bold: true
                 }
                 Grid {
@@ -190,7 +190,7 @@ Flickable {
                                      : (!mb.markOnly && cell.itemColor) || (st.keyFill ?? Ui.key)
                                 readonly property bool isPicked: mb.arranging && mb.picked === cell.modelData.id
                                 readonly property var hits: cell.isGap ? [] : mb.allergyHits(cell.modelData)
-                                border.color: isPicked ? "#f5b940" : hits.length ? "#ff3b3b" : mb.markOnly ? (st.borderColor ?? "#2e3440") : Qt.darker(color, 1.4)
+                                border.color: isPicked ? Ui.warn : hits.length ? "#ff3b3b" : mb.markOnly ? (st.borderColor ?? "#2e3440") : Qt.darker(color, 1.4)
                                 border.width: isPicked ? 6 : hits.length ? 6 : 2
                                 // Modern: its category's color as a strip across the top.
                                 Rectangle {
@@ -243,7 +243,7 @@ Flickable {
                                     height: busyLabel.implicitHeight + 4
                                     radius: height / 2
                                     color: "#e0161a20"
-                                    border.color: parent.slow && parent.slow.level === "late" ? "#ff8a8f" : "#f5b940"
+                                    border.color: parent.slow && parent.slow.level === "late" ? "#ff8a8f" : Ui.warn
                                     border.width: 2
                                     Text {
                                         textFormat: Text.PlainText
@@ -268,16 +268,16 @@ Flickable {
                                     height: leftLabel.implicitHeight + 4
                                     radius: height / 2
                                     color: "#e0161a20"
-                                    border.color: "#f5b940"
+                                    border.color: Ui.warn
                                     border.width: 2
                                     Text {
                                         textFormat: Text.PlainText
                                         id: leftLabel
                                         anchors.centerIn: parent
                                         text: qsTr("%1 left").arg(parent.parent.itemsLeft)
-                                        color: "#f5b940"
+                                        color: Ui.warn
                                         font.family: mb.face
-                                        font.pixelSize: 14
+                                        font.pixelSize: Ui.px(14)
                                         font.bold: true
                                     }
                                 }
@@ -292,7 +292,7 @@ Flickable {
                                     text: cell.modelData.number ?? ""
                                     color: Ui.muted
                                     font.family: mb.face
-                                    font.pixelSize: 14
+                                    font.pixelSize: Ui.px(14)
                                     font.bold: true
                                 }
                                 Image {
@@ -339,6 +339,8 @@ Flickable {
                                                                  Math.min(Math.min(cell.height * 0.16, cell.width * 0.11) * factor,
                                                                           cell.width * 1.6 / longest))
                                         font.bold: true
+                                        style: Ui.textStyle
+                                        styleColor: Ui.effectColor(color)
                                     }
                                     Text {
                                         textFormat: Text.PlainText

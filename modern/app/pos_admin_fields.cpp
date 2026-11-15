@@ -233,8 +233,10 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                  u"options"_s, languageOptions(true)),
             field(u"look"_s, tr("Look"), u"look"_s,
                   tr("Their colors on any screen while they're logged in (High Contrast, say); empty: the screen's.")),
-            with(field(u"textSize"_s, tr("Text size"), u"enum"_s, tr("Bigger button and check text, for them only.")),
-                 u"options"_s, options({{"100", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
+            with(field(u"textSize"_s, tr("Text size"), u"enum"_s, tr("Smaller or bigger text on every screen, for them only. They can change it themselves with Aa.")),
+                 u"options"_s, options({{"90", "Small"}, {"100", "Normal"}, {"115", "Large"}, {"130", "Larger"}, {"150", "Largest"}})),
+            with(field(u"textEffect"_s, tr("Text effect"), u"enum"_s, tr("Raised (embossed) or outlined words on keys and labels, for them only.")),
+                 u"options"_s, options({{"", "The screen's"}, {"none", "None"}, {"embossed", "Embossed"}, {"outline", "Outline"}})),
             field(u"colorSafe"_s, tr("Colors for color blindness"), u"bool"_s,
                   tr("Table and kitchen ticket colors that color-blind eyes tell apart (blue, yellow, orange), on any screen while they're logged in.")),
             field(u"leftHanded"_s, tr("Left-handed"), u"bool"_s,
@@ -551,6 +553,10 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                           "Legacy: the original ViewTouch's own pages, every one where it was, for a store coming from it. "
                           "Switch back any time: your buttons, pages and colors stay as they are in each.")),
                  u"options"_s, options({{"classic", "Classic"}, {"modern", "Modern"}, {"legacy", "Legacy"}})),
+            with(field(u"textEffect"_s, tr("Text effect"), u"enum"_s,
+                       tr("The words on keys, menu buttons and labels: plain, raised (embossed) or with an edge (outline). "
+                          "A screen or a person can have their own.")),
+                 u"options"_s, options({{"", "None"}, {"embossed", "Embossed"}, {"outline", "Outline"}})),
             field(u"screensUpdate"_s, tr("Phones and tablets get updates by themselves"), u"bool"_s,
                   tr("While nobody is logged in on one, it gets the newer app from this computer; "
                      "the next person to use it touches Install. Off: the maintainer updates each one.")),
@@ -794,7 +800,10 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
             with(field(u"textSize"_s, tr("Text size"), u"enum"_s,
                        tr("Bigger button and check text on this screen (one read from afar, a bright kitchen). "
                           "A person's own text size wins while they're logged in.")),
-                 u"options"_s, options({{"", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
+                 u"options"_s, options({{"90", "Small"}, {"", "Normal"}, {"115", "Large"}, {"130", "Larger"}, {"150", "Largest"}})),
+            with(field(u"textEffect"_s, tr("Text effect"), u"enum"_s,
+                       tr("Raised (embossed) or outlined words on this screen's keys and labels. A person's own wins while they're logged in.")),
+                 u"options"_s, options({{"", "The store's"}, {"none", "None"}, {"embossed", "Embossed"}, {"outline", "Outline"}})),
             field(u"colorSafe"_s, tr("Colors for color blindness"), u"bool"_s,
                   tr("Table and kitchen ticket colors that color-blind eyes tell apart (blue, yellow, orange) on this screen, "
                      "whoever is logged in. A kitchen screen nobody logs into, say.")),

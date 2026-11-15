@@ -68,7 +68,7 @@ Item {
                             textFormat: Text.PlainText
                             anchors.baseline: parent.children[0].baseline
                             text: group.modelData.rule
-                            color: group.modelData.done ? Ui.muted : "#f5b940"
+                            color: group.modelData.done ? Ui.muted : Ui.warn
                             font.family: w.face
                             font.pixelSize: w.unit * 0.7
                         }

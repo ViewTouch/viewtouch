@@ -34,7 +34,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: sheet.info.kind === "void" ? qsTr("Why take it off?") : qsTr("Why the discount?")
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 font.bold: true
             }
             Text {
@@ -42,7 +42,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: sheet.info.what ?? ""
                 color: Ui.textSoft
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 wrapMode: Text.WordWrap
             }
             Flickable {

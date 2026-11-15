@@ -59,6 +59,8 @@ struct Employee {
     // mirrored for the left hand (the check on the right), and the page they
     // start on at login (empty: their job's, PosSettings::startPages).
     int textSize = 100;
+    // Their text effect ("none", "embossed", "outline"; empty: the screen's).
+    std::string textEffect;
     bool leftHanded = false;
     // Status colors (tables, kitchen tickets) that color-blind eyes tell apart.
     bool colorSafe = false;

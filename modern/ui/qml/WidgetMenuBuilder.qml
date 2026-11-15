@@ -551,7 +551,7 @@ Item {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     text: qsTr("Your menu pages have buttons placed by hand, so new items and categories don't show up on them. Switch them to fill themselves from the menu? You'll see them in the page editor first, to Save or Undo.")
                 }
                 TouchButton {
@@ -616,7 +616,7 @@ Item {
                         visible: !!w.pos && w.pos.menuUndoText !== ""
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         text: qsTr("↶ Undo") + "\n" + (w.pos ? w.pos.menuUndoText : "")
                         onClicked: {
                             w.editingItem = false
@@ -634,7 +634,7 @@ Item {
                     visible: w.mode === "menu"
                     Layout.fillWidth: true
                     implicitHeight: w.fingers(48)
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     placeholderText: qsTr("Name, number or barcode")   // (the magnifier says it finds)
                     text: w.search
                     onEdited: typed => w.search = typed
@@ -666,13 +666,13 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: Ui.px(18); font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
                                     textFormat: Text.PlainText
                                     text: (foundRow.cat ? foundRow.cat.name + "  ·  " : "")
                                           + (modelData.availableSet ? modelData.price : qsTr("sold out"))
                                           + (modelData.number !== "" ? "  ·  #" + modelData.number : "")
-                                    font.pixelSize: 13
+                                    font.pixelSize: Ui.px(13)
                                     opacity: 0.7
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
@@ -716,12 +716,12 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 10
                             spacing: 0
-                            Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: Ui.px(18); font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                             Label {
                                 textFormat: Text.PlainText
                                 text: modelData.rule + "  ·  " + qsTr("%n option(s)", "", modelData.options.length)
                                       + "  ·  " + qsTr("used by %n", "", modelData.usedBy.length)
-                                font.pixelSize: 13
+                                font.pixelSize: Ui.px(13)
                                 opacity: 0.7
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
@@ -769,13 +769,13 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
-                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 18; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Label { textFormat: Text.PlainText; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: Ui.px(18); font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
                                 Label {
                                     textFormat: Text.PlainText
                                     text: qsTr("%n item(s)", "", modelData.count) + "  ·  "
                                           + (modelData.periods.length === 0 ? qsTr("all day")
                                              : modelData.periods.map(p => (w.periods.find(x => x.id === p) ?? { name: p }).name).join(", "))
-                                    font.pixelSize: 13
+                                    font.pixelSize: Ui.px(13)
                                     opacity: 0.7
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
@@ -789,7 +789,7 @@ Item {
                             visible: w.dropCategory === modelData.id
                             color: "#33f5b940"
                             radius: parent.radius
-                            border.color: "#f5b940"
+                            border.color: Ui.warn
                             border.width: 4
                         }
                         Rectangle {
@@ -797,7 +797,7 @@ Item {
                             visible: w.dragId !== "" && w.dropIndex === index && w.dragId !== modelData.id && w.mode === "menu"
                             color: "transparent"
                             radius: parent.radius
-                            border.color: "#f5b940"
+                            border.color: Ui.warn
                             border.width: 4
                         }
                         MouseArea {
@@ -882,7 +882,7 @@ Item {
                 // it's too long to read there.
                 TextMetrics {
                     id: categoryName
-                    font.pixelSize: 22
+                    font.pixelSize: Ui.px(22)
                     font.bold: true
                     text: w.category ? qsTranslate("Data", String(w.category.name ?? "")) : ""
                 }
@@ -906,7 +906,7 @@ Item {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: categoryHeader.nameFits ? categoryName.text : ""
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         font.bold: true
                         elide: Text.ElideRight
                     }
@@ -945,13 +945,13 @@ Item {
                                                              : qsTr("Hold one and drag it to move it, or onto a category."))
                             : ""
                         opacity: 0.6
-                        font.pixelSize: 13
+                        font.pixelSize: Ui.px(13)
                     }
                     // Every item in one table, or the category's tiles.
                     TouchButton {
                         objectName: "builderListView"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         highlighted: w.listView
                         text: w.listView ? qsTr("▦ Tiles") : qsTr("☰ List")
                         onClicked: { w.listView = !w.listView; w.preview = false }
@@ -961,7 +961,7 @@ Item {
                         objectName: "builderPreview"
                         visible: !!w.category && w.items.length > 0 && !w.selecting && !w.listView
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         checkable: true
                         checked: w.preview
                         highlighted: checked
@@ -972,7 +972,7 @@ Item {
                         objectName: "builderSelect"
                         visible: (!!w.category && w.items.length > 0) || w.listView
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         highlighted: w.selecting
                         text: w.selecting ? qsTr("Done") : qsTr("Select…")
                         onClicked: {
@@ -993,7 +993,7 @@ Item {
                     visible: list.length > 0
                     Layout.fillWidth: true
                     implicitHeight: w.fingers(40)
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     text: list.length === 1 ? "⏰ " + list[0].label + "  ·  " + list[0].when
                                             : "⏰ " + qsTr("%n price changes set for later", "", list.length)
                     onClicked: w.leave(() => pricesDialog.open())
@@ -1010,12 +1010,12 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         text: qsTr("%n chosen", "", w.selected.length)
                         font.bold: true
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                     }
                     TouchButton {
                         objectName: "builderSelectAll"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         // What's shown: the category's tiles, or the List's rows.
                         readonly property var shown: w.listView ? builderList.rows : w.items
                         readonly property bool all: shown.length > 0 && shown.every(i => w.selected.includes(i.id))
@@ -1029,7 +1029,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectMove"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Move to…")
                         onClicked: moveSeveral.open()
@@ -1037,7 +1037,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectColor"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Color…")
                         onClicked: colorSeveral.open()
@@ -1045,7 +1045,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectPrice"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Price…")
                         onClicked: priceSeveral.open()
@@ -1053,7 +1053,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectTax"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Tax…")
                         onClicked: taxSeveral.open()
@@ -1061,7 +1061,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectTags"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Price Tags…")
                         onClicked: tagsSeveral.open()
@@ -1069,7 +1069,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectSoldOut"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Sold Out")
                         onClicked: w.changeSelected({ available: false })
@@ -1077,7 +1077,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectForSale"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("For Sale")
                         onClicked: w.changeSelected({ available: true })
@@ -1085,7 +1085,7 @@ Item {
                     TouchButton {
                         objectName: "builderSelectRemove"
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         enabled: w.selected.length > 0
                         text: qsTr("Remove…")
                         onClicked: removeSeveral.open()
@@ -1149,7 +1149,7 @@ Item {
                             opacity: modelData.add || modelData.availableSet ? 1 : 0.5
                             readonly property bool marked: !modelData.add && (w.selecting ? w.selected.includes(modelData.id)
                                                                                            : w.editingItem && w.itemId === modelData.id)
-                            border.color: marked ? "#f5b940" : Qt.darker(tint, 1.3)
+                            border.color: marked ? Ui.warn : Qt.darker(tint, 1.3)
                             border.width: marked ? 4 : 1
                             Column {
                                 anchors.centerIn: parent
@@ -1161,7 +1161,7 @@ Item {
                                     text: modelData.add ? (w.items.length === 0 ? qsTr("+ Add the First Item") : qsTr("+ Add Item"))
                                                         : qsTranslate("Data", String(modelData.name ?? ""))
                                     color: StoreColors.ink(parent.parent.tint)
-                                    font.pixelSize: 18
+                                    font.pixelSize: Ui.px(18)
                                     font.bold: true
                                     elide: Text.ElideRight
                                 }
@@ -1174,7 +1174,7 @@ Item {
                                                                + (modelData.availableSet ? modelData.price : qsTr("sold out"))
                                     color: StoreColors.ink(parent.parent.tint)
                                     opacity: 0.8
-                                    font.pixelSize: 15
+                                    font.pixelSize: Ui.px(15)
                                 }
                             }
                             // Outlined: where a dragged item will go.
@@ -1183,7 +1183,7 @@ Item {
                                 visible: w.dragId !== "" && !modelData.add && w.dropIndex === index && w.dragId !== modelData.id
                                 color: "transparent"
                                 radius: parent.radius
-                                border.color: "#f5b940"
+                                border.color: Ui.warn
                                 border.width: 4
                             }
                             MouseArea {
@@ -1252,8 +1252,8 @@ Item {
                                 anchors.right: parent.right
                                 anchors.margins: 6
                                 width: 30; height: 30; radius: 15
-                                color: "#f5b940"
-                                Label { textFormat: Text.PlainText; anchors.centerIn: parent; text: "✓"; color: Ui.deep; font.bold: true; font.pixelSize: 18 }
+                                color: Ui.warn
+                                Label { textFormat: Text.PlainText; anchors.centerIn: parent; text: "✓"; color: Ui.deep; font.bold: true; font.pixelSize: Ui.px(18) }
                             }
                         }
                     }
@@ -1280,7 +1280,7 @@ Item {
                         : w.items.length === 0 && w.category ? qsTr("%1 has no items yet. Touch + Add the First Item: it asks for its name, its price, and where its order goes.").arg(w.category.name)
                         : qsTr("Touch an item to change it, or + Add Item for a new one.")
                     opacity: 0.6
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                 }
 
                 Flickable {
@@ -1314,12 +1314,12 @@ Item {
                             spacing: 10
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: w.draft.id ? qsTr("Item") : qsTr("New item"); font.pixelSize: 22; font.bold: true }
+                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: w.draft.id ? qsTr("Item") : qsTr("New item"); font.pixelSize: Ui.px(22); font.bold: true }
                                 // Most new tacos are like the other tacos.
                                 TouchButton {
                                     objectName: "builderLike"
                                     implicitHeight: w.fingers(44)
-                                    font.pixelSize: 14
+                                    font.pixelSize: Ui.px(14)
                                     text: qsTr("Like…")
                                     onClicked: likeDialog.open()
                                 }
@@ -1364,7 +1364,7 @@ Item {
                                     TouchButton {
                                         objectName: "builderSizes"
                                         implicitHeight: w.fingers(44)
-                                        font.pixelSize: 14
+                                        font.pixelSize: Ui.px(14)
                                         enabled: !!w.draft.id
                                         text: qsTr("Sizes…")
                                         onClicked: {
@@ -1397,7 +1397,7 @@ Item {
                                     TouchButton {
                                         objectName: "builderVariants"
                                         implicitHeight: w.fingers(44)
-                                        font.pixelSize: 14
+                                        font.pixelSize: Ui.px(14)
                                         enabled: !!w.draft.id && !w.draft.byWeight
                                         text: qsTr("Sizes and Colors…")
                                         onClicked: {
@@ -1445,7 +1445,7 @@ Item {
                                             delegate: TouchButton {
                                                 required property string modelData
                                                 implicitHeight: w.fingers(40)
-                                                font.pixelSize: 14
+                                                font.pixelSize: Ui.px(14)
                                                 checkable: true
                                                 checked: (w.draft.section ?? "") === modelData
                                                 highlighted: checked
@@ -1472,7 +1472,7 @@ Item {
                                     TouchButton {
                                         objectName: "builderReadyPicture"
                                         implicitHeight: w.fingers(44)
-                                        font.pixelSize: 14
+                                        font.pixelSize: Ui.px(14)
                                         text: qsTr("🌮 Ready-Made Picture…")
                                         onClicked: pictureDialog.open()
                                     }
@@ -1482,7 +1482,7 @@ Item {
                                         Layout.fillWidth: true
                                         wrapMode: Text.WordWrap
                                         opacity: 0.7
-                                        font.pixelSize: 13
+                                        font.pixelSize: Ui.px(13)
                                         text: qsTr("Turn on Photos for %1 (Edit Category) to show pictures on the order screen; the kiosk shows them always.")
                                               .arg(w.category ? w.category.name : "")
                                     }
@@ -1569,7 +1569,7 @@ Item {
                             }
 
                             // Its choices, from the list.
-                            Label { textFormat: Text.PlainText; text: qsTr("Choices it asks for"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Choices it asks for"); font.pixelSize: Ui.px(18); font.bold: true }
                             Flow {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1601,7 +1601,7 @@ Item {
                             }
 
                             // Where its order goes: the ticket's printer, and who makes it.
-                            Label { textFormat: Text.PlainText; text: qsTr("Where its order goes"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Where its order goes"); font.pixelSize: Ui.px(18); font.bold: true }
                             Flow {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1653,13 +1653,13 @@ Item {
                             }
 
                             // What's on it.
-                            Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: Ui.px(18); font.bold: true }
                             Label {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.7
-                                font.pixelSize: 14
+                                font.pixelSize: Ui.px(14)
                                 text: qsTr("The ingredients it comes with, separated by commas. Guests and staff can have each No, Light, Extra or On the side.")
                             }
                             TextField {
@@ -1671,7 +1671,7 @@ Item {
                             }
 
                             // Allergens: guests and the kitchen are warned.
-                            Label { textFormat: Text.PlainText; text: qsTr("Contains"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Contains"); font.pixelSize: Ui.px(18); font.bold: true }
                             Flow {
                                 Layout.fillWidth: true
                                 spacing: 6
@@ -1818,7 +1818,7 @@ Item {
                                             objectName: "builderBreak-" + (modelData.id || "none")
                                             Layout.fillWidth: true
                                             Layout.preferredWidth: 1
-                                            font.pixelSize: 14
+                                            font.pixelSize: Ui.px(14)
                                             checkable: true
                                             checked: (w.draft.breakBefore ?? "") === modelData.id
                                             highlighted: checked
@@ -1848,7 +1848,7 @@ Item {
                                         delegate: TouchButton {
                                             required property var modelData
                                             objectName: "builderTextSize-" + modelData.pct
-                                            font.pixelSize: 14
+                                            font.pixelSize: Ui.px(14)
                                             checkable: true
                                             checked: (w.draft.textSize ?? 0) === modelData.pct
                                             highlighted: checked
@@ -1874,7 +1874,7 @@ Item {
                             visible: w.editingGroup
                             Layout.fillWidth: true
                             spacing: 10
-                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Choice group") : qsTr("New choice group"); font.pixelSize: 22; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Choice group") : qsTr("New choice group"); font.pixelSize: Ui.px(22); font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
@@ -1927,16 +1927,16 @@ Item {
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.7
-                                font.pixelSize: 14
+                                font.pixelSize: Ui.px(14)
                                 text: qsTr("Required: the order can't go without a choice. Light, Extra, On the side: guests can ask for a choice that way (dressing on the side), not for temperatures or sizes.")
                             }
-                            Label { textFormat: Text.PlainText; text: qsTr("Options"); font.pixelSize: 18; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Options"); font.pixelSize: Ui.px(18); font.bold: true }
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 6
-                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: qsTr("Name"); opacity: 0.7; font.pixelSize: 13 }
-                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 90; text: qsTr("Adds"); opacity: 0.7; font.pixelSize: 13 }
-                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 110; text: qsTr("Comes on it"); opacity: 0.7; font.pixelSize: 13 }
+                                Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: qsTr("Name"); opacity: 0.7; font.pixelSize: Ui.px(13) }
+                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 90; text: qsTr("Adds"); opacity: 0.7; font.pixelSize: Ui.px(13) }
+                                Label { textFormat: Text.PlainText; Layout.preferredWidth: 110; text: qsTr("Comes on it"); opacity: 0.7; font.pixelSize: Ui.px(13) }
                                 Item { Layout.preferredWidth: 3 * 52 + 12 }
                             }
                             // Counted: typing changes the draft, not the rows.
@@ -2000,13 +2000,13 @@ Item {
                                 visible: w.sizeNames.length > 0 && (w.draft.options ?? []).some(o => (o.name ?? "").trim() !== "")
                                 Layout.fillWidth: true
                                 spacing: 6
-                                Label { textFormat: Text.PlainText; text: qsTr("Prices by size"); font.pixelSize: 18; font.bold: true }
+                                Label { textFormat: Text.PlainText; text: qsTr("Prices by size"); font.pixelSize: Ui.px(18); font.bold: true }
                                 Label {
                                     textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     opacity: 0.7
-                                    font.pixelSize: 14
+                                    font.pixelSize: Ui.px(14)
                                     text: qsTr("On an item with sizes. Empty: the price above.")
                                 }
                                 RowLayout {
@@ -2021,7 +2021,7 @@ Item {
                                             Layout.preferredWidth: 84
                                             text: modelData
                                             opacity: 0.7
-                                            font.pixelSize: 13
+                                            font.pixelSize: Ui.px(13)
                                             elide: Text.ElideRight
                                         }
                                     }
@@ -2058,7 +2058,7 @@ Item {
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.7
-                                font.pixelSize: 14
+                                font.pixelSize: Ui.px(14)
                                 text: w.editedGroup ? (w.editedGroup.usedBy.length
                                                        ? qsTr("Asked for by: %1").arg(w.editedGroup.usedBy.join(", "))
                                                        : qsTr("No item asks for it yet: choose it on an item's card."))
@@ -2071,7 +2071,7 @@ Item {
                             visible: w.editingCategory
                             Layout.fillWidth: true
                             spacing: 10
-                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Category") : qsTr("New category"); font.pixelSize: 22; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: w.draft.id ? qsTr("Category") : qsTr("New category"); font.pixelSize: Ui.px(22); font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
@@ -2119,7 +2119,7 @@ Item {
                                 }
                             }
                             // How its items look on the order screen.
-                            Label { textFormat: Text.PlainText; text: qsTr("Its buttons on the order screen"); font.pixelSize: 16; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("Its buttons on the order screen"); font.pixelSize: Ui.px(16); font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
@@ -2137,7 +2137,7 @@ Item {
                                             objectName: "builderButtonSize-" + (modelData.id || "fit")
                                             Layout.fillWidth: true
                                             Layout.preferredWidth: 1
-                                            font.pixelSize: 15
+                                            font.pixelSize: Ui.px(15)
                                             checkable: true
                                             checked: (w.draft.buttonSize ?? "") === modelData.id
                                             highlighted: checked
@@ -2152,7 +2152,7 @@ Item {
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     opacity: 0.7
-                                    font.pixelSize: 13
+                                    font.pixelSize: Ui.px(13)
                                     text: (w.draft.buttonSize ?? "") === "" ? qsTr("Fit: as big as they can be with all of them showing.")
                                         : qsTr("Many small ones for drinks, a few large ones for plates; more scroll.")
                                 }
@@ -2167,7 +2167,7 @@ Item {
                                         delegate: TouchButton {
                                             required property var modelData
                                             objectName: "builderCategoryTextSize-" + modelData.pct
-                                            font.pixelSize: 14
+                                            font.pixelSize: Ui.px(14)
                                             checkable: true
                                             checked: (w.draft.textSize ?? 0) === modelData.pct
                                             highlighted: checked
@@ -2197,7 +2197,7 @@ Item {
                                     onToggled: w.set("hidePrice", !checked)
                                 }
                             }
-                            Label { textFormat: Text.PlainText; text: qsTr("New items in it start with"); font.pixelSize: 16; font.bold: true }
+                            Label { textFormat: Text.PlainText; text: qsTr("New items in it start with"); font.pixelSize: Ui.px(16); font.bold: true }
                             GridLayout {
                                 Layout.fillWidth: true
                                 columns: 2
@@ -2241,8 +2241,8 @@ Item {
                         objectName: "builderNotSaved"
                         visible: w.unsaved()
                         text: qsTr("● Not saved yet")
-                        color: "#f5b940"
-                        font.pixelSize: 14
+                        color: Ui.warn
+                        font.pixelSize: Ui.px(14)
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -2371,7 +2371,7 @@ Item {
         height: 72 * w.zoom
         radius: 10
         opacity: 0.9
-        border.color: "#f5b940"
+        border.color: Ui.warn
         border.width: 3
         Label {
             textFormat: Text.PlainText
@@ -2408,7 +2408,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 6
-            Label { textFormat: Text.PlainText; text: qsTr("More tools"); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("More tools"); font.pixelSize: Ui.px(20); font.bold: true }
             Repeater {
                 model: [
                     { id: "builderImport", name: qsTr("Bring a Menu In…"),
@@ -2446,7 +2446,7 @@ Item {
                         Layout.bottomMargin: 6
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         text: toolRow.modelData.text
                     }
                 }
@@ -2492,7 +2492,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 6
-            Label { textFormat: Text.PlainText; text: qsTr("Move %n item(s) to", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Move %n item(s) to", "", w.selected.length); font.pixelSize: Ui.px(20); font.bold: true }
             Repeater {
                 model: w.categories
                 delegate: TouchButton {
@@ -2534,7 +2534,7 @@ Item {
         }
         contentItem: ColumnLayout {
             spacing: 8
-            Label { textFormat: Text.PlainText; text: qsTr("Price of %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Price of %n item(s)", "", w.selected.length); font.pixelSize: Ui.px(20); font.bold: true }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 6
@@ -2556,7 +2556,7 @@ Item {
                 objectName: "builderPriceAmount"
                 Layout.fillWidth: true
                 implicitHeight: w.fingers(48)
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 placeholderText: priceSeveral.how === "set" ? qsTr("Like 9.50")
                                : priceSeveral.how === "add" ? qsTr("Like 0.50, or -0.25 to take off")
@@ -2570,7 +2570,7 @@ Item {
                     readonly property var p: priceSeveral.after(modelData)
                     visible: p !== null
                     text: modelData.name + ":  " + modelData.priceValue.toFixed(2) + "  →  " + (p ?? 0).toFixed(2)
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     opacity: 0.8
                 }
             }
@@ -2612,7 +2612,7 @@ Item {
         onOpened: copies = 1
         contentItem: ColumnLayout {
             spacing: 10
-            Label { textFormat: Text.PlainText; text: qsTr("Price tags for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Price tags for %n item(s)", "", w.selected.length); font.pixelSize: Ui.px(20); font.bold: true }
             Label {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
@@ -2628,7 +2628,7 @@ Item {
                     textFormat: Text.PlainText
                     objectName: "builderTagsCopies"
                     text: qsTr("%n of each", "", tagsSeveral.copies)
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     horizontalAlignment: Text.AlignHCenter
                     Layout.preferredWidth: 140
                 }
@@ -2661,7 +2661,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 6
-            Label { textFormat: Text.PlainText; text: qsTr("Tax for %n item(s)", "", w.selected.length); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Tax for %n item(s)", "", w.selected.length); font.pixelSize: Ui.px(20); font.bold: true }
             Repeater {
                 model: w.taxes
                 delegate: TouchButton {
@@ -2721,7 +2721,7 @@ Item {
         objectName: "builderLeaveDialog"
         property var then: null
         padding: 20
-        font.pixelSize: 18
+        font.pixelSize: Ui.px(18)
         title: qsTr("Save the changes to %1?").arg((w.draft.name ?? "").trim() || qsTr("this card"))
         parent: Overlay.overlay
         anchors.centerIn: parent

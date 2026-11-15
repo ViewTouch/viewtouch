@@ -72,7 +72,7 @@ Item {
                     id: search
                     Layout.fillWidth: true
                     placeholderText: qsTr("Phone or name…")
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     // A phone: a finger tall, not shrunk with the page.
                     implicitHeight: zone && zone.controller && zone.controller.formFactor === "phone" ? Math.max(48, zone.touch(48)) : 48
                     onEdited: searchTimer.restart()
@@ -98,7 +98,7 @@ Item {
                                 textFormat: Text.PlainText
                                 text: row.modelData.name || row.modelData.phone
                                 font.bold: true
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -165,7 +165,7 @@ Item {
                         textFormat: Text.PlainText
                         text: w.creating ? qsTr("New customer") : (w.chosen.name || w.chosen.phone || "")
                         font.bold: true
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                     }
                     // Loyalty: points, and the rewards they can spend on this check.
                     RowLayout {
@@ -174,9 +174,9 @@ Item {
                         Label {
                             textFormat: Text.PlainText
                             text: qsTr("%1 points").arg(w.chosen.points ?? 0)
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             font.bold: true
-                            color: "#f5b940"
+                            color: Ui.warn
                         }
                         Repeater {
                             model: w.pos && (w.chosen.onCheck ?? false) ? ((w.pos.customerPrompt.loyalty ?? {}).rewards ?? []) : []
@@ -259,8 +259,8 @@ Item {
                                     visible: w.chosen.houseAccount ?? false
                                     text: qsTr("Owes %1").arg(w.chosen.balance ?? "")
                                     font.bold: true
-                                    font.pixelSize: 18
-                                    color: (w.chosen.balanceCents ?? 0) > 0 ? "#f5b940" : "#7ee2a8"
+                                    font.pixelSize: Ui.px(18)
+                                    color: (w.chosen.balanceCents ?? 0) > 0 ? Ui.warn : "#7ee2a8"
                                 }
                             }
                             RowLayout {

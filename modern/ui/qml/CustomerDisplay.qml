@@ -234,7 +234,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 visible: (d.lastLoyalty.member ?? "") !== "" && (d.lastLoyalty.earning ?? 0) > 0
                 text: qsTr("You earned %1 points").arg(d.lastLoyalty.earning ?? 0)
-                color: "#f5b940"
+                color: Ui.warn
                 font.pixelSize: d.unit * 1.4
             }
             // A receipt?
@@ -336,7 +336,7 @@ Rectangle {
                     Layout.preferredHeight: d.unit * 4.4
                     radius: d.unit * 0.5
                     color: "#1b222c"
-                    border.color: (d.loyalty.member ?? "") !== "" ? "#f5b940" : d.accent
+                    border.color: (d.loyalty.member ?? "") !== "" ? Ui.warn : d.accent
                     border.width: 2
                     Column {
                         anchors.centerIn: parent
@@ -359,7 +359,7 @@ Rectangle {
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
                             text: qsTr("%1 points · +%2 today").arg(d.loyalty.points ?? 0).arg(d.loyalty.earning ?? 0)
-                            color: "#f5b940"
+                            color: Ui.warn
                             font.pixelSize: d.unit
                             fontSizeMode: Text.HorizontalFit
                             minimumPixelSize: d.unit * 0.6
@@ -420,7 +420,7 @@ Rectangle {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     text: d.totals.surchargeNotice ?? ""
-                    color: "#f5b940"
+                    color: Ui.warn
                     font.pixelSize: d.unit * 0.95
                 }
                 Line { label: qsTr("Credit card surcharge"); value: d.totals.surcharges ?? ""; visible: d.totals.hasSurcharges ?? false }

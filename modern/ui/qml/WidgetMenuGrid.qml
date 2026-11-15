@@ -158,7 +158,7 @@ Item {
             visible: w.busyHint !== "" && !w.arranging
             Layout.fillWidth: true
             text: "⚠ " + w.busyHint
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.bold: true
             font.pixelSize: Math.max(15, w.zone ? w.zone.touch(17) : 20)
@@ -212,7 +212,7 @@ Item {
             }
             // Measured at a fixed size, then scaled: a measure at textPx went
             // stale when the screen's scale settled (each chip as wide as the row).
-            FontMetrics { id: chipText; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
+            FontMetrics { id: chipText; font.pixelSize: Ui.px(100); font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
         }
 
         Flow {
@@ -226,7 +226,7 @@ Item {
             readonly property real keyW: perRow < 6 ? (w.width - spacing * (perRow - 1)) / perRow
                                                     : Math.max(160, (w.width - spacing * 5) / 6)
             readonly property real keyH: Math.max(56, w.zone ? w.zone.touch(52) : 56)
-            FontMetrics { id: tabFont; font.pixelSize: 100; font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
+            FontMetrics { id: tabFont; font.pixelSize: Ui.px(100); font.bold: true; font.family: w.zone ? (w.zone.st.keyFont ?? Ui.font) : Ui.font }
             readonly property real textPx: {
                 let px = keyH * 0.38
                 for (const f of w.families.map(x => w.title(x)).concat([qsTr("Arrange…")]))
@@ -288,7 +288,7 @@ Item {
                             text: ""
                             accent: modelData === w.family
                             onClicked: w.zone.controller.menuCategory = modelData
-                            readonly property string dot: (w.categoryOf(modelData).color ?? "") || (modelData === "★" ? "#f5b940" : "")
+                            readonly property string dot: (w.categoryOf(modelData).color ?? "") || (modelData === "★" ? Ui.warn : "")
                             Row {
                                 anchors.fill: parent
                                 anchors.leftMargin: railList.keyH * 0.3
@@ -472,7 +472,7 @@ Item {
                                               : qsTr("Nothing on the menu has \"%1\".").arg(w.typed))
                 : qsTr("Nothing on the menu here yet (Manager -> Menu).")
             color: Ui.muted
-            font.pixelSize: 24
+            font.pixelSize: Ui.px(24)
         }
     }
 

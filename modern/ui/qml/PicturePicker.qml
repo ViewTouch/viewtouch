@@ -44,7 +44,7 @@ Popup {
             Label {
                 textFormat: Text.PlainText
                 text: picker.title
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 font.bold: true
                 color: "white"
                 Layout.fillWidth: true
@@ -57,7 +57,7 @@ Popup {
                 text: opening ? qsTr("Opening…") : qsTr("USB Stick")
                 enabled: !opening
                 implicitHeight: 52
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 // The stick opens in the background: the list again once it has.
                 onClicked: {
                     if (picker.pos && picker.pos.openUsbSticks()) opening = true
@@ -71,13 +71,13 @@ Popup {
             PosButton {
                 text: qsTr("Browse…")
                 implicitHeight: 52
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 onClicked: browse.open()
             }
             PosButton {
                 text: qsTr("Cancel")
                 implicitHeight: 52
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 onClicked: picker.close()
             }
         }
@@ -87,7 +87,7 @@ Popup {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: "#aab3c2"
-            font.pixelSize: 16
+            font.pixelSize: Ui.px(16)
             text: qsTr("No pictures found. Put them in Pictures, Documents or Downloads on this computer, or on a USB stick (touch USB Stick).")
         }
         GridView {
@@ -124,7 +124,7 @@ Popup {
                         elide: Text.ElideMiddle
                         horizontalAlignment: Text.AlignHCenter
                         color: "white"
-                        font.pixelSize: 13
+                        font.pixelSize: Ui.px(13)
                     }
                     Label {
                         textFormat: Text.PlainText
@@ -133,7 +133,7 @@ Popup {
                         elide: Text.ElideRight
                         horizontalAlignment: Text.AlignHCenter
                         color: Ui.muted
-                        font.pixelSize: 11
+                        font.pixelSize: Ui.px(11)
                     }
                     TapHandler {
                         id: tap

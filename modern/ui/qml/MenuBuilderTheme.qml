@@ -19,7 +19,7 @@ Popup {
     function colorFor(index) { return chosen ? chosen.colors[index % chosen.colors.length] : menu.categories[index].color }
     contentItem: ColumnLayout {
         spacing: 10
-        Label { textFormat: Text.PlainText; text: qsTr("Colors for every category"); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("Colors for every category"); font.pixelSize: Ui.px(20); font.bold: true }
         Flow {
             Layout.fillWidth: true
             spacing: 8
@@ -32,12 +32,12 @@ Popup {
                     height: 76
                     radius: 8
                     color: "#232933"
-                    border.color: themeDialog.theme === modelData.id ? "#f5b940" : "#3a424f"
+                    border.color: themeDialog.theme === modelData.id ? Ui.warn : "#3a424f"
                     border.width: themeDialog.theme === modelData.id ? 3 : 1
                     Column {
                         anchors.centerIn: parent
                         spacing: 6
-                        Label { textFormat: Text.PlainText; anchors.horizontalCenter: parent.horizontalCenter; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: 15; font.bold: true }
+                        Label { textFormat: Text.PlainText; anchors.horizontalCenter: parent.horizontalCenter; text: qsTranslate("Data", String(modelData.name ?? "")); font.pixelSize: Ui.px(15); font.bold: true }
                         Row {
                             spacing: 3
                             Repeater {
@@ -70,7 +70,7 @@ Popup {
                     x: 12
                     text: qsTranslate("Data", String(modelData.name ?? ""))
                     color: StoreColors.ink(parent.color.toString())
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     font.bold: true
                 }
             }

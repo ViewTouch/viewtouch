@@ -77,7 +77,7 @@ Item {
                         checked: !w.byIngredient
                         highlighted: checked
                         implicitHeight: w.fingers(46)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         onClicked: w.byIngredient = false
                     }
                     PosButton {
@@ -87,14 +87,14 @@ Item {
                         checked: w.byIngredient
                         highlighted: checked
                         implicitHeight: w.fingers(46)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         onClicked: w.byIngredient = true
                     }
                     FindField {
                         objectName: "wasteSearch"
                         Layout.fillWidth: true
                         implicitHeight: w.fingers(46)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         placeholderText: qsTr("Find…")
                         onEdited: typed => w.search = typed
                     }
@@ -121,7 +121,7 @@ Item {
                         checkable: true
                         checked: w.chosen === modelData.id
                         highlighted: checked
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         onClicked: w.chosen = modelData.id
                     }
                 }
@@ -139,7 +139,7 @@ Item {
                             checked: w.reason === modelData
                             highlighted: checked
                             implicitHeight: w.fingers(44)
-                            font.pixelSize: 14
+                            font.pixelSize: Ui.px(14)
                             onClicked: w.reason = modelData
                         }
                     }
@@ -147,13 +147,13 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    Label { textFormat: Text.PlainText; text: qsTr("How much"); font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: qsTr("How much"); font.pixelSize: Ui.px(15) }
                     PosButton {
                         objectName: "wasteLess"
                         text: "−"
                         implicitWidth: 52
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         onClicked: qty.text = String(Math.max(1, (Number(qty.text) || 1) - 1))
                     }
                     TextField {
@@ -162,7 +162,7 @@ Item {
                         text: "1"
                         implicitWidth: 100
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         horizontalAlignment: Text.AlignHCenter
                         inputMethodHints: Qt.ImhDecimalNumbersOnly
                     }
@@ -171,10 +171,10 @@ Item {
                         text: "+"
                         implicitWidth: 52
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         onClicked: qty.text = String((Number(qty.text) || 0) + 1)
                     }
-                    Label { textFormat: Text.PlainText; text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: Ui.px(15) }
                     PosButton {
                         objectName: "logWaste"
                         Layout.fillWidth: true
@@ -183,7 +183,7 @@ Item {
                         highlighted: true
                         enabled: w.chosen !== "" && w.reason !== "" && Number(qty.text) > 0
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         onClicked: w.log()
                     }
                 }
@@ -197,7 +197,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: Ui.px(17) }
                 ListView {
                     id: today
                     Layout.fillWidth: true
@@ -222,7 +222,7 @@ Item {
                             Layout.fillWidth: true
                             text: modelData.when + "  ·  " + modelData.reason + "  ·  " + modelData.by
                             opacity: 0.6
-                            font.pixelSize: 12
+                            font.pixelSize: Ui.px(12)
                             elide: Text.ElideRight
                         }
                     }

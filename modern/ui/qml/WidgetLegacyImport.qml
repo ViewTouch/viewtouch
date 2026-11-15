@@ -56,7 +56,7 @@ Item {
                     Layout.fillWidth: true
                     visible: w.busy !== ""
                     horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: 22
+                    font.pixelSize: Ui.px(22)
                     font.bold: true
                     color: w.ink
                     text: w.busy
@@ -68,7 +68,7 @@ Item {
                     Layout.fillWidth: true
                     visible: !w.preview && w.done.length === 0 && w.busy === ""
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     color: w.ink
                     opacity: 0.8
                     text: qsTr("Legacy ViewTouch kept its menu and every closed day's sales in its dat folder "
@@ -92,7 +92,7 @@ Item {
                     Layout.fillWidth: true
                     visible: !w.preview && w.done.length === 0 && w.busy === "" && w.folders.length === 0
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     color: "#f0b429"
                     text: qsTr("No legacy dat folder found on this computer. Put in the USB stick with it, then Look on "
                                + "USB Sticks, or type where it is.")
@@ -106,7 +106,7 @@ Item {
                         objectName: "legacyPath"
                         Layout.fillWidth: true
                         Layout.preferredHeight: 60
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         placeholderText: "/media/usb/dat"
                         onAccepted: if (text !== "") w.pos.legacyPreview(text)
                     }
@@ -131,7 +131,7 @@ Item {
                     Layout.fillWidth: true
                     visible: (w.found.error ?? "") !== "" && w.done.length === 0
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     color: "#d14343"
                     text: w.found.error ?? ""
                 }
@@ -141,7 +141,7 @@ Item {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
                     visible: !!w.preview && w.done.length === 0
-                    font.pixelSize: 24
+                    font.pixelSize: Ui.px(24)
                     font.bold: true
                     color: w.ink
                     wrapMode: Text.WordWrap
@@ -151,7 +151,7 @@ Item {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
                     visible: !!w.preview && w.done.length === 0
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     color: w.ink
                     opacity: 0.6
                     wrapMode: Text.WrapAnywhere
@@ -186,7 +186,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: (part.chosen ? "✓ " : "   ") + part.modelData.title
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 font.bold: true
                                 color: part.possible ? "white" : Ui.muted
                             }
@@ -194,7 +194,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: part.modelData.text
-                                font.pixelSize: 14
+                                font.pixelSize: Ui.px(14)
                                 color: Ui.textSoft
                                 wrapMode: Text.WordWrap
                             }
@@ -206,7 +206,7 @@ Item {
                     Layout.fillWidth: true
                     visible: !!w.preview && w.done.length === 0 && (w.preview.differ ?? []).length > 0
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     color: "#f0b429"
                     text: w.preview ? qsTr("%n check(s) come to a little more or less here than legacy took (legacy "
                                            + "worked some discounts out its own way); each closes for what legacy took, the difference a \"Legacy difference\" discount:", "",
@@ -221,7 +221,7 @@ Item {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         color: (w.preview.errors ?? []).includes(modelData) ? "#d14343" : w.ink
                         text: "• " + modelData
                     }
@@ -255,7 +255,7 @@ Item {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
                     visible: w.done.length > 0
-                    font.pixelSize: 24
+                    font.pixelSize: Ui.px(24)
                     font.bold: true
                     color: w.ink
                     wrapMode: Text.WordWrap
@@ -268,7 +268,7 @@ Item {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         color: w.ink
                         text: "✓ " + modelData
                     }
@@ -278,7 +278,7 @@ Item {
                     Layout.fillWidth: true
                     visible: w.done.length > 0
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     color: w.ink
                     opacity: 0.8
                     text: qsTr("The store as it was before is kept in a backup: %1.").arg(w.found.backup ?? "")

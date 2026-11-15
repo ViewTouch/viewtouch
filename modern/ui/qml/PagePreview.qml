@@ -35,7 +35,7 @@ Popup {
     // A finger needs about 9 mm.
     function verdict(mm) {
         return mm >= 9 ? { text: qsTr("good for fingers"), color: "#5fd08a" }
-             : mm >= 7 ? { text: qsTr("small"), color: "#f5b940" }
+             : mm >= 7 ? { text: qsTr("small"), color: Ui.warn }
              : { text: qsTr("too small to touch reliably"), color: "#ff8a8f" }
     }
 

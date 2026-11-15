@@ -77,7 +77,7 @@ Popup {
         Label {
             textFormat: Text.PlainText
             text: qsTr("Sizes and colors of %1").arg(dialog.item ? dialog.item.name : "")
-            font.pixelSize: 20
+            font.pixelSize: Ui.px(20)
             font.bold: true
         }
         Label {
@@ -109,7 +109,7 @@ Popup {
             }
             MenuTouchButton {
                 implicitHeight: 48
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 text: qsTr("S M L XL")
                 onClicked: dialog.firstValues = "S, M, L, XL"
             }
@@ -131,7 +131,7 @@ Popup {
             MenuTouchButton {
                 objectName: "builderMakeVariants"
                 implicitHeight: 48
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 highlighted: true
                 text: qsTr("Make the List")
                 onClicked: dialog.makeRows()

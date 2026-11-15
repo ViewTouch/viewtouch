@@ -234,7 +234,8 @@ Item {
         font.pixelSize: w.sort === "area" ? Math.min(40, Math.max(16, w.height * 0.12))
                                            : Math.max(12, Math.min(28, Math.min(w.width, w.height) * 0.3))
         font.bold: true
-        style: Text.Raised
+        // Raised, as the store's text effect would have it: a room's name stands out on its floor.
+        style: Ui.textEffect === "outline" ? Text.Outline : Text.Raised
         styleColor: "#80000000"
     }
 }

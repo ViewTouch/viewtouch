@@ -70,7 +70,7 @@ Item {
                     Text {
                         textFormat: Text.PlainText
                         text: row.modelData.left === 0 ? qsTr("Sold out") : qsTr("%1 left").arg(row.modelData.left)
-                        color: row.modelData.left === 0 ? "#ff8a80" : row.modelData.low ? "#f5b940" : w.ink
+                        color: row.modelData.left === 0 ? Ui.returning : row.modelData.low ? Ui.warn : w.ink
                         font.family: w.face
                         font.pixelSize: w.unit * 1.1
                         font.bold: true

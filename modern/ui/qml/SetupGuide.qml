@@ -130,7 +130,7 @@ Rectangle {
                 textFormat: Text.PlainText
                 text: qsTr("Step %1 of %2").arg(g.step + 1).arg(g.steps.length)
                 color: Ui.muted
-                font.pixelSize: 15
+                font.pixelSize: Ui.px(15)
             }
 
             // --- each step --- (scrolls when it's taller than the screen: a phone)
@@ -158,7 +158,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         text: qsTr("Welcome! A few steps make ViewTouch yours: your name, your logo, your colors, your taxes, your first menu items and your team.")
                     }
                     Label {
@@ -166,7 +166,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         text: qsTr("Skip any step with Next; everything can be changed later in Manager. Finish Later closes the guide until the next time a manager logs in.")
                     }
                     Item { Layout.fillHeight: true }
@@ -175,25 +175,25 @@ Rectangle {
                 // Your store
                 ColumnLayout {
                     spacing: 8
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Your store's name"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Your store's name"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true }
                     TextField {
                         objectName: "setupStoreName"
                         Layout.fillWidth: true
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         text: g.storeName
                         onTextEdited: g.storeName = text
                     }
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true; Layout.topMargin: 10 }
                     TextArea {
                         objectName: "setupReceipt"
                         Layout.fillWidth: true
                         Layout.preferredHeight: 140
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: g.receiptLines
                         onTextChanged: g.receiptLines = text
                     }
                     // How it serves: a food truck's shift logs in once, straight to ordering.
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("How do you serve?"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true; Layout.topMargin: 10 }
                     Flow {
                         Layout.fillWidth: true
                         spacing: 10
@@ -206,7 +206,7 @@ Rectangle {
                                 objectName: "setupServe-" + modelData[0]
                                 implicitWidth: 340
                                 implicitHeight: 76
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 text: modelData[1] + "\n" + modelData[2]
                                 highlighted: g.serviceMode === modelData[0]
                                 onClicked: g.serviceMode = modelData[0]
@@ -224,7 +224,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("Your logo goes on the login page, the screen saver, the customer display and the kiosk, and on receipts if you like.")
                     }
                     GridLayout {
@@ -255,14 +255,14 @@ Rectangle {
                             PosButton {
                                 objectName: "setupLogoAdd"
                                 text: qsTr("Add Picture…")
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 implicitHeight: 56
                                 onClicked: logoFile.choose()
                             }
                             CheckBox {
                                 objectName: "setupReceiptLogo"
                                 text: qsTr("Print it on receipts")
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 checked: g.receiptLogo
                                 onToggled: g.receiptLogo = checked
                             }
@@ -289,7 +289,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("Pick the colors for every screen. With a logo, the first two are made from it.")
                     }
                     Flow {
@@ -327,7 +327,7 @@ Rectangle {
                                     anchors.bottomMargin: 12
                                     text: qsTranslate("Looks", look.modelData.name)
                                     color: look.modelData.colors[3]
-                                    font.pixelSize: 17
+                                    font.pixelSize: Ui.px(17)
                                     font.bold: true
                                 }
                                 MouseArea {
@@ -346,13 +346,13 @@ Rectangle {
                 // Taxes
                 ColumnLayout {
                     spacing: 8
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("The store's ZIP code"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("The store's ZIP code"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true }
                     RowLayout {
                         spacing: 10
                         TextField {
                             objectName: "setupZip"
                             Layout.preferredWidth: 160
-                            font.pixelSize: 22
+                            font.pixelSize: Ui.px(22)
                             inputMethodHints: Qt.ImhDigitsOnly
                             maximumLength: 10
                             text: g.zip
@@ -361,7 +361,7 @@ Rectangle {
                         PosButton {
                             objectName: "setupFindRate"
                             text: qsTr("Find the Rate")
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             enabled: g.zip.length >= 5
                             onClicked: g.pos.setupTaxArea(g.zip)
                         }
@@ -372,24 +372,24 @@ Rectangle {
                         visible: text !== ""
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: g.info.zip === g.zip.slice(0, 5) ? (g.info.taxArea ?? "") : ""
                     }
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupFood"
                         Layout.preferredWidth: 220
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         inputMethodHints: Qt.ImhDecimalNumbersOnly
                         validator: DoubleValidator { bottom: 0; top: 50; decimals: 4 }
                         text: g.foodTax
                         onTextEdited: g.foodTax = text
                     }
-                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: Ui.px(18); font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupAlcohol"
                         Layout.preferredWidth: 220
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         inputMethodHints: Qt.ImhDecimalNumbersOnly
                         validator: DoubleValidator { bottom: 0; top: 50; decimals: 4 }
                         text: g.alcoholTax
@@ -401,7 +401,7 @@ Rectangle {
                         Layout.topMargin: 10
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: qsTr("The ZIP code fills these in from the state's published rates; change them if your accountant says so. Other tax rates and cash rounding: Manager -> Taxes.")
                     }
                     Item { Layout.fillHeight: true }
@@ -415,7 +415,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("The menu has %1 items. The easiest way to add yours: Step by Step asks each item's name, price, choices and where its order goes.").arg(g.info.items ?? 0)
                     }
                     // An item with its choices and where its order goes: the Menu
@@ -425,7 +425,7 @@ Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: 64
                         highlighted: true
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         lines: 2
                         text: qsTr("Step by Step: an Item With Its Choices and Kitchen…")
                         onClicked: {
@@ -439,7 +439,7 @@ Rectangle {
                         Layout.topMargin: 6
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: qsTr("Or just a name and a price, here (they show on the Everything page right away):")
                     }
                     GridLayout {
@@ -454,7 +454,7 @@ Rectangle {
                             onAccepted: itemPrice.forceActiveFocus()
                             Layout.fillWidth: true
                             Layout.columnSpan: g.narrow ? 2 : 1
-                            font.pixelSize: 20
+                            font.pixelSize: Ui.px(20)
                             placeholderText: qsTr("Item, like Fish Tacos")
                         }
                         TextField {
@@ -464,7 +464,7 @@ Rectangle {
                             onAccepted: if (itemAdd.enabled) itemAdd.clicked()
                             Layout.preferredWidth: g.narrow ? -1 : 140
                             Layout.fillWidth: g.narrow
-                            font.pixelSize: 20
+                            font.pixelSize: Ui.px(20)
                             placeholderText: qsTr("Price")
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             validator: DoubleValidator { bottom: 0; top: 100000; decimals: 2 }
@@ -475,7 +475,7 @@ Rectangle {
                             Layout.preferredWidth: g.narrow ? -1 : 200
                             Layout.fillWidth: g.narrow
                             editable: true
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             model: g.info.families ?? []
                         }
                         PosButton {
@@ -485,7 +485,7 @@ Rectangle {
                             Layout.fillWidth: g.narrow
                             text: qsTr("Add")
                             highlighted: true
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             implicitHeight: 52
                             enabled: itemName.text.trim() !== "" && itemPrice.text !== ""
                             onClicked: {
@@ -499,7 +499,7 @@ Rectangle {
                     }
                     Repeater {
                         model: g.addedItems
-                        delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: 17 }
+                        delegate: Label { textFormat: Text.PlainText; required property string modelData; text: "✓  " + modelData; color: "#7ee2a8"; font.pixelSize: Ui.px(17) }
                     }
                     // A whole menu at once, instead of typing it.
                     Label {
@@ -508,7 +508,7 @@ Rectangle {
                         Layout.topMargin: 10
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: qsTr("Have your menu already? Bring it all in at once (the guide waits for you on the Manager page):")
                     }
                     GridLayout {
@@ -520,7 +520,7 @@ Rectangle {
                             objectName: "setupMenuFile"
                             Layout.fillWidth: true
                             implicitHeight: 56
-                            font.pixelSize: 17
+                            font.pixelSize: Ui.px(17)
                             text: qsTr("From a File (Excel, CSV, Toast, Square, Clover)…")
                             onClicked: g.leaveFor("menu-builder")
                         }
@@ -528,7 +528,7 @@ Rectangle {
                             objectName: "setupMenuLegacy"
                             Layout.fillWidth: true
                             implicitHeight: 56
-                            font.pixelSize: 17
+                            font.pixelSize: Ui.px(17)
                             visible: g.pos && g.pos.can("owner")
                             text: qsTr("From Legacy ViewTouch (menu and sales)…")
                             onClicked: g.leaveFor("legacy-import")
@@ -545,7 +545,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("Add yourself as a manager first, then your team. Everyone logs in with their own PIN (managers: 6 to 8 digits; others 4 to 8).")
                     }
                     GridLayout {
@@ -560,7 +560,7 @@ Rectangle {
                             onAccepted: staffPin.forceActiveFocus()
                             Layout.fillWidth: true
                             Layout.columnSpan: g.narrow ? 2 : 1
-                            font.pixelSize: 20
+                            font.pixelSize: Ui.px(20)
                             placeholderText: qsTr("Name")
                         }
                         ComboBox {
@@ -568,7 +568,7 @@ Rectangle {
                             objectName: "setupStaffRole"
                             Layout.preferredWidth: g.narrow ? -1 : 180
                             Layout.fillWidth: g.narrow
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             textRole: "text"
                             valueRole: "value"
                             model: [{ value: "manager", text: qsTr("Manager") }, { value: "server", text: qsTr("Server") },
@@ -582,7 +582,7 @@ Rectangle {
                             onAccepted: if (staffAdd.enabled) staffAdd.clicked()
                             Layout.preferredWidth: g.narrow ? -1 : 140
                             Layout.fillWidth: g.narrow
-                            font.pixelSize: 20
+                            font.pixelSize: Ui.px(20)
                             placeholderText: qsTr("PIN")
                             echoMode: TextInput.Password
                             inputMethodHints: Qt.ImhDigitsOnly
@@ -595,7 +595,7 @@ Rectangle {
                             Layout.fillWidth: g.narrow
                             text: qsTr("Add")
                             highlighted: true
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             implicitHeight: 52
                             enabled: staffName.text.trim() !== "" && staffPin.text.length >= 4
                             onClicked: {
@@ -622,7 +622,7 @@ Rectangle {
                                     anchors.centerIn: parent
                                     text: modelData.name + "  ·  " + modelData.role + (modelData.sample ? "  ·  " + qsTr("sample") : "")
                                     color: "white"
-                                    font.pixelSize: 15
+                                    font.pixelSize: Ui.px(15)
                                 }
                             }
                         }
@@ -631,7 +631,7 @@ Rectangle {
                         objectName: "setupRetire"
                         visible: (g.info.samples ?? 0) > 0
                         text: qsTr("Turn Off the Sample Staff")
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         implicitHeight: 52
                         onClicked: g.pos.setupRetireSamples()
                     }
@@ -640,8 +640,8 @@ Rectangle {
                         visible: (g.info.samples ?? 0) > 0
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: "#f5b940"
-                        font.pixelSize: 15
+                        color: Ui.warn
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("The sample staff's PINs (1234, 1111...) are in the manual for anyone to read: turn them off once you've added yourself.")
                     }
                     Item { Layout.fillHeight: true }
@@ -655,7 +655,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("Receipt and kitchen printers on the store's network: Find My Printers looks for them, or type each one's address (it prints it on its self-test: hold Feed while turning it on), then Print a Test. No printer yet? Next: receipts and tickets show on screen.")
                     }
                     PrinterFinder {
@@ -679,7 +679,7 @@ Rectangle {
                                 Layout.preferredWidth: g.narrow ? -1 : 190
                                 text: (printerRow.have ? "✓ " : "") + printerRow.modelData.title
                                 color: printerRow.have ? "#7ee2a8" : "white"
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 font.bold: true
                             }
                             TextField {
@@ -689,7 +689,7 @@ Rectangle {
                                 onAccepted: if (printerSave.enabled) printerSave.clicked()
                                 Layout.fillWidth: true
                                 Layout.columnSpan: g.narrow ? 2 : 1
-                                font.pixelSize: 20
+                                font.pixelSize: Ui.px(20)
                                 inputMethodHints: Qt.ImhPreferNumbers
                                 placeholderText: "192.168.1.50"
                                 text: printerRow.have ? printerRow.have.where : ""
@@ -700,7 +700,7 @@ Rectangle {
                                 Layout.fillWidth: g.narrow
                                 implicitHeight: 52
                                 implicitWidth: 130
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 highlighted: !printerRow.have
                                 enabled: printerHost.text.trim() !== ""
                                 text: printerRow.have ? qsTr("Change") : qsTr("Add")
@@ -711,7 +711,7 @@ Rectangle {
                                 Layout.fillWidth: g.narrow
                                 implicitHeight: 52
                                 implicitWidth: 170
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 enabled: !!printerRow.have
                                 text: qsTr("Print a Test")
                                 onClicked: g.pos.testPrinter(printerRow.modelData.kind)
@@ -723,7 +723,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("USB printers, a bar printer, label printers and what each prints: Manager → Printers.")
                     }
                     Item { Layout.fillHeight: true }
@@ -737,7 +737,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: qsTr("ViewTouch backs up everything (sales, menu, staff, pages) every night by itself, and before anything risky.")
                     }
                     Label {
@@ -745,8 +745,8 @@ Rectangle {
                         objectName: "setupBackupState"
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: (g.info.backup?.last ?? "") !== "" ? "#7ee2a8" : "#f5b940"
-                        font.pixelSize: 17
+                        color: (g.info.backup?.last ?? "") !== "" ? "#7ee2a8" : Ui.warn
+                        font.pixelSize: Ui.px(17)
                         text: !(g.info.backup?.folder) ? qsTr("Backups are made on the store's own computer (this screen is not it).")
                               : (g.info.backup.last ?? "") !== "" ? qsTr("✓ Last backup: %1, in %2").arg(g.info.backup.last).arg(g.info.backup.folder)
                               : qsTr("No backup yet. They go in %1").arg(g.info.backup.folder)
@@ -756,7 +756,7 @@ Rectangle {
                         visible: !!(g.info.backup?.folder)
                         implicitHeight: 56
                         implicitWidth: 260
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         highlighted: (g.info.backup?.last ?? "") === ""
                         text: qsTr("Back Up Now")
                         onClicked: g.pos.backupNow()
@@ -766,7 +766,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         text: qsTr("A backup on the same computer doesn't help if the computer is lost. Store Settings → Backups keeps a second copy on a USB stick or another computer, and can lock backups with a password.")
                     }
                     Item { Layout.fillHeight: true }
@@ -781,7 +781,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 24
+                        font.pixelSize: Ui.px(24)
                         font.bold: true
                         text: (g.info.left ?? 0) === 0 ? qsTr("Ready to open, %1!").arg(g.info.storeName ?? "")
                                                        : qsTr("Almost there: %n thing(s) left before you open", "", g.info.left ?? 0)
@@ -797,7 +797,7 @@ Rectangle {
                             radius: 8
                             color: Ui.sunken
                             border.width: !modelData.done && modelData.need ? 2 : 0
-                            border.color: "#f5b940"
+                            border.color: Ui.warn
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: 12
@@ -806,8 +806,8 @@ Rectangle {
                                 Label {
                                     textFormat: Text.PlainText
                                     text: readyRow.modelData.done ? "✓" : readyRow.modelData.need ? "!" : "○"
-                                    color: readyRow.modelData.done ? "#7ee2a8" : readyRow.modelData.need ? "#f5b940" : Ui.muted
-                                    font.pixelSize: 24
+                                    color: readyRow.modelData.done ? "#7ee2a8" : readyRow.modelData.need ? Ui.warn : Ui.muted
+                                    font.pixelSize: Ui.px(24)
                                     font.bold: true
                                     Layout.preferredWidth: 26
                                     horizontalAlignment: Text.AlignHCenter
@@ -816,14 +816,14 @@ Rectangle {
                                     id: readyText
                                     Layout.fillWidth: true
                                     spacing: 0
-                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.title; color: "white"; font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
-                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.text; color: Ui.textSoft; font.pixelSize: 14; wrapMode: Text.WordWrap }
+                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.title; color: "white"; font.pixelSize: Ui.px(17); font.bold: true; wrapMode: Text.WordWrap }
+                                    Label { textFormat: Text.PlainText; Layout.fillWidth: true; text: readyRow.modelData.text; color: Ui.textSoft; font.pixelSize: Ui.px(14); wrapMode: Text.WordWrap }
                                 }
                                 PosButton {
                                     objectName: "setupReadyGo-" + readyRow.modelData.id
                                     implicitWidth: 110
                                     implicitHeight: 48
-                                    font.pixelSize: 16
+                                    font.pixelSize: Ui.px(16)
                                     highlighted: !readyRow.modelData.done && readyRow.modelData.need
                                     text: readyRow.modelData.done ? qsTr("Change") : qsTr("Do It")
                                     onClicked: g.go(readyRow.modelData)
@@ -836,7 +836,7 @@ Rectangle {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         color: Ui.textSoft
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("This list stays on the Manager page as Setup Guide… until everything marked ! is done.")
                     }
                     Item { Layout.fillHeight: true }
@@ -853,7 +853,7 @@ Rectangle {
                     objectName: "setupLater"
                     visible: g.current !== "done"   // (the list's own button closes it)
                     text: qsTr("Finish Later")
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     implicitHeight: 56
                     onClicked: g.controller.closeSetup()
                 }
@@ -862,7 +862,7 @@ Rectangle {
                     objectName: "setupBack"
                     visible: g.step > 0
                     text: qsTr("‹ Back")
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     implicitHeight: 56
                     implicitWidth: g.narrow ? 96 : 160
                     onClicked: g.step = Math.max(0, g.step - 1)
@@ -871,7 +871,7 @@ Rectangle {
                     objectName: "setupNext"
                     text: g.current === "done" ? ((g.info.left ?? 0) === 0 ? qsTr("Finish") : qsTr("Close")) : qsTr("Next ›")
                     highlighted: true
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     implicitHeight: 56
                     implicitWidth: g.narrow ? 120 : 200
                     onClicked: g.next()

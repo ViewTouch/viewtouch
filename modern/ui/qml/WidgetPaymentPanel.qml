@@ -204,7 +204,7 @@ Item {
                 Layout.fillWidth: true
                 text: parent.hold.card ? qsTr("Card held: %1 · %2").arg(parent.hold.card).arg(parent.hold.amount)
                                        : qsTr("No card held for this tab")
-                color: parent.hold.card ? "#7ee2a8" : "#f5b940"
+                color: parent.hold.card ? "#7ee2a8" : Ui.warn
                 font.family: w.face
                 font.pixelSize: w.unit * 0.8
                 elide: Text.ElideRight
@@ -223,7 +223,7 @@ Item {
             visible: w.pos && w.pos.entry !== ""
             name: qsTr("Amount entered")
             value: w.pos ? w.pos.entryAmount : ""
-            tint: "#f5b940"
+            tint: Ui.warn
         }
 
         // Dual pricing: the cash price beside the card price; and what a credit card adds.
@@ -260,7 +260,7 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: w.totals.surchargeNotice ?? ""
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.75
         }

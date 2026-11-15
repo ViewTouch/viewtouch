@@ -622,7 +622,7 @@ Item {
             Layout.fillHeight: false
             radius: 8
             color: "#3a2e10"
-            border.color: "#f5b940"
+            border.color: Ui.warn
             RushRadarView {
                 id: rushStrip
                 anchors.fill: parent
@@ -860,7 +860,7 @@ Item {
                         Text {
                             textFormat: Text.PlainText
                             text: modelData.count
-                            color: "#f5b940"
+                            color: Ui.warn
                             font.family: w.face
                             font.pixelSize: 30 * w.k
                             font.bold: true

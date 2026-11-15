@@ -25,8 +25,8 @@ Item {
             Layout.alignment: Qt.AlignTop
             Layout.preferredWidth: 28
             text: row.modelData.info ? "ℹ" : row.modelData.ok ? "✓" : "⚠"
-            color: row.modelData.info ? "#8ab4ff" : row.modelData.ok ? "#7ee2a8" : "#f5b940"
-            font.pixelSize: 22
+            color: row.modelData.info ? "#8ab4ff" : row.modelData.ok ? "#7ee2a8" : Ui.warn
+            font.pixelSize: Ui.px(22)
             font.bold: true
         }
         ColumnLayout {
@@ -40,7 +40,7 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTranslate("Data", row.modelData.title ?? "")   // (a station's name, "Kitchen")
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -49,7 +49,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.maximumWidth: Math.max(0, row.width - 38)
                 text: row.modelData.detail
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 opacity: 0.75
                 wrapMode: Text.WordWrap
             }
@@ -79,8 +79,8 @@ Item {
                     objectName: "readyToOpen"
                     Layout.fillWidth: true
                     text: w.toLook === 0 ? qsTr("✓ Ready to open") : qsTr("⚠ %n to look at", "", w.toLook)
-                    color: w.toLook === 0 ? "#7ee2a8" : "#f5b940"
-                    font.pixelSize: 24
+                    color: w.toLook === 0 ? "#7ee2a8" : Ui.warn
+                    font.pixelSize: Ui.px(24)
                     font.bold: true
                 }
                 ListView {
@@ -106,7 +106,7 @@ Item {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: qsTr("Problems, the last 7 days")
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         font.bold: true
                     }
                     PosButton {
@@ -114,7 +114,7 @@ Item {
                         visible: (w.info.unseen ?? 0) > 0
                         text: qsTr("Mark as seen")
                         implicitHeight: 48
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         onClicked: w.pos.problemsSeen()
                     }
                 }
@@ -134,16 +134,16 @@ Item {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: (modelData.new ? "● " : "") + modelData.when
-                            color: modelData.new ? "#f5b940" : "white"
+                            color: modelData.new ? Ui.warn : "white"
                             opacity: modelData.new ? 1 : 0.6
-                            font.pixelSize: 13
+                            font.pixelSize: Ui.px(13)
                             font.bold: modelData.new
                         }
                         Label {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.text
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             wrapMode: Text.WordWrap
                         }
                     }

@@ -67,7 +67,7 @@ Dialog {
             visible: (importDialog.read.problems ?? []).length > 0
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            color: "#f5b940"
+            color: Ui.warn
             text: qsTr("Left out: %1").arg((importDialog.read.problems ?? []).join("; "))
         }
         Label {

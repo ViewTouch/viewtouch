@@ -27,13 +27,13 @@ Popup {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr("Like which item? Its choices, what's on it, allergens, kitchen, tax and color are copied here; then change anything.")
-            font.pixelSize: 15
+            font.pixelSize: Ui.px(15)
         }
         FindField {
             objectName: "builderLikeFind"
             Layout.fillWidth: true
             implicitHeight: 48
-            font.pixelSize: 16
+            font.pixelSize: Ui.px(16)
             placeholderText: qsTr("Find an item")
             text: likeDialog.find
             onEdited: typed => likeDialog.find = typed

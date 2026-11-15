@@ -31,7 +31,7 @@ Popup {
     }
     contentItem: ColumnLayout {
         spacing: 8
-        Label { textFormat: Text.PlainText; text: qsTr("Sizes of %1").arg(sizesDialog.item ? sizesDialog.item.name : ""); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("Sizes of %1").arg(sizesDialog.item ? sizesDialog.item.name : ""); font.pixelSize: Ui.px(20); font.bold: true }
         Label {
             textFormat: Text.PlainText
             Layout.fillWidth: true
@@ -48,7 +48,7 @@ Popup {
                 delegate: MenuTouchButton {
                     required property var modelData
                     implicitHeight: 48
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     text: modelData.join(" / ")
                     onClicked: sizesDialog.preset(modelData)
                 }
@@ -67,7 +67,7 @@ Popup {
                     objectName: "builderSizeName-" + sizeRow.index
                     Layout.fillWidth: true
                     implicitHeight: 48
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     text: sizeRow.modelData.name
                     placeholderText: qsTr("e.g. Large")
                     onTextEdited: sizesDialog.setRow(sizeRow.index, "name", text)
@@ -76,7 +76,7 @@ Popup {
                     objectName: "builderSizePrice-" + sizeRow.index
                     Layout.preferredWidth: 110
                     implicitHeight: 48
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                     text: sizeRow.modelData.price
                     placeholderText: "0.00"
                     inputMethodHints: Qt.ImhDecimalNumbersOnly
@@ -91,7 +91,7 @@ Popup {
         }
         MenuTouchButton {
             implicitHeight: 48
-            font.pixelSize: 14
+            font.pixelSize: Ui.px(14)
             text: qsTr("+ Size")
             onClicked: sizesDialog.rows = sizesDialog.rows.concat([{ name: "", price: "" }])
         }

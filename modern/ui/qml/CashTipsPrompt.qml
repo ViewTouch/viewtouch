@@ -42,7 +42,7 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr("Cash tips you kept today, %1?").arg(prompt.info.who ?? "")
                 color: "white"
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 font.bold: true
                 wrapMode: Text.WordWrap
             }
@@ -57,7 +57,7 @@ Rectangle {
                     anchors.centerIn: parent
                     text: (prompt.pos ? prompt.pos.currencySymbol : "$") + (prompt.typed || "0")
                     color: "white"
-                    font.pixelSize: 30
+                    font.pixelSize: Ui.px(30)
                     font.bold: true
                 }
             }

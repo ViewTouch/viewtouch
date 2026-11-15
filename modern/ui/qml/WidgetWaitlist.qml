@@ -101,8 +101,8 @@ Item {
                 TabBar {
                     id: tabs
                     Layout.fillWidth: true
-                    TabButton { text: qsTr("Waitlist (%1)").arg(w.waiting.length); font.pixelSize: 17; implicitHeight: 48 }
-                    TabButton { text: qsTr("Reservations (%1)").arg(w.booked.length); font.pixelSize: 17; implicitHeight: 48 }
+                    TabButton { text: qsTr("Waitlist (%1)").arg(w.waiting.length); font.pixelSize: Ui.px(17); implicitHeight: 48 }
+                    TabButton { text: qsTr("Reservations (%1)").arg(w.booked.length); font.pixelSize: Ui.px(17); implicitHeight: 48 }
                     onCurrentIndexChanged: { w.chosenId = null; w.seating = false; w.reservation = currentIndex === 1 }
                 }
                 ListView {
@@ -125,7 +125,7 @@ Item {
                             Label {
                                 textFormat: Text.PlainText
                                 text: w.showBooked ? row.modelData.time : row.modelData.position + "."
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 font.bold: true
                                 color: row.modelData.overdue ? "#ff9a9e" : palette.text
                                 Layout.preferredWidth: w.showBooked ? 150 : 30
@@ -137,7 +137,7 @@ Item {
                                     textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
-                                    font.pixelSize: 17
+                                    font.pixelSize: Ui.px(17)
                                     font.bold: true
                                     text: row.modelData.name + "  ·  " + (row.modelData.size === 1 ? qsTr("1 person") : qsTr("%1 people").arg(row.modelData.size))
                                           + (row.modelData.reservation && !w.showBooked ? "  ·  " + qsTr("reserved") : "")
@@ -154,7 +154,7 @@ Item {
                             Label {
                                 textFormat: Text.PlainText
                                 visible: !w.showBooked
-                                font.pixelSize: 16
+                                font.pixelSize: Ui.px(16)
                                 horizontalAlignment: Text.AlignRight
                                 color: row.modelData.late ? "#ff9a9e" : palette.text
                                 text: qsTr("%1 min").arg(row.modelData.waited)
@@ -204,7 +204,7 @@ Item {
                 Label {
                     textFormat: Text.PlainText
                     text: w.reservation ? qsTr("Book a table") : qsTr("Add to the waitlist")
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     font.bold: true
                 }
                 GridLayout {
@@ -224,16 +224,16 @@ Item {
                     }
                     Label { textFormat: Text.PlainText; text: qsTr("Party") }
                     RowLayout {
-                        PosButton { text: "−"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.max(1, w.newSize - 1) }
-                        Label { textFormat: Text.PlainText; text: w.newSize; font.pixelSize: 24; font.bold: true; horizontalAlignment: Text.AlignHCenter; Layout.preferredWidth: 50 }
-                        PosButton { text: "+"; font.pixelSize: 26; implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.min(99, w.newSize + 1) }
+                        PosButton { text: "−"; font.pixelSize: Ui.px(26); implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.max(1, w.newSize - 1) }
+                        Label { textFormat: Text.PlainText; text: w.newSize; font.pixelSize: Ui.px(24); font.bold: true; horizontalAlignment: Text.AlignHCenter; Layout.preferredWidth: 50 }
+                        PosButton { text: "+"; font.pixelSize: Ui.px(26); implicitWidth: 56; implicitHeight: 48; onClicked: w.newSize = Math.min(99, w.newSize + 1) }
                     }
                     Label { textFormat: Text.PlainText; text: w.reservation ? qsTr("When") : qsTr("Quote") }
                     RowLayout {
                         visible: !w.reservation
-                        PosButton { text: "−5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote = Math.max(0, w.quote - 5) } }
-                        Label { textFormat: Text.PlainText; text: qsTr("%1 min").arg(w.quote); font.pixelSize: 20; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
-                        PosButton { text: "+5"; font.pixelSize: 20; implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote += 5 } }
+                        PosButton { text: "−5"; font.pixelSize: Ui.px(20); implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote = Math.max(0, w.quote - 5) } }
+                        Label { textFormat: Text.PlainText; text: qsTr("%1 min").arg(w.quote); font.pixelSize: Ui.px(20); Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
+                        PosButton { text: "+5"; font.pixelSize: Ui.px(20); implicitHeight: 48; onClicked: { w.quoteTouched = true; w.quote += 5 } }
                     }
                     ColumnLayout {
                         visible: w.reservation
@@ -272,7 +272,7 @@ Item {
                 PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
-                    font.pixelSize: 19
+                    font.pixelSize: Ui.px(19)
                     highlighted: true
                     enabled: w.newName.trim().length > 0
                     text: w.reservation ? qsTr("Book It") : qsTr("Add to the Waitlist")
@@ -294,7 +294,7 @@ Item {
                 Label {
                     textFormat: Text.PlainText
                     text: w.chosen ? w.chosen.name + "  ·  " + (w.chosen.size === 1 ? qsTr("1 person") : qsTr("%1 people").arg(w.chosen.size)) : ""
-                    font.pixelSize: 22
+                    font.pixelSize: Ui.px(22)
                     font.bold: true
                 }
                 Label {

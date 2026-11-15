@@ -86,7 +86,7 @@ ColumnLayout {
                 required property var modelData
                 objectName: "builderListFilter-" + modelData.id
                 implicitHeight: 48
-                font.pixelSize: 14
+                font.pixelSize: Ui.px(14)
                 highlighted: modelData.scope ? list.scope === modelData.id : list.filter === modelData.id
                 text: modelData.label
                 onClicked: {
@@ -129,7 +129,7 @@ ColumnLayout {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: modelData.id === "price" ? Text.AlignRight : Text.AlignLeft
                     text: modelData.label + (list.sortBy === modelData.id ? (list.descending ? " ▼" : " ▲") : "")
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     font.bold: list.sortBy === modelData.id
                     opacity: list.sortBy === modelData.id ? 1 : 0.7
                     elide: Text.ElideRight
@@ -171,7 +171,7 @@ ColumnLayout {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: (list.builder.selecting ? (row.chosen ? "☑  " : "☐  ") : "") + row.modelData.name
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                     font.bold: true
                     font.strikeout: !row.modelData.availableSet
                     elide: Text.ElideRight
@@ -185,7 +185,7 @@ ColumnLayout {
                         textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: row.modelData.familyName ?? ""
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         opacity: 0.8
                         elide: Text.ElideRight
                     }
@@ -195,7 +195,7 @@ ColumnLayout {
                     Layout.preferredWidth: 80
                     horizontalAlignment: Text.AlignRight
                     text: row.modelData.availableSet ? row.modelData.regularPrice : qsTr("sold out")
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     opacity: row.modelData.availableSet ? 1 : 0.6
                     elide: Text.ElideLeft
                 }
@@ -204,7 +204,7 @@ ColumnLayout {
                     visible: !list.compact
                     Layout.preferredWidth: 90
                     text: list.taxName(row.modelData.taxClass)
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     opacity: 0.8
                     elide: Text.ElideRight
                 }
@@ -212,7 +212,7 @@ ColumnLayout {
                     textFormat: Text.PlainText
                     Layout.preferredWidth: 110
                     text: list.code(row.modelData)
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     opacity: 0.8
                     elide: Text.ElideRight
                 }
@@ -223,7 +223,7 @@ ColumnLayout {
                     Layout.preferredWidth: 70
                     horizontalAlignment: Text.AlignRight
                     text: row.modelData.stockTrack ? row.modelData.stockOnHand : ""
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     font.bold: !!row.modelData.stockLow
                     color: row.modelData.stockLow ? "#ff6b6b" : palette.windowText
                 }
@@ -255,7 +255,7 @@ ColumnLayout {
         textFormat: Text.PlainText
         Layout.fillWidth: true
         text: qsTr("%n item(s)", "", list.rows.length)
-        font.pixelSize: 13
+        font.pixelSize: Ui.px(13)
         opacity: 0.6
     }
 }

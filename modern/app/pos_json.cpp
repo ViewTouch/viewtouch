@@ -613,7 +613,7 @@ QJsonObject toJson(const Employee &e)
         {u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
         {u"pinSalt"_s, qs(e.pinSalt)}, {u"pinHash"_s, qs(e.pinHash)}, {u"active"_s, e.active}, {u"training"_s, e.training}, {u"sample"_s, e.sample},
         {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"look"_s, qs(e.look)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
-        {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
+        {u"textSize"_s, e.textSize}, {u"textEffect"_s, qs(e.textEffect)}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
         {u"colorSafe"_s, e.colorSafe}, {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
              QJsonArray jobs;
              for (const Job &job : e.otherJobs)
@@ -642,6 +642,7 @@ Employee employeeFromJson(const QJsonObject &o)
     e.tipPool = ss(o.value(u"tipPool").toString());
     e.language = ss(o.value(u"language").toString());
     e.textSize = std::clamp(o.value(u"textSize").toInt(100), 80, 160);
+    e.textEffect = textEffectFrom(o.value(u"textEffect").toString());
     e.leftHanded = o.value(u"leftHanded").toBool(false);
     e.colorSafe = o.value(u"colorSafe").toBool(false);
     e.buzz = o.value(u"buzz").toBool(true);
@@ -1062,7 +1063,7 @@ QJsonObject toJson(const PosSettings &s)
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                                      {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}, {u"startPage"_s, qs(t.startPage)},
                                      {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize},
-                                     {u"colorSafe"_s, t.colorSafe}, {u"service"_s, qs(t.service)}});
+                                     {u"textEffect"_s, qs(t.textEffect)}, {u"colorSafe"_s, t.colorSafe}, {u"service"_s, qs(t.service)}});
     QJsonArray printers;
     for (const PrinterConfig &p : s.printers)
         printers.append(toJson(p));
@@ -1162,7 +1163,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"idAge"_s, s.idAge},
         {u"kitchenSounds"_s, s.kitchenSounds},
         {u"busMinutes"_s, s.busMinutes},
-        {u"screensUpdate"_s, s.screensUpdate}, {u"style"_s, qs(s.style)},
+        {u"screensUpdate"_s, s.screensUpdate}, {u"style"_s, qs(s.style)}, {u"textEffect"_s, qs(s.textEffect)},
         {u"screenSaverMinutes"_s, s.screenSaverMinutes},
         {u"replicaKey"_s, qs(s.replicaKey)}, {u"language"_s, qs(s.language)},
         {u"startPages"_s, [&] {
@@ -1416,6 +1417,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.startPage = ss(t.value(u"startPage").toString());
         c.labelPrinter = ss(t.value(u"labelPrinter").toString());
         c.textSize = t.value(u"textSize").toInt();
+        c.textEffect = textEffectFrom(t.value(u"textEffect").toString());
         c.colorSafe = t.value(u"colorSafe").toBool();
         c.service = ss(t.value(u"service").toString());
         s.terminals.push_back(std::move(c));
@@ -1492,6 +1494,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         for (auto it = a.begin(); it != a.end(); ++it)
             s.accounts[ss(it.key())] = ss(it.value().toString());
     }
+    s.textEffect = textEffectFrom(o.value(u"textEffect").toString());
     if (o.contains(u"expenseCategories")) {
         s.expenseCategories.clear();
         for (const QJsonValue &v : o.value(u"expenseCategories").toArray())
@@ -1999,6 +2002,11 @@ Shift shiftFromJson(const QJsonObject &o)
 {
     return {i64(o.value(u"id")), ss(o.value(u"employeeId").toString()), i64(o.value(u"start")), i64(o.value(u"end")),
             ss(o.value(u"note").toString())};
+}
+
+std::string textEffectFrom(const QString &value)
+{
+    return value == u"none" || value == u"embossed" || value == u"outline" ? value.toStdString() : std::string();
 }
 
 } // namespace vt::app

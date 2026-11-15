@@ -12,7 +12,7 @@ Item {
     readonly property var backup: day.backup ?? ({})
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: Math.max(14, Math.min(30, w.width * 0.04))
+    readonly property real unit: (Math.max(14, Math.min(30, w.width * 0.04))) * Ui.textScale
     property bool armed: false
 
     Timer { id: disarm; interval: 3000; onTriggered: w.armed = false }
@@ -64,7 +64,7 @@ Item {
             visible: (w.day.clockedIn ?? []).length > 0
             Layout.topMargin: w.unit * 0.4
             text: qsTr("Still clocked in")
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit
             font.bold: true
@@ -115,7 +115,7 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("%n closing task(s) not done yet", "", w.day.closingLeft ?? 0)
-                color: "#f5b940"
+                color: Ui.warn
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9
                 wrapMode: Text.WordWrap
@@ -232,7 +232,7 @@ Item {
                 Layout.fillWidth: true
                 text: qsTr("A note for the next shift's manager")
                 color: "white"
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 font.bold: true
                 wrapMode: Text.WordWrap
             }
@@ -242,7 +242,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 160
                 wrapMode: TextEdit.Wrap
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
                 placeholderText: qsTr("Walk-in door sticks · 86 brisket tomorrow · Sam owes $20")
             }
             RowLayout {

@@ -45,7 +45,7 @@ QVariantList PosService::adminRecords(const QString &panel)
         for (const Employee &e : s_->employees) {
             QVariantMap r{{u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
                           {u"active"_s, e.active}, {u"training"_s, e.training}, {u"pin"_s, QString()}, {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"language"_s, qs(e.language)},
-                          {u"textSize"_s, QString::number(e.textSize)}, {u"leftHanded"_s, e.leftHanded}, {u"colorSafe"_s, e.colorSafe}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
+                          {u"textSize"_s, QString::number(e.textSize)}, {u"textEffect"_s, qs(e.textEffect)}, {u"leftHanded"_s, e.leftHanded}, {u"colorSafe"_s, e.colorSafe}, {u"startPage"_s, qs(e.startPage)}, {u"buzz"_s, e.buzz},
                           {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
                                QStringList lines;
                                for (const Job &j : e.otherJobs)
@@ -165,7 +165,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"autoLogoutMinutes"_s, s_->settings.autoLogoutMinutes},
              {u"phoneLockSeconds"_s, s_->settings.phoneLockSeconds},
              {u"screensUpdate"_s, s_->settings.screensUpdate},
-             {u"style"_s, qs(s_->settings.style)},
+             {u"style"_s, qs(s_->settings.style)}, {u"textEffect"_s, qs(s_->settings.textEffect)},
              {u"screenSaverMinutes"_s, s_->settings.screenSaverMinutes},
              {u"tableLongMinutes"_s, s_->settings.tableLongMinutes},
              {u"prepLowAt"_s, s_->settings.prepLowAt},
@@ -311,7 +311,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                  {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
                  {u"startPage"_s, qs(t.startPage)},
-                 {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize ? QString::number(t.textSize) : QString()},
+                 {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize ? QString::number(t.textSize) : QString()}, {u"textEffect"_s, qs(t.textEffect)},
                  {u"colorSafe"_s, t.colorSafe}},
                 qs(t.name), (p ? qs(p->name) : tr("Receipt (default)"))
                                 + (s_->settings.hasDrawer(t.name) ? QString() : tr(" · no drawer"))
@@ -335,7 +335,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"role"_s, u"server"_s}, {u"pin"_s, QString()},
                 {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"reasons"_s, QString()}, {u"look"_s, QString()}, {u"tipPool"_s, QString()},
                 {u"payRate"_s, 0.0}, {u"otherJobs"_s, QString()}, {u"language"_s, QString()},
-                {u"textSize"_s, u"100"_s}, {u"leftHanded"_s, false}, {u"colorSafe"_s, false}, {u"startPage"_s, QString()}, {u"buzz"_s, true},
+                {u"textSize"_s, u"100"_s}, {u"textEffect"_s, QString()}, {u"leftHanded"_s, false}, {u"colorSafe"_s, false}, {u"startPage"_s, QString()}, {u"buzz"_s, true},
                 {u"perm:order"_s, QString()}, {u"perm:check.settle"_s, QString()}, {u"perm:check.others"_s, QString()}, {u"perm:check.discount"_s, QString()},
                 {u"perm:order.void"_s, QString()}, {u"perm:manager"_s, QString()}, {u"perm:layout.edit"_s, QString()}};
     if (panel == u"tenders")
@@ -345,7 +345,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
                 {u"screen"_s, QString()}, {u"service"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"guestScreen"_s, QString()}, {u"requireName"_s, QString()},
                 {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()}, {u"startPage"_s, QString()},
-                {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}, {u"colorSafe"_s, false}};
+                {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}, {u"textEffect"_s, QString()}, {u"colorSafe"_s, false}};
     if (panel == u"mealPeriods")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"start"_s, u"17:00"_s}};
     if (panel == u"modifierGroups")

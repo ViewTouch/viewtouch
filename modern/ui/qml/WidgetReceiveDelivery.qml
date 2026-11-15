@@ -82,7 +82,7 @@ Item {
                             checked: w.vendor === modelData.id
                             highlighted: checked
                             implicitHeight: w.fingers(44)
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             onClicked: w.vendor = modelData.id
                         }
                     }
@@ -90,13 +90,13 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Label { textFormat: Text.PlainText; text: qsTr("Invoice #"); font.pixelSize: 15 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Invoice #"); font.pixelSize: Ui.px(15) }
                     TextField {
                         id: invoice
                         objectName: "deliveryInvoice"
                         Layout.preferredWidth: 220
                         implicitHeight: w.fingers(44)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                     }
                     Item { Layout.fillWidth: true }
                 }
@@ -126,9 +126,9 @@ Item {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: row.modelData.name
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             font.bold: true
-                            color: row.modelData.low ? "#f5b940" : "white"
+                            color: row.modelData.low ? Ui.warn : "white"
                             // Two lines before it's cut: "Veggie Patties" whole;
                             // one long word ("Mushrooms" on a phone) a size smaller.
                             wrapMode: Text.WordWrap
@@ -151,7 +151,7 @@ Item {
                             objectName: "qty-" + row.modelData.id
                             Layout.preferredWidth: 110
                             implicitHeight: w.fingers(44)
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.qty[row.modelData.id] ?? "") : ""
                             placeholderText: row.modelData.unit
@@ -161,7 +161,7 @@ Item {
                             objectName: "cost-" + row.modelData.id
                             Layout.preferredWidth: 110
                             implicitHeight: w.fingers(44)
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.cost[row.modelData.id] ?? "") : ""
                             placeholderText: Number(row.modelData.cost).toFixed(2)
@@ -189,11 +189,11 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
                     spacing: 10
-                    Label { textFormat: Text.PlainText; text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
+                    Label { textFormat: Text.PlainText; text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: Ui.px(20); font.bold: true; Layout.fillWidth: true }
                     PosButton {
                         text: qsTr("Clear")
                         implicitHeight: 52
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         onClicked: w.clear()
                     }
                     PosButton {
@@ -203,7 +203,7 @@ Item {
                         enabled: w.total > 0 || Object.keys(w.qty).some(k => Number(w.qty[k]) > 0)
                         implicitHeight: 52
                         implicitWidth: 220
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         onClicked: w.receive()
                     }
                 }
@@ -217,7 +217,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Received lately"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Received lately"); font.bold: true; font.pixelSize: Ui.px(17) }
                 ListView {
                     id: recent
                     Layout.fillWidth: true
@@ -243,7 +243,7 @@ Item {
                             text: modelData.when + "  ·  " + qsTr("%n item(s)", "", modelData.items)
                                   + (modelData.invoice ? "  ·  #" + modelData.invoice : "") + "  ·  " + modelData.by
                             opacity: 0.6
-                            font.pixelSize: 12
+                            font.pixelSize: Ui.px(12)
                             elide: Text.ElideRight
                         }
                     }

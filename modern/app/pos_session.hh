@@ -518,6 +518,7 @@ public:
     Q_INVOKABLE void setPrepCount(const QString &itemId, int left) { invoke(QStringLiteral("setPrepCount"), {itemId, left}); }
     Q_INVOKABLE void addPrepped(const QString &itemId, int more) { invoke(QStringLiteral("addPrepped"), {itemId, more}); }
     Q_INVOKABLE void setRush(bool on) { invoke(QStringLiteral("setRush"), {on}); }
+    Q_INVOKABLE void setMyLook(int textSize, const QString &textEffect) { invoke(QStringLiteral("setMyLook"), {textSize, textEffect}); }
     Q_INVOKABLE void rushSend() { invoke(QStringLiteral("rushSend"), {}); }
     Q_INVOKABLE void orderReady(qint64 checkId) { invoke(QStringLiteral("orderReady"), {checkId}); }
     Q_INVOKABLE void orderPickedUp(qint64 checkId) { invoke(QStringLiteral("orderPickedUp"), {checkId}); }

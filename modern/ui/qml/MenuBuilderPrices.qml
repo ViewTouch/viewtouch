@@ -69,7 +69,7 @@ Dialog {
     }
     component Pick: PosButton {
         implicitHeight: 52
-        font.pixelSize: 16
+        font.pixelSize: Ui.px(16)
         checkable: true
         highlighted: checked
         Layout.fillWidth: true
@@ -92,7 +92,7 @@ Dialog {
                 objectName: "builderPricesAmount"
                 Layout.preferredWidth: 120
                 implicitHeight: 52
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 text: pricesDialog.amount
                 placeholderText: pricesDialog.percent ? "5" : "0.50"
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
@@ -132,7 +132,7 @@ Dialog {
                     required property int index
                     objectName: "builderPricesDay-" + index
                     implicitHeight: 48
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     checkable: true
                     checked: pricesDialog.dayOffset === index
                     highlighted: checked
@@ -145,7 +145,7 @@ Dialog {
                 objectName: "builderPricesTime"
                 width: 110
                 implicitHeight: 48
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 text: pricesDialog.time
                 placeholderText: "06:00"
                 inputMethodHints: Qt.ImhPreferNumbers
@@ -164,7 +164,7 @@ Dialog {
                     Layout.fillWidth: true
                     text: "⏰ " + modelData.when + "  ·  " + modelData.label + "  ·  " + qsTr("%n price(s)", "", modelData.count)
                     elide: Text.ElideRight
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                 }
                 PosButton {
                     objectName: "builderPriceChangeCancel-" + modelData.id
@@ -189,11 +189,11 @@ Dialog {
                     Layout.fillWidth: true
                     text: modelData.name + (modelData.others ? "  " + qsTr("(+%n other price(s))", "", modelData.others) : "")
                     elide: Text.ElideRight
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                 }
-                Label { textFormat: Text.PlainText; text: modelData.was; opacity: 0.6; font.pixelSize: 16 }
-                Label { textFormat: Text.PlainText; text: "→"; opacity: 0.6; font.pixelSize: 16 }
-                Label { textFormat: Text.PlainText; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignRight; text: modelData.price; font.bold: true; font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; text: modelData.was; opacity: 0.6; font.pixelSize: Ui.px(16) }
+                Label { textFormat: Text.PlainText; text: "→"; opacity: 0.6; font.pixelSize: Ui.px(16) }
+                Label { textFormat: Text.PlainText; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignRight; text: modelData.price; font.bold: true; font.pixelSize: Ui.px(16) }
             }
             Label {
                 textFormat: Text.PlainText

@@ -298,9 +298,11 @@ Item {
         font.family: zone.st.font ?? Ui.font
         font.pixelSize: (zone.st.fontSize ?? 28) * zone.textScale
         font.bold: zone.st.bold ?? true
+        // The zone's own text effect (the editor's Text effect), else the
+        // store's, the screen's or the person's (Ui.textStyle).
         style: zone.st.textStyle === "embossed" ? Text.Raised
-             : zone.st.textStyle === "outline" ? Text.Outline : Text.Normal
-        styleColor: Qt.darker(color, 3)
+             : zone.st.textStyle === "outline" ? Text.Outline : Ui.textStyle
+        styleColor: zone.st.textStyle === "embossed" || zone.st.textStyle === "outline" ? Qt.darker(color, 3) : Ui.effectColor(color)
     }
 
     // Running low: "5 left", so the server can warn the guest.
@@ -314,14 +316,14 @@ Item {
         height: leftText.implicitHeight + 6
         radius: height / 2
         color: "#e0161a20"
-        border.color: zone.statusColor("low", "#f5b940")
+        border.color: zone.statusColor("low", Ui.warn)
         border.width: 2
         Text {
             textFormat: Text.PlainText
             id: leftText
             anchors.centerIn: parent
             text: qsTr("%1 left").arg(zone.stockLeft)
-            color: zone.statusColor("low", "#f5b940")
+            color: zone.statusColor("low", Ui.warn)
             font.family: zone.st.font ?? Ui.font
             font.pixelSize: Math.max(11, Math.min(zone.height * 0.16, 22))
             font.bold: true
@@ -401,7 +403,7 @@ Item {
         text: qsTr("tap again")
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 6 }
         color: caption.color
-        font.pixelSize: 16
+        font.pixelSize: Ui.px(16)
     }
 
     TapHandler {

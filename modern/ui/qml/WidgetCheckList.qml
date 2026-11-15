@@ -82,7 +82,7 @@ Item {
             text: qsTr("Checks at %1 — touch here to show all").arg(w.filter)
             color: "white"
             font.family: w.face
-            font.pixelSize: 26
+            font.pixelSize: Ui.px(26)
         }
         TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.checkFilter = "" } }
     }
@@ -120,7 +120,7 @@ Item {
                 visible: card.locked
                 anchors { right: parent.right; top: parent.top; margins: 22 }
                 text: "🔒"
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
             }
             Column {
                 anchors.fill: parent
@@ -132,7 +132,7 @@ Item {
                     text: card.modelData.label
                     color: "white"
                     font.family: w.face
-                    font.pixelSize: 30
+                    font.pixelSize: Ui.px(30)
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -142,7 +142,7 @@ Item {
                     // A tab near its card's hold: orange (time for a bigger hold, or to close).
                     color: w.mode === "tabs" && card.modelData.nearHold ? "#ffb347" : "white"
                     font.family: w.face
-                    font.pixelSize: 26
+                    font.pixelSize: Ui.px(26)
                 }
                 Text {
                     textFormat: Text.PlainText
@@ -160,7 +160,7 @@ Item {
                           + (card.modelData.busyOn ? " · " + qsTr("on %1").arg(card.modelData.busyOn) : "")
                     color: Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     elide: Text.ElideRight
                 }
                 // The card held for the tab.
@@ -172,7 +172,7 @@ Item {
                     text: "💳 " + (card.modelData.hold ?? "")
                     color: card.modelData.nearHold ? "#ffb347" : Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     elide: Text.ElideRight
                 }
             }
@@ -203,7 +203,7 @@ Item {
                  : w.mode === "merge" ? qsTr("No other open checks") : qsTr("No open checks")
             color: Ui.muted
             font.family: w.face
-            font.pixelSize: 32
+            font.pixelSize: Ui.px(32)
         }
     }
 }

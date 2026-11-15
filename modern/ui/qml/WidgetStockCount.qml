@@ -68,7 +68,7 @@ Item {
                             checked: w.vendor === modelData.id
                             highlighted: checked
                             implicitHeight: w.fingers(44)
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             onClicked: w.vendor = modelData.id
                         }
                     }
@@ -100,7 +100,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: row.modelData.name
-                                font.pixelSize: 16
+                                font.pixelSize: Ui.px(16)
                                 font.bold: true
                                 elide: Text.ElideRight
                             }
@@ -108,7 +108,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: qsTr("Last counted %1").arg(row.modelData.lastCounted)
-                                font.pixelSize: 12
+                                font.pixelSize: Ui.px(12)
                                 opacity: 0.55
                                 elide: Text.ElideRight
                             }
@@ -124,7 +124,7 @@ Item {
                             objectName: "counted-" + row.modelData.id
                             Layout.preferredWidth: 140
                             implicitHeight: w.fingers(46)
-                            font.pixelSize: 17
+                            font.pixelSize: Ui.px(17)
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
                             text: w.typed >= 0 ? (w.counted[row.modelData.id] ?? "") : ""
                             placeholderText: row.modelData.unit
@@ -146,7 +146,7 @@ Item {
                     Layout.fillWidth: true
                     text: qsTr("Only the items you type are counted; leave the rest empty.")
                     opacity: 0.6
-                    font.pixelSize: 13
+                    font.pixelSize: Ui.px(13)
                     wrapMode: Text.WordWrap
                 }
                 RowLayout {
@@ -157,14 +157,14 @@ Item {
                         textFormat: Text.PlainText
                         objectName: "countedHowMany"
                         text: qsTr("%1 of %2 counted").arg(w.howMany).arg((w.info.ingredients ?? []).length)
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         font.bold: true
                         Layout.fillWidth: true
                     }
                     PosButton {
                         text: qsTr("Clear")
                         implicitHeight: 52
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         onClicked: w.clear()
                     }
                     PosButton {
@@ -174,7 +174,7 @@ Item {
                         enabled: w.howMany > 0
                         implicitHeight: 52
                         implicitWidth: 200
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         onClicked: w.save()
                     }
                 }
@@ -188,7 +188,7 @@ Item {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Counted lately"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Counted lately"); font.bold: true; font.pixelSize: Ui.px(17) }
                 ListView {
                     id: recent
                     Layout.fillWidth: true
@@ -214,7 +214,7 @@ Item {
                             Layout.fillWidth: true
                             text: qsTr("%n item(s)", "", modelData.items) + "  ·  " + modelData.by
                             opacity: 0.6
-                            font.pixelSize: 12
+                            font.pixelSize: Ui.px(12)
                             elide: Text.ElideRight
                         }
                     }
@@ -230,7 +230,7 @@ Item {
                     Layout.fillWidth: true
                     text: qsTr("Reports → Stock Count shows each item against what should be there.")
                     opacity: 0.6
-                    font.pixelSize: 12
+                    font.pixelSize: Ui.px(12)
                     wrapMode: Text.WordWrap
                 }
             }

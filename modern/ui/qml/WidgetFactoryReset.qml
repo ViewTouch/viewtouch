@@ -28,7 +28,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: qsTr("Start over as a fresh install")
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 font.bold: true
                 color: "#ff9a9e"
             }
@@ -36,7 +36,7 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 text: qsTr("This deletes every sale and past day, customers, gift cards, house accounts, the waitlist, "
                            + "the schedule, staff, the menu, inventory, settings, paired devices and your page changes. "
                            + "Then ViewTouch restarts with:")
@@ -70,7 +70,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: (choice.chosen ? "✓ " : "") + modelData.title
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 font.bold: true
                                 color: "white"
                                 wrapMode: Text.WordWrap
@@ -79,7 +79,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: modelData.text
-                                font.pixelSize: 14
+                                font.pixelSize: Ui.px(14)
                                 font.bold: false
                                 color: "#c9d1dc"
                                 wrapMode: Text.WordWrap
@@ -98,17 +98,17 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 color: "#7ee2a8"
                 text: qsTr("A backup is taken first (backups/…-before-reset.db), so it can be undone with --restore. "
                            + "Earlier backups and saved report files are kept.")
             }
-            Label { textFormat: Text.PlainText; text: qsTr("Type RESET to confirm"); font.pixelSize: 17; Layout.topMargin: 10 }
+            Label { textFormat: Text.PlainText; text: qsTr("Type RESET to confirm"); font.pixelSize: Ui.px(17); Layout.topMargin: 10 }
             TextField {
                 implicitHeight: 56
                 id: confirm
                 Layout.fillWidth: true
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 placeholderText: "RESET"
                 inputMethodHints: Qt.ImhUppercaseOnly | Qt.ImhNoPredictiveText
             }
@@ -119,14 +119,14 @@ Item {
                 visible: !(w.zone && w.zone.pos && w.zone.pos.can("maintain"))
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                color: "#f5b940"
-                font.pixelSize: 18
+                color: Ui.warn
+                font.pixelSize: Ui.px(18)
                 text: qsTr("Only the store's maintainer can erase it: log in with the maintainer's code.")
             }
             PosButton {
                 Layout.fillWidth: true
                 implicitHeight: 70
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
                 enabled: confirm.text.trim() === "RESET" && !!w.zone && !!w.zone.pos && w.zone.pos.can("maintain")
                 objectName: "resetGo"
                 text: w.empty ? qsTr("Back Up and Start Empty") : qsTr("Back Up and Reset Everything")

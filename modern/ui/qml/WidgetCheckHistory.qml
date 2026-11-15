@@ -18,7 +18,7 @@ Item {
         text: w.pos && w.pos.hasCheck ? qsTr("History of %1").arg(w.pos.check.label) : qsTr("No check open")
         color: w.ink
         font.family: w.face
-        font.pixelSize: 28
+        font.pixelSize: Ui.px(28)
         font.bold: true
     }
     ListView {
@@ -38,7 +38,7 @@ Item {
                 text: row.modelData.what
                 color: w.ink
                 font.family: w.face
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 wrapMode: Text.WordWrap
             }
             Text {
@@ -46,7 +46,7 @@ Item {
                 text: row.modelData.time + (row.modelData.who ? " · " + row.modelData.who : "")
                 color: Ui.muted
                 font.family: w.face
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
             }
         }
         Text {
@@ -55,7 +55,7 @@ Item {
             text: qsTr("Nothing yet.")
             color: Ui.muted
             font.family: w.face
-            font.pixelSize: 22
+            font.pixelSize: Ui.px(22)
         }
     }
 }

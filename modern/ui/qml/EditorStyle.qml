@@ -13,7 +13,7 @@ QtObject {
     readonly property color accent: "#4c8dff"
     readonly property color guide: "#ff4fa3"
     readonly property color danger: "#ff6369"
-    readonly property color warning: "#f5b940"
+    readonly property color warning: Ui.warn
     readonly property int panelWidth: 340
     readonly property int pagesWidth: 240
     readonly property int toolbarHeight: 48

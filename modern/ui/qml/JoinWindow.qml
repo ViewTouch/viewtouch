@@ -75,7 +75,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             text: root.join.problem
             wrapMode: Text.WordWrap
-            color: "#f5b940"
+            color: Ui.warn
             font.pixelSize: root.u
         }
 

@@ -120,6 +120,13 @@ LayoutController::LayoutController(Layout layout, QObject *parent)
     , layout_(std::move(layout))
     , nav_(layout_)
 {
+    // The Modern style's font, Inter, comes with ViewTouch (once a process).
+    static const bool interLoaded = [] {
+        for (const char *f : {":/fonts/Inter-Regular.ttf", ":/fonts/Inter-Medium.ttf", ":/fonts/Inter-SemiBold.ttf", ":/fonts/Inter-Bold.ttf"})
+            QFontDatabase::addApplicationFont(QString::fromLatin1(f));
+        return true;
+    }();
+    Q_UNUSED(interLoaded)
     // The device asking for high contrast (its accessibility settings): a
     // screen without a look of its own takes High Contrast, and follows it.
     if (QGuiApplication::styleHints())
@@ -2497,7 +2504,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
         {u"guestsMore"_s, {u"adjustGuests"_s, {1}}}, {u"guestsFewer"_s, {u"adjustGuests"_s, {-1}}},
     };
     // Widgets' own buttons that change the screen, not the store: the widget does them.
-    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon"
+    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon" || name == u"myLook"
         || name == u"cardOnFile" || name == u"taxExempt") {
         emit widgetCommand(name, args);
         return done(true);
@@ -2809,6 +2816,7 @@ QString LayoutController::describeAction(const Action &a) const
             {u"askForTip"_s, QT_TR_NOOP("Shows tip choices to the guest on the customer screen.")},
             {u"openTab"_s, QT_TR_NOOP("Opens a bar tab under the name typed.")},
             {u"coupon"_s, QT_TR_NOOP("Gives the check a coupon's discount: its code typed or scanned.")},
+            {u"myLook"_s, QT_TR_NOOP("Aa: the person's own text size and text effect, in one touch.")},
             {u"holdCard"_s, QT_TR_NOOP("Holds the guest's card for the tab on the card reader (nothing is charged yet).")},
             {u"cardOnFile"_s, QT_TR_NOOP("The tab's held card: hold one, charge it with a tip, or let it go.")},
         };

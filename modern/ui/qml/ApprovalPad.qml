@@ -28,7 +28,7 @@ Rectangle {
         height: column.implicitHeight + 40
         radius: 14
         color: Ui.panel
-        border.color: "#f5b940"
+        border.color: Ui.warn
         border.width: 2
 
         ColumnLayout {
@@ -42,8 +42,8 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 text: pad.takingOver ? qsTr("Take over the store")
                     : pad.leavingKiosk ? qsTr("Staff only") : qsTr("Manager approval")
-                color: "#f5b940"
-                font.pixelSize: 24
+                color: Ui.warn
+                font.pixelSize: Ui.px(24)
                 font.bold: true
             }
             Text {
@@ -56,14 +56,14 @@ Rectangle {
                       : pad.leavingKiosk ? qsTr("A manager's PIN ends self-order mode on this screen.")
                       : qsTr("%1 for %2").arg(pad.info.action ?? "").arg(pad.info.who ?? "")
                 color: "white"
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
             }
             Text {
                 textFormat: Text.PlainText
                 Layout.alignment: Qt.AlignHCenter
                 text: pad.pin.length ? "●".repeat(pad.pin.length) : qsTr("Manager PIN")
                 color: pad.pin.length ? "white" : Ui.muted
-                font.pixelSize: 26
+                font.pixelSize: Ui.px(26)
             }
             GridLayout {
                 Layout.fillWidth: true

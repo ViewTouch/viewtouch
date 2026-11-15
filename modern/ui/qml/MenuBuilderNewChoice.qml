@@ -103,7 +103,7 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            font.pixelSize: 15
+            font.pixelSize: Ui.px(15)
             text: qsTr("A new choice · %1 of 3").arg(nc.at + 1)
         }
 
@@ -142,7 +142,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 560
                         implicitHeight: 60
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         placeholderText: qsTr("e.g. Salsa")
                         onTextEdited: nc.name = text
                         onAccepted: nc.next()
@@ -152,7 +152,7 @@ Item {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("Or start from one of these and change it:")
                     }
                     Flow {
@@ -212,7 +212,7 @@ Item {
                         Label {
                             textFormat: Text.PlainText
                             objectName: "newChoiceUpTo"
-                            font.pixelSize: 22
+                            font.pixelSize: Ui.px(22)
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
                             Layout.preferredWidth: 110
@@ -273,15 +273,15 @@ Item {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: qsTr("One on each line. If one costs more, type how much it adds (like 0.50); leave it empty when it's free.")
                     }
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 640
                         spacing: 8
-                        Label { textFormat: Text.PlainText; Layout.fillWidth: true; opacity: 0.7; font.pixelSize: 14; text: qsTr("Option") }
-                        Label { textFormat: Text.PlainText; Layout.preferredWidth: nc.small ? 96 : 150; opacity: 0.7; font.pixelSize: 14; text: qsTr("Costs extra") }
+                        Label { textFormat: Text.PlainText; Layout.fillWidth: true; opacity: 0.7; font.pixelSize: Ui.px(14); text: qsTr("Option") }
+                        Label { textFormat: Text.PlainText; Layout.preferredWidth: nc.small ? 96 : 150; opacity: 0.7; font.pixelSize: Ui.px(14); text: qsTr("Costs extra") }
                         Item { Layout.preferredWidth: 56 }
                     }
                     // Counted: typing changes the rows, not how many (the fields stay).
@@ -298,7 +298,7 @@ Item {
                                 objectName: "newChoiceOption-" + optionRow.index
                                 Layout.fillWidth: true
                                 implicitHeight: 56
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 text: optionRow.modelData.name ?? ""
                                 placeholderText: optionRow.index === 0 ? qsTr("e.g. Mild") : optionRow.index === 1 ? qsTr("e.g. Hot") : ""
                                 onTextEdited: nc.setOption(optionRow.index, "name", text)
@@ -307,11 +307,11 @@ Item {
                                 objectName: "newChoiceExtra-" + optionRow.index
                                 Layout.preferredWidth: nc.small ? 96 : 150
                                 implicitHeight: 56
-                                font.pixelSize: 18
+                                font.pixelSize: Ui.px(18)
                                 text: optionRow.modelData.price ?? ""
                                 placeholderText: qsTr("Free")
                                 inputMethodHints: Qt.ImhDecimalNumbersOnly
-                                color: nc.priceOk(text) ? palette.text : "#ff8a80"
+                                color: nc.priceOk(text) ? palette.text : Ui.returning
                                 onTextEdited: nc.setOption(optionRow.index, "price", text)
                             }
                             MenuTouchButton {
@@ -340,8 +340,8 @@ Item {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignRight
             visible: text !== ""
-            color: "#f5b940"
-            font.pixelSize: 15
+            color: Ui.warn
+            font.pixelSize: Ui.px(15)
             text: nc.missing
         }
         RowLayout {

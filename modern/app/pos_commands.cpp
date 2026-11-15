@@ -204,6 +204,7 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"setPrepCount"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setPrepCount(a.value(0).toString(), a.value(1).toInt())); }},
         {u"addPrepped"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.addPrepped(a.value(0).toString(), a.value(1).toInt())); }},
         {u"rushSend"_s, [](PosService &p, const QVariantList &) { return QVariant(p.rushSend()); }},
+        {u"setMyLook"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setMyLook(a.value(0).toInt(), a.value(1).toString())); }},
         {u"setRush"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setRush(a.value(0).toBool())); }},
         {u"setPager"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setPager(a.value(0).toInt())); }},
         {u"orderReady"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.orderReady(a.value(0).toLongLong())); }},

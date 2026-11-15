@@ -185,7 +185,7 @@ Rectangle {
                                         verticalAlignment: Text.AlignVCenter
                                         text: item.modelData.byWeight ? qsTr("%1 / %2").arg(item.modelData.price).arg(item.modelData.unit)
                                                                       : item.modelData.price
-                                        color: item.out ? "#6b7380" : item.low ? "#f5b940" : "white"
+                                        color: item.out ? "#6b7380" : item.low ? Ui.warn : "white"
                                         font.pixelSize: b.unit * 0.95
                                         font.bold: true
                                     }

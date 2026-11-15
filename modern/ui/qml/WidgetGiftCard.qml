@@ -49,7 +49,7 @@ Item {
                         implicitHeight: w.fingers(48)
                         id: number
                         Layout.fillWidth: true
-                        font.pixelSize: 22
+                        font.pixelSize: Ui.px(22)
                         placeholderText: qsTr("Type or swipe…")
                         inputMethodHints: Qt.ImhDigitsOnly
                         focus: true
@@ -57,7 +57,7 @@ Item {
                         onAccepted: w.lookUp()
                     }
                     PosButton { text: qsTr("Look Up")
-                        font.pixelSize: 17; implicitHeight: 48; onClicked: w.lookUp() }
+                        font.pixelSize: Ui.px(17); implicitHeight: 48; onClicked: w.lookUp() }
                 }
 
                 Label { textFormat: Text.PlainText; text: qsTr("Amount"); opacity: 0.8; Layout.topMargin: 8 }
@@ -70,7 +70,7 @@ Item {
                             required property int modelData
                             Layout.fillWidth: true
                             implicitHeight: 56
-                            font.pixelSize: 20
+                            font.pixelSize: Ui.px(20)
                             text: "$" + modelData / 100
                             checkable: true
                             checked: w.amountCents === modelData && other.text === ""
@@ -97,7 +97,7 @@ Item {
                 PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     enabled: w.amountCents > 0
                     text: w.amountCents <= 0 ? qsTr("Choose an amount to sell or reload")
                           : (w.found ? qsTr("Reload %1 on the Check") : qsTr("Sell %1 Card on the Check"))
@@ -118,7 +118,7 @@ Item {
                 PosButton {
                     Layout.fillWidth: true
                     implicitHeight: 64
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     highlighted: true
                     enabled: w.found && (w.card.balanceCents ?? 0) > 0 && w.pos !== null && w.pos.hasCheck
                     text: qsTr("Pay the Check from This Card")
@@ -130,7 +130,7 @@ Item {
                     visible: w.found && (w.card.cashOut ?? false)
                     Layout.fillWidth: true
                     implicitHeight: 56
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                     text: qsTr("Cash Out %1 (under %2)").arg(w.card.balance ?? "").arg(w.card.cashOutBelow ?? "")
                     onClicked: w.pos.cashOutGiftCard()
                 }
@@ -146,7 +146,7 @@ Item {
                     textFormat: Text.PlainText
                     text: !w.card.number ? qsTr("Look up a card to see its balance.")
                          : w.found ? qsTr("Card %1").arg(w.card.display) : qsTr("Card %1 isn't active yet").arg(w.card.display)
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     font.bold: true
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
@@ -155,7 +155,7 @@ Item {
                     textFormat: Text.PlainText
                     visible: w.found
                     text: w.card.balance ?? ""
-                    font.pixelSize: 44
+                    font.pixelSize: Ui.px(44)
                     font.bold: true
                     color: "#7ee2a8"
                 }

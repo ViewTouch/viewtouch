@@ -85,7 +85,7 @@ Item {
             Layout.fillWidth: true
             visible: w.haveSale && w.sale.tooOld === true
             text: qsTr("Sold %1 days ago: past the store's days for returns, so a manager's.").arg(w.sale.days)
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.8
             wrapMode: Text.WordWrap
@@ -230,7 +230,7 @@ Item {
                         objectName: "returnCount-" + row.modelData.id
                         visible: row.modelData.left > 0
                         text: row.n
-                        color: row.n > 0 ? "#ff8a80" : w.ink
+                        color: row.n > 0 ? Ui.returning : w.ink
                         font.family: w.face
                         font.pixelSize: w.unit * 1.2
                         font.bold: true

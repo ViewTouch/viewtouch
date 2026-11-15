@@ -1199,6 +1199,9 @@ public:
     bool prepOut(const std::string &itemId) const;
     // A rush, on every screen (Store's serviceInfo().rush).
     bool setRush(bool on);
+    // Aa: whoever is logged in sets their own text size (90..150) and text
+    // effect ("", "none", "embossed", "outline"), no manager needed.
+    bool setMyLook(int textSize, const QString &textEffect);
     bool rushSend();   // Pay during a rush sends what isn't sent first
     // Guest pagers and the window: the pager handed out with the open order
     // (0: none); an order made (Ready: called, the screens say which pager

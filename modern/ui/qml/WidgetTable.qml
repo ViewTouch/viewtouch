@@ -124,18 +124,26 @@ Item {
             font.bold: w.zone.st.bold ?? true
             fontSizeMode: Text.HorizontalFit   // a stool's "Bar 1": smaller, not cut
             minimumPixelSize: 8
+            style: Ui.textStyle
+            styleColor: Ui.effectColor(color)
         }
         Text {
             textFormat: Text.PlainText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: w.status.open ?? false
+            // Who and how much, then how long: two short lines that fit
+            // (smaller to fit, never cut to "Casey · $…").
             text: ((w.status.checks ?? 1) > 1 ? qsTr("%1 checks").arg(w.status.checks) : (w.status.server ?? ""))
-                  + "  ·  " + (w.status.total ?? "") + "  ·  " + w.minutesText(w.seatedMinutes)
+                  + "\n" + (w.status.total ?? "") + "  ·  " + w.minutesText(w.seatedMinutes)
             color: w.ink
             font.family: w.face
-            font.pixelSize: Math.min((Math.min(w.width, w.height) - 2 * w.chairDepth) * 0.13, 20)
-            elide: Text.ElideRight
+            font.pixelSize: Math.min((Math.min(w.width, w.height) - 2 * w.chairDepth) * 0.15, Ui.px(20))
+            height: Math.max(1, (Math.min(w.width, w.height) - 2 * w.chairDepth) * 0.36)
+            wrapMode: Text.NoWrap
+            maximumLineCount: 2
+            fontSizeMode: Text.Fit
+            minimumPixelSize: 9
         }
         Text {
             textFormat: Text.PlainText

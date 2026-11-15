@@ -129,7 +129,7 @@ ApplicationWindow {
     }
     readonly property bool pageCovered: selfOrder.visible || nowServing.visible || menuBoard.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
-                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible || exemptSheet.visible
+                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible || lookSheet.visible || holdSheet.visible || exemptSheet.visible
                                         || TouchGuard.sheetOpen || reasonSheet.visible || handoffSheet.visible
 
     Loader {
@@ -202,6 +202,23 @@ ApplicationWindow {
                     target: Ui
                     property: "theme"
                     value: root.controller.stylePalette
+                }
+                // Whoever is here: their text size, text effect and color-safe colors.
+                Binding {
+                    target: Ui
+                    property: "textScale"
+                    value: root.controller.pos && !root.editing && (root.controller.pos as PosService).userPrefs.textSize
+                           ? (root.controller.pos as PosService).userPrefs.textSize / 100 : 1
+                }
+                Binding {
+                    target: Ui
+                    property: "textEffect"
+                    value: root.controller.pos ? ((root.controller.pos as PosService).userPrefs.textEffect ?? "") : ""
+                }
+                Binding {
+                    target: Ui
+                    property: "colorSafe"
+                    value: !!root.controller.pos && !root.editing && !!(root.controller.pos as PosService).userPrefs.colorSafe
                 }
                 // A phone's pages take this screen's shape (see LayoutController::fitToScreen).
                 Binding {
@@ -415,7 +432,7 @@ ApplicationWindow {
             Text {
                 textFormat: Text.PlainText
                 color: "white"
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 font.bold: true
                 text: offline.working && root.controller.pos.online
                       ? qsTr("The store's computer is back: finish this check, and this screen goes back to it.")
@@ -473,7 +490,7 @@ ApplicationWindow {
         height: updateRow.implicitHeight + 16
         radius: 10
         color: "#e0302a14"
-        border.color: "#f5b940"
+        border.color: Ui.warn
         border.width: 2
         z: 9
         GridLayout {
@@ -488,7 +505,7 @@ ApplicationWindow {
                 Layout.maximumWidth: updateStrip.narrow ? root.width - 56 : root.width * 0.55
                 wrapMode: Text.WordWrap
                 color: "white"
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 text: {
                     const i = updateStrip.info
                     if (i.ahead)
@@ -542,7 +559,7 @@ ApplicationWindow {
             for (const l of (root.controller.pos ? root.controller.pos.lines : [])) n = Math.max(n, l.seat ?? 0)
             return n
         }
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30) * Ui.textScale
         anchors.fill: parent
         z: 74
         visible: open && !!root.controller.pos && root.controller.pos.hasCheck
@@ -650,7 +667,7 @@ ApplicationWindow {
         property bool open: false
         readonly property var coupons: root.controller.pos && root.controller.pos.hasCheck
                                        ? (root.controller.pos.check.coupons ?? []) : []
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30) * Ui.textScale
         function apply() {
             if (couponCode.text.trim() === "")
                 return
@@ -717,7 +734,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         text: modelData.name + "  ·  " + (modelData.working ? qsTr("%1 off").arg(modelData.off)
                                                                             : qsTr("takes nothing off now"))
-                        color: modelData.working ? "#7ee2a8" : "#f5b940"
+                        color: modelData.working ? "#7ee2a8" : Ui.warn
                         font.pixelSize: 1.1 * couponSheet.u
                         wrapMode: Text.WordWrap
                     }
@@ -753,7 +770,7 @@ ApplicationWindow {
         property bool open: false
         readonly property string current: root.controller.pos && root.controller.pos.hasCheck
                                           ? (root.controller.pos.check.taxExempt ?? "") : ""
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30) * Ui.textScale
         anchors.fill: parent
         z: 74
         visible: open && !!root.controller.pos && root.controller.pos.hasCheck
@@ -841,7 +858,7 @@ ApplicationWindow {
         readonly property var hold: check.hold ?? ({})
         readonly property bool held: !!hold.card
         readonly property var totals: root.controller.pos ? root.controller.pos.totals : ({})
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30) * Ui.textScale
         function charge(percent, cents) {
             root.controller.pos.chargeHold(percent, cents)
             holdSheet.open = false
@@ -1003,7 +1020,7 @@ ApplicationWindow {
                         Layout.maximumWidth: root.width * 0.6
                         wrapMode: Text.WordWrap
                         color: "white"
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         font.bold: true
                         text: modelData.text
                     }
@@ -1051,7 +1068,7 @@ ApplicationWindow {
                     horizontalAlignment: Text.AlignHCenter
                     text: "🖨  " + parent.modelData.text
                     color: "white"
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     font.bold: true
                 }
             }
@@ -1066,7 +1083,7 @@ ApplicationWindow {
         width: practiceText.implicitWidth + 40
         height: practiceText.implicitHeight + 10
         radius: 6
-        color: "#f5b940"
+        color: Ui.warn
         z: 50
         Text {
             textFormat: Text.PlainText
@@ -1074,7 +1091,7 @@ ApplicationWindow {
             anchors.centerIn: parent
             text: qsTr("PRACTICE - nothing here is a real sale")
             font.bold: true
-            font.pixelSize: 16
+            font.pixelSize: Ui.px(16)
             color: "#1b1b1b"
         }
     }
@@ -1102,6 +1119,144 @@ ApplicationWindow {
         visible: !root.editing && root.controller.pos !== null && ((root.controller.pos as PosService).selfOrder.on ?? false)
         pos: root.controller.pos as PosService
         onManagerExit: approvalPad.leavingKiosk = true
+    }
+
+    // Aa: whoever is here picks their own text size and text effect (no
+    // manager needed); the sample grows as they touch.
+    Rectangle {
+        id: lookSheet
+        objectName: "myLookSheet"
+        property bool open: false
+        readonly property PosService pos: root.controller.pos as PosService
+        readonly property var prefs: pos ? pos.userPrefs : ({})
+        readonly property int size: prefs.myTextSize ?? 100
+        readonly property string effect: prefs.myTextEffect ?? ""
+        // Not by Ui.textScale: the sheet stays put while the size changes under it.
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        anchors.fill: parent
+        z: 74
+        visible: open && !!pos && pos.loggedIn
+        color: Qt.rgba(0.04, 0.05, 0.07, 0.94)
+        Connections {
+            target: root.controller
+            function onWidgetCommand(name, args) { if (name === "myLook") lookSheet.open = true }
+        }
+        MouseArea { anchors.fill: parent }
+        Rectangle {
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 2 * lookSheet.u, 36 * lookSheet.u)
+            height: lookCol.implicitHeight + 2 * lookSheet.u
+            radius: lookSheet.u * 0.6
+            color: Ui.panel
+            border.color: Ui.line
+            Column {
+                id: lookCol
+                anchors.centerIn: parent
+                width: parent.width - 2 * lookSheet.u
+                spacing: lookSheet.u * 0.7
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    text: qsTr("Your text size")
+                    color: Ui.text
+                    font.family: Ui.font
+                    font.pixelSize: 1.4 * lookSheet.u
+                    font.bold: true
+                }
+                Row {
+                    width: parent.width
+                    spacing: lookSheet.u * 0.4
+                    Repeater {
+                        model: [{ v: 90, name: qsTr("Small") }, { v: 100, name: qsTr("Normal") }, { v: 115, name: qsTr("Large") },
+                                { v: 130, name: qsTr("Larger") }, { v: 150, name: qsTr("Largest") }]
+                        WidgetKey {
+                            required property var modelData
+                            objectName: "myTextSize-" + modelData.v
+                            width: (lookCol.width - 4 * lookSheet.u * 0.4) / 5
+                            height: 4.2 * lookSheet.u
+                            // "Aa" at the size it gives, and its name under it.
+                            text: "Aa\n" + modelData.name
+                            pixelSize: lookSheet.u * 1.15 * modelData.v / 100 / Ui.textScale
+                            accent: lookSheet.size === modelData.v
+                            takesTouch: true
+                            onClicked: lookSheet.pos.setMyLook(modelData.v, lookSheet.effect)
+                        }
+                    }
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    text: qsTr("Text effect")
+                    color: Ui.text
+                    font.family: Ui.font
+                    font.pixelSize: 1.4 * lookSheet.u
+                    font.bold: true
+                }
+                Row {
+                    width: parent.width
+                    spacing: lookSheet.u * 0.4
+                    Repeater {
+                        model: [{ v: "", name: qsTr("The screen's") }, { v: "none", name: qsTr("None") },
+                                { v: "embossed", name: qsTr("Embossed") }, { v: "outline", name: qsTr("Outline") }]
+                        Rectangle {
+                            id: effectKey
+                            required property var modelData
+                            objectName: "myTextEffect-" + (modelData.v || "screen")
+                            readonly property bool chosen: lookSheet.effect === modelData.v
+                            width: (lookCol.width - 3 * lookSheet.u * 0.4) / 4
+                            height: 3.4 * lookSheet.u
+                            radius: lookSheet.u * 0.4
+                            color: chosen ? Ui.accent : Ui.key
+                            border.color: Qt.darker(color, 1.5)
+                            border.width: 2
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.fill: parent
+                                anchors.margins: 6
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                text: effectKey.modelData.name
+                                color: "white"
+                                font.family: Ui.font
+                                font.pixelSize: lookSheet.u
+                                font.bold: true
+                                fontSizeMode: Text.Fit
+                                minimumPixelSize: 10
+                                // Each one drawn the way it looks.
+                                style: effectKey.modelData.v === "embossed" ? Text.Raised
+                                     : effectKey.modelData.v === "outline" ? Text.Outline : Text.Normal
+                                styleColor: effectKey.modelData.v === "outline" ? "#000000" : "#202020"
+                            }
+                            TapHandler {
+                                onTapped: {
+                                    if (TouchGuard.covered(point.scenePressPosition)) return
+                                    lookSheet.pos.setMyLook(lookSheet.size, effectKey.modelData.v)
+                                }
+                            }
+                        }
+                    }
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    wrapMode: Text.WordWrap
+                    text: qsTr("Just for you, on every screen you log in to.")
+                    color: Ui.muted
+                    font.family: Ui.font
+                    font.pixelSize: 0.9 * lookSheet.u
+                }
+                WidgetKey {
+                    objectName: "myLookDone"
+                    width: parent.width
+                    height: 3 * lookSheet.u
+                    text: qsTr("Done")
+                    baseColor: Ui.go
+                    pixelSize: 1.2 * lookSheet.u / Ui.textScale
+                    takesTouch: true
+                    onClicked: { lookSheet.open = false; pageView.forceActiveFocus() }
+                }
+            }
+        }
     }
 
     // A Now Serving board (a TV for guests): only the board, unless someone
@@ -1201,7 +1356,7 @@ ApplicationWindow {
         z: 75
         visible: reader.busy
         color: Qt.rgba(0.04, 0.05, 0.07, 0.92)
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 28)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 28) * Ui.textScale
         MouseArea { anchors.fill: parent }   // nothing behind it while the card is taken
         Column {
             anchors.centerIn: parent
@@ -1231,7 +1386,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: cardWait.reader.cardKinds
-                color: "#f5b940"
+                color: Ui.warn
                 font.pixelSize: cardWait.u * 0.9
             }
             Text {
@@ -1295,7 +1450,7 @@ ApplicationWindow {
         id: receiptSheet
         objectName: "receiptSheet"
         readonly property var offer: root.controller.pos ? (root.controller.pos as PosService).receiptOffer : ({})
-        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30) * Ui.textScale
         anchors.fill: parent
         z: 74
         visible: !!offer.checkId
@@ -1465,7 +1620,7 @@ ApplicationWindow {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             color: "white"
-            font.pixelSize: 16
+            font.pixelSize: Ui.px(16)
         }
 
         Behavior on opacity { enabled: !Ui.reduceMotion; NumberAnimation { duration: 150 } }
@@ -1495,7 +1650,7 @@ ApplicationWindow {
         height: addedText.implicitHeight + 22
         radius: height / 2
         color: waiting ? "#e0805a10" : "#e0186b3a"
-        border.color: waiting ? "#f5b940" : "#3ddc84"
+        border.color: waiting ? Ui.warn : "#3ddc84"
         border.width: 2
         opacity: 0
         visible: opacity > 0
@@ -1506,7 +1661,7 @@ ApplicationWindow {
             width: Math.min(implicitWidth, root.width - 80)
             elide: Text.ElideRight
             color: "white"
-            font.pixelSize: 22
+            font.pixelSize: Ui.px(22)
             font.bold: true
             text: addedFlash.text + (addedFlash.waiting ? "  " + qsTr("(waiting)") : "")
         }
@@ -1542,7 +1697,7 @@ ApplicationWindow {
                 width: parent.width
                 text: explainCard.info.title ?? ""
                 color: "white"
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 font.bold: true
                 wrapMode: Text.WordWrap
             }
@@ -1551,7 +1706,7 @@ ApplicationWindow {
                 width: parent.width
                 text: explainCard.info.text ?? ""
                 color: "#d7dde8"
-                font.pixelSize: 18
+                font.pixelSize: Ui.px(18)
                 wrapMode: Text.WordWrap
             }
             Text {
@@ -1559,7 +1714,7 @@ ApplicationWindow {
                 width: parent.width
                 text: qsTr("Hold any button to see what it does. Touch here to close.")
                 color: Ui.muted
-                font.pixelSize: 13
+                font.pixelSize: Ui.px(13)
                 wrapMode: Text.WordWrap
             }
         }
@@ -1579,7 +1734,7 @@ ApplicationWindow {
         height: unknownCol.implicitHeight + 32
         radius: 14
         color: "#f0101418"
-        border.color: "#f5b940"
+        border.color: Ui.warn
         border.width: 2
         MouseArea { anchors.fill: parent }   // the page under it isn't touched
         Column {
@@ -1592,7 +1747,7 @@ ApplicationWindow {
                 width: parent.width
                 text: qsTr("Nothing has the code %1.").arg(root.controller.unknownCode)
                 color: "white"
-                font.pixelSize: 22
+                font.pixelSize: Ui.px(22)
                 font.bold: true
                 wrapMode: Text.WrapAnywhere
             }
@@ -1602,7 +1757,7 @@ ApplicationWindow {
                     objectName: "addItemForCode"
                     width: (unknownCol.width - 12) / 2
                     height: 64
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     highlighted: true
                     text: qsTr("Add an Item With It")
                     onClicked: root.controller.addItemForCode()
@@ -1611,7 +1766,7 @@ ApplicationWindow {
                     objectName: "dismissUnknownCode"
                     width: (unknownCol.width - 12) / 2
                     height: 64
-                    font.pixelSize: 18
+                    font.pixelSize: Ui.px(18)
                     text: qsTr("Not Now")
                     onClicked: root.controller.dismissUnknownCode()
                 }

@@ -14,8 +14,8 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the items, then the checks below, at a phone's size.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(14, Math.min(44, w.width * 0.045))
-                                        : Math.max(14, Math.min(28, w.width * 0.022))
+    readonly property real unit: (narrow ? Math.max(14, Math.min(44, w.width * 0.045))
+                                        : Math.max(14, Math.min(28, w.width * 0.022))) * Ui.textScale
     readonly property var targets: {
         // Compared, not just read: an unused read is compiled away (no refresh).
         if (!pos || pos.checksRevision < 0 || !pos.lines) return []
@@ -196,7 +196,7 @@ Item {
                 Layout.fillWidth: true
                 text: ways.evenly ? qsTr("Split this check evenly: how many checks?")
                                   : (w.chosen ? qsTr("Share %1: how many ways?").arg(w.chosen.name) : "")
-                font.pixelSize: 20
+                font.pixelSize: Ui.px(20)
                 font.bold: true
                 wrapMode: Text.Wrap
             }
@@ -220,7 +220,7 @@ Item {
                         objectName: "splitWays-" + (index + 2)
                         Layout.fillWidth: true
                         implicitHeight: 64
-                        font.pixelSize: 24
+                        font.pixelSize: Ui.px(24)
                         text: index + 2
                         onClicked: {
                             const n = index + 2
@@ -237,7 +237,7 @@ Item {
             PosButton {
                 Layout.fillWidth: true
                 implicitHeight: 52
-                font.pixelSize: 16
+                font.pixelSize: Ui.px(16)
                 text: qsTr("Cancel")
                 onClicked: ways.close()
             }

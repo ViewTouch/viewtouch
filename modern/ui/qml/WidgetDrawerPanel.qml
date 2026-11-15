@@ -13,7 +13,7 @@ Item {
     readonly property var d: pos ? pos.drawer : ({})
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: Math.max(14, Math.min(30, w.width * 0.045))
+    readonly property real unit: (Math.max(14, Math.min(30, w.width * 0.045))) * Ui.textScale
     // A phone: its keys a finger tall at least.
     readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
     readonly property bool bank: (d.mode ?? "") === "serverBank"
@@ -69,7 +69,7 @@ Item {
                  : !w.d.exists ? (w.bank ? qsTr("Starts with your first cash sale") : qsTr("Not started today"))
                  : w.d.open ? qsTr("Open since %1 (%2)").arg(w.d.opened).arg(w.d.openedBy)
                             : qsTr("Counted by %1").arg(w.d.closedBy)
-            color: w.d.open ? "#7ee2a8" : "#f5b940"
+            color: w.d.open ? "#7ee2a8" : Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.85
         }
@@ -178,7 +178,7 @@ Item {
             textFormat: Text.PlainText
             visible: w.pos && w.pos.entry !== ""
             text: qsTr("Entered: %1").arg(w.pos ? w.pos.entryAmount : "")
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit
         }
@@ -186,7 +186,7 @@ Item {
             textFormat: Text.PlainText
             visible: (w.d.open ?? false) && w.pos && w.pos.textEntry !== ""
             text: qsTr("Reason: %1").arg(w.pos ? w.pos.textEntry : "")
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.8
             Layout.fillWidth: true

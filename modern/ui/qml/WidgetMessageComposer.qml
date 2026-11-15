@@ -43,7 +43,7 @@ Item {
                 Layout.fillWidth: w.narrow
                 Layout.fillHeight: true
                 spacing: 8
-                Label { textFormat: Text.PlainText; text: qsTr("To"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("To"); font.bold: true; font.pixelSize: Ui.px(17) }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -57,12 +57,12 @@ Item {
                             checkable: true
                             checked: w.to === modelData.id
                             implicitHeight: Math.max(48, finger)
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             onClicked: w.to = modelData.id
                         }
                     }
                 }
-                Label { textFormat: Text.PlainText; text: qsTr("Message"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Message"); font.bold: true; font.pixelSize: Ui.px(17); Layout.topMargin: 8 }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -72,7 +72,7 @@ Item {
                             required property string modelData
                             text: modelData
                             implicitHeight: Math.max(48, finger)
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             onClicked: { message.text = modelData; message.forceActiveFocus(); message.cursorPosition = message.length }
                         }
                     }
@@ -81,11 +81,11 @@ Item {
                     id: message
                     Layout.fillWidth: true
                     implicitHeight: Math.max(52, send.finger)
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                     placeholderText: qsTr("Type a message…")
                     onAccepted: send.clicked()
                 }
-                Label { textFormat: Text.PlainText; text: qsTr("Show it"); font.bold: true; font.pixelSize: 17; Layout.topMargin: 8 }
+                Label { textFormat: Text.PlainText; text: qsTr("Show it"); font.bold: true; font.pixelSize: Ui.px(17); Layout.topMargin: 8 }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -99,7 +99,7 @@ Item {
                             checkable: true
                             checked: w.keepDays === modelData.days
                             implicitHeight: Math.max(48, finger)
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             onClicked: w.keepDays = modelData.days
                         }
                     }
@@ -109,7 +109,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: Math.max(60, finger)
                     highlighted: true
-                    font.pixelSize: 19
+                    font.pixelSize: Ui.px(19)
                     text: qsTr("Send")
                     enabled: message.text.trim().length > 0
                     onClicked: {
@@ -128,7 +128,7 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Label { textFormat: Text.PlainText; text: qsTr("Posted, and the last hour"); font.bold: true; font.pixelSize: 17 }
+                Label { textFormat: Text.PlainText; text: qsTr("Posted, and the last hour"); font.bold: true; font.pixelSize: Ui.px(17) }
                 ListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -148,7 +148,7 @@ Item {
                         }
                         RowLayout {
                             width: parent.width
-                            Label { textFormat: Text.PlainText; text: modelData.text; font.pixelSize: 17; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                            Label { textFormat: Text.PlainText; text: modelData.text; font.pixelSize: Ui.px(17); wrapMode: Text.WordWrap; Layout.fillWidth: true }
                             PosButton {
                                 visible: modelData.posted === true
                                 objectName: "takeDown-" + modelData.id

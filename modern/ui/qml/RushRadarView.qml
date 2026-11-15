@@ -27,7 +27,7 @@ Item {
     readonly property var stations: (radar.stations ?? []).filter(s => (all || s.id === station)
                                                                      && (s.queue > 0 || s.coming > 0 || s.peakWait > 0))
     readonly property color muted: Ui.muted
-    function tint(level) { return level === "late" ? "#ff8a8f" : level === "busy" ? "#f5b940" : "#5fd08a" }
+    function tint(level) { return level === "late" ? "#ff8a8f" : level === "busy" ? Ui.warn : "#5fd08a" }
     implicitHeight: compact ? head.implicitHeight : col.implicitHeight
 
     // A handheld or kitchen screen gets it only while it's asked for (its
@@ -56,7 +56,7 @@ Item {
             text: r.headline !== "" ? "⚠ " + r.headline
                   : r.stations.length ? qsTr("The kitchen keeps up for the next %1 minutes.").arg(r.radar.horizon ?? 30)
                   : qsTr("Nothing on the line, nothing coming.")
-            color: r.headline !== "" ? "#f5b940" : r.muted
+            color: r.headline !== "" ? Ui.warn : r.muted
             font.family: r.face
             font.pixelSize: r.unit * (r.compact ? 0.9 : 1.0)
             font.bold: r.headline !== ""

@@ -47,7 +47,7 @@ Popup {
         property string label
         property bool on: false
         implicitHeight: 48
-        font.pixelSize: 15
+        font.pixelSize: Ui.px(15)
         highlighted: on
         text: (on ? "✓ " : "") + label
     }
@@ -57,13 +57,13 @@ Popup {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 8
-            Label { textFormat: Text.PlainText; text: qsTr("Printed menu"); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Printed menu"); font.pixelSize: Ui.px(20); font.bold: true }
             Label { textFormat: Text.PlainText; text: qsTr("Title"); opacity: 0.75 }
             TextField {
                 objectName: "printTitle"
                 Layout.fillWidth: true
                 implicitHeight: 48
-                font.pixelSize: 17
+                font.pixelSize: Ui.px(17)
                 text: printDialog.title
                 onTextEdited: printDialog.title = text
             }
@@ -72,7 +72,7 @@ Popup {
                 objectName: "printSubtitle"
                 Layout.fillWidth: true
                 implicitHeight: 48
-                font.pixelSize: 17
+                font.pixelSize: Ui.px(17)
                 placeholderText: qsTr("Address, phone, hours")
                 text: printDialog.subtitle
                 onTextEdited: printDialog.subtitle = text

@@ -528,15 +528,25 @@ QVariantMap PosService::userPrefs() const
     int screenText = 0;
     bool screenColorSafe = false;
     std::string deviceStart;
+    // The text effect: the store's, this screen's, the person's (each wins over the one before).
+    std::string effect = s_->settings.textEffect;
     for (const TerminalConfig &t : s_->settings.terminals)
         if (qs(t.name) == terminal_) {
             screenText = t.textSize;
             screenColorSafe = t.colorSafe;
             deviceStart = t.startPage;
+            if (!t.textEffect.empty())
+                effect = t.textEffect;
         }
     const core::Employee *e = user();
+    if (e && !e->textEffect.empty())
+        effect = e->textEffect;
+    if (effect == "none")
+        effect.clear();
     if (!e) {
         QVariantMap screen;
+        if (!effect.empty())
+            screen.insert(u"textEffect"_s, qs(effect));
         if (screenText)
             screen.insert(u"textSize"_s, screenText);
         if (screenColorSafe)
@@ -560,10 +570,39 @@ QVariantMap PosService::userPrefs() const
     // This device's start screen wins: the patio handheld opens on the patio, whoever has it.
     if (!deviceStart.empty())
         start = deviceStart;
-    return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
+    return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText}, {u"textEffect"_s, qs(effect)},
+            {u"myTextSize"_s, e->textSize}, {u"myTextEffect"_s, qs(e->textEffect)},
             {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}, {u"buzz"_s, e->buzz},
             {u"colorSafe"_s, e->colorSafe || screenColorSafe},
             {u"sendToTables"_s, s_->settings.sendToTables}, {u"sendNewOrder"_s, s_->settings.truckSendNew}};
+}
+
+bool PosService::setMyLook(int textSize, const QString &textEffect)
+{
+    // Aa: anyone's own text size and text effect, no manager needed.
+    const core::Employee *me = user();
+    if (!me)
+        return fail(tr("Log in first."));
+    if (!QList<int>{90, 100, 115, 130, 150}.contains(textSize))
+        return fail(tr("Choose a text size."));
+    if (!textEffect.isEmpty() && textEffectFrom(textEffect).empty())
+        return fail(tr("Choose a text effect."));
+    for (int i = 0; i < int(s_->employees.size()); ++i) {
+        core::Employee &e = s_->employees[i];
+        if (e.id != me->id)
+            continue;
+        if (e.textSize == textSize && e.textEffect == textEffectFrom(textEffect))
+            return true;
+        e.textSize = textSize;
+        e.textEffect = textEffectFrom(textEffect);
+        if (s_->sink)
+            s_->sink->saveEmployee(e);
+        ++s_->adminRevision;
+        emit s_->adminChanged();
+        emit sessionChanged();
+        return true;
+    }
+    return fail(tr("Log in first."));   // the Counter, the maintainer: nobody on the staff list
 }
 
 void PosShared::checkBooks(const Check &c)

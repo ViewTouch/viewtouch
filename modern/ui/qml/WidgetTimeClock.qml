@@ -20,8 +20,8 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the keypad alone; then the person above their schedule.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(14, Math.min(w.width / 20, w.height / 34))
-                                        : Math.max(14, Math.min(w.width / 46, w.height / 26))
+    readonly property real unit: (narrow ? Math.max(14, Math.min(w.width / 20, w.height / 34))
+                                        : Math.max(14, Math.min(w.width / 46, w.height / 26))) * Ui.textScale
     property string pin: ""
 
     // Back to the keypad when nobody's touched it for a while.
@@ -122,7 +122,7 @@ Item {
                                                    + (w.info.job ? "  ·  " + w.info.job : "")
                         : w.info.status === "break" ? qsTr("On break since %1").arg(w.info.breakSince)
                         : qsTr("Not clocked in")
-                    color: w.info.status === "in" ? "#5fd08a" : w.info.status === "break" ? "#f5b940" : Ui.muted
+                    color: w.info.status === "in" ? "#5fd08a" : w.info.status === "break" ? Ui.warn : Ui.muted
                     font.family: w.face
                     font.pixelSize: w.unit
                 }
@@ -145,7 +145,7 @@ Item {
                     wrapMode: Text.WordWrap
                     text: w.ot.state === "over" ? qsTr("You're in overtime. Check with a manager before staying on.")
                                                 : qsTr("%1 h until overtime.").arg(w.ot.left)
-                    color: w.ot.state === "over" ? "#ff8a8f" : "#f5b940"
+                    color: w.ot.state === "over" ? "#ff8a8f" : Ui.warn
                     font.family: w.face
                     font.pixelSize: w.unit * 0.9
                     font.bold: true
@@ -410,7 +410,7 @@ Item {
                                 textFormat: Text.PlainText
                                 visible: modelData.givingAway
                                 text: qsTr("up for grabs")
-                                color: "#f5b940"
+                                color: Ui.warn
                                 font.family: w.face
                                 font.pixelSize: w.unit * 0.75
                             }
@@ -422,7 +422,7 @@ Item {
                     textFormat: Text.PlainText
                     visible: w.grabs.length > 0
                     text: qsTr("Up for grabs")
-                    color: "#f5b940"
+                    color: Ui.warn
                     font.family: w.face
                     font.pixelSize: w.unit
                     font.bold: true
@@ -481,7 +481,7 @@ Item {
                             objectName: "requestStatus-" + modelData.id
                             text: modelData.statusText
                             color: modelData.status === "approved" ? "#5fd08a"
-                                 : modelData.status === "denied" ? "#ff8a8f" : "#f5b940"
+                                 : modelData.status === "denied" ? "#ff8a8f" : Ui.warn
                             font.family: w.face
                             font.pixelSize: w.unit * 0.8
                         }

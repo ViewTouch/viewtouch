@@ -99,7 +99,7 @@ Popup {
 
     component Big: PosButton {
         implicitHeight: 56
-        font.pixelSize: 17
+        font.pixelSize: Ui.px(17)
     }
 
     contentItem: ColumnLayout {
@@ -107,7 +107,7 @@ Popup {
         Label {
             textFormat: Text.PlainText
             text: card.item ? qsTr("Change %1").arg(card.item.name) : qsTr("New item")
-            font.pixelSize: 22
+            font.pixelSize: Ui.px(22)
             font.bold: true
             elide: Text.ElideRight
             Layout.fillWidth: true
@@ -130,18 +130,18 @@ Popup {
                     columns: 2
                     columnSpacing: 10
                     rowSpacing: 8
-                    Label { textFormat: Text.PlainText; text: qsTr("Name"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Name"); font.pixelSize: Ui.px(16) }
                     TextField {
                         id: nameField
                         objectName: "quickName"
                         Layout.fillWidth: true
                         implicitHeight: 52
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         text: card.name
                         placeholderText: qsTr("e.g. Fish Tacos")
                         onTextEdited: card.name = text
                     }
-                    Label { textFormat: Text.PlainText; text: qsTr("Price"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Price"); font.pixelSize: Ui.px(16) }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -150,7 +150,7 @@ Popup {
                             visible: card.sizes.length === 0
                             Layout.fillWidth: true
                             implicitHeight: 52
-                            font.pixelSize: 18
+                            font.pixelSize: Ui.px(18)
                             text: card.price
                             placeholderText: "0.00"
                             inputMethodHints: Qt.ImhDecimalNumbersOnly
@@ -162,7 +162,7 @@ Popup {
                             Layout.fillWidth: true
                             text: qsTr("By size, below")
                             opacity: 0.7
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                         }
                         Big {
                             objectName: "quickAddSize"
@@ -188,7 +188,7 @@ Popup {
                                     objectName: "quickSizeName-" + index
                                     Layout.fillWidth: true
                                     implicitHeight: 48
-                                    font.pixelSize: 17
+                                    font.pixelSize: Ui.px(17)
                                     placeholderText: qsTr("e.g. Medium")
                                     text: card.sizes[index] ? card.sizes[index].name : ""
                                     onTextEdited: card.setSize(index, "name", text)
@@ -197,7 +197,7 @@ Popup {
                                     objectName: "quickSizePrice-" + index
                                     Layout.preferredWidth: 120
                                     implicitHeight: 48
-                                    font.pixelSize: 17
+                                    font.pixelSize: Ui.px(17)
                                     placeholderText: "0.00"
                                     inputMethodHints: Qt.ImhDecimalNumbersOnly
                                     text: card.sizes[index] ? card.sizes[index].price : ""
@@ -222,22 +222,22 @@ Popup {
                             }
                         }
                     }
-                    Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("What's on it"); font.pixelSize: Ui.px(16) }
                     TextField {
                         objectName: "quickOnIt"
                         Layout.fillWidth: true
                         implicitHeight: 52
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         text: card.onIt
                         placeholderText: qsTr("lettuce, tomato, onion")
                         onTextEdited: card.onIt = text
                     }
-                    Label { textFormat: Text.PlainText; text: qsTr("Kitchen name"); font.pixelSize: 16 }
+                    Label { textFormat: Text.PlainText; text: qsTr("Kitchen name"); font.pixelSize: Ui.px(16) }
                     TextField {
                         objectName: "quickKitchenName"
                         Layout.fillWidth: true
                         implicitHeight: 52
-                        font.pixelSize: 17
+                        font.pixelSize: Ui.px(17)
                         text: card.kitchenName
                         placeholderText: qsTr("What the kitchen sees (optional)")
                         onTextEdited: card.kitchenName = text
@@ -273,7 +273,7 @@ Popup {
                     textFormat: Text.PlainText
                     visible: card.sharedGroups.length > 0
                     text: qsTr("Choices it asks for")
-                    font.pixelSize: 16
+                    font.pixelSize: Ui.px(16)
                 }
                 Flow {
                     visible: card.sharedGroups.length > 0
@@ -286,7 +286,7 @@ Popup {
                             readonly property bool on: card.groups.includes(modelData.id)
                             objectName: "quickGroup-" + modelData.id
                             implicitHeight: 48
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             highlighted: on
                             text: (on ? "✓ " : "") + qsTranslate("Data", String(modelData.name ?? ""))   // (a starter name, "Cash", in the screen's language; a store's own name as typed)
                             onClicked: card.groups = on ? card.groups.filter(g => g !== modelData.id)
@@ -294,7 +294,7 @@ Popup {
                         }
                     }
                 }
-                Label { textFormat: Text.PlainText; text: qsTr("Color"); font.pixelSize: 16 }
+                Label { textFormat: Text.PlainText; text: qsTr("Color"); font.pixelSize: Ui.px(16) }
                 ColorPicker {
                     objectName: "quickColor"
                     Layout.fillWidth: true

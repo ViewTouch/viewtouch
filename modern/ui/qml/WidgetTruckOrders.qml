@@ -22,7 +22,7 @@ Item {
         text: qsTr("No orders waiting.")
         color: Ui.muted
         font.family: w.face
-        font.pixelSize: 28
+        font.pixelSize: Ui.px(28)
     }
 
     GridView {
@@ -64,7 +64,7 @@ Item {
                         text: card.modelData.label
                         color: "white"
                         font.family: w.face
-                        font.pixelSize: 34 * grid.big
+                        font.pixelSize: Ui.px(34) * grid.big
                         font.bold: true
                         fontSizeMode: Text.HorizontalFit   // a long name: smaller before "…"
                         minimumPixelSize: Math.round(font.pixelSize * 0.6)
@@ -84,7 +84,7 @@ Item {
                             text: qsTr("Pager %1").arg(card.modelData.pager)
                             color: "#2a2000"
                             font.family: w.face
-                            font.pixelSize: 22 * grid.big
+                            font.pixelSize: Ui.px(22) * grid.big
                             font.bold: true
                         }
                     }
@@ -95,7 +95,7 @@ Item {
                     text: card.modelData.items
                     color: "#d8dee8"
                     font.family: w.face
-                    font.pixelSize: 20 * grid.big
+                    font.pixelSize: Ui.px(20) * grid.big
                     elide: Text.ElideRight
                 }
                 Text {
@@ -110,7 +110,7 @@ Item {
                           + (card.modelData.openOn !== "" ? "  ·  " + qsTr("open on %1").arg(card.modelData.openOn) : "")
                     color: card.modelData.paid ? Ui.muted : "#ffb4a8"
                     font.family: w.face
-                    font.pixelSize: 18 * grid.big
+                    font.pixelSize: Ui.px(18) * grid.big
                     elide: Text.ElideRight
                 }
             }

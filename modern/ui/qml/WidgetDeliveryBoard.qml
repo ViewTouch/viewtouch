@@ -12,8 +12,8 @@ Item {
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(14, Math.min(w.width / 20, 44))
-                                        : Math.max(14, Math.min(w.width / 60, w.height / 30))
+    readonly property real unit: (narrow ? Math.max(14, Math.min(w.width / 20, 44))
+                                        : Math.max(14, Math.min(w.width / 60, w.height / 30))) * Ui.textScale
 
     readonly property var orders: pos ? pos.deliveries : []
     readonly property var drivers: pos ? pos.drivers : []

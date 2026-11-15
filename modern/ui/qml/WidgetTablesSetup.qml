@@ -66,7 +66,7 @@ Item {
                     Layout.fillWidth: true
                     color: w.ink
                     opacity: 0.7
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     text: qsTr("Your tables") + "  ·  " + qsTr("%1 of 4").arg(w.at + 1)
                 }
                 Row {
@@ -116,7 +116,7 @@ Item {
                             wrapMode: Text.WordWrap
                             color: w.ink
                             opacity: 0.75
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             text: qsTr("Touch each one your place has. Each gets its own plan, and Main shows them all.")
                         }
                         Flow {
@@ -164,7 +164,7 @@ Item {
                                     textFormat: Text.PlainText
                                     Layout.topMargin: 8
                                     color: w.ink
-                                    font.pixelSize: 20
+                                    font.pixelSize: Ui.px(20)
                                     font.bold: true
                                     text: roomBox.modelData.name
                                 }
@@ -184,7 +184,7 @@ Item {
                                             Layout.preferredWidth: w.small ? 150 : 260
                                             wrapMode: Text.WordWrap
                                             color: w.ink
-                                            font.pixelSize: 17
+                                            font.pixelSize: Ui.px(17)
                                             text: countRow.modelData.text
                                         }
                                         PosButton {
@@ -193,7 +193,7 @@ Item {
                                             implicitHeight: 56
                                             enabled: countRow.value > 0
                                             text: "−"
-                                            font.pixelSize: 26
+                                            font.pixelSize: Ui.px(26)
                                             onClicked: w.setRoom(roomBox.modelData.id, countRow.modelData.key, countRow.value - 1)
                                         }
                                         Label {
@@ -202,7 +202,7 @@ Item {
                                             Layout.preferredWidth: 56
                                             horizontalAlignment: Text.AlignHCenter
                                             color: w.ink
-                                            font.pixelSize: 24
+                                            font.pixelSize: Ui.px(24)
                                             font.bold: true
                                             text: String(countRow.value)
                                         }
@@ -212,7 +212,7 @@ Item {
                                             implicitHeight: 56
                                             enabled: countRow.value < 60
                                             text: "+"
-                                            font.pixelSize: 26
+                                            font.pixelSize: Ui.px(26)
                                             onClicked: w.setRoom(roomBox.modelData.id, countRow.modelData.key, countRow.value + 1)
                                         }
                                     }
@@ -226,7 +226,7 @@ Item {
                             wrapMode: Text.WordWrap
                             color: w.ink
                             opacity: 0.8
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             text: qsTr("%n table(s) in all.", "", w.preview.count)
                         }
                     }
@@ -276,7 +276,7 @@ Item {
                             wrapMode: Text.WordWrap
                             color: w.ink
                             opacity: 0.75
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             text: qsTr("Seats at a bar's counter are Bar 1, Bar 2… Any table can be renamed later in Edit Pages.")
                         }
                     }
@@ -354,7 +354,7 @@ Item {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             color: w.ink
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             text: qsTr("%n table(s): %1.", "", w.preview.count).arg(
                                       w.preview.names.length > 8 ? w.preview.names.slice(0, 4).join(", ") + " … " + w.preview.names.slice(-2).join(", ")
                                                                  : w.preview.names.join(", "))
@@ -365,7 +365,7 @@ Item {
                             wrapMode: Text.WordWrap
                             color: w.ink
                             opacity: 0.75
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             text: qsTr("These take the place of the tables on your floor plans; the buttons around them stay. A backup is made first, and you can put the old tables back.")
                         }
                     }
@@ -390,7 +390,7 @@ Item {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             color: w.ink
-                            font.pixelSize: 16
+                            font.pixelSize: Ui.px(16)
                             text: qsTr("To move one, make it round or rename it: Manager → Edit Pages, on the Tables page.")
                         }
                         Flow {
@@ -422,8 +422,8 @@ Item {
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignRight
                 visible: text !== "" && w.at < 4
-                color: "#f5b940"
-                font.pixelSize: 15
+                color: Ui.warn
+                font.pixelSize: Ui.px(15)
                 text: w.missing
             }
             RowLayout {

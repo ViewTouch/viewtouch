@@ -20,7 +20,7 @@ Popup {
                                      "🍹", "🥃", "🍾", "💧"]
     contentItem: ColumnLayout {
         spacing: 10
-        Label { textFormat: Text.PlainText; text: qsTr("A picture for %1").arg(menu.draft.name || qsTr("it")); font.pixelSize: 20; font.bold: true }
+        Label { textFormat: Text.PlainText; text: qsTr("A picture for %1").arg(menu.draft.name || qsTr("it")); font.pixelSize: Ui.px(20); font.bold: true }
         Grid {
             columns: 8
             spacing: 6
@@ -41,7 +41,7 @@ Popup {
                         anchors.centerIn: parent
                         text: parent.modelData
                         font.family: "Noto Color Emoji"
-                        font.pixelSize: 38
+                        font.pixelSize: Ui.px(38)
                     }
                     MouseArea {
                         anchors.fill: parent

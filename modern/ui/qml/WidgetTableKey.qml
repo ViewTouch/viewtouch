@@ -20,7 +20,7 @@ Item {
       .concat([{ name: qsTr("Check on it"), color: "transparent", edge: zone ? zone.statusColor("tableWaiting", "#ff9f1a") : "#ff9f1a" }])
     // The words' size: one row on a wide screen, two on a phone's.
     readonly property int rows: width < 1200 ? 2 : 1
-    TextMetrics { id: names; font.family: w.face; font.pixelSize: 100; text: w.keys.map(k => k.name).join("") }
+    TextMetrics { id: names; font.family: w.face; font.pixelSize: Ui.px(100); text: w.keys.map(k => k.name).join("") }
     // ...and no bigger than lets every one fit in those rows (a swatch and the gaps are about 2.6 of it each).
     readonly property real fits: width * rows * 0.92 / (names.advanceWidth / 100 + keys.length * 2.6)
     readonly property real px: Math.max(10, Math.min(height / (rows * 1.9), 34, fits))

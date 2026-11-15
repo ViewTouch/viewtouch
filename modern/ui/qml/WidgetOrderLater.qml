@@ -64,12 +64,12 @@ Item {
                 objectName: "laterDue"
                 Layout.fillWidth: true
                 text: w.dueAt > 0 ? qsTr("Ready %1").arg(w.check.due ?? "") : qsTr("As soon as possible")
-                font.pixelSize: 26
+                font.pixelSize: Ui.px(26)
                 font.bold: true
                 color: w.dueAt > 0 ? "#7ec8ff" : Ui.text
             }
 
-            Label { textFormat: Text.PlainText; text: qsTr("Day"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Day"); opacity: 0.7; font.pixelSize: Ui.px(16) }
             GridLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -83,7 +83,7 @@ Item {
                         objectName: "laterDay-" + index
                         Layout.fillWidth: true
                         implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         highlighted: w.day === index
                         text: index === 0 ? qsTr("Today") : index === 1 ? qsTr("Tomorrow")
                              : Qt.locale().toString(w.dateFor(index, 12, 0), "ddd d")
@@ -92,7 +92,7 @@ Item {
                 }
             }
 
-            Label { textFormat: Text.PlainText; text: qsTr("Hour"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Hour"); opacity: 0.7; font.pixelSize: Ui.px(16) }
             GridLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -107,7 +107,7 @@ Item {
                         objectName: "laterHour-" + h
                         Layout.fillWidth: true
                         implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         enabled: !w.passed(w.day, h, 45)
                         highlighted: w.hour === h
                         text: Qt.locale().toString(w.dateFor(0, h, 0), "h AP")
@@ -121,7 +121,7 @@ Item {
                 }
             }
 
-            Label { textFormat: Text.PlainText; text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: 16 }
+            Label { textFormat: Text.PlainText; text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: Ui.px(16) }
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -133,7 +133,7 @@ Item {
                         objectName: "laterMinute-" + modelData
                         Layout.fillWidth: true
                         implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         enabled: w.hour >= 0 && !w.passed(w.day, w.hour, modelData)
                         highlighted: w.hour >= 0 && w.minute === modelData
                         text: ":" + (modelData < 10 ? "0" : "") + modelData
@@ -148,7 +148,7 @@ Item {
                 objectName: "laterAsap"
                 Layout.fillWidth: true
                 implicitHeight: zone ? zone.touch(56) : 56
-                font.pixelSize: 17
+                font.pixelSize: Ui.px(17)
                 enabled: w.dueAt > 0
                 text: qsTr("As Soon as Possible")
                 onClicked: { w.hour = -1; w.pos.setDueAt(0) }

@@ -65,6 +65,6 @@ Item {
         text: qsTr("Nothing on the menu yet: Manager → Menu Builder.")
         color: Ui.muted
         font.family: w.face
-        font.pixelSize: 28
+        font.pixelSize: Ui.px(28)
     }
 }

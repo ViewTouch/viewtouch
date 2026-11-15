@@ -462,7 +462,8 @@ Item {
             id: bar
             // (Nothing in it on a food truck's or a shop's check: no row at all.)
             visible: w.controls && w.pos && !w.folded
-                     && ((w.pos.hasCheck && (w.zone.keyShown("course") || w.zone.keyShown("fire"))) || w.zone.keyShown("quantity"))
+                     && ((w.pos.hasCheck && (w.zone.keyShown("course") || w.zone.keyShown("fire"))) || w.zone.keyShown("quantity")
+                         || w.zone.keyShown("myLook"))
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
             Layout.fillHeight: false
@@ -522,10 +523,23 @@ Item {
                 accent: !!w.check.firesAt
                 onClicked: sheet.mode = "fire"
             }
+            // Aa: my own text size and text effect (anyone's, no manager).
+            WidgetKey {
+                id: myLookKey
+                objectName: "myLook"
+                visible: w.zone.keyShown("myLook") && !!w.pos?.loggedIn
+                anchors.right: parent.right
+                width: Math.max(bar.key * 1.2, w.tapH)
+                height: parent.height
+                text: "Aa"
+                fontScale: 0.42
+                onClicked: w.zone.controller.command("myLook")
+            }
             WidgetKey {
                 id: fireKey
                 visible: w.nextCourse > 0 && w.zone.keyShown("fire") && !!w.pos?.hasCheck
-                anchors.right: parent.right
+                anchors.right: myLookKey.visible ? myLookKey.left : parent.right
+                anchors.rightMargin: myLookKey.visible ? bar.key * 0.15 : 0
                 width: bar.key * 2.25
                 height: parent.height
                 text: w.check.firesAt ? qsTr("Course %1 at %2").arg(w.nextCourse).arg(w.check.firesAt)
@@ -638,7 +652,7 @@ Item {
                             textFormat: Text.PlainText
                             // ● not yet sent to the kitchen; ‖ held for a later course
                             text: row.modelData.held ? "‖" : row.modelData.sent ? " " : "●"
-                            color: "#f5b940"
+                            color: Ui.warn
                             font.pixelSize: row.modelData.held ? w.unit * 0.8 : w.unit * 0.5
                             font.bold: true
                             Layout.preferredWidth: w.unit * 0.8
@@ -650,7 +664,7 @@ Item {
                             text: (row.modelData.seat > 0 ? "S" + row.modelData.seat : "")
                                   + (row.modelData.course > 1 ? (row.modelData.seat > 0 ? " " : "") + "C" + row.modelData.course : "")
                                   + (row.modelData.held ? " " + qsTr("HOLD") : "")
-                            color: row.modelData.held ? "#f5b940" : "#7ec8ff"
+                            color: row.modelData.held ? Ui.warn : "#7ec8ff"
                             font.family: w.face
                             font.pixelSize: w.unit * 0.65
                             font.bold: true
@@ -662,11 +676,13 @@ Item {
                             text: row.modelData.returning
                                   ? qsTr("RETURN") + " " + (row.modelData.quantity < -1 ? -row.modelData.quantity + " × " : "") + row.modelData.name
                                   : (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
-                            color: row.modelData.voided ? Ui.muted : row.modelData.returning ? "#ff8a80" : w.ink
+                            color: row.modelData.voided ? Ui.muted : row.modelData.returning ? Ui.returning : w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
                             font.italic: row.modelData.comment
                             font.strikeout: row.modelData.voided
+                            style: Ui.textStyle
+                            styleColor: Ui.effectColor(color)
                             // A narrow check (a 7" screen): the name on two lines before "…" (a phone keeps one).
                             wrapMode: Text.Wrap
                             maximumLineCount: w.phone ? 1 : 2
@@ -679,7 +695,7 @@ Item {
                             textFormat: Text.PlainText
                             visible: row.modelData.choices && w.phone && !row.modelData.selected && row.modelData.needsChoice
                             text: qsTr("Choose ›")
-                            color: "#f5b940"
+                            color: Ui.warn
                             font.family: w.face
                             font.pixelSize: w.unit * 0.8
                             font.bold: true
@@ -696,7 +712,7 @@ Item {
                         Text {
                             textFormat: Text.PlainText
                             text: row.modelData.voided ? qsTr("VOID") : row.waiting ? qsTr("waiting…") : row.modelData.price
-                            color: row.modelData.voided ? "#ff6369" : row.waiting ? "#f5b940" : w.ink
+                            color: row.modelData.voided ? "#ff6369" : row.waiting ? Ui.warn : w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
                         }
@@ -723,7 +739,7 @@ Item {
                         Layout.leftMargin: w.unit * 1.6
                         text: "↩ " + (row.modelData.returnReason || qsTr("Return"))
                               + (row.modelData.restock ? "" : " · " + qsTr("damaged: not back in stock"))
-                        color: "#ff8a80"
+                        color: Ui.returning
                         font.family: w.face
                         font.pixelSize: w.unit * 0.8
                         elide: Text.ElideRight
@@ -736,7 +752,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.leftMargin: w.unit * 1.6
                         text: "✎ " + (row.modelData.note ?? "")
-                        color: "#f5b940"
+                        color: Ui.warn
                         font.family: w.face
                         font.pixelSize: w.unit * 0.8
                         font.italic: true
@@ -850,7 +866,7 @@ Item {
                 height: w.unit * 2
                 radius: 6
                 color: Ui.sunken
-                border.color: "#f5b940"
+                border.color: Ui.warn
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: w.unit * 0.5
@@ -963,7 +979,7 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: qsTr("Owed back: %1").arg(w.check.refundDue ?? "")
-                color: "#ff8a80"
+                color: Ui.returning
                 font.family: w.face
                 font.pixelSize: w.unit * 0.95
                 font.bold: true
@@ -1220,7 +1236,7 @@ Item {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: priceSheet.info.error ?? priceSheet.info.name ?? qsTr("Scan an item, or touch one on the menu.")
-                color: priceSheet.info.error ? "#ff8a80" : "white"
+                color: priceSheet.info.error ? Ui.returning : "white"
                 font.family: w.face
                 font.pixelSize: w.unit * 1.2
                 font.bold: true
@@ -1245,7 +1261,7 @@ Item {
                 text: priceSheet.info.soldOut ? qsTr("Sold out")
                       : priceSheet.info.stock === undefined || priceSheet.info.stock === null ? qsTr("Stock isn't counted")
                       : qsTr("%1 in stock").arg(priceSheet.info.stock)
-                color: priceSheet.info.soldOut || priceSheet.info.stock === 0 ? "#ff8a80" : Ui.textSoft
+                color: priceSheet.info.soldOut || priceSheet.info.stock === 0 ? Ui.returning : Ui.textSoft
                 font.family: w.face
                 font.pixelSize: w.unit * 0.95
             }
@@ -1268,7 +1284,7 @@ Item {
                             textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: modelData.label + ": " + (modelData.stock === undefined || modelData.stock === null ? "—" : modelData.stock)
-                            color: modelData.stock === 0 ? "#ff8a80" : "white"
+                            color: modelData.stock === 0 ? Ui.returning : "white"
                             font.family: w.face
                             font.pixelSize: w.unit * 0.75
                         }

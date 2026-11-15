@@ -79,7 +79,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         implicitHeight: w.fingers(46)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         placeholderText: qsTr("Find…")
                         onEdited: typed => w.search = typed
                     }
@@ -89,7 +89,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         implicitHeight: w.fingers(46)
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         placeholderText: qsTr("Or type what it is")
                     }
                 }
@@ -113,7 +113,7 @@ Item {
                         checkable: true
                         checked: w.chosen === modelData.id && other.text.trim() === ""
                         highlighted: checked
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         onClicked: w.choose(modelData)
                     }
                 }
@@ -140,28 +140,28 @@ Item {
                             Layout.fillWidth: true
                             text: w.name !== "" ? w.name : qsTr("(choose what it is)")
                             color: "black"
-                            font.pixelSize: 21
+                            font.pixelSize: Ui.px(21)
                             font.bold: true
                             elide: Text.ElideRight
                         }
-                        Text { textFormat: Text.PlainText; text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: 15 }
+                        Text { textFormat: Text.PlainText; text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: Ui.px(15) }
                         Text {
                             textFormat: Text.PlainText
                             visible: w.hours > 0
                             text: qsTr("Use by %1").arg(w.fmt(new Date(Date.now() + w.hours * 3600000)))
                             color: "black"
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             font.bold: true
                         }
                         Text {
                             textFormat: Text.PlainText
                             text: (note.text.trim() !== "" ? note.text.trim() + "  ·  " : "") + (w.pos ? w.pos.userName.split(" ")[0] : "")
                             color: "black"
-                            font.pixelSize: 13
+                            font.pixelSize: Ui.px(13)
                         }
                     }
                 }
-                Label { textFormat: Text.PlainText; text: qsTr("Keeps for"); font.pixelSize: 13; opacity: 0.75 }
+                Label { textFormat: Text.PlainText; text: qsTr("Keeps for"); font.pixelSize: Ui.px(13); opacity: 0.75 }
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
@@ -178,7 +178,7 @@ Item {
                             highlighted: checked
                             Layout.fillWidth: true
                             implicitHeight: w.fingers(42)
-                            font.pixelSize: 14
+                            font.pixelSize: Ui.px(14)
                             onClicked: w.hours = modelData.h
                         }
                     }
@@ -188,7 +188,7 @@ Item {
                     objectName: "labelNote"
                     Layout.fillWidth: true
                     implicitHeight: w.fingers(42)
-                    font.pixelSize: 14
+                    font.pixelSize: Ui.px(14)
                     placeholderText: qsTr("Note (batch, amount…)")
                 }
                 RowLayout {
@@ -199,7 +199,7 @@ Item {
                         text: "−"
                         implicitWidth: 52
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         onClicked: w.count = Math.max(1, w.count - 1)
                     }
                     Label {
@@ -208,7 +208,7 @@ Item {
                         text: String(w.count)
                         Layout.preferredWidth: 44
                         horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         font.bold: true
                     }
                     PosButton {
@@ -216,7 +216,7 @@ Item {
                         text: "+"
                         implicitWidth: 52
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 20
+                        font.pixelSize: Ui.px(20)
                         onClicked: w.count = Math.min(50, w.count + 1)
                     }
                     PosButton {
@@ -226,7 +226,7 @@ Item {
                         highlighted: true
                         enabled: w.name !== "" && (w.info.printer ?? "") !== ""
                         implicitHeight: w.fingers(48)
-                        font.pixelSize: 16
+                        font.pixelSize: Ui.px(16)
                         onClicked: w.pos.printPrepLabels({ ingredient: other.text.trim() === "" ? w.chosen : "",
                                                            name: other.text.trim(), hours: w.hours, count: w.count,
                                                            note: note.text })
@@ -237,9 +237,9 @@ Item {
                     Layout.fillWidth: true
                     text: (w.info.printer ?? "") !== "" ? qsTr("Prints on %1").arg(w.info.printer)
                                                        : qsTr("No label printer: set one up in Manager → Printers.")
-                    color: (w.info.printer ?? "") !== "" ? "white" : "#f5b940"
+                    color: (w.info.printer ?? "") !== "" ? "white" : Ui.warn
                     opacity: 0.75
-                    font.pixelSize: 13
+                    font.pixelSize: Ui.px(13)
                     wrapMode: Text.WordWrap
                 }
                 Item { Layout.fillHeight: true }

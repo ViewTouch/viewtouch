@@ -45,7 +45,7 @@ Item {
                     text: cell.modelData.name
                     color: "white"
                     font.family: w.face
-                    font.pixelSize: 30
+                    font.pixelSize: Ui.px(30)
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -56,7 +56,7 @@ Item {
                     text: (w.pos ? w.pos.roleName(cell.modelData.role) : cell.modelData.role) + (cell.modelData.clockedIn ? qsTr(" · on the clock") : "")
                     color: Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: 20
+                    font.pixelSize: Ui.px(20)
                 }
             }
             TapHandler {
@@ -75,7 +75,7 @@ Item {
             text: qsTr("Nobody else is set up")
             color: Ui.muted
             font.family: w.face
-            font.pixelSize: 28
+            font.pixelSize: Ui.px(28)
         }
     }
 }

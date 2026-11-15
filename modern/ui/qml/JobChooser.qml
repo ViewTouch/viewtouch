@@ -33,7 +33,7 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr("Which job today, %1?").arg(chooser.info.who ?? "")
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: Ui.px(24)
                 font.bold: true
                 wrapMode: Text.WordWrap
             }

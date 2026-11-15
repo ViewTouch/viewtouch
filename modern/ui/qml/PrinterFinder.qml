@@ -21,7 +21,7 @@ ColumnLayout {
         implicitHeight: 56
         highlighted: !f.search.done
         enabled: !f.busy
-        font.pixelSize: 17
+        font.pixelSize: Ui.px(17)
         text: f.busy ? qsTr("Looking…") : f.search.done ? qsTr("Look Again") : qsTr("Find My Printers")
         onClicked: f.pos.findPrinters()
     }
@@ -31,8 +31,8 @@ ColumnLayout {
         visible: f.search.done === true && f.found.length === 0
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
-        color: "#f5b940"
-        font.pixelSize: 15
+        color: Ui.warn
+        font.pixelSize: Ui.px(15)
         text: qsTr("None found. Is the printer on, and plugged into the same network (router or switch) as this computer? A USB printer isn't found this way: Manager → Printers.")
     }
     Label {
@@ -42,7 +42,7 @@ ColumnLayout {
         wrapMode: Text.WordWrap
         color: f.ink
         opacity: 0.8
-        font.pixelSize: 15
+        font.pixelSize: Ui.px(15)
         text: qsTr("Touch Print Its Address on each: the one that prints is that one. Then say what it's for.")
     }
     Repeater {
@@ -69,7 +69,7 @@ ColumnLayout {
                     Label {
                         textFormat: Text.PlainText
                         color: f.ink
-                        font.pixelSize: 18
+                        font.pixelSize: Ui.px(18)
                         font.bold: true
                         text: row.modelData.host
                     }
@@ -79,7 +79,7 @@ ColumnLayout {
                         wrapMode: Text.WordWrap
                         color: row.modelData.printer ? "#7ee2a8" : f.ink
                         opacity: row.modelData.printer ? 1 : 0.75
-                        font.pixelSize: 14
+                        font.pixelSize: Ui.px(14)
                         text: row.modelData.printer ? qsTr("✓ Your %1 printer").arg(row.modelData.printer)
                             : row.modelData.answered ? qsTr("A receipt or kitchen printer")
                             : qsTr("Takes print jobs (may be a printer)")
@@ -90,7 +90,7 @@ ColumnLayout {
                     Layout.columnSpan: f.small ? 2 : 1
                     Layout.fillWidth: f.small
                     implicitHeight: 52
-                    font.pixelSize: 15
+                    font.pixelSize: Ui.px(15)
                     text: qsTr("Print Its Address")
                     onClicked: f.pos.printWhoAmI(row.modelData.host)
                 }
@@ -102,7 +102,7 @@ ColumnLayout {
                         objectName: "foundPrinterUse-" + modelData.kind + "-" + row.modelData.host
                         Layout.fillWidth: f.small
                         implicitHeight: 52
-                        font.pixelSize: 15
+                        font.pixelSize: Ui.px(15)
                         text: modelData.text
                         onClicked: f.pos.setupAddPrinter(modelData.kind,
                                                          row.modelData.port === 9100 ? row.modelData.host

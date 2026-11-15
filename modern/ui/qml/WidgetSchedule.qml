@@ -47,16 +47,16 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                PosButton { text: "‹"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) - 1) } }
+                PosButton { text: "‹"; font.pixelSize: Ui.px(22); implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) - 1) } }
                 Label {
                     textFormat: Text.PlainText
                     text: w.info.title ?? ""
-                    font.pixelSize: 22
+                    font.pixelSize: Ui.px(22)
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     Layout.preferredWidth: 220
                 }
-                PosButton { text: "›"; font.pixelSize: 22; implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) + 1) } }
+                PosButton { text: "›"; font.pixelSize: Ui.px(22); implicitWidth: 56; onClicked: { w.pickedDay = 0; w.pos.setScheduleWeek((w.info.week ?? 0) + 1) } }
                 Item { Layout.fillWidth: true }
                 Label {
                     textFormat: Text.PlainText
@@ -95,7 +95,7 @@ Item {
                                 textFormat: Text.PlainText
                                 text: dayBox.modelData.label
                                 font.bold: true
-                                font.pixelSize: 15
+                                font.pixelSize: Ui.px(15)
                                 Layout.alignment: Qt.AlignHCenter
                             }
                             Repeater {
@@ -112,12 +112,12 @@ Item {
                                         anchors.fill: parent
                                         anchors.margins: 5
                                         Label { textFormat: Text.PlainText; text: chip.modelData.name; font.bold: true; width: parent.width; elide: Text.ElideRight }
-                                        Label { textFormat: Text.PlainText; text: chip.modelData.time; font.pixelSize: 12; width: parent.width; elide: Text.ElideRight }
+                                        Label { textFormat: Text.PlainText; text: chip.modelData.time; font.pixelSize: Ui.px(12); width: parent.width; elide: Text.ElideRight }
                                         Label {
                                             textFormat: Text.PlainText
                                             visible: chip.modelData.shortRest ?? false
                                             text: qsTr("Short rest")
-                                            font.pixelSize: 11
+                                            font.pixelSize: Ui.px(11)
                                             font.bold: true
                                             color: "#ffb74d"
                                             width: parent.width
@@ -127,7 +127,7 @@ Item {
                                             textFormat: Text.PlainText
                                             visible: chip.modelData.note !== ""
                                             text: chip.modelData.note
-                                            font.pixelSize: 11
+                                            font.pixelSize: Ui.px(11)
                                             opacity: 0.7
                                             width: parent.width
                                             elide: Text.ElideRight
@@ -149,7 +149,7 @@ Item {
                 Label {
                     textFormat: Text.PlainText
                     text: w.chosen ? w.chosen.name + "  ·  " + w.chosen.time : ""
-                    font.pixelSize: 17
+                    font.pixelSize: Ui.px(17)
                     font.bold: true
                     Layout.fillWidth: true
                 }

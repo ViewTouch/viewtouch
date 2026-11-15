@@ -83,6 +83,8 @@ struct TerminalConfig {
     // Button and check text this much bigger here (percent; 0 = normal). A
     // person's own text size wins while they're logged in.
     int textSize = 0;
+    // The text effect here ("none", "embossed", "outline"; empty: the store's).
+    std::string textEffect;
     // Status colors (tables, kitchen tickets) that color-blind eyes tell
     // apart, here; a person's own setting adds to it.
     bool colorSafe = false;
@@ -366,6 +368,9 @@ struct PosSettings {
     // How every screen looks: "classic" (raised buttons, textures) or
     // "modern" (flat, bordered, the Inter font). See Layout::useStyle.
     std::string style = "classic";
+    // Keys' and labels' text: plain ("none" or empty), raised ("embossed")
+    // or with an edge ("outline"). A screen's or a person's own wins.
+    std::string textEffect;
     // Phones and tablets get the store's newer app by themselves while
     // nobody is logged in on them (Android still asks before installing).
     bool screensUpdate = true;

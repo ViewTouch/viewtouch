@@ -502,7 +502,7 @@ Item {
                       : w.partySize > 0 ? qsTr("Now touch a table, or several to push together.")
                       : w.picked.length > 0 ? qsTr("%1 picked. Touch a party to seat or hold, or mark them.").arg(w.picked.join(", "))
                       : qsTr("Touch a party or Walk-in, then their table.")
-                color: w.pickedSeats > 0 && w.pickedSeats < w.partySize ? "#f5b940" : Ui.muted
+                color: w.pickedSeats > 0 && w.pickedSeats < w.partySize ? Ui.warn : Ui.muted
             }
             // Rush Radar: the kitchen about to back up. Seating more now makes
             // it worse; a few minutes more at the bar or the door helps.
@@ -513,7 +513,7 @@ Item {
                 Layout.preferredHeight: hostRushCol.implicitHeight + w.unit * 0.6
                 radius: 8
                 color: "#3a2e10"
-                border.color: "#f5b940"
+                border.color: Ui.warn
                 ColumnLayout {
                     id: hostRushCol
                     anchors.fill: parent

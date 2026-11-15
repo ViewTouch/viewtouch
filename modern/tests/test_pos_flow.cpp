@@ -8038,6 +8038,32 @@ TEST_CASE("Every tap handler on a page ignores the keyboard's touches", "[ui][li
     CHECK(handlers >= 18);
 }
 
+TEST_CASE("Screens take their signal colors and text sizes from Ui, so text size and color-safe reach them", "[ui][lint]")
+{
+    const QDir qml(QStringLiteral(VTM_SEED_DIR) + u"/../ui/qml"_s);
+    // The page editor's own panels (a manager's desk tool) keep fixed sizes.
+    const QStringList editor{u"Inspector.qml"_s, u"FieldEditor.qml"_s, u"LayoutGallery.qml"_s, u"PagePreview.qml"_s,
+                             u"PagePanel.qml"_s, u"EditLayer.qml"_s, u"ColorPicker.qml"_s, u"StressPanel.qml"_s,
+                             u"EditorStyle.qml"_s, u"ActionListEditor.qml"_s, u"EditorToolbar.qml"_s, u"PageView.qml"_s,
+                             u"PhoneScreens.qml"_s, u"Ui.qml"_s};
+    const QRegularExpression literalSize(uR"(\bpixelSize:\s*\d+(\.\d+)?\s*(;|$|\}))"_s, QRegularExpression::MultilineOption);
+    int files = 0;
+    for (const QString &name : qml.entryList({u"*.qml"_s})) {
+        QFile f(qml.filePath(name));
+        REQUIRE(f.open(QIODevice::ReadOnly));
+        const QString text = QString::fromUtf8(f.readAll());
+        INFO(name.toStdString());
+        if (name != u"Ui.qml"_s && name != u"WidgetDecor.qml"_s) {
+            CHECK_FALSE(text.contains(u"\"#f5b940\""_s));   // Ui.warn
+            CHECK_FALSE(text.contains(u"\"#ff8a80\""_s));   // Ui.returning
+        }
+        if (!editor.contains(name))
+            CHECK_FALSE(text.contains(literalSize));        // Ui.px(16), Ui.fontMd...
+        ++files;
+    }
+    CHECK(files > 100);
+}
+
 TEST_CASE("UI: after the kiosk is used, staff can open its orders and they stay", "[flow][ui][kiosk][kioskstaff]")
 {
     Screen s;
@@ -11860,4 +11886,85 @@ TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and co
     tap(u"variant-M|Red"_s);
     REQUIRE(s.pos.lines().size() == 1);
     CHECK(s.pos.lines().first().toMap()[u"name"_s].toString().contains(u"M, Red"_s));
+}
+
+namespace {
+
+// Text spilling out of its box (not elided, not shrunk to fit): words cut
+// off or over what's beside them. Only text inside the window counts.
+void spillReport(QQuickItem *item, QQuickWindow *window, QStringList *out)
+{
+    if (!item->isVisible() || item->opacity() <= 0.01)
+        return;
+    if (QByteArray(item->metaObject()->className()).startsWith("QQuickText") && !item->inherits("QQuickTextInput")
+        && !item->inherits("QQuickTextEdit")) {
+        const QString text = item->property("text").toString();
+        const qreal w = item->width(), h = item->height();
+        const qreal cw = item->property("contentWidth").toReal(), ch = item->property("contentHeight").toReal();
+        const bool elides = item->property("elide").toInt() != 0;
+        const bool fits = item->property("fontSizeMode").toInt() != 0;
+        const QRectF r = item->mapRectToScene(QRectF(0, 0, w, h));
+        const bool inWindow = r.intersects(QRectF(0, 0, window->width(), window->height()));
+        if (!text.trimmed().isEmpty() && w > 4 && h > 4 && inWindow && !elides && !fits
+            && (cw > w + 3 || (ch > h * 1.35 + 3 && item->property("wrapMode").toInt() != 0)))
+            out->append(u"spills \"%1\" (%2x%3 in %4x%5)"_s.arg(text.left(30)).arg(qRound(cw)).arg(qRound(ch))
+                            .arg(qRound(w)).arg(qRound(h)));
+    }
+    for (QQuickItem *child : item->childItems())
+        spillReport(child, window, out);
+}
+
+} // namespace
+
+TEST_CASE("Text size: every page at Small and Largest, in Classic and Modern: words stay in their boxes", "[ui][textsize]")
+{
+    QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
+    REQUIRE(f.open(QIODevice::ReadOnly));
+    const auto modernTheme = layout::Theme::fromJson(QJsonDocument::fromJson(f.readAll()).object());
+    QStringList ids;
+    const layout::Layout seed = seedLayout();
+    for (const QString &file : QDir(QStringLiteral(VTM_SEED_DIR "/pages")).entryList({u"*.json"_s}))
+        if (const layout::Page *p = seed.page(file.chopped(5)); p && p->variantOf.isEmpty())
+            ids << file.chopped(5);
+    const QByteArray only = qgetenv("VTM_TEXT_ONLY");   // e.g. "150 modern"
+    const QStringList shots{u"login"_s, u"index-lunch"_s, u"settle"_s, u"manager"_s, u"tables"_s, u"admin-settings"_s, u"reports"_s};
+    QStringList report;
+    for (const int size : {150, 90})
+        for (const char *style : {"classic", "modern"}) {
+            const QString where = u"%1 %2"_s.arg(size).arg(QLatin1String(style));
+            if (!only.isEmpty() && !where.contains(QString::fromLocal8Bit(only)))
+                continue;
+            Screen s(false, 1280, 800);
+            if (std::string_view(style) == "modern") {
+                layout::Layout modern = seedLayout();
+                REQUIRE(modern.useStyle(u"modern"_s, modernTheme));
+                s.c.replaceLayout(modern);
+            }
+            REQUIRE(s.pos.loginWithPin(u"1234"_s));
+            REQUIRE(s.pos.setMyLook(size, QString()));
+            REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+            for (const char *item : {"soda", "caesar", "brisket"})
+                s.pos.addItem(QString::fromLatin1(item));
+            if (s.pos.choosingInfo()[u"active"_s].toBool())
+                s.pos.finishChoosing();
+            for (const QString &id : ids) {
+                if (!s.c.jumpTo(id))
+                    continue;
+                QTest::qWait(60);
+                QStringList found;
+                spillReport(s.window->contentItem(), s.window, &found);
+                found.removeDuplicates();
+                for (const QString &x : found)
+                    report << where + u" | "_s + id + u" | "_s + x;
+                if (shots.contains(id))
+                    s.shot(QStringLiteral("text%1-%2-%3").arg(size).arg(QLatin1String(style), id).toLatin1().constData());
+            }
+        }
+    if (const QByteArray out = qgetenv("VTM_TEXT_OUT"); !out.isEmpty()) {
+        QFile o(QString::fromLocal8Bit(out));
+        REQUIRE(o.open(QIODevice::WriteOnly | QIODevice::Text));
+        o.write(report.join(u'\n').toUtf8() + "\n");
+    }
+    INFO(report.size() << " found");
+    CHECK(report.isEmpty());
 }

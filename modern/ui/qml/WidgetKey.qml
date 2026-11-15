@@ -21,7 +21,7 @@ Rectangle {
     property real fontScale: 0.42
     // A size for its text shared with the keys beside it (> 0): one size for
     // the row, not each shrunk on its own (a short name looked bigger).
-    property real pixelSize: 0
+    property real pixelSize: Ui.px(0)
     property bool accent: false
     // Held down (half a second): held() instead of clicked(), for keys that say so.
     property bool holdable: false
@@ -60,11 +60,17 @@ Rectangle {
         text: key.text
         color: key.textColor
         font.family: key.keySt.keyFont ?? key.fontFamily
-        // The zone's "Button text size %" (Built-in button look) on top.
+        // The zone's "Button text size %" (Built-in button look) on top, then
+        // the text size of whoever is here: as big as that, but always inside
+        // the key (shrunk to fit, on two lines before that).
         font.pixelSize: (key.pixelSize > 0 ? key.pixelSize : Math.max(10, Math.min(key.height, key.width * 1.2) * key.fontScale))
-                        * (key.keySt.keyTextSize ?? 100) / 100
+                        * (key.keySt.keyTextSize ?? 100) / 100 * Ui.textScale
         font.bold: true
-        fontSizeMode: Text.HorizontalFit
+        style: Ui.textStyle
+        styleColor: Ui.effectColor(key.textColor)
+        wrapMode: key.text.indexOf("\n") >= 0 || Ui.textScale > 1 ? Text.WordWrap : Text.NoWrap
+        maximumLineCount: 2
+        fontSizeMode: Text.Fit
         minimumPixelSize: 10
     }
 

@@ -33,7 +33,7 @@ SearchField {
             textFormat: Text.PlainText
             anchors.centerIn: parent
             text: "✕"
-            font.pixelSize: 20
+            font.pixelSize: Ui.px(20)
             color: f.palette.placeholderText
         }
     }

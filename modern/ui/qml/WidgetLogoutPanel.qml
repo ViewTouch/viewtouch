@@ -45,7 +45,7 @@ Item {
             text: !w.pos || !w.pos.clockedIn ? qsTr("Not clocked in")
                  : w.pos.onBreakSince ? qsTr("On break since %1").arg(w.pos.onBreakSince)
                                       : qsTr("On the clock since %1").arg(w.pos.clockedInSince)
-            color: w.pos && w.pos.clockedIn && !w.pos.onBreakSince ? "#7ee2a8" : "#f5b940"
+            color: w.pos && w.pos.clockedIn && !w.pos.onBreakSince ? "#7ee2a8" : Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.8
             wrapMode: Text.WordWrap
@@ -78,7 +78,7 @@ Item {
             visible: w.pos && w.pos.loggedIn && bank.mode === "serverBank" && (bank.open ?? false)
             Layout.fillWidth: true
             text: qsTr("Cash in your bank: %1").arg(bank.expected ?? "")
-            color: "#f5b940"
+            color: Ui.warn
             font.family: w.face
             font.pixelSize: w.unit * 0.8
         }

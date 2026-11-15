@@ -344,7 +344,7 @@ Rectangle {
                     font.family: k.face
                     Layout.fillWidth: true
                     text: qsTr("Contains: %1").arg((card.modelData.contains ?? []).join(", "))
-                    color: "#ff8a80"
+                    color: Ui.returning
                     font.pixelSize: k.u * 0.65
                     elide: Text.ElideRight
                 }
@@ -1105,7 +1105,7 @@ Rectangle {
                                     font.family: k.face
                                     text: group.modelData.onlyIncluded ? group.modelData.name
                                                                        : group.modelData.name + "  ·  " + group.modelData.rule
-                                    color: group.modelData.done ? k.soft : "#f5b940"
+                                    color: group.modelData.done ? k.soft : Ui.warn
                                     font.pixelSize: k.u * 1.1
                                     font.bold: true
                                 }

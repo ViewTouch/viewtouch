@@ -62,7 +62,7 @@ Dialog {
             visible: severalDialog.preview.length > 0
             text: severalDialog.preview.map(e => e.price ? e.name + " " + menu.pos.currencySymbol + e.price + (e.category !== (menu.category ? menu.category.name : "") ? " (" + e.category + ")" : "")
                                                          : "⚠ " + e.name + " " + qsTr("(no price)")).join("  ·  ")
-            font.pixelSize: 14
+            font.pixelSize: Ui.px(14)
         }
         RowLayout {
             Layout.fillWidth: true

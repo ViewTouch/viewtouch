@@ -18,8 +18,8 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): bigger, and the list behind a key.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(12, Math.min(40, w.width * 0.038))
-                                        : Math.max(12, Math.min(26, w.width * 0.016))
+    readonly property real unit: (narrow ? Math.max(12, Math.min(40, w.width * 0.038))
+                                        : Math.max(12, Math.min(26, w.width * 0.016))) * Ui.textScale
     readonly property real keyH: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
     readonly property real gap: w.unit * 0.3
 

@@ -69,11 +69,11 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the numbers two a row, the lists one a row, scrolled.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: narrow ? Math.max(12, Math.min(w.width / 22, 40))
-                                        : Math.max(12, Math.min(w.width / 60, w.height / 34))
+    readonly property real unit: (narrow ? Math.max(12, Math.min(w.width / 22, 40))
+                                        : Math.max(12, Math.min(w.width / 60, w.height / 34))) * Ui.textScale
     readonly property color muted: Ui.muted
     readonly property color good: "#5fd08a"
-    readonly property color warn: "#f5b940"
+    readonly property color warn: Ui.warn
     readonly property color bad: "#ff8a8f"
 
     // Labor keeps adding up while nothing else happens: once a minute.
@@ -452,7 +452,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 8
-            Label { textFormat: Text.PlainText; text: qsTr("Worth a look today"); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Worth a look today"); font.pixelSize: Ui.px(20); font.bold: true }
             Label {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
@@ -493,7 +493,7 @@ Item {
         padding: 16
         contentItem: ColumnLayout {
             spacing: 8
-            Label { textFormat: Text.PlainText; text: qsTr("Ways to earn more"); font.pixelSize: 20; font.bold: true }
+            Label { textFormat: Text.PlainText; text: qsTr("Ways to earn more"); font.pixelSize: Ui.px(20); font.bold: true }
             Label {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
@@ -525,7 +525,7 @@ Item {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
-                                font.pixelSize: 17
+                                font.pixelSize: Ui.px(17)
                                 font.bold: true
                                 text: tipCard.modelData.title
                             }
@@ -533,7 +533,7 @@ Item {
                                 textFormat: Text.PlainText
                                 visible: text !== ""
                                 color: w.good
-                                font.pixelSize: 16
+                                font.pixelSize: Ui.px(16)
                                 font.bold: true
                                 text: tipCard.modelData.worthText ?? ""
                             }
@@ -543,7 +543,7 @@ Item {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             opacity: 0.85
-                            font.pixelSize: 15
+                            font.pixelSize: Ui.px(15)
                             text: tipCard.modelData.why
                         }
                         RowLayout {

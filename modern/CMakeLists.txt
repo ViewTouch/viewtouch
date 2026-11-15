@@ -369,6 +369,10 @@ if(Qt6_FOUND)
     set(VTM_BURGER ${CMAKE_CURRENT_SOURCE_DIR}/assets/images/burger.png)
     set_source_files_properties(${VTM_BURGER} PROPERTIES QT_RESOURCE_ALIAS burger.png)
     qt_add_resources(vtm_ui "images" PREFIX "/images" FILES ${VTM_BURGER})
+    # Inter (SIL Open Font License, assets/fonts/Inter-LICENSE.txt): the Modern style's font, on every screen.
+    qt_add_resources(vtm_ui "interfont" PREFIX "/fonts" BASE ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter-Regular.ttf ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter-Medium.ttf
+              ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter-SemiBold.ttf ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter-Bold.ttf)
 
     if(NOT ANDROID)
         include(packaging/Packaging.cmake)
