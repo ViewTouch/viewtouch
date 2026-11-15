@@ -16,6 +16,8 @@ Flickable {
     // Every category (an item's color comes from its own).
     property var categories: []
     property PosService pos
+    // A rush (Rush on a truck's order screen): fewer, bigger keys, bigger words.
+    readonly property bool rush: !!pos && !!pos.service && pos.service.rush === true && !compact
     property int setColumns: 0        // the page's columns (0: fit)
     // A phone: buttons about 96 by 56 on the screen, as many across as fit
     // (not stretched to fill the space); screenScale turns screen pixels into the page's.
@@ -102,7 +104,7 @@ Flickable {
     }
     readonly property int columns: sizeWidth > 0 ? Math.max(1, Math.round(width / sizeWidth))
                                  : compact ? Math.max(3, Math.min(6, Math.floor(width / screenPx(96))))
-                                 : setColumns > 0 ? setColumns : fitColumns
+                                 : setColumns > 0 ? setColumns : rush ? Math.max(2, fitColumns - 1) : fitColumns
     readonly property real cellWidth: width / columns
     readonly property real cellHeight: compact && sizeWidth <= 0 ? Math.min(cellWidth * (photos ? 0.95 : 0.7), screenPx(photos ? 96 : 56))
                                      : sizeWidth > 0 ? cellWidth * (photos ? 0.95 : ({ small: 0.62, medium: 0.68, large: 0.72 })[buttonSize])
@@ -331,7 +333,7 @@ Flickable {
                                         // Smaller for a long word, so it never breaks mid-word.
                                         readonly property int longest: cell.isGap ? 4 : Math.max(4, ...cell.modelData.name.split(/\s+/).map(x => x.length))
                                         // Never past what keeps its longest word whole.
-                                        readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData) * mb.textScale
+                                        readonly property real factor: cell.isGap ? 1 : mb.textFactor(cell.modelData) * mb.textScale * (mb.rush ? 1.2 : 1)
                                         font.pixelSize: mb.compact ? Math.max(mb.screenPx(10), Math.min(mb.screenPx(13.5) * factor, cell.width * 1.35 / longest))
                                                       : Math.max(factor < 1 ? 11 : 13,
                                                                  Math.min(Math.min(cell.height * 0.16, cell.width * 0.11) * factor,

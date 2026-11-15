@@ -141,8 +141,8 @@ inline QVariantList storeSections(const QVariantList &fields)
     };
     const Section sections[] = {
         {"store", PosService::tr("The store"), {"storeName", "language", "currencySymbol", "displayLogo"}},
-        {"service", PosService::tr("How you serve"), {"serviceMode", "truckNoLogin", "truckNeedsName", "orderNumbers", "truckSendNew"}},
-        {"receipts", PosService::tr("Receipts"), {"receiptHeader", "receiptFooter", "receiptLogo", "receiptFreeChoices"}},
+        {"service", PosService::tr("How you serve"), {"serviceMode", "truckNoLogin", "truckNeedsName", "orderNumbers", "truckSendNew", "prepLowAt", "rushNoReceipt", "menuBoardOrders", "returnDays", "cashierReturns"}},
+        {"receipts", PosService::tr("Receipts"), {"receiptHeader", "receiptFooter", "receiptLogo", "receiptFreeChoices", "receiptBarcode"}},
         {"startPages", PosService::tr("Start pages"),
          {"startPage.server", "startPage.bartender", "startPage.cashier", "startPage.host", "startPage.manager"}},
         {"cash", PosService::tr("Cash"), {"cashMode", "terminalsHaveDrawer", "checkoutNeedsClosedChecks", "blindDrawerCount", "cashDenominations",
@@ -194,7 +194,7 @@ inline QVariantList storeSections(const QVariantList &fields)
         {"takeoutMinutes", none, 5}, {"deliveryMinutes", none, 5}, {"minutesPerOrderWaiting", none, 1},
         {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"phoneLockSeconds", {}, 1}, {"tableLongMinutes", {}, 5},
         {"kioskIdleSeconds", {}, 10}, {"kioskSizePercent", {}, 5}, {"waitMinutesPerParty", {}, 1},
-        {"orderWaitMinutes", {}, 1}, {"checkBackMinutes", {}, 5}, {"busMinutes", {}, 1},
+        {"orderWaitMinutes", {}, 1}, {"checkBackMinutes", {}, 5}, {"busMinutes", {}, 1}, {"prepLowAt", {}, 1}, {"returnDays", PosService::tr("Any time"), 5},
     };
     QHash<QString, QVariantMap> byPath;
     for (const QVariant &f : fields)

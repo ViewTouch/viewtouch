@@ -127,7 +127,7 @@
       "rect": {
         "x": 16,
         "y": 108,
-        "w": 1888,
+        "w": 1408,
         "h": 92
       },
       "shape": "rect",
@@ -147,6 +147,59 @@
       "style": {
         "normal": {
           "fontSize": 32
+        }
+      }
+    },
+    {
+      "id": "flow-return",
+      "kind": "button",
+      "rect": {
+        "x": 1440,
+        "y": 108,
+        "w": 224,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Return\u2026",
+      "actions": [
+        {
+          "type": "command",
+          "name": "cancelReturn"
+        },
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "return"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 28
+        }
+      }
+    },
+    {
+      "id": "flow-pricecheck",
+      "kind": "button",
+      "rect": {
+        "x": 1680,
+        "y": 108,
+        "w": 224,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Price Check",
+      "actions": [
+        {
+          "type": "command",
+          "name": "priceCheck"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 28
         }
       }
     },

@@ -71,6 +71,8 @@ class LayoutController : public QObject {
     // A Now Serving board (a TV for guests: --screen nowServing, or Manager ->
     // Terminals): the board covers the pages.
     Q_PROPERTY(bool nowServingScreen READ nowServingScreen NOTIFY formFactorChanged)
+    // A menu board (a TV for guests: --screen menuBoard, or Manager -> Terminals).
+    Q_PROPERTY(bool menuBoardScreen READ menuBoardScreen NOTIFY formFactorChanged)
     // The screen stays on (tablets, registers); a phone's sleeps like a phone's.
     Q_PROPERTY(bool screenStaysOn READ screenStaysOn NOTIFY formFactorChanged)
     // Breakfast, lunch, dinner... now (zones can show only during one).
@@ -127,6 +129,7 @@ public:
     bool editing() const { return editing_; }
     bool asleep() const { return asleep_; }
     bool nowServingScreen() const;
+    bool menuBoardScreen() const;
     // The touch that wakes the screen does nothing else (Main.qml's dim layer takes it).
     Q_INVOKABLE void wake();
     // A short two-note chime (the Now Serving board: an order called), played
@@ -228,6 +231,10 @@ public:
     Q_INVOKABLE void goBack();
     Q_INVOKABLE void goHome();
     Q_INVOKABLE bool jumpTo(const QString &pageId);
+    // The order screen (the sale being rung), from wherever.
+    Q_INVOKABLE void goToOrder();
+    // Price check's Ring It In: the item just checked, rung in after all.
+    Q_INVOKABLE void ringInPriceChecked();
     // A category's items: the menu page (role "menu", else "menu-all") on it.
     Q_INVOKABLE bool openCategory(const QString &categoryId);
     bool menuScreensHandBuilt() const;
@@ -394,6 +401,8 @@ private:
     bool timeClockScreen_ = false;   // --screen timeClock
     bool nowServingScreen_ = false;  // --screen nowServing
     bool nowServingShown_ = false;
+    bool menuBoardScreen_ = false;   // --screen menuBoard
+    bool menuBoardShown_ = false;
     bool autoFormFactor_ = false;
     bool phoneSizedWindow_ = false;
     QString exportDir_;

@@ -101,6 +101,32 @@ struct MenuItem {
     int ticketCapacity = 0;
     std::int64_t eventAt = 0;
     int ticketsSoldBefore = 0;
+    // Sizes and colors (a shop's T-shirt): up to two lists ("Size": S M L,
+    // "Color": Black Red), and each one sold: its key ("M|Red", the values
+    // in the lists' order), barcode, SKU, price (0: the item's) and whether
+    // it's sold at all. With Track stock on, each counts its own.
+    struct VariantAxis {
+        std::string name;
+        std::vector<std::string> values;
+        bool operator==(const VariantAxis &) const = default;
+    };
+    struct Variant {
+        std::string key;
+        std::string barcode;
+        std::string sku;
+        Money price;
+        bool hidden = false;
+        bool operator==(const Variant &) const = default;
+    };
+    std::vector<VariantAxis> variantAxes;
+    std::vector<Variant> variants;
+    const Variant *variant(const std::string &key) const
+    {
+        for (const Variant &v : variants)
+            if (v.key == key)
+                return &v;
+        return nullptr;
+    }
 
     Money priceDuring(const std::string &mealPeriod) const
     {

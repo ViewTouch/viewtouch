@@ -122,7 +122,12 @@ ApplicationWindow {
     onEditingChanged: if (!editing) pageView.forceActiveFocus()
 
     // Something over the whole screen (see the page's `enabled`).
-    readonly property bool pageCovered: selfOrder.visible || nowServing.visible || root.controller.asleep || cardWait.visible
+    // Someone logged in at a board for guests (not a food truck's Counter, always there).
+    readonly property bool someoneHere: {
+        const p = root.controller.pos as PosService
+        return !!p && p.loggedIn && !(p.service && p.service.counter)
+    }
+    readonly property bool pageCovered: selfOrder.visible || nowServing.visible || menuBoard.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
                                         || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible || exemptSheet.visible
                                         || TouchGuard.sheetOpen || reasonSheet.visible || handoffSheet.visible
@@ -1108,11 +1113,25 @@ ApplicationWindow {
         z: 56
         property bool peeking: false
         visible: !root.editing && root.controller.nowServingScreen && root.controller.pos !== null
-                 && !peeking && !(root.controller.pos as PosService).loggedIn
+                 && !peeking && !root.someoneHere
         pos: root.controller.pos as PosService
         onPeek: { peeking = true; peekTimer.restart() }
         onChime: root.controller.chime()
         Timer { id: peekTimer; interval: 60000; onTriggered: nowServing.peeking = false }
+    }
+
+    // A menu board (a TV for guests): the menu, sold-out items crossed off.
+    MenuBoard {
+        id: menuBoard
+        objectName: "menuBoard"
+        anchors.fill: parent
+        z: 56
+        property bool peeking: false
+        visible: !root.editing && root.controller.menuBoardScreen && root.controller.pos !== null
+                 && !peeking && !root.someoneHere
+        pos: root.controller.pos as PosService
+        onPeek: { peeking = true; boardPeekTimer.restart() }
+        Timer { id: boardPeekTimer; interval: 60000; onTriggered: menuBoard.peeking = false }
     }
 
     // Screen saver: dimmed after no touches; the first touch only wakes it.

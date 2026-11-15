@@ -3,6 +3,7 @@
 #include <QString>
 
 #include <algorithm>
+#include <cstdlib>
 #include <sstream>
 
 using namespace vt::core;
@@ -125,8 +126,9 @@ Document receipt(const Check &check, const TicketContext &ctx)
                     d.text("  " + m.displayName());
             continue;
         }
-        const std::string qty = l.quantity > 1 ? std::to_string(l.quantity) + " x " : "";
-        d.columns(qty + l.displayName(), ctx.money(qualifiedPrice(l.unitPrice, l.qualifier) * l.quantity));
+        const std::string qty = std::abs(l.quantity) > 1 ? std::to_string(std::abs(l.quantity)) + " x " : "";
+        const std::string back = l.isReturn() ? upper(ctx.tr("Return")) + " " : "";
+        d.columns(back + qty + l.displayName(), ctx.money(qualifiedPrice(l.unitPrice, l.qualifier) * l.quantity));
         // A fee says what it is (fee laws: it mustn't look like a tip).
         if (l.itemId == "fee:delivery")
             d.text("  " + (ctx.settings.deliveryFeeToDriver ? ctx.tr("Goes to the driver.")
@@ -219,6 +221,11 @@ Document receipt(const Check &check, const TicketContext &ctx)
         d.center(ctx.tr("Thank you!"));
     for (const std::string &l : footer)
         d.center(l);
+    // A shop's: the sale's barcode, scanned to bring it up for a return.
+    if (ctx.settings.receiptBarcode && ctx.settings.serviceMode == "retail" && check.id > 0 && !check.training) {
+        d.blank();
+        d.barcode("R" + std::to_string(check.id));
+    }
     return d;
 }
 

@@ -374,6 +374,18 @@ struct PosSettings {
     int screenSaverMinutes = 10;
     // A table seated longer than this is marked on the floor plan.
     int tableLongMinutes = 90;
+    // A prep count this low shows how many are left on its button.
+    int prepLowAt = 10;
+    // During a rush, no receipt is printed unless asked for.
+    bool rushNoReceipt = true;
+    // The menu board shows the orders that are ready beside the menu.
+    bool menuBoardOrders = false;
+    // A retail receipt ends with a barcode of its sale, scanned for a return.
+    bool receiptBarcode = true;
+    // Items come back within this many days of the sale (0: any time).
+    int returnDays = 30;
+    // Cashiers take returns with a receipt; without one it's a manager's.
+    bool cashierReturns = false;
     // A table seated this long with nothing ordered: its server is reminded.
     int orderWaitMinutes = 8;
     // This long since the server last sent, took a payment or checked on the table: reminded.
@@ -605,6 +617,19 @@ struct PosSettings {
         bool operator==(const Section &) const = default;
     };
     std::vector<Section> sections;
+    // Today's prep counts on a truck: how many were made of an item, and how
+    // many have been sent since (Prep). At none left it is sold out until more
+    // are made; End of Day clears them.
+    struct PrepCount {
+        std::string itemId;
+        int made = 0;
+        int sold = 0;
+        bool operator==(const PrepCount &) const = default;
+    };
+    std::vector<PrepCount> prepCounts;
+    // Rush: every screen skips the tip question and the receipt, Pay sends
+    // first, and the menu keys get bigger. Until turned off, or End of Day.
+    bool rush = false;
     std::vector<ChecklistTick> checklistTicks;
     // Kitchen stations, each with its own screen (Manager -> Menu: where an item is made).
     std::vector<Station> stations;

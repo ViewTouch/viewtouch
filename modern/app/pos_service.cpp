@@ -356,9 +356,13 @@ QString PosService::barcodeProblem(const QStringList &codes, const std::string &
     for (const QString &c : codes) {
         if (!shape.match(c).hasMatch())
             return tr("A barcode is 4 to 40 letters and digits: \"%1\".").arg(c);
-        for (const MenuItem &m : s_->menu)
+        for (const MenuItem &m : s_->menu) {
             if (m.id != itemId && std::ranges::any_of(m.barcodes, [&](const std::string &b) { return sameBarcode(b, ss(c)); }))
                 return tr("%1 already has the barcode %2.").arg(qs(m.name), c);
+            for (const MenuItem::Variant &v : m.variants)   // a size and color's (any item's)
+                if (!v.barcode.empty() && sameBarcode(v.barcode, ss(c)))
+                    return tr("%1 (%2) already has the barcode %3.").arg(qs(m.name), variantLabel(v.key), c);
+        }
     }
     return {};
 }
@@ -1353,6 +1357,11 @@ bool PosService::addItem(const QString &idOrName)
         if (!target || !c.addModifier(target->id, modifier, q))
             return fail(tr("Order an item before adding %1.").arg(qs(item->name)));
         selectedLine_ = target->id;
+    } else if (!item->variants.empty() && variantNext_.empty()) {
+        // Sizes and colors: which one (the grid; then addVariant).
+        variantAsk_ = qs(item->id);
+        emit checkChanged();
+        return true;
     } else if (item->byWeight && entry_.isEmpty()) {
         // Sold by weight: the Weigh page asks how much (then addWeighed).
         weighing_ = qs(item->id);
@@ -1363,10 +1372,18 @@ bool PosService::addItem(const QString &idOrName)
         if (serviceMode() == u"retail")
             priced.kitchenHide = true;   // a shop: nothing for a kitchen
         priced.price = extra(item->priceFor(currentMealPeriod(), c.type == CheckType::Takeout, c.type == CheckType::Delivery));
+        // A size and color: its own price, and its name on the line.
+        const std::string variant = std::exchange(variantNext_, std::string());
+        if (const MenuItem::Variant *v = variant.empty() ? nullptr : item->variant(variant)) {
+            if (v->price.cents() > 0)
+                priced.price = extra(v->price);
+            priced.name += " (" + ss(variantLabel(variant)) + ")";
+        }
         if (item->eventAt > 0)   // the ticket says when
             priced.name += " (" + ss(i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(item->eventAt),
                                                          u"ddd MMM d, h:mm AP"_s)) + ")";
         OrderLine &line = c.addItem(priced, q);
+        line.variant = variant;
         line.seat = seat_;   // (again below: a weighed one may be taken off first)
         if (const auto hits = allergyHits(c, line); !hits.empty())
             emit notice(tr("⚠ %1 contains %2: the guest is allergic. The kitchen is told.")
@@ -1526,6 +1543,8 @@ bool PosService::setLineQuantity(qint64 lineId, int quantity)
         return fail(tr("%1 was sent: Again adds more, Void takes it off.").arg(qs(l->displayName())));
     if (l->weight > 0 || l->isGiftCard() || l->isShare())
         return fail(tr("%1 can't have a quantity.").arg(qs(l->displayName())));
+    if (l->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     quantity = std::clamp(quantity, 1, 99);
     if (quantity == l->quantity)
         return true;
@@ -1655,6 +1674,8 @@ bool PosService::repeatLine(qint64 lineId)
     const OrderLine *l = c ? c->line(lineId ? lineId : selectedLine_) : nullptr;
     if (!l || l->isComment() || l->isGiftCard())
         return fail(tr("Touch an item on the check first."));
+    if (l->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     const MenuItem *m = findItem(qs(l->itemId));
     if (!m || !m->available)
         return fail(tr("%1 is sold out.").arg(qs(l->name)));
@@ -2054,10 +2075,13 @@ bool PosService::closeCheck()
     const Totals t = c->totals(s_->settings.tax);
     if (t.balance.cents() > 0)
         return fail(tr("%1 is still due.").arg(format(t.balance)));
+    if (const Money back = refundDueOn(*c); back.cents() > 0)
+        return fail(tr("%1 is owed back: give it as cash, to the card or as store credit.").arg(format(back)));
     if (c->training)
         return closePractice(*c);
-    // (A cash tip handed over for the server is cash here too.)
-    const bool cash = t.cashPaid.cents() > 0 || c->cashTip.cents() > 0;
+    // (A cash tip handed over for the server is cash here too; cash given
+    // back on a return comes out of it.)
+    const bool cash = t.cashPaid.cents() != 0 || c->cashTip.cents() > 0;
     // With server banks the cash stays with whoever closes the check (their
     // bank starts with the first cash sale); otherwise it goes in this
     // terminal's drawer, which must be open.
@@ -2100,6 +2124,8 @@ bool PosService::closeCheck()
     s_->kitchenAgain(c->id);   // closed again after a reopen: looked at afresh
     s_->closedToday.push_back(*c);
     lastClosedId_ = c->id;
+    if (c->hasReturns())
+        markReturned(*c);
     receiptAfterClosing(s_->closedToday.back());   // printed, or offered (this terminal's choice)
     const qint64 id = c->id;
     const bool table = c->type == CheckType::DineIn && !c->training;
@@ -2264,6 +2290,9 @@ QVariantMap PosService::checkInfo() const
         {u"taxExempt"_s, qs(c->taxExempt)},
         // Cash Exact and $20 on the order screen: tabs, to-go and quick sales.
         {u"fastCash"_s, fastCashFor(*c)},
+        // A return: what's owed back, and the card it can go back to.
+        {u"refundDue"_s, refundDueOn(*c).cents() > 0 ? format(refundDueOn(*c)) : QString()},
+        {u"refundCard"_s, [&] { const Payment *p = returnCard(*c, nullptr); return p ? (p->last4.empty() ? qs(p->tenderName) : u"%1 %2"_s.arg(qs(p->tenderName), qs(p->last4))) : QString(); }()},
         // Check ID: the drink just rung, and the birthday that's old enough.
         {u"idAsk"_s, idPending(*c) ? QVariantMap{
              {u"item"_s, [&] { const OrderLine *l = c->line(idAskLine_); return l ? qs(l->displayName()) : QString(); }()},
@@ -2317,7 +2346,9 @@ QVariantList PosService::lines() const
             {u"price"_s, l.isComment() ? QString() : format(l.total())}, {u"comment"_s, l.isComment()},
             {u"sent"_s, l.sent}, {u"voided"_s, l.voided}, {u"modifiers"_s, mods}, {u"note"_s, qs(l.note)},
             // − / + / Again apply (not a comment, gift card or weighed item).
-            {u"countable"_s, !l.isComment() && !l.isGiftCard() && !l.isFee() && !l.voided && l.weight == 0 && !l.isShare()},
+            {u"countable"_s, !l.isComment() && !l.isGiftCard() && !l.isFee() && !l.voided && l.weight == 0 && !l.isShare() && !l.isReturn()},
+            // Coming back (a return): why, and whether it goes back on the shelf.
+            {u"returning"_s, l.isReturn()}, {u"restock"_s, l.restock}, {u"returnReason"_s, qs(l.returnReason)},
             {u"fee"_s, l.isFee()},
             {u"shared"_s, l.isShare()},
             {u"selected"_s, qint64(l.id) == selectedLine_},

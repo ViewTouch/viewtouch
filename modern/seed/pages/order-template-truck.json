@@ -222,6 +222,86 @@
       }
     },
     {
+      "id": "tab-prep",
+      "kind": "button",
+      "rect": {
+        "x": 944,
+        "y": 108,
+        "w": 176,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Prep",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "prep-counts"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      }
+    },
+    {
+      "id": "tab-rush-on",
+      "kind": "button",
+      "rect": {
+        "x": 1136,
+        "y": 108,
+        "w": 176,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Rush",
+      "actions": [
+        {
+          "type": "command",
+          "name": "rushOn"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26
+        }
+      },
+      "showWhen": {
+        "rush": false
+      }
+    },
+    {
+      "id": "tab-rush-off",
+      "kind": "button",
+      "rect": {
+        "x": 1136,
+        "y": 108,
+        "w": 176,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "RUSH \u2713",
+      "actions": [
+        {
+          "type": "command",
+          "name": "rushOff"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fontSize": 26,
+          "fill": "#c25a0c"
+        }
+      },
+      "showWhen": {
+        "rush": true
+      }
+    },
+    {
       "id": "order-list",
       "kind": "orderList",
       "rect": {
@@ -393,6 +473,10 @@
       "behavior": "blink",
       "label": "Pay",
       "actions": [
+        {
+          "type": "command",
+          "name": "rushSend"
+        },
         {
           "type": "jump",
           "mode": "push",

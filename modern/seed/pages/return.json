@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "return",
+  "name": "Return Items",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Return items"
+    },
+    {
+      "id": "return-picker",
+      "kind": "returnPicker",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 952
+      },
+      "shape": "rect",
+      "behavior": "none"
+    }
+  ]
+}

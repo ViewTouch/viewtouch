@@ -24,11 +24,11 @@ const QStringList &PosSession::stateKeys()
         u"terminalName"_s, u"loggedIn"_s, u"userName"_s, u"userRole"_s, u"permissions"_s, u"clockedIn"_s,
         u"clockedInSince"_s, u"storeName"_s, u"currencySymbol"_s, u"customColors"_s, u"priceChanges"_s, u"pinLength"_s, u"entry"_s, u"entryAmount"_s,
         u"entryGuests"_s, u"textEntry"_s, u"pendingQualifier"_s, u"pendingTable"_s, u"hasCheck"_s, u"check"_s, u"tableChecks"_s, u"undoText"_s,
-        u"lines"_s, u"totals"_s, u"payments"_s, u"selectedLine"_s, u"selectedPayment"_s, u"openChecks"_s, u"openChecksShared"_s, u"openChecksViewer"_s, u"floor"_s, u"deliveries"_s, u"drivers"_s, u"popularItems"_s, u"myUsuals"_s, u"stockLeft"_s, u"dashboard"_s, u"lossAlerts"_s, u"coach"_s, u"checklists"_s,
+        u"lines"_s, u"totals"_s, u"payments"_s, u"selectedLine"_s, u"selectedPayment"_s, u"openChecks"_s, u"openChecksShared"_s, u"openChecksViewer"_s, u"floor"_s, u"deliveries"_s, u"drivers"_s, u"popularItems"_s, u"myUsuals"_s, u"stockLeft"_s, u"prepCounts"_s, u"dashboard"_s, u"lossAlerts"_s, u"coach"_s, u"checklists"_s,
         u"checkFilter"_s, u"kitchenTickets"_s, u"rushRadar"_s, u"drawer"_s, u"day"_s, u"days"_s, u"adminRevision"_s,
         u"tipsOwed"_s, u"mealPeriods"_s, u"pairing"_s, u"screenMode"_s, u"service"_s, u"truckOrders"_s, u"terminalLook"_s, u"terminalKeyboard"_s, u"terminalGuestScreen"_s, u"terminalStartCategory"_s, u"cardReader"_s, u"readerToken"_s, u"counterCharge"_s, u"receiptOffer"_s,
-        u"closedChecks"_s, u"staff"_s, u"checkHistory"_s, u"choosing"_s, u"weighing"_s, u"setup"_s, u"soldOut"_s, u"menuItems"_s, u"menuCategories"_s, u"choiceGroups"_s, u"menuTemplates"_s, u"menuProblems"_s, u"menuUndoText"_s, u"cardAlerts"_s, u"onBreakSince"_s,
-        u"customers"_s, u"customer"_s, u"giftCard"_s, u"waitlist"_s, u"customerPrompt"_s, u"schedule"_s, u"nextShift"_s, u"rangeReport"_s, u"expoTickets"_s, u"approval"_s, u"training"_s, u"autoLogoutMinutes"_s, u"phoneLockSeconds"_s, u"screenSaverMinutes"_s, u"storeImages"_s, u"storeLogo"_s, u"kitchenStations"_s, u"kitchenStation"_s, u"kitchenSound"_s, u"messages"_s, u"handoff"_s, u"network"_s, u"printerAlerts"_s, u"language"_s, u"userPrefs"_s, u"storeLanguage"_s, u"selfOrder"_s, u"kioskMenu"_s, u"clockInJobs"_s, u"cashTipsAsk"_s, u"reasonAsk"_s, u"timeClock"_s, u"receiving"_s, u"stockCounting"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"legacyImport"_s, u"printerSearch"_s,
+        u"closedChecks"_s, u"staff"_s, u"checkHistory"_s, u"choosing"_s, u"weighing"_s, u"variantAsk"_s, u"priceCheck"_s, u"setup"_s, u"soldOut"_s, u"menuItems"_s, u"menuCategories"_s, u"choiceGroups"_s, u"menuTemplates"_s, u"menuProblems"_s, u"menuUndoText"_s, u"cardAlerts"_s, u"onBreakSince"_s,
+        u"customers"_s, u"customer"_s, u"giftCard"_s, u"waitlist"_s, u"customerPrompt"_s, u"schedule"_s, u"nextShift"_s, u"rangeReport"_s, u"expoTickets"_s, u"approval"_s, u"training"_s, u"autoLogoutMinutes"_s, u"phoneLockSeconds"_s, u"screenSaverMinutes"_s, u"storeImages"_s, u"storeLogo"_s, u"kitchenStations"_s, u"kitchenStation"_s, u"kitchenSound"_s, u"messages"_s, u"handoff"_s, u"network"_s, u"printerAlerts"_s, u"language"_s, u"userPrefs"_s, u"storeLanguage"_s, u"selfOrder"_s, u"kioskMenu"_s, u"menuBoard"_s, u"clockInJobs"_s, u"cashTipsAsk"_s, u"reasonAsk"_s, u"timeClock"_s, u"receiving"_s, u"stockCounting"_s, u"wasteLog"_s, u"storeCheck"_s, u"prepLabels"_s, u"checkSearch"_s, u"returnSale"_s, u"legacyImport"_s, u"printerSearch"_s,
     };
     return keys;
 }
@@ -83,13 +83,13 @@ QVariantMap PosSession::snapshot() const
         {u"pendingQualifier"_s, pendingQualifier()}, {u"nextQuantity"_s, nextQuantity()}, {u"pendingTable"_s, pendingTable()},
         {u"hasCheck"_s, hasCheck()}, {u"check"_s, checkInfo()}, {u"tableChecks"_s, tableChecks()}, {u"undoText"_s, undoText()}, {u"lines"_s, lines()}, {u"totals"_s, totals()},
         {u"payments"_s, payments()}, {u"selectedLine"_s, selectedLine()}, {u"selectedPayment"_s, selectedPayment()},
-        {u"openChecks"_s, openChecks()}, {u"openChecksShared"_s, openChecksShared()}, {u"openChecksViewer"_s, openChecksViewer()}, {u"floor"_s, floor()}, {u"deliveries"_s, deliveries()}, {u"drivers"_s, drivers()}, {u"popularItems"_s, popularItems()}, {u"myUsuals"_s, myUsuals()}, {u"stockLeft"_s, stockLeft()}, {u"dashboard"_s, dashboard()}, {u"lossAlerts"_s, lossAlerts()}, {u"coach"_s, coach()}, {u"checklists"_s, checklists()}, {u"checkFilter"_s, checkFilter()}, {u"kitchenTickets"_s, kitchenTickets()}, {u"rushRadar"_s, rushRadar()},
+        {u"openChecks"_s, openChecks()}, {u"openChecksShared"_s, openChecksShared()}, {u"openChecksViewer"_s, openChecksViewer()}, {u"floor"_s, floor()}, {u"deliveries"_s, deliveries()}, {u"drivers"_s, drivers()}, {u"popularItems"_s, popularItems()}, {u"myUsuals"_s, myUsuals()}, {u"stockLeft"_s, stockLeft()}, {u"prepCounts"_s, prepCounts()}, {u"dashboard"_s, dashboard()}, {u"lossAlerts"_s, lossAlerts()}, {u"coach"_s, coach()}, {u"checklists"_s, checklists()}, {u"checkFilter"_s, checkFilter()}, {u"kitchenTickets"_s, kitchenTickets()}, {u"rushRadar"_s, rushRadar()},
         {u"drawer"_s, drawerInfo()}, {u"day"_s, dayInfo()}, {u"days"_s, days()},
         {u"adminRevision"_s, adminRevision()}, {u"tipsOwed"_s, tipsOwed()},
         {u"mealPeriods"_s, mealPeriods()}, {u"pairing"_s, pairingInfo()}, {u"screenMode"_s, screenMode()}, {u"service"_s, serviceInfo()}, {u"truckOrders"_s, truckOrders()}, {u"terminalLook"_s, terminalLook()}, {u"terminalKeyboard"_s, terminalKeyboard()}, {u"terminalGuestScreen"_s, terminalGuestScreen()}, {u"terminalStartCategory"_s, terminalStartCategory()},
         {u"cardReader"_s, terminalCardReader()}, {u"readerToken"_s, readerToken()}, {u"counterCharge"_s, counterCharge()}, {u"receiptOffer"_s, receiptOffer()},
         {u"closedChecks"_s, closedChecks()}, {u"staff"_s, staff()}, {u"checkHistory"_s, checkHistory()},
-        {u"choosing"_s, choosingInfo()}, {u"weighing"_s, weighingInfo()}, {u"setup"_s, setupInfo()}, {u"soldOut"_s, soldOut()}, {u"menuItems"_s, menuItems()}, {u"menuCategories"_s, menuCategories()}, {u"choiceGroups"_s, choiceGroups()}, {u"menuTemplates"_s, menuTemplates()}, {u"menuProblems"_s, menuProblems()}, {u"menuUndoText"_s, menuUndoText()}, {u"cardAlerts"_s, cardAlerts()},
+        {u"choosing"_s, choosingInfo()}, {u"weighing"_s, weighingInfo()}, {u"variantAsk"_s, variantAsk()}, {u"priceCheck"_s, priceCheck()}, {u"setup"_s, setupInfo()}, {u"soldOut"_s, soldOut()}, {u"menuItems"_s, menuItems()}, {u"menuCategories"_s, menuCategories()}, {u"choiceGroups"_s, choiceGroups()}, {u"menuTemplates"_s, menuTemplates()}, {u"menuProblems"_s, menuProblems()}, {u"menuUndoText"_s, menuUndoText()}, {u"cardAlerts"_s, cardAlerts()},
         {u"onBreakSince"_s, onBreakSince()},
         {u"customers"_s, customerResults()}, {u"customer"_s, customerInfo()}, {u"giftCard"_s, giftCardInfo()},
         {u"waitlist"_s, waitlistInfo()}, {u"customerPrompt"_s, customerPrompt()},
@@ -104,10 +104,10 @@ QVariantMap PosSession::snapshot() const
         {u"language"_s, language()}, {u"userPrefs"_s, userPrefs()},
         {u"storeLanguage"_s, storeLanguage()},
         {u"selfOrder"_s, selfOrderInfo()},
-        {u"kioskMenu"_s, kioskMenu()},
+        {u"kioskMenu"_s, kioskMenu()}, {u"menuBoard"_s, menuBoard()},
         {u"clockInJobs"_s, clockInJobs()}, {u"cashTipsAsk"_s, cashTipsAsk()}, {u"reasonAsk"_s, reasonAsk()}, {u"timeClock"_s, timeClock()},
         {u"receiving"_s, receiving()}, {u"stockCounting"_s, stockCounting()}, {u"wasteLog"_s, wasteLog()}, {u"storeCheck"_s, storeCheck()}, {u"prepLabels"_s, prepLabels()},
-        {u"checkSearch"_s, checkSearch()}, {u"legacyImport"_s, legacyImport()}, {u"printerSearch"_s, printerSearch()},
+        {u"checkSearch"_s, checkSearch()}, {u"returnSale"_s, returnSale()}, {u"legacyImport"_s, legacyImport()}, {u"printerSearch"_s, printerSearch()},
     };
 }
 

@@ -101,7 +101,7 @@ Item {
         parent: w.whole && wholeArea.visible ? wholeArea : w
         // Under the panel's sheet (how many, move, fire): off, or a key under
         // one of the sheet's (Again under 3) took the same touch.
-        enabled: !sheet.visible && !idSheet.visible
+        enabled: !sheet.visible && !idSheet.visible && !variantSheet.visible && !priceSheet.visible
         anchors.fill: parent
         anchors.margins: w.unit * 0.6
         spacing: w.unit * 0.3
@@ -659,8 +659,10 @@ Item {
                             textFormat: Text.PlainText
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1   // what's left after Choose and the price (big text)
-                            text: (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
-                            color: row.modelData.voided ? Ui.muted : w.ink
+                            text: row.modelData.returning
+                                  ? qsTr("RETURN") + " " + (row.modelData.quantity < -1 ? -row.modelData.quantity + " × " : "") + row.modelData.name
+                                  : (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
+                            color: row.modelData.voided ? Ui.muted : row.modelData.returning ? "#ff8a80" : w.ink
                             font.family: w.face
                             font.pixelSize: w.unit
                             font.italic: row.modelData.comment
@@ -683,7 +685,7 @@ Item {
                             font.bold: true
                         }
                         WidgetKey {
-                            visible: row.modelData.choices && (!w.phone || row.modelData.selected)
+                            visible: row.modelData.choices && !row.modelData.returning && (!w.phone || row.modelData.selected)
                             Layout.preferredWidth: w.unit * 3.4
                             Layout.preferredHeight: Math.max(w.unit * 1.4, w.tapH)
                             text: qsTr("Choose")
@@ -710,6 +712,20 @@ Item {
                         font.family: w.face
                         font.pixelSize: w.unit * 0.8
                         font.bold: true
+                        elide: Text.ElideRight
+                    }
+                    // Coming back: why, and if it stays off the shelf (touch: back in stock or not).
+                    Text {
+                        objectName: "lineReturn"
+                        textFormat: Text.PlainText
+                        visible: row.modelData.returning === true
+                        Layout.fillWidth: true
+                        Layout.leftMargin: w.unit * 1.6
+                        text: "↩ " + (row.modelData.returnReason || qsTr("Return"))
+                              + (row.modelData.restock ? "" : " · " + qsTr("damaged: not back in stock"))
+                        color: "#ff8a80"
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.8
                         elide: Text.ElideRight
                     }
                     // Its note for the kitchen ("no onions").
@@ -937,6 +953,53 @@ Item {
                 onClicked: w.pos.fastCash(2000)
             }
         }
+        // A return: what's owed back, and how it goes back (cash, the sale's card, store credit).
+        ColumnLayout {
+            objectName: "refundRow"
+            Layout.fillWidth: true
+            visible: w.controls && w.pos && w.pos.hasCheck && (w.check.refundDue ?? "") !== "" && !w.folded
+            spacing: w.unit * 0.3
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: qsTr("Owed back: %1").arg(w.check.refundDue ?? "")
+                color: "#ff8a80"
+                font.family: w.face
+                font.pixelSize: w.unit * 0.95
+                font.bold: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: w.unit * 0.3
+                WidgetKey {
+                    objectName: "refundCash"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
+                    text: qsTr("Cash")
+                    baseColor: Ui.go
+                    fontScale: 0.4
+                    onClicked: w.pos.refundReturn("cash")
+                }
+                WidgetKey {
+                    objectName: "refundCard"
+                    visible: (w.check.refundCard ?? "") !== ""
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
+                    text: qsTr("To %1").arg(w.check.refundCard ?? "")
+                    baseColor: Ui.accent
+                    fontScale: 0.36
+                    onClicked: w.pos.refundReturn("card")
+                }
+                WidgetKey {
+                    objectName: "refundCredit"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 1.6, w.tapH)
+                    text: qsTr("Store Credit")
+                    fontScale: 0.36
+                    onClicked: w.pos.refundReturn("credit")
+                }
+            }
+        }
     }
 
     // A drink on a check whose guest's ID wasn't checked: asked once, before it goes.
@@ -1002,6 +1065,240 @@ Item {
                 text: qsTr("Under Age: Take It Off")
                 baseColor: "#b83232"
                 onClicked: w.pos.idChecked(false)
+            }
+        }
+    }
+
+    // Sizes and colors: which one (sizes down, colors across), each with its
+    // price and how many are in stock.
+    Rectangle {
+        id: variantSheet
+        objectName: "variantSheet"
+        parent: body.parent
+        z: 2
+        anchors.fill: parent
+        readonly property var ask: w.pos ? w.pos.variantAsk : ({})
+        readonly property var axes: ask.axes ?? []
+        readonly property var cells: ask.cells ?? []
+        readonly property var rows: axes.length > 0 ? axes[0].values : []
+        readonly property var cols: axes.length > 1 ? axes[1].values : [""]
+        function cellFor(r, c) {
+            const key = c === "" ? r : r + "|" + c
+            return cells.find(x => x.key === key) ?? null
+        }
+        visible: !!ask.item
+        color: Qt.rgba(0.06, 0.07, 0.09, 1)
+        radius: 8
+        MouseArea { anchors.fill: parent }   // only its keys
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: w.unit * 0.5
+            spacing: w.unit * 0.3
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: qsTr("%1: which one?").arg(variantSheet.ask.name ?? "")
+                color: "white"
+                font.family: w.face
+                font.pixelSize: w.unit * 1.1
+                font.bold: true
+                elide: Text.ElideRight
+            }
+            GridLayout {
+                id: variantGrid
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                columns: variantSheet.cols.length + 1
+                rowSpacing: 4
+                columnSpacing: 4
+                // The colors across the top.
+                Item { Layout.preferredWidth: w.unit * 2; Layout.preferredHeight: w.unit; visible: variantSheet.cols[0] !== "" }
+                Repeater {
+                    model: variantSheet.cols[0] !== "" ? variantSheet.cols : []
+                    Text {
+                        required property string modelData
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: modelData
+                        color: Ui.textSoft
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.75
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+                }
+                Repeater {
+                    model: variantSheet.rows.length * (variantSheet.cols.length + 1)
+                    Item {
+                        id: gridCell
+                        required property int index
+                        readonly property int r: Math.floor(index / (variantSheet.cols.length + 1))
+                        readonly property int c: index % (variantSheet.cols.length + 1) - 1
+                        readonly property var cell: c < 0 ? null : variantSheet.cellFor(variantSheet.rows[r], variantSheet.cols[c])
+                        Layout.fillWidth: c >= 0
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: c < 0 ? w.unit * 2 : w.unit * 3
+                        Layout.minimumHeight: w.tapH
+                        Text {
+                            textFormat: Text.PlainText
+                            visible: gridCell.c < 0
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            text: variantSheet.rows[gridCell.r] ?? ""
+                            color: Ui.textSoft
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.8
+                            font.bold: true
+                            elide: Text.ElideRight
+                        }
+                        WidgetKey {
+                            objectName: gridCell.cell ? "variant-" + gridCell.cell.key : ""
+                            visible: gridCell.c >= 0 && !!gridCell.cell && !gridCell.cell.hidden
+                            anchors.fill: parent
+                            readonly property bool out: !!gridCell.cell && gridCell.cell.stock !== undefined && gridCell.cell.stock !== null && gridCell.cell.stock < 1
+                            text: !gridCell.cell ? "" : gridCell.cell.price
+                                  + (gridCell.cell.stock === undefined || gridCell.cell.stock === null ? ""
+                                     : "\n" + (out ? qsTr("none left") : qsTr("%1 left").arg(gridCell.cell.stock)))
+                            baseColor: out ? Ui.panel : Ui.key
+                            opacity: out ? 0.6 : 1
+                            fontScale: 0.3
+                            takesTouch: true
+                            onClicked: w.pos.addVariant(variantSheet.ask.item, gridCell.cell.key)
+                        }
+                    }
+                }
+            }
+            WidgetKey {
+                objectName: "variantCancel"
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.max(w.unit * 1.8, w.tapH)
+                text: qsTr("Cancel")
+                fontScale: 0.4
+                takesTouch: true
+                onClicked: w.pos.cancelVariant()
+            }
+        }
+    }
+
+    // Price check: scan (or touch) an item, its price and how many are here,
+    // nothing rung in. Ring It In adds it after all; Done ends it.
+    Rectangle {
+        id: priceSheet
+        objectName: "priceSheet"
+        parent: body.parent
+        z: 2
+        anchors.fill: parent
+        readonly property var info: w.pos ? w.pos.priceCheck : ({})
+        visible: info.on === true
+        color: Qt.rgba(0.05, 0.08, 0.12, 1)
+        radius: 8
+        MouseArea { anchors.fill: parent }   // only its keys
+        // Left open with nothing to do: closed after a while.
+        Timer {
+            id: priceIdle
+            running: priceSheet.visible
+            interval: 30000
+            onTriggered: w.pos.setPriceCheck(false)
+        }
+        onInfoChanged: if (visible) priceIdle.restart()
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: w.unit * 0.6
+            spacing: w.unit * 0.4
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: "🏷 " + qsTr("Price Check")
+                color: Ui.textSoft
+                font.family: w.face
+                font.pixelSize: w.unit * 0.9
+                font.bold: true
+            }
+            Text {
+                objectName: "priceName"
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: priceSheet.info.error ?? priceSheet.info.name ?? qsTr("Scan an item, or touch one on the menu.")
+                color: priceSheet.info.error ? "#ff8a80" : "white"
+                font.family: w.face
+                font.pixelSize: w.unit * 1.2
+                font.bold: true
+                wrapMode: Text.WordWrap
+            }
+            Text {
+                objectName: "priceAmount"
+                textFormat: Text.PlainText
+                visible: !!priceSheet.info.price
+                Layout.fillWidth: true
+                text: priceSheet.info.price ?? ""
+                color: "#7ee2a8"
+                font.family: w.face
+                font.pixelSize: w.unit * 2.6
+                font.bold: true
+            }
+            Text {
+                objectName: "priceStock"
+                textFormat: Text.PlainText
+                visible: !!priceSheet.info.name && !priceSheet.info.error
+                Layout.fillWidth: true
+                text: priceSheet.info.soldOut ? qsTr("Sold out")
+                      : priceSheet.info.stock === undefined || priceSheet.info.stock === null ? qsTr("Stock isn't counted")
+                      : qsTr("%1 in stock").arg(priceSheet.info.stock)
+                color: priceSheet.info.soldOut || priceSheet.info.stock === 0 ? "#ff8a80" : Ui.textSoft
+                font.family: w.face
+                font.pixelSize: w.unit * 0.95
+            }
+            // Each size and color: how many.
+            Flow {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 6
+                clip: true
+                Repeater {
+                    model: (priceSheet.info.cells ?? []).filter(c => !c.hidden)
+                    Rectangle {
+                        required property var modelData
+                        width: sizeText.implicitWidth + 16
+                        height: sizeText.implicitHeight + 10
+                        radius: 6
+                        color: Ui.panel
+                        Text {
+                            id: sizeText
+                            textFormat: Text.PlainText
+                            anchors.centerIn: parent
+                            text: modelData.label + ": " + (modelData.stock === undefined || modelData.stock === null ? "—" : modelData.stock)
+                            color: modelData.stock === 0 ? "#ff8a80" : "white"
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.75
+                        }
+                    }
+                }
+            }
+            Item { Layout.fillHeight: true; visible: (priceSheet.info.cells ?? []).length === 0 }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: w.unit * 0.3
+                WidgetKey {
+                    objectName: "priceRingIn"
+                    visible: !!priceSheet.info.item && !priceSheet.info.error && !priceSheet.info.soldOut
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 1.8, w.tapH)
+                    text: qsTr("Ring It In")
+                    baseColor: Ui.go
+                    fontScale: 0.4
+                    takesTouch: true
+                    onClicked: w.zone.controller.ringInPriceChecked()
+                }
+                WidgetKey {
+                    objectName: "priceDone"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 1.8, w.tapH)
+                    text: qsTr("Done")
+                    fontScale: 0.4
+                    takesTouch: true
+                    onClicked: w.pos.setPriceCheck(false)
+                }
             }
         }
     }

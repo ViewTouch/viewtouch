@@ -248,4 +248,32 @@ QVariantMap PosService::kioskMenu() const
     return {{u"families"_s, families}, {u"items"_s, items}};
 }
 
+QVariantMap PosService::menuBoard() const
+{
+    // A TV's menu (Terminals: Menu board): what's on the menu (not what the
+    // kiosk is kept from), by category, with today's prices; sold out shown.
+    const std::string period = currentMealPeriod();
+    const auto familyName = [&](const std::string &id) {
+        for (const core::MenuCategory &c : s_->settings.menuCategories)
+            if (c.id == id && !c.name.empty())
+                return qs(c.name);
+        return id.empty() ? tr("Menu") : qs(id);
+    };
+    QStringList families;
+    QVariantList items;
+    for (const MenuItem &m : s_->menu) {
+        if (m.isModifier || m.kioskHide)
+            continue;
+        const QString family = familyName(m.family);
+        if (!families.contains(family))
+            families << family;
+        items.append(QVariantMap{{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}, {u"family"_s, family},
+                                 {u"price"_s, format(m.priceDuring(period))}, {u"description"_s, qs(m.description)},
+                                 {u"byWeight"_s, m.byWeight}, {u"unit"_s, qs(m.weightUnit)},
+                                 {u"available"_s, m.available && ticketsLeft(m) != 0}});
+    }
+    return {{u"families"_s, families}, {u"items"_s, items}, {u"store"_s, qs(s_->settings.storeName)},
+            {u"showOrders"_s, s_->settings.menuBoardOrders}, {u"lowAt"_s, s_->settings.prepLowAt}};
+}
+
 } // namespace vt::app

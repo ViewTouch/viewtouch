@@ -75,8 +75,19 @@ struct OrderLine {
     int share = 0;
     int shareOf = 0;
     std::int64_t shareGroup = 0;
+    // A size and color of an item that has them ("M|Red"; MenuItem::variants).
+    std::string variant;
+    // A return: the item coming back (quantity below 0), from line
+    // returnLine of check returnOf (0: no receipt), back on the shelf unless
+    // damaged (restock), and why. On the sale's line: how many came back.
+    std::int64_t returnOf = 0;
+    std::int64_t returnLine = 0;
+    bool restock = true;
+    std::string returnReason;
+    int returned = 0;
 
     bool isComment() const { return itemId.empty(); }
+    bool isReturn() const { return quantity < 0 && !itemId.empty(); }
     std::string printerOf() const { return printer.empty() ? std::string("kitchen") : printer; }
     std::string kitchenText() const
     {
@@ -396,6 +407,13 @@ struct Check {
     void absorb(Check &other);
 
     Payment &addPayment(const Tender &tender, Money amount);
+    bool hasReturns() const
+    {
+        for (const OrderLine &l : lines)
+            if (l.isReturn() && !l.voided)
+                return true;
+        return false;
+    }
     bool removePayment(std::int64_t paymentId);
 
     Totals totals(const TaxRates &rates) const;

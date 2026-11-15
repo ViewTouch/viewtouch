@@ -136,6 +136,7 @@ bool PosService::searchChecks(const QString &query, int days, int offset)
             self->checkSearch_.insert(u"more"_s, more);
             self->checkSearch_.insert(u"nextOffset"_s, next);
             emit self->sessionChanged();
+            self->returnArrived();   // a sale looked for to take a return
         }, Qt::QueuedConnection);
     });
     return true;
@@ -235,6 +236,7 @@ QVariantMap PosService::checkSearch() const
         out.insert(u"selected"_s, QVariantMap{
             {u"id"_s, qint64(c.id)}, {u"label"_s, qs(c.label)}, {u"server"_s, qs(c.serverName)},
             {u"opened"_s, when(c.openedAt)}, {u"closed"_s, when(c.closedAt)}, {u"status"_s, statusText(c)},
+            {u"closedSale"_s, c.status == CheckStatus::Closed},
             {u"customer"_s, qs(c.customer.name)}, {u"guests"_s, c.guests},
             {u"lines"_s, lines}, {u"payments"_s, payments}, {u"events"_s, events}, {u"refunds"_s, refunds},
             {u"subtotal"_s, format(t.subtotal)}, {u"tax"_s, format(t.tax)}, {u"total"_s, format(t.total)},

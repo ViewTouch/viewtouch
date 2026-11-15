@@ -522,9 +522,12 @@ Totals Check::totals(const TaxRates &now) const
     // The same, by tax class: a percent off falls only on the lines it took
     // something off (an alcohol line that can't be discounted keeps its tax).
     std::map<TaxClass, Money> discountableByClass, staffDiscountableByClass;
+    Money returns;   // items coming back: nothing comes off them
     for (const OrderLine &l : lines) {
         const Money lt = l.total();
         t.items += lt;
+        if (l.isReturn())
+            returns += lt;
         if (l.isGiftCard())
             t.giftCardsSold += lt;
         if (!l.isGiftCard() && !l.noDiscount) {
@@ -545,7 +548,7 @@ Totals Check::totals(const TaxRates &now) const
     // exceed it. Each one's part of every tax class goes with it: a percent
     // off on the class's lines it applies to, a fixed amount (rewards,
     // promotions) over everything that may be discounted, by sales.
-    const Money discounted = t.items - t.giftCardsSold;   // nothing comes off a gift card bought
+    const Money discounted = t.items - t.giftCardsSold - returns;   // nothing comes off a gift card bought (or a return)
     std::map<TaxClass, Money> discountShare;
     for (const Payment &p : payments) {
         if (p.kind != TenderKind::Discount)
@@ -598,7 +601,9 @@ Totals Check::totals(const TaxRates &now) const
         if (cls == TaxClass::Food && type == CheckType::Takeout && !rates.taxTakeoutFood)
             continue;
         const Money net = amount - discountShare[cls];
-        const Money tax = net.cents() > 0 ? net.ppm(rates.ratePpm(cls)) : Money();
+        // Items coming back (a return) give their tax back too.
+        const Money tax = net.cents() > 0 ? net.ppm(rates.ratePpm(cls))
+                        : net.cents() < 0 && hasReturns() ? -(-net).ppm(rates.ratePpm(cls)) : Money();
         if (net.cents() > 0 && rates.ratePpm(cls) > 0)
             t.taxableByClass[cls] = net;
         if (tax.cents() != 0)

@@ -136,6 +136,7 @@ class PosSession : public QObject {
     // family, price, description, image, available, choices}]}.
     Q_PROPERTY(QVariantMap selfOrder READ selfOrderInfo NOTIFY checkChanged)
     Q_PROPERTY(QVariantMap kioskMenu READ kioskMenu NOTIFY menuChanged)
+    Q_PROPERTY(QVariantMap menuBoard READ menuBoard NOTIFY menuChanged)
     // Clocking in with more than one job: {who, jobs: [{role, name}]}, else empty.
     Q_PROPERTY(QVariantMap clockInJobs READ clockInJobs NOTIFY sessionChanged)
     Q_PROPERTY(QVariantMap cashTipsAsk READ cashTipsAsk NOTIFY sessionChanged)
@@ -159,6 +160,7 @@ class PosSession : public QObject {
     // Finding checks: {query, loading, more, results: [{id, label, when,
     // server, customer, total, status}], selected: {..., lines, payments}}.
     Q_PROPERTY(QVariantMap checkSearch READ checkSearch NOTIFY sessionChanged)
+    Q_PROPERTY(QVariantMap returnSale READ returnSale NOTIFY sessionChanged)
     // Bringing a store over from legacy ViewTouch: {folder, preview, busy,
     // done, error} (legacyPreview, legacyBring).
     Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
@@ -176,6 +178,8 @@ class PosSession : public QObject {
     // [{id, name, rule, chosen, done, options: [{index, name, price, chosen}]}]}.
     Q_PROPERTY(QVariantMap choosing READ choosingInfo NOTIFY checkChanged)
     Q_PROPERTY(QVariantMap weighing READ weighingInfo NOTIFY checkChanged)
+    Q_PROPERTY(QVariantMap variantAsk READ variantAsk NOTIFY checkChanged)
+    Q_PROPERTY(QVariantMap priceCheck READ priceCheck NOTIFY sessionChanged)
     // The setup guide: {done, storeName, receiptHeader, logo, receiptLogo, foodTax,
     // alcoholTax, families, items, staff: [{name, role, sample}], samples} (managers).
     Q_PROPERTY(QVariantMap setup READ setupInfo NOTIFY adminChanged)
@@ -183,6 +187,7 @@ class PosSession : public QObject {
     Q_PROPERTY(QStringList soldOut READ soldOut NOTIFY menuChanged)
     // Dishes an ingredient is running low for: item id (and lowercase name) -> how many can still be made.
     Q_PROPERTY(QVariantMap stockLeft READ stockLeft NOTIFY dayChanged)
+    Q_PROPERTY(QVariantList prepCounts READ prepCounts NOTIFY dayChanged)
     // The menu for the 86 list [{id, name, family, price, modifier, available}].
     Q_PROPERTY(QVariantList menuItems READ menuItems NOTIFY menuChanged)
     // The menu's categories, in order: [{id, name, color, periods, count, now}]
@@ -329,6 +334,8 @@ public:
     virtual QVariantList checkHistory() const = 0;
     virtual QVariantMap choosingInfo() const = 0;
     virtual QVariantMap weighingInfo() const = 0;
+    virtual QVariantMap variantAsk() const = 0;
+    virtual QVariantMap priceCheck() const = 0;
     virtual QVariantMap setupInfo() const = 0;
     virtual QString onBreakSince() const = 0;
     virtual QVariantList customerResults() const = 0;
@@ -389,6 +396,7 @@ public:
     virtual QString storeLanguage() const = 0;
     virtual QVariantMap selfOrderInfo() const = 0;
     virtual QVariantMap kioskMenu() const = 0;
+    virtual QVariantMap menuBoard() const = 0;
     virtual QVariantMap clockInJobs() const = 0;
     // Just clocked out here: the cash tips they kept? ({who, punchId}; {} none)
     virtual QVariantMap cashTipsAsk() const = 0;
@@ -400,6 +408,7 @@ public:
     virtual QVariantMap storeCheck() const = 0;
     virtual QVariantMap prepLabels() const = 0;
     virtual QVariantMap checkSearch() const = 0;
+    virtual QVariantMap returnSale() const = 0;
     virtual QVariantMap legacyImport() const = 0;
     virtual QVariantMap printerSearch() const = 0;
     virtual QVariantMap networkInfo() const = 0;
@@ -410,6 +419,7 @@ public:
     virtual QVariantList lossAlerts() const = 0;
     virtual QVariantMap coach() const = 0;
     virtual QVariantMap stockLeft() const = 0;
+    virtual QVariantList prepCounts() const = 0;
     virtual QStringList soldOut() const = 0;
     virtual QVariantList menuItems() const = 0;
     virtual QVariantList menuCategories() const = 0;
@@ -505,6 +515,10 @@ public:
     Q_INVOKABLE void recallTicket() { invoke(QStringLiteral("recallTicket")); }
     Q_INVOKABLE void setCustomer(const QVariantMap &customer) { invoke(QStringLiteral("setCustomer"), {customer}); }
     Q_INVOKABLE void setPager(int pager) { invoke(QStringLiteral("setPager"), {pager}); }
+    Q_INVOKABLE void setPrepCount(const QString &itemId, int left) { invoke(QStringLiteral("setPrepCount"), {itemId, left}); }
+    Q_INVOKABLE void addPrepped(const QString &itemId, int more) { invoke(QStringLiteral("addPrepped"), {itemId, more}); }
+    Q_INVOKABLE void setRush(bool on) { invoke(QStringLiteral("setRush"), {on}); }
+    Q_INVOKABLE void rushSend() { invoke(QStringLiteral("rushSend"), {}); }
     Q_INVOKABLE void orderReady(qint64 checkId) { invoke(QStringLiteral("orderReady"), {checkId}); }
     Q_INVOKABLE void orderPickedUp(qint64 checkId) { invoke(QStringLiteral("orderPickedUp"), {checkId}); }
     Q_INVOKABLE void setSeat(int seat) { invoke(QStringLiteral("setSeat"), {seat}); }
@@ -616,6 +630,18 @@ public:
     // {ingredient | name, hours, count, note}.
     Q_INVOKABLE void printPrepLabels(const QVariantMap &labels) { invoke(QStringLiteral("printPrepLabels"), {labels}); }
     Q_INVOKABLE void printPriceTags(const QStringList &itemIds, int copies = 1) { invoke(QStringLiteral("printPriceTags"), {itemIds, copies}); }
+    Q_INVOKABLE void addVariant(const QString &itemId, const QString &key) { invoke(QStringLiteral("addVariant"), {itemId, key}); }
+    Q_INVOKABLE void cancelVariant() { invoke(QStringLiteral("cancelVariant"), {}); }
+    Q_INVOKABLE void setItemVariants(const QString &itemId, const QVariantList &axes, const QVariantList &variants) { invoke(QStringLiteral("setItemVariants"), {itemId, QVariant(axes), QVariant(variants)}); }
+    Q_INVOKABLE void setVariantStock(const QString &itemId, const QString &key, int onHand) { invoke(QStringLiteral("setVariantStock"), {itemId, key, onHand}); }
+    Q_INVOKABLE void setPriceCheck(bool on) { invoke(QStringLiteral("setPriceCheck"), {on}); }
+    Q_INVOKABLE void priceCheckCode(const QString &code) { invoke(QStringLiteral("priceCheckCode"), {code}); }
+    Q_INVOKABLE void startReturn(qint64 checkId) { invoke(QStringLiteral("startReturn"), {checkId}); }
+    Q_INVOKABLE void cancelReturn() { invoke(QStringLiteral("cancelReturn"), {}); }
+    Q_INVOKABLE void returnLines(const QVariantList &picks, const QString &reason) { invoke(QStringLiteral("returnLines"), {QVariant(picks), reason}); }
+    Q_INVOKABLE void returnItem(const QString &itemId, qint64 cents, const QString &reason, bool restock = true) { invoke(QStringLiteral("returnItem"), {itemId, cents, reason, restock}); }
+    Q_INVOKABLE void setRestock(qint64 lineId, bool restock) { invoke(QStringLiteral("setRestock"), {lineId, restock}); }
+    Q_INVOKABLE void refundReturn(const QString &how) { invoke(QStringLiteral("refundReturn"), {how}); }
     Q_INVOKABLE void searchChecks(const QString &query, int days = 365, int offset = 0) { invoke(QStringLiteral("searchChecks"), {query, days, offset}); }
     // Orders for later: ready at this time (ms since 1970; 0 = as soon as possible).
     Q_INVOKABLE void setDueAt(double at) { invoke(QStringLiteral("setDueAt"), {qint64(at)}); }

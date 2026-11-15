@@ -95,6 +95,11 @@ std::string ownStockId(const std::string &itemId)
     return "item-" + itemId;
 }
 
+std::string variantStockId(const std::string &itemId, const std::string &variant)
+{
+    return "item-" + itemId + "|" + variant;
+}
+
 // "11.50", "$11.50", "11,50": a price in cents; -1 if it isn't one.
 qint64 priceCents(QString text, const QString &symbol)
 {

@@ -77,6 +77,8 @@ void PosService::receiptAfterClosing(const Check &c)
 {
     const TerminalConfig *t = terminalConfig();
     const std::string after = t ? t->afterPaying : std::string();
+    if (s_->settings.rush && s_->settings.rushNoReceipt)
+        return;   // a rush: printed only when asked for (Receipt)
     if (after == "ask") {
         offerReceipt(c, true);
     } else if (after == "print" && s_->printer) {

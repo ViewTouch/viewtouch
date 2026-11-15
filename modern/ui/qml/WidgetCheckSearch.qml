@@ -6,7 +6,8 @@ import QtQuick.Layouts
 // "#123", "17.62", a name, a phone number, a table, a server, an item or a
 // gift card - or Show All for every check in the range, a page at a time.
 // Touch one to see it: its items, payments, refunds and its whole history
-// (the audit trail). Refund… gives money back (a manager's); Reprint
+// (the audit trail). Refund… gives money back (a manager's); a shop's
+// Return Items… brings items back from it (the Return page); Reprint
 // Receipt prints a copy.
 Item {
     id: w
@@ -373,6 +374,19 @@ Item {
                             font.pixelSize: 16
                             text: qsTr("Reprint Receipt")
                             onClicked: w.pos.reprintCheck(w.check.id)
+                        }
+                        // A shop's: items brought back (the Return page, this sale on it).
+                        PosButton {
+                            objectName: "returnItems"
+                            visible: !!w.check && w.check.closedSale === true && w.pos.service.mode === "retail"
+                            Layout.fillWidth: true
+                            implicitHeight: 50
+                            font.pixelSize: 16
+                            text: qsTr("Return Items…")
+                            onClicked: {
+                                w.pos.startReturn(w.check.id)
+                                w.zone.controller.jumpTo("return")
+                            }
                         }
                     }
                 }

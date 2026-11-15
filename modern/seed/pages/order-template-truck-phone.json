@@ -19,7 +19,10 @@
   "hiddenZones": [
     "top-store",
     "top-who",
-    "top-clock"
+    "top-clock",
+    "tab-prep",
+    "tab-rush-on",
+    "tab-rush-off"
   ],
   "zones": [
     {

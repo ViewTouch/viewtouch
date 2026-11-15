@@ -739,7 +739,18 @@ QVariantList PosService::menuItemsNow() const
                                {u"takeoutPrice"_s, m.takeoutPrice.cents() ? QString::number(double(m.takeoutPrice.cents()) / 100.0, 'f', 2) : QString()},
                                {u"deliveryPrice"_s, m.deliveryPrice.cents() ? QString::number(double(m.deliveryPrice.cents()) / 100.0, 'f', 2) : QString()},
                                {u"periodPrices"_s, [&m] { QVariantMap p; for (const auto &[k, v] : m.periodPrices) p.insert(qs(k), QString::number(double(v.cents()) / 100.0, 'f', 2)); return p; }()},
-                               {u"allergens"_s, [&m] { QStringList a; for (const std::string &x : m.allergens) a << qs(x); return a; }()}});
+                               {u"allergens"_s, [&m] { QStringList a; for (const std::string &x : m.allergens) a << qs(x); return a; }()},
+                               // Sizes and colors: the lists, each one (barcode, price, stock), and
+                               // their barcodes and SKUs (a scan rings that one in).
+                               {u"variantAxes"_s, variantAxesOf(m)}, {u"variants"_s, variantCells(m)},
+                               {u"variantCodes"_s, [&m] {
+                                    QVariantMap codes;
+                                    for (const core::MenuItem::Variant &v : m.variants) {
+                                        if (!v.barcode.empty()) codes.insert(qs(v.barcode), qs(v.key));
+                                        if (!v.sku.empty()) codes.insert(qs(v.sku), qs(v.key));
+                                    }
+                                    return codes;
+                                }()}});
     }
     return out;
 }

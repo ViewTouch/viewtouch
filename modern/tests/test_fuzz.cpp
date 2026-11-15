@@ -191,6 +191,8 @@ TEST_CASE("Fuzz: a server's odd commands never change the settings, the staff or
         before.erase("settings.tableStates");
         before.erase("settings.sections");
         before.erase("settings.notices");
+        before.erase("settings.prepCounts");
+        before.erase("settings.rush");
         for (int call = 0; call < 300; ++call) {
             const QString method = names[f.pick(int(names.size()))];
             const QVariantList a = f.args(pos);
@@ -212,6 +214,13 @@ TEST_CASE("Fuzz: a server's odd commands never change the settings, the staff or
             for (const auto &n : pos.shared()->settings.notices)
                 REQUIRE(n.until <= pos.shared()->now() + 31LL * 24 * 3'600'000);
             now.erase("settings.notices");
+            // A truck's prep counts and its rush: the crew's, all service long (sane counts, real items).
+            for (const auto &p : pos.shared()->settings.prepCounts) {
+                REQUIRE(pos.findItem(QString::fromStdString(p.itemId)));
+                REQUIRE((p.made >= 0 && p.made <= 99999 && p.sold >= 0));
+            }
+            now.erase("settings.prepCounts");
+            now.erase("settings.rush");
             // A kitchen screen sets its own station (nobody logs in there): that, and only that.
             if (method == u"setKitchenSound" && now != before)
                 before = now;   // its own sound, on or off

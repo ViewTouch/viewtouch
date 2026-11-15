@@ -58,7 +58,9 @@ QVariantMap PosService::serviceInfo() const
             {u"person"_s, person && person->id != counterEmployee().id ? nameOf(*person) : QString()},
             {u"needsName"_s, s_->settings.truckNeedsName},
             // Orders called by number: the Orders button, Now Serving.
-            {u"numbers"_s, truck || (s_->settings.orderNumbers && serviceMode() == u"restaurant")}};
+            {u"numbers"_s, truck || (s_->settings.orderNumbers && serviceMode() == u"restaurant")},
+            // A rush: no tip question, no receipt, Pay sends first, bigger keys.
+            {u"rush"_s, s_->settings.rush}};
 }
 
 void PosService::applyServiceMode()
@@ -292,6 +294,116 @@ QVariantList PosService::truckOrders() const
                                {u"openOn"_s, lockHolder(c->id)}});   // being changed on that screen
     }
     return out;
+}
+
+// --- prep counts and the rush ----------------------------------------------------------
+
+QVariantList PosService::prepCounts() const
+{
+    QVariantList out;
+    for (const PosSettings::PrepCount &p : s_->settings.prepCounts) {
+        const MenuItem *m = nullptr;
+        for (const MenuItem &x : s_->menu)
+            if (x.id == p.itemId)
+                m = &x;
+        if (!m)
+            continue;
+        const int left = std::max(0, p.made - p.sold);
+        out.append(QVariantMap{{u"item"_s, qs(p.itemId)}, {u"name"_s, qs(m->name)}, {u"made"_s, p.made},
+                               {u"sold"_s, p.sold}, {u"left"_s, left},
+                               {u"low"_s, left > 0 && left <= s_->settings.prepLowAt},
+                               {u"soldOut"_s, !m->available}});
+    }
+    return out;
+}
+
+bool PosService::setPrepCount(const QString &itemId, int left)
+{
+    if (!user())
+        return fail(tr("Log in first."));
+    if (!require(perm::Order, tr("Prep counts")))
+        return false;
+    const MenuItem *m = findItem(itemId);
+    if (!m || m->isModifier)
+        return fail(tr("'%1' is not on the menu.").arg(itemId));
+    auto &list = s_->settings.prepCounts;
+    const auto it = std::ranges::find(list, m->id, &PosSettings::PrepCount::itemId);
+    if (left < 0) {   // not counted any more
+        if (it == list.end())
+            return true;
+        list.erase(it);
+    } else if (left > 9999) {
+        return fail(tr("That's more than 9999."));
+    } else if (it == list.end()) {
+        list.push_back({m->id, left, 0});
+    } else {
+        // How many are left now: what was sold stays sold.
+        it->made = it->sold + left;
+    }
+    s_->saveSettings();
+    refreshSoldOut();
+    emit s_->dayChanged();
+    return true;
+}
+
+bool PosService::addPrepped(const QString &itemId, int more)
+{
+    const MenuItem *m = findItem(itemId);
+    if (!m)
+        return fail(tr("'%1' is not on the menu.").arg(itemId));
+    const auto &list = s_->settings.prepCounts;
+    const auto it = std::ranges::find(list, m->id, &PosSettings::PrepCount::itemId);
+    const int left = it == list.end() ? 0 : std::max(0, it->made - it->sold);
+    return setPrepCount(qs(m->id), std::max(0, left + more));
+}
+
+void PosService::countPrepped(const std::vector<OrderLine> &lines, int sign)
+{
+    bool changed = false;
+    for (const OrderLine &l : lines) {
+        if ((l.voided && sign > 0) || l.isComment())
+            continue;
+        for (PosSettings::PrepCount &p : s_->settings.prepCounts)
+            if (p.itemId == l.itemId) {
+                p.sold = std::max(0, p.sold + l.counted() * sign);
+                changed = true;
+            }
+    }
+    if (changed)
+        s_->saveSettings();
+}
+
+bool PosService::prepOut(const std::string &itemId) const
+{
+    for (const PosSettings::PrepCount &p : s_->settings.prepCounts)
+        if (p.itemId == itemId)
+            return p.sold >= p.made;
+    return false;
+}
+
+bool PosService::rushSend()
+{
+    // Pay during a rush: what isn't sent yet goes first (nothing else changes).
+    const Check *c = currentCheck();
+    if (!s_->settings.rush || !c || serviceMode() == u"retail")
+        return true;
+    if (!std::ranges::any_of(c->lines, [](const OrderLine &l) { return !l.sent && !l.voided && !l.isComment(); }))
+        return true;
+    return sendOrder();
+}
+
+bool PosService::setRush(bool on)
+{
+    if (!user())
+        return fail(tr("Log in first."));
+    if (!require(perm::Order, tr("Rush")))
+        return false;
+    if (s_->settings.rush == on)
+        return true;
+    s_->settings.rush = on;
+    s_->saveSettings();
+    emit notice(on ? tr("Rush: no tip question or receipt, and Pay sends the order") : tr("Rush is over"));
+    return true;
 }
 
 } // namespace vt::app

@@ -11708,3 +11708,156 @@ TEST_CASE("UI: hosts: Seat at the best table; sections drawn on the floor; table
     tap(u"bus-T3-key"_s);
     CHECK_FALSE(s.pos.floor().contains(u"T3"_s));
 }
+
+TEST_CASE("UI: a truck's prep counts, a rush, and the menu board", "[flow][ui][truckretail][truck]")
+{
+    Screen s(false, 1600, 900);
+    app::PosShared &shared = *s.pos.shared();
+    for (core::ModifierGroup &g : shared.settings.modifierGroups)
+        g.min = 0;
+    shared.settings.serviceMode = "foodTruck";
+    shared.settings.truckNoLogin = true;
+    emit shared.adminChanged();
+    REQUIRE(s.pos.loggedIn());   // the Counter
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    QTest::qWait(200);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *item = find(name);
+        REQUIRE(item);
+        s.tapItem(item);
+        QTest::qWait(120);
+    };
+
+    // 3 sodas made: "3 left" on its button.
+    REQUIRE(s.pos.setPrepCount(u"soda"_s, 3));
+    CHECK(s.pos.stockLeft()[u"soda"_s].toInt() == 3);
+    s.shot("truck-order");
+
+    // Rush: on for every screen; the key says so.
+    s.c.activate(u"tab-rush-on"_s);
+    QTest::qWait(150);
+    CHECK(s.pos.serviceInfo()[u"rush"_s] == true);
+    s.shot("truck-rush");
+    s.c.activate(u"tab-rush-off"_s);
+    CHECK(s.pos.serviceInfo()[u"rush"_s] == false);
+
+    // Prep: +1 for the soda; another item, 20 made.
+    s.c.activate(u"tab-prep"_s);
+    QTest::qWait(200);
+    REQUIRE(s.c.pageId() == u"prep-counts"_s);
+    tap(u"prep-soda-more"_s);
+    CHECK(s.pos.prepCounts().first().toMap()[u"left"_s].toInt() == 4);
+    tap(u"prepAdd"_s);
+    tap(u"prepPick-juice"_s);
+    tap(u"prepPad-2"_s);
+    tap(u"prepPad-0"_s);
+    s.shot("truck-prep-pad");
+    tap(u"prepPad-OK"_s);
+    bool juice = false;
+    for (const QVariant &v : s.pos.prepCounts())
+        juice = juice || (v.toMap()[u"item"_s] == u"juice"_s && v.toMap()[u"left"_s].toInt() == 20);
+    CHECK(juice);
+    s.shot("truck-prep");
+}
+
+TEST_CASE("UI: the menu board on a truck's TV", "[flow][ui][truckretail][menuboard]")
+{
+    Screen s(false, 1600, 900, u"menuBoard"_s);
+    app::PosShared &shared = *s.pos.shared();
+    shared.settings.serviceMode = "foodTruck";
+    shared.settings.truckNoLogin = true;
+    shared.settings.menuBoardOrders = true;
+    emit shared.adminChanged();
+    REQUIRE(s.pos.setPrepCount(u"juice"_s, 2));
+    REQUIRE(s.pos.kitchenSoldOut(u"soda"_s));
+    QTest::qWait(300);
+    QQuickItem *board = Screen::findBy(s.window->contentItem(), "objectName", u"menuBoard"_s);
+    REQUIRE(board);   // up, with the truck's Counter in
+    CHECK(Screen::findBy(board, "objectName", u"menuBoardMenu"_s));
+    CHECK(Screen::findBy(board, "objectName", u"menuBoardReady"_s));
+    // The page with the drinks: the soda crossed off, the juice running low.
+    const int pages = board->property("pages").toList().size();
+    for (int p = 0; p < pages && !Screen::findBy(board, "objectName", u"board-soda"_s); ++p) {
+        board->setProperty("page", p);
+        QTest::qWait(50);
+    }
+    CHECK(Screen::findBy(board, "objectName", u"board-soda"_s));
+    s.shot("truck-menu-board");
+}
+
+TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and colors", "[flow][ui][truckretail][retail]")
+{
+    Screen s(false, 1600, 900);
+    app::PosShared &shared = *s.pos.shared();
+    for (core::ModifierGroup &g : shared.settings.modifierGroups)
+        g.min = 0;
+    shared.settings.serviceMode = "retail";
+    core::Ingredient own{"item-soda", "Soda", "each"};
+    own.onHand = 12;
+    shared.ingredients.push_back(own);
+    for (core::MenuItem &m : shared.menu)
+        if (m.id == "soda")
+            m.recipe = {{"item-soda", 1}};
+    emit shared.adminChanged();
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.openDrawerSession();
+    QTest::qWait(200);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *item = find(name);
+        REQUIRE(item);
+        s.tapItem(item);
+        QTest::qWait(150);
+    };
+
+    // Price check: scanned, its price and how many; nothing rung in.
+    s.c.activate(u"flow-pricecheck"_s);
+    QTest::qWait(100);
+    REQUIRE(find(u"priceSheet"_s));
+    s.c.scanned(u"303"_s);
+    QTest::qWait(150);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"12 in stock"_s));
+    CHECK_FALSE(s.pos.hasCheck());
+    s.shot("retail-pricecheck");
+    tap(u"priceDone"_s);
+    CHECK(s.pos.priceCheck().isEmpty());
+
+    // Sold two; the receipt's barcode scanned on Return: one comes back.
+    REQUIRE(s.pos.setNextQuantity(2));
+    REQUIRE(s.pos.addItem(u"soda"_s));
+    const qint64 sale = s.pos.checkInfo()[u"id"_s].toLongLong();
+    REQUIRE(s.pos.tender(u"cash"_s));
+    REQUIRE(s.pos.closeCheck());
+    s.c.activate(u"flow-return"_s);
+    QTest::qWait(150);
+    REQUIRE(s.c.pageId() == u"return"_s);
+    s.shot("retail-return-scan");
+    s.c.scanned(u"R%1"_s.arg(sale));
+    QTest::qWait(200);
+    const qint64 line = s.pos.returnSale()[u"lines"_s].toList().first().toMap()[u"id"_s].toLongLong();
+    tap(u"returnMore-%1"_s.arg(line));
+    tap(u"returnReason-1"_s);
+    s.shot("retail-return-pick");
+    tap(u"returnBringBack"_s);
+    QTest::qWait(150);
+    CHECK(s.c.pageId() == u"index-lunch"_s);
+    REQUIRE(find(u"refundRow"_s));
+    s.shot("retail-return-due");
+    tap(u"refundCredit"_s);
+    CHECK_FALSE(s.pos.hasCheck());
+    CHECK(shared.closedToday.back().hasReturns());
+
+    // Sizes and colors: touched, the grid; M Red rung in.
+    REQUIRE(s.pos.setItemVariants(u"juice"_s,
+        {QVariantMap{{u"name"_s, u"Size"_s}, {u"values"_s, QVariantList{u"S"_s, u"M"_s, u"L"_s}}},
+         QVariantMap{{u"name"_s, u"Color"_s}, {u"values"_s, QVariantList{u"Red"_s, u"Blue"_s}}}}, {}));
+    s.c.orderItem(u"juice"_s);
+    QTest::qWait(200);
+    REQUIRE(find(u"variantSheet"_s));
+    CHECK(s.pos.lines().isEmpty());
+    s.shot("retail-variants");
+    tap(u"variant-M|Red"_s);
+    REQUIRE(s.pos.lines().size() == 1);
+    CHECK(s.pos.lines().first().toMap()[u"name"_s].toString().contains(u"M, Red"_s));
+}

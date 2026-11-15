@@ -207,7 +207,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         t.receiptPrinter = ss(record.value(u"receiptPrinter"_s).toString());
         t.drawer = ss(drawer);
         const QString screen = record.value(u"screen"_s).toString();
-        if (!QStringList{QString(), u"standard"_s, u"phone"_s, u"selfOrder"_s, u"timeClock"_s, u"nowServing"_s}.contains(screen))
+        if (!QStringList{QString(), u"standard"_s, u"phone"_s, u"selfOrder"_s, u"timeClock"_s, u"nowServing"_s, u"menuBoard"_s}.contains(screen))
             return fail(tr("Choose the terminal's screen layout."));
         t.screen = ss(screen);
         if (record.contains(u"service"_s)) {
@@ -430,6 +430,18 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.screensUpdate = record.value(u"screensUpdate"_s).toBool();
         if (record.contains(u"tableLongMinutes"_s))
             s_->settings.tableLongMinutes = std::clamp(record.value(u"tableLongMinutes"_s).toInt(), 10, 600);
+        if (record.contains(u"prepLowAt"_s))
+            s_->settings.prepLowAt = std::clamp(record.value(u"prepLowAt"_s).toInt(), 1, 200);
+        if (record.contains(u"rushNoReceipt"_s))
+            s_->settings.rushNoReceipt = record.value(u"rushNoReceipt"_s).toBool();
+        if (record.contains(u"menuBoardOrders"_s))
+            s_->settings.menuBoardOrders = record.value(u"menuBoardOrders"_s).toBool();
+        if (record.contains(u"receiptBarcode"_s))
+            s_->settings.receiptBarcode = record.value(u"receiptBarcode"_s).toBool();
+        if (record.contains(u"returnDays"_s))
+            s_->settings.returnDays = std::clamp(record.value(u"returnDays"_s).toInt(), 0, 3650);
+        if (record.contains(u"cashierReturns"_s))
+            s_->settings.cashierReturns = record.value(u"cashierReturns"_s).toBool();
         if (record.contains(u"orderWaitMinutes"_s))
             s_->settings.orderWaitMinutes = std::clamp(record.value(u"orderWaitMinutes"_s).toInt(), 3, 60);
         if (record.contains(u"checkBackMinutes"_s))

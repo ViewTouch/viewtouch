@@ -19,7 +19,9 @@
   "hiddenZones": [
     "top-store",
     "top-who",
-    "top-clock"
+    "top-clock",
+    "flow-return",
+    "flow-pricecheck"
   ],
   "zones": [
     {

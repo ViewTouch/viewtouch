@@ -210,7 +210,7 @@ void LayoutController::sleepTimeout()
     const vt::layout::Page *page = activeLayout().page(pageId());
     const bool watched = page && page->kind == u"kitchen";
     const bool kiosk = pos_ && pos_->selfOrderInfo().value(u"on"_s).toBool();
-    if (watched || kiosk || nowServingScreen() || editing()) {
+    if (watched || kiosk || nowServingScreen() || menuBoardScreen() || editing()) {
         restartSleep();
         return;
     }
@@ -872,8 +872,8 @@ void LayoutController::setFormFactorOverride(const QString &formFactor)
         restAtLoginPage();
         return;
     }
-    if (formFactor == u"nowServing") {   // not a page size: the board covers them
-        nowServingScreen_ = true;
+    if (formFactor == u"nowServing" || formFactor == u"menuBoard") {   // not a page size: the board covers them
+        (formFactor == u"menuBoard" ? menuBoardScreen_ : nowServingScreen_) = true;
         updateFormFactor();
         emit formFactorChanged();
         return;
@@ -899,10 +899,19 @@ bool LayoutController::nowServingScreen() const
     return nowServingScreen_ || (pos_ && pos_->screenMode() == u"nowServing");
 }
 
+bool LayoutController::menuBoardScreen() const
+{
+    return menuBoardScreen_ || (pos_ && pos_->screenMode() == u"menuBoard");
+}
+
 void LayoutController::updateFormFactor()
 {
     if (const bool board = nowServingScreen(); board != nowServingShown_) {   // Manager -> Terminals
         nowServingShown_ = board;
+        emit formFactorChanged();
+    }
+    if (const bool board = menuBoardScreen(); board != menuBoardShown_) {
+        menuBoardShown_ = board;
         emit formFactorChanged();
     }
     QString mode = formFactorOverride_;
@@ -1186,6 +1195,27 @@ void LayoutController::goBack()
 void LayoutController::goHome()
 {
     navigate(Navigator::Mode::Home);
+}
+
+void LayoutController::goToOrder()
+{
+    navigate(Navigator::Mode::Index);
+}
+
+void LayoutController::ringInPriceChecked()
+{
+    if (!pos_)
+        return;
+    const QVariantMap checked = pos_->priceCheck();
+    const QString item = checked.value(u"item"_s).toString(), variant = checked.value(u"variant"_s).toString();
+    call(u"setPriceCheck"_s, {false}, [this, item, variant](const QVariant &) {
+        if (item.isEmpty())
+            return;
+        if (!variant.isEmpty())
+            call(u"addVariant"_s, {item, variant}, [this](const QVariant &ok) { buzz(!ok.toBool()); });
+        else
+            orderItem(item);
+    });
 }
 
 bool LayoutController::jumpTo(const QString &pageId)
@@ -1742,6 +1772,9 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     if (!service.isEmpty() && !service.split(u',').contains(mode.isEmpty() ? u"restaurant"_s : mode))
         return false;
     // Orders called by number (a food truck, a restaurant at the counter).
+    if (const QJsonValue rush = rule.value(u"rush"); rush.isBool()
+        && rush.toBool() != (pos_ && pos_->serviceInfo().value(u"rush"_s).toBool()))
+        return false;
     if (const QJsonValue numbers = rule.value(u"numbers"); numbers.isBool()
         && numbers.toBool() != (pos_ && pos_->serviceInfo().value(u"numbers"_s).toBool()))
         return false;
@@ -2050,6 +2083,11 @@ void LayoutController::scanned(const QString &code)
         return;
     typedNumber_.clear();
     setUnknownCode({});
+    // Price check on: what it costs and how many there are, nothing rung in.
+    if (pos_->priceCheck().value(u"on"_s).toBool()) {
+        call(u"priceCheckCode"_s, {c}, [](const QVariant &) {});
+        return;
+    }
     const auto *page = currentPage();
     const bool ordering = page && (page->kind == u"index" || page->kind == u"items" || page->kind == u"modifier");
     // One barcode, but for leading zeros (a scanner may read a UPC as EAN-13).
@@ -2064,6 +2102,28 @@ void LayoutController::scanned(const QString &code)
     };
     for (const QVariant &v : pos_->menuItems()) {
         const QVariantMap m = v.toMap();
+        // A size and color's own barcode (or SKU): that one.
+        const QVariantMap sizes = m.value(u"variantCodes"_s).toMap();
+        for (auto it = sizes.cbegin(); it != sizes.cend(); ++it) {
+            if (!sameCode(it.key(), c))
+                continue;
+            if (!ordering && pos_->serviceInfo().value(u"mode"_s) != u"retail"_s) {
+                setStatus(tr("%1: ring it in on the order screen.").arg(m.value(u"name"_s).toString()));
+                return;
+            }
+            if (!ordering)
+                navigate(Navigator::Mode::Index);
+            const QString id = m.value(u"id"_s).toString();
+            call(u"addVariant"_s, {id, it.value().toString()}, [this, id](const QVariant &ok) {
+                if (ok.toBool()) {
+                    emit itemAdded(id);
+                    buzz();
+                } else {
+                    buzz(true);
+                }
+            });
+            return;
+        }
         const QStringList codes = m.value(u"barcodes"_s).toString().split(u", "_s, Qt::SkipEmptyParts);
         if (m.value(u"number"_s).toString() != c
             && std::ranges::none_of(codes, [&](const QString &b) { return sameCode(b, c); }))
@@ -2082,6 +2142,9 @@ void LayoutController::scanned(const QString &code)
     call(u"scanCode"_s, {c}, [this, c](const QVariant &kind) {
         if (kind.toString() == u"giftCard" && pageId() != u"gift-card" && activeLayout().page(u"gift-card"_s))
             navigate(Navigator::Mode::Push, u"gift-card"_s);
+        // A receipt: its items, to choose what comes back.
+        else if (kind.toString() == u"return" && pageId() != u"return" && activeLayout().page(u"return"_s))
+            navigate(Navigator::Mode::Push, u"return"_s);
         // Nothing has it: a manager may make it a new item's barcode.
         else if (kind.toString().isEmpty() && pos_ && pos_->can(QString::fromLatin1(vt::core::perm::Manager))
                  && activeLayout().page(u"menu-builder"_s))
@@ -2178,6 +2241,9 @@ void LayoutController::runAction(const Action &a, Done done)
         return done(navigate(*mode, target));
     }
 
+    // Price check on: the item's price and stock, not rung in.
+    if (type == u"addItem" && pos_ && pos_->priceCheck().value(u"on"_s).toBool())
+        return call(u"priceCheckCode"_s, {a.str(u"item")}, [done](const QVariant &ok) { done(ok.toBool()); });
     if (type == u"addItem") {
         const QString item = a.str(u"item");
         QStringList sequence;
@@ -2188,6 +2254,9 @@ void LayoutController::runAction(const Action &a, Done done)
                 buzz(true);
                 return done(false);
             }
+            // Sizes and colors: nothing yet, the grid asks which.
+            if (pos_ && !pos_->variantAsk().isEmpty())
+                return done(true);
             emit itemAdded(item);
             buzz();
             if (pos_) {
@@ -2397,6 +2466,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
     static const QHash<QString, std::pair<QString, QVariantList>> operations = {
         {u"login"_s, {u"login"_s, {}}}, {u"logout"_s, {u"logout"_s, {}}},
         {u"switchCounterPerson"_s, {u"switchCounterPerson"_s, {}}},
+        {u"rushSend"_s, {u"rushSend"_s, {}}}, {u"cancelReturn"_s, {u"cancelReturn"_s, {}}}, {u"rushOn"_s, {u"setRush"_s, {true}}}, {u"rushOff"_s, {u"setRush"_s, {false}}},
         {u"clockIn"_s, {u"clockIn"_s, {}}}, {u"clockOut"_s, {u"clockOut"_s, {}}},
         {u"startCheck"_s, {u"startCheck"_s, {u"dineIn"_s}}}, {u"startQuick"_s, {u"startCheck"_s, {u"quick"_s}}},
         {u"startTakeout"_s, {u"startCheck"_s, {u"takeout"_s}}},
@@ -2486,6 +2556,10 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
                     [done](const QVariant &ok) { done(ok.toBool()); });
     // Send: a required choice missing opens it (not only says so); sent from
     // a table, back to the floor plan if the store wants (Store Settings).
+    // Price check: on (the next scan or touch shows a price), or off.
+    if (pos_ && name == u"priceCheck")
+        return call(u"setPriceCheck"_s, {!pos_->priceCheck().value(u"on"_s).toBool()},
+                    [done](const QVariant &ok) { done(ok.toBool()); });
     if (pos_ && name == u"sendOrder")
         return call(u"sendOrder"_s, {}, [this, done](const QVariant &ok) {
             if (!ok.toBool()) {
@@ -2702,6 +2776,11 @@ QString LayoutController::describeAction(const Action &a) const
     if (type == u"command") {
         static const QHash<QString, const char *> plain{
             {u"sendOrder"_s, QT_TR_NOOP("Sends the new items to the kitchen and bar.")},
+            {u"rushSend"_s, QT_TR_NOOP("During a rush, sends the new items (put before going to pay).")},
+            {u"rushOn"_s, QT_TR_NOOP("Starts a rush on every screen: no tip question or receipt, Pay sends, bigger keys.")},
+            {u"rushOff"_s, QT_TR_NOOP("Ends the rush.")},
+            {u"cancelReturn"_s, QT_TR_NOOP("Returns: starts over, no sale chosen (put before going to the Return page).")},
+            {u"priceCheck"_s, QT_TR_NOOP("Price check: the next scan or item touched shows its price and stock, nothing rung in.")},
             {u"voidItem"_s, QT_TR_NOOP("Takes the touched item off the check (after it was sent: a void, which may need a manager).")},
             {u"printReceipt"_s, QT_TR_NOOP("Prints the check for the guest.")},
             {u"closeCheck"_s, QT_TR_NOOP("Closes the paid check.")},

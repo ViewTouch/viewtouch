@@ -323,6 +323,8 @@ QString EditorController::kindName(const QString &kind) const
         {u"legacyImport"_s, QT_TR_NOOP("Legacy menu and sales")},
         {u"tablesSetup"_s, QT_TR_NOOP("Tables, a question at a time")},
         {u"busList"_s, QT_TR_NOOP("Tables to clean (bussing)")},
+        {u"prepCounts"_s, QT_TR_NOOP("Prep counts: how many are left of each item")},
+        {u"returnPicker"_s, QT_TR_NOOP("Returns: the sale, what comes back and why")},
         {u"messageComposer"_s, QT_TR_NOOP("Messages")},
         {u"network"_s, QT_TR_NOOP("Network")},
         {u"receiveDelivery"_s, QT_TR_NOOP("Receive a delivery")},

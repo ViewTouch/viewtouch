@@ -124,6 +124,18 @@ QJsonObject toJson(const Check &c)
         }
         if (l.queueAtSend >= 0)
             lo.insert(u"queueAtSend"_s, l.queueAtSend);
+        if (!l.variant.empty())
+            lo.insert(u"variant"_s, qs(l.variant));
+        if (l.returnOf) {
+            lo.insert(u"returnOf"_s, qint64(l.returnOf));
+            lo.insert(u"returnLine"_s, qint64(l.returnLine));
+        }
+        if (!l.restock)
+            lo.insert(u"restock"_s, false);
+        if (!l.returnReason.empty())
+            lo.insert(u"returnReason"_s, qs(l.returnReason));
+        if (l.returned)
+            lo.insert(u"returned"_s, l.returned);
         if (l.seat != 0)
             lo.insert(u"seat"_s, l.seat);
         if (l.course != 1)
@@ -278,6 +290,12 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         l.share = lo.value(u"share").toInt();
         l.shareOf = lo.value(u"shareOf").toInt();
         l.shareGroup = i64(lo.value(u"shareGroup"));
+        l.variant = ss(lo.value(u"variant").toString());
+        l.returnOf = i64(lo.value(u"returnOf"));
+        l.returnLine = i64(lo.value(u"returnLine"));
+        l.restock = lo.value(u"restock").toBool(true);
+        l.returnReason = ss(lo.value(u"returnReason").toString());
+        l.returned = std::clamp(lo.value(u"returned").toInt(), 0, 9999);
         for (const QJsonValue &mv : lo.value(u"modifiers").toArray()) {
             const QJsonObject mo = mv.toObject();
             l.modifiers.push_back({ss(mo.value(u"itemId").toString()), ss(mo.value(u"name").toString()),
@@ -416,6 +434,21 @@ QJsonObject toJson(const MenuItem &m)
         o.insert(u"byWeight"_s, true);
         o.insert(u"weightUnit"_s, qs(m.weightUnit));
     }
+    if (!m.variantAxes.empty()) {
+        QJsonArray axes, list;
+        for (const MenuItem::VariantAxis &a : m.variantAxes)
+            axes.append(QJsonObject{{u"name"_s, qs(a.name)}, {u"values"_s, strings(a.values)}});
+        for (const MenuItem::Variant &v : m.variants) {
+            QJsonObject x{{u"key"_s, qs(v.key)}};
+            if (!v.barcode.empty()) x.insert(u"barcode"_s, qs(v.barcode));
+            if (!v.sku.empty()) x.insert(u"sku"_s, qs(v.sku));
+            if (v.price.cents()) x.insert(u"price"_s, decimalFromCents(v.price.cents()));
+            if (v.hidden) x.insert(u"hidden"_s, true);
+            list.append(x);
+        }
+        o.insert(u"variantAxes"_s, axes);
+        o.insert(u"variants"_s, list);
+    }
     if (!m.available) o.insert(u"available"_s, false);
     if (!m.modifierGroups.empty()) {
         QJsonArray groups;
@@ -495,6 +528,21 @@ MenuItem menuItemFromJson(const QJsonObject &o)
     m.ticketsSoldBefore = std::max(0, o.value(u"ticketsSoldBefore").toInt());
     m.substitutePrice = Money::fromCents(centsFromDecimal(o.value(u"substitutePrice").toDouble()));
     m.weightUnit = ss(o.value(u"weightUnit").toString(u"lb"_s));
+    for (const QJsonValue &v : o.value(u"variantAxes").toArray()) {
+        const QJsonObject a = v.toObject();
+        if (m.variantAxes.size() < 2 && !a.value(u"values").toArray().isEmpty())
+            m.variantAxes.push_back({ss(a.value(u"name").toString()), strings(a.value(u"values").toArray())});
+    }
+    if (!m.variantAxes.empty())
+        for (const QJsonValue &v : o.value(u"variants").toArray()) {
+            const QJsonObject x = v.toObject();
+            if (x.value(u"key").toString().isEmpty())
+                continue;
+            m.variants.push_back({ss(x.value(u"key").toString()), ss(x.value(u"barcode").toString()),
+                                  ss(x.value(u"sku").toString()),
+                                  Money::fromCents(std::max<std::int64_t>(0, centsFromDecimal(x.value(u"price").toDouble()))),
+                                  x.value(u"hidden").toBool()});
+        }
     m.available = o.value(u"available").toBool(true);
     for (const QJsonValue &g : o.value(u"modifierGroups").toArray())
         m.modifierGroups.push_back(ss(g.toString()));
@@ -1100,6 +1148,12 @@ QJsonObject toJson(const PosSettings &s)
         {u"backupKey"_s, qs(s.backupKey)}, {u"backupSalt"_s, qs(s.backupSalt)},
         {u"waitMinutesPerParty"_s, s.waitMinutesPerParty}, {u"hostsTakePayments"_s, s.hostsTakePayments},
         {u"autoLogoutMinutes"_s, s.autoLogoutMinutes}, {u"phoneLockSeconds"_s, s.phoneLockSeconds}, {u"tableLongMinutes"_s, s.tableLongMinutes},
+        {u"prepLowAt"_s, s.prepLowAt},
+        {u"rushNoReceipt"_s, s.rushNoReceipt},
+        {u"menuBoardOrders"_s, s.menuBoardOrders},
+        {u"receiptBarcode"_s, s.receiptBarcode},
+        {u"returnDays"_s, s.returnDays},
+        {u"cashierReturns"_s, s.cashierReturns},
         {u"orderWaitMinutes"_s, s.orderWaitMinutes},
         {u"checkBackMinutes"_s, s.checkBackMinutes},
         {u"foodReadyNotice"_s, s.foodReadyNotice},
@@ -1174,6 +1228,13 @@ QJsonObject toJson(const PosSettings &s)
                                       {u"serverId"_s, qs(x.serverId)}});
              return a;
          }()},
+        {u"prepCounts"_s, [&] {
+             QJsonArray a;
+             for (const PosSettings::PrepCount &x : s.prepCounts)
+                 a.append(QJsonObject{{u"item"_s, qs(x.itemId)}, {u"made"_s, x.made}, {u"sold"_s, x.sold}});
+             return a;
+         }()},
+        {u"rush"_s, s.rush},
         {u"prepSeconds"_s, [&] {
              QJsonObject o;
              for (const auto &[id, sec] : s.prepSeconds)
@@ -1466,6 +1527,12 @@ PosSettings settingsFromJson(const QJsonObject &o)
                             ss(b.value(u"commit").toString()), b.value(u"at").toInteger()});
     }
     s.tableLongMinutes = std::clamp(o.value(u"tableLongMinutes").toInt(90), 10, 600);
+    s.prepLowAt = std::clamp(o.value(u"prepLowAt").toInt(10), 1, 200);
+    s.rushNoReceipt = o.value(u"rushNoReceipt").toBool(true);
+    s.menuBoardOrders = o.value(u"menuBoardOrders").toBool(false);
+    s.receiptBarcode = o.value(u"receiptBarcode").toBool(true);
+    s.returnDays = std::clamp(o.value(u"returnDays").toInt(30), 0, 3650);
+    s.cashierReturns = o.value(u"cashierReturns").toBool(false);
     s.orderWaitMinutes = std::clamp(o.value(u"orderWaitMinutes").toInt(8), 3, 60);
     s.checkBackMinutes = std::clamp(o.value(u"checkBackMinutes").toInt(20), 5, 120);
     s.foodReadyNotice = o.value(u"foodReadyNotice").toBool(true);
@@ -1506,6 +1573,12 @@ PosSettings settingsFromJson(const QJsonObject &o)
         s.sections.push_back({ss(x.value(u"name").toString()), ss(x.value(u"color").toString()),
                               strings(x.value(u"tables").toArray()), ss(x.value(u"serverId").toString())});
     }
+    for (const QJsonValue &v : o.value(u"prepCounts").toArray()) {
+        const QJsonObject x = v.toObject();
+        if (!x.value(u"item").toString().isEmpty())
+            s.prepCounts.push_back({ss(x.value(u"item").toString()), std::max(0, x.value(u"made").toInt()), std::max(0, x.value(u"sold").toInt())});
+    }
+    s.rush = o.value(u"rush").toBool();
     const QJsonObject prep = o.value(u"prepSeconds").toObject();
     for (auto it = prep.begin(); it != prep.end(); ++it)
         s.prepSeconds[ss(it.key())] = it.value().toInt();

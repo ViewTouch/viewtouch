@@ -1373,6 +1373,39 @@ Item {
                                         }
                                     }
                                 }
+                                // A shop's: sizes and colors, each its own barcode and stock.
+                                Label {
+                                    textFormat: Text.PlainText
+                                    visible: w.pos.service.mode === "retail" || (w.savedItem?.variants ?? []).length > 0
+                                    text: qsTr("Sizes and colors")
+                                }
+                                RowLayout {
+                                    visible: w.pos.service.mode === "retail" || (w.savedItem?.variants ?? []).length > 0
+                                    Layout.fillWidth: true
+                                    readonly property var variants: (w.savedItem?.variants ?? []).filter(v => !v.hidden)
+                                    Label {
+                                        textFormat: Text.PlainText
+                                        objectName: "builderVariantsText"
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                        opacity: parent.variants.length ? 1 : 0.6
+                                        text: parent.variants.length ? qsTr("%n kind(s): %1", "", parent.variants.length)
+                                                                           .arg(parent.variants.slice(0, 6).map(v => v.label).join(" · ")
+                                                                                + (parent.variants.length > 6 ? " …" : ""))
+                                            : w.draft.id ? qsTr("None") : qsTr("None (add it first)")
+                                    }
+                                    TouchButton {
+                                        objectName: "builderVariants"
+                                        implicitHeight: w.fingers(44)
+                                        font.pixelSize: 14
+                                        enabled: !!w.draft.id && !w.draft.byWeight
+                                        text: qsTr("Sizes and Colors…")
+                                        onClicked: {
+                                            const b = w
+                                            b.leave(() => variantsDialog.openFor(b.savedItem))
+                                        }
+                                    }
+                                }
                                 Label { textFormat: Text.PlainText; text: qsTr("Category") }
                                 ComboBox {
                                     Layout.fillWidth: true
@@ -2440,6 +2473,10 @@ Item {
     MenuBuilderSizes {
         id: sizesDialog
         menu: w
+    }
+    MenuBuilderVariants {
+        id: variantsDialog
+        pos: w.pos
     }
     MenuBuilderPicture {
         id: pictureDialog

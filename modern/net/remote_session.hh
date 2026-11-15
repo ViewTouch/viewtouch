@@ -117,6 +117,7 @@ public:
     QStringList myUsuals() const override { return v(u"myUsuals").toStringList(); }
     QVariantMap rushRadar() const override { return v(u"rushRadar").toMap(); }
     QVariantMap stockLeft() const override { return v(u"stockLeft").toMap(); }
+    QVariantList prepCounts() const override { return v(u"prepCounts").toList(); }
     QVariantMap dashboard() const override { return v(u"dashboard").toMap(); }
     QVariantList lossAlerts() const override { return v(u"lossAlerts").toList(); }
     QVariantMap coach() const override { return v(u"coach").toMap(); }
@@ -146,6 +147,8 @@ public:
     QVariantList checkHistory() const override { return v(u"checkHistory").toList(); }
     QVariantMap choosingInfo() const override { return v(u"choosing").toMap(); }
     QVariantMap weighingInfo() const override { return v(u"weighing").toMap(); }
+    QVariantMap variantAsk() const override { return v(u"variantAsk").toMap(); }
+    QVariantMap priceCheck() const override { return v(u"priceCheck").toMap(); }
     QVariantMap setupInfo() const override { return v(u"setup").toMap(); }
     QString onBreakSince() const override { return v(u"onBreakSince").toString(); }
     QVariantList customerResults() const override { return v(u"customers").toList(); }
@@ -168,6 +171,7 @@ public:
     QVariantList storeImages() const override;
     QString storeLogo() const override { return v(u"storeLogo").toString(); }
     QVariantMap kioskMenu() const override { return v(u"kioskMenu").toMap(); }
+    QVariantMap menuBoard() const override { return v(u"menuBoard").toMap(); }
     QVariantMap customerPrompt() const override { return v(u"customerPrompt").toMap(); }
     int imageRevision() const override { return adminRevision() + imageRevision_; }
     int screenSaverMinutes() const override { return v(u"screenSaverMinutes").toInt(); }
@@ -193,6 +197,7 @@ public:
     QVariantMap storeCheck() const override { return v(u"storeCheck").toMap(); }
     QVariantMap prepLabels() const override { return v(u"prepLabels").toMap(); }
     QVariantMap checkSearch() const override { return v(u"checkSearch").toMap(); }
+    QVariantMap returnSale() const override { return v(u"returnSale").toMap(); }
     QVariantMap legacyImport() const override { return v(u"legacyImport").toMap(); }
     QVariantMap printerSearch() const override { return v(u"printerSearch").toMap(); }
     // Where pictures from the server are kept on this device (tests set it).

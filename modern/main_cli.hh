@@ -88,7 +88,7 @@ struct Options {
     QCommandLineOption screen{u"screen"_s,
         u"Pages for this screen: phone (phone versions, portrait), standard, auto "
         "(phones get phone pages; the default on Android), timeClock (only clocking in and out "
-        "and schedules), or nowServing (a TV for guests: orders being made and ready). "
+        "and schedules), nowServing (a TV for guests: orders being made and ready), or menuBoard (a TV for guests: the menu, sold-out items crossed off). "
         "Overrides Manager → Terminals."_s, u"mode"_s};
     QCommandLineOption windowed{u"windowed"_s,
         u"Start in a window instead of full screen (also with --size). F11 switches either way."_s};

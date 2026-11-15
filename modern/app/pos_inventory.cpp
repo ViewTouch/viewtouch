@@ -56,9 +56,17 @@ std::map<std::string, double> PosService::stockUse(const OrderLine &l) const
     const auto add = [&](const MenuItem *m, double times) {
         if (!m)
             return;
-        for (const RecipeLine &r : m->recipe)
-            use[r.ingredientId] += r.quantity * times;
+        // A size and color counts its own stock (when it has one).
+        const std::string own = ownStockId(m->id);
+        const std::string mine = !l.variant.empty() && m->id == l.itemId ? variantStockId(m->id, l.variant) : std::string();
+        for (const RecipeLine &r : m->recipe) {
+            const bool variantOwn = !mine.empty() && r.ingredientId == own && s_->ingredient(mine);
+            use[variantOwn ? mine : r.ingredientId] += r.quantity * times;
+        }
     };
+    // A return marked damaged: not back on the shelf.
+    if (l.isReturn() && !l.restock)
+        return use;
     // By weight: the recipe is per unit (a pound of brisket), times the weight.
     const double qty = l.counted() * (l.weight > 0 ? l.weight / 1000.0 : 1.0);
     add(findItem(qs(l.itemId)), qty * (l.qualifier == Qualifier::No ? 0 : 1));
@@ -78,7 +86,13 @@ void PosService::takeStock(const std::vector<OrderLine> &lines, int sign)
         for (const auto &[id, q] : stockUse(l))
             total[id] += q;
     }
-    if (total.empty())
+    // Prep counts go down with what's sent, and back up on a void.
+    const bool counted = std::ranges::any_of(lines, [&](const OrderLine &l) {
+        return std::ranges::any_of(s_->settings.prepCounts, [&](const PosSettings::PrepCount &p) { return p.itemId == l.itemId; });
+    });
+    if (counted)
+        countPrepped(lines, sign);
+    if (total.empty() && !counted)
         return;
     QStringList nowLow;
     for (int i = 0; i < int(s_->ingredients.size()); ++i) {
@@ -105,7 +119,7 @@ QVariantMap PosService::stockLeftNow() const
 {
     QVariantMap out;
     for (const MenuItem &m : s_->menu) {
-        if (m.recipe.empty() || !m.available)
+        if (m.recipe.empty() || !m.available || !m.variants.empty())   // sizes: each shows its own
             continue;
         bool low = false;
         double left = -1;
@@ -122,18 +136,43 @@ QVariantMap PosService::stockLeftNow() const
             out.insert(qs(m.name).toLower(), int(left));
         }
     }
+    // Prep counts running low.
+    for (const PosSettings::PrepCount &p : s_->settings.prepCounts) {
+        const int left = p.made - p.sold;
+        if (left <= 0 || left > s_->settings.prepLowAt)
+            continue;
+        for (const MenuItem &m : s_->menu)
+            if (m.id == p.itemId && m.available) {
+                const int was = out.value(qs(m.id), left).toInt();
+                out.insert(qs(m.id), std::min(was, left));
+                out.insert(qs(m.name).toLower(), std::min(was, left));
+            }
+    }
     return out;
 }
 
 void PosService::refreshSoldOut()
 {
-    QStringList out, back;
+    QStringList out, back, prepped;
     for (int i = 0; i < int(s_->menu.size()); ++i) {
         MenuItem &m = s_->menu[i];
-        if (m.recipe.empty())
+        const bool prepCounted = std::ranges::any_of(s_->settings.prepCounts, [&](const PosSettings::PrepCount &p) { return p.itemId == m.id; });
+        if (m.recipe.empty() && !prepCounted && !m.autoSoldOut)
             continue;
-        bool shortOf = false;
+        bool shortOf = prepOut(m.id);
+        // Sizes and colors counted: the item's own count isn't used, theirs are.
+        const std::string own = ownStockId(m.id);
+        bool sizes = false, anySize = false;
+        for (const MenuItem::Variant &v : m.variants)
+            if (const Ingredient *g = s_->ingredient(variantStockId(m.id, v.key)); g && !v.hidden) {
+                sizes = true;
+                anySize = anySize || g->onHand + 1e-9 >= 1;
+            }
+        if (sizes && !anySize)
+            shortOf = true;
         for (const RecipeLine &r : m.recipe) {
+            if (sizes && r.ingredientId == own)
+                continue;
             const Ingredient *g = s_->ingredient(r.ingredientId);
             if (g && r.quantity > 0 && g->onHand + 1e-9 < r.quantity)
                 shortOf = true;
@@ -142,6 +181,8 @@ void PosService::refreshSoldOut()
             m.available = false;
             m.autoSoldOut = true;
             out << qs(m.name);
+            if (prepOut(m.id))
+                prepped << qs(m.name);
         } else if (!shortOf && m.autoSoldOut) {
             m.available = true;
             m.autoSoldOut = false;
@@ -154,8 +195,15 @@ void PosService::refreshSoldOut()
     }
     if (out.isEmpty() && back.isEmpty())
         return;
-    if (!out.isEmpty())
+    if (!out.isEmpty()) {
         emit notice(tr("Out of stock, now sold out: %1").arg(out.join(u", "_s)));
+        // The last one prepped went: everyone's screens hear it.
+        if (!prepped.isEmpty()) {
+            s_->messages.push_back({++s_->lastMessageId, now(), ss(tr("Kitchen")), "floor", ss(tr("86: %1").arg(prepped.join(u", "_s)))});
+            if (s_->messages.size() > 50)
+                s_->messages.erase(s_->messages.begin());
+        }
+    }
     if (!back.isEmpty())
         emit notice(tr("Back in stock: %1").arg(back.join(u", "_s)));
     ++s_->adminRevision;
@@ -632,12 +680,27 @@ bool PosService::printPriceTags(const QStringList &itemIds, int copies)
         const MenuItem *m = findItem(id);
         if (!m)
             return fail(tr("'%1' is not on the menu.").arg(id));
+        // Sizes and colors: a tag for each one sold, its name, price and barcode.
+        if (!m->variants.empty()) {
+            for (const MenuItem::Variant &v : m->variants) {
+                if (v.hidden)
+                    continue;
+                for (int i = 0; i < copies; ++i) {
+                    labels.push_back({m->name + " (" + ss(variantLabel(v.key)) + ")",
+                                      {format(v.price.cents() > 0 ? v.price : m->price).toStdString()}});
+                    codes.push_back(!v.barcode.empty() ? v.barcode : v.sku);
+                }
+            }
+            continue;
+        }
         const std::string code = !m->barcodes.empty() ? m->barcodes.front() : m->number;
         for (int i = 0; i < copies; ++i) {
             labels.push_back({m->name, {format(m->price).toStdString()}});
             codes.push_back(code);
         }
     }
+    if (labels.size() > 500)
+        return fail(tr("That's more than 500 tags: print them a few at a time."));
     s_->printer->printLabels(s_->settings, labels, printer, codes);
     emit notice(tr("Printing %n price tag(s)", "", int(labels.size())));
     return true;

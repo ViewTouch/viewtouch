@@ -1286,6 +1286,14 @@ bool PosService::endOfDay()
             ++it;
         }
     }
+    // Today's prep counts and rush end with the day (the counted items come
+    // back once nothing counts them).
+    if (!s_->settings.prepCounts.empty() || s_->settings.rush) {
+        s_->settings.prepCounts.clear();
+        s_->settings.rush = false;
+        s_->saveSettings();
+        refreshSoldOut();
+    }
     // 86'd for today: back on the menu.
     bool back = false;
     if (s_->settings.soldOutBackNextDay)

@@ -38,6 +38,8 @@ namespace vt::app {
 qint64 priceCents(QString text, const QString &symbol);
 // The ingredient that is an item's own stock (Track stock on its card).
 std::string ownStockId(const std::string &itemId);
+// A size and color's own stock ("item-tshirt|M|Red").
+std::string variantStockId(const std::string &itemId, const std::string &variant);
 
 // Where the service hands off changes. Implementations must not block: the
 // SQLite one queues writes to a worker thread.
@@ -562,6 +564,17 @@ public:
     void selectFoundCheck(qint64 id);
     bool reprintCheck(qint64 id);   // a copy of a found check's receipt
     QVariantMap checkSearch() const override;
+    // Returns and exchanges (pos_returns.cpp): the sale items come back from
+    // (its receipt scanned, or found), what comes back (each a line below
+    // zero, at what was paid), or one without a receipt (a manager's); what's
+    // owed back given as cash, to the sale's card, or as store credit.
+    bool startReturn(qint64 checkId);
+    void cancelReturn();
+    QVariantMap returnSale() const override;
+    bool returnLines(const QVariantList &picks, const QString &reason);
+    bool returnItem(const QString &itemId, qint64 cents, const QString &reason, bool restock = true);
+    bool setRestock(qint64 lineId, bool restock);
+    bool refundReturn(const QString &how);
     QVariantMap legacyImport() const override { return legacy_; }
     QVariantMap printerSearch() const override { return printerSearch_; }
     bool findPrinters();
@@ -979,6 +992,21 @@ public:
     QVariantMap choosingInfo() const override;
     // Items sold by weight: the one waiting for its weight (the Weigh page).
     QVariantMap weighingInfo() const override;
+    // Sizes and colors (pos_retail.cpp): the grid for the item just touched,
+    // one chosen (rung in), or a size's barcode scanned; set up in the Menu
+    // Builder (a manager's), each counting its own stock.
+    QVariantMap variantAsk() const override;
+    bool addVariant(const QString &itemId, const QString &key);
+    void cancelVariant();
+    bool addItemByCode(const QString &code);
+    bool setItemVariants(const QString &itemId, const QVariantList &axes, const QVariantList &variants);
+    bool setVariantStock(const QString &itemId, const QString &key, int onHand);
+    QString variantLabel(const std::string &key) const;
+    // Price check: the next scan or touch shows the price and how many are
+    // in stock, nothing rung in.
+    QVariantMap priceCheck() const override;
+    bool setPriceCheck(bool on);
+    bool priceCheckCode(const QString &code);
     // The setup guide (managers): what's set so far, and each step.
     QVariantMap setupInfo() const override;
     bool setupStore(const QString &name, const QString &receiptLines, const QString &serviceMode = QString());
@@ -1142,6 +1170,7 @@ public:
     void kioskCancel();
     QVariantMap selfOrderInfo() const override;
     QVariantMap kioskMenu() const override;
+    QVariantMap menuBoard() const override;   // a TV's menu (Terminals: Menu board)
 
     // How this screen serves: "restaurant", "foodTruck" or "retail" (the
     // terminal's setting, else the store's).
@@ -1160,6 +1189,17 @@ public:
     void applyServiceMode();
     // Who's working changes: the next PIN is theirs.
     bool switchCounterPerson();
+    // Prep counts (a truck's "made 60 birria tacos"): how many are left of
+    // each, set (left; below 0: not counted) or added to when more are made.
+    // At none left the item is sold out until more are made.
+    QVariantList prepCounts() const override;
+    bool setPrepCount(const QString &itemId, int left);
+    bool addPrepped(const QString &itemId, int more);
+    void countPrepped(const std::vector<core::OrderLine> &lines, int sign);
+    bool prepOut(const std::string &itemId) const;
+    // A rush, on every screen (Store's serviceInfo().rush).
+    bool setRush(bool on);
+    bool rushSend();   // Pay during a rush sends what isn't sent first
     // Guest pagers and the window: the pager handed out with the open order
     // (0: none); an order made (Ready: called, the screens say which pager
     // to buzz; again: called again) and picked up (off the list).
@@ -1362,6 +1402,19 @@ private:
     int legacyRequest_ = 0;
     bool legacyStart(const QString &folder, const QVariantMap &parts, bool apply);
     std::vector<core::Check> searchHits_;
+    // A return: the sale items come back from, or the one being looked for.
+    std::optional<core::Check> returnSale_;
+    std::int64_t returnWanted_ = 0;
+    const core::Check *returnSaleCheck() const;
+    void returnArrived();
+    int returnableLeft(const core::Check &sale, const core::OrderLine &l) const;
+    int saleDaysAgo(const core::Check &sale) const;
+    bool mayTakeReturn(const core::Check *sale);
+    Money returnPrice(const core::Check &sale, const core::OrderLine &l) const;
+    core::OrderLine returnLineFrom(const core::Check &sale, const core::OrderLine &l, int qty, const QString &reason) const;
+    Money refundDueOn(const core::Check &c) const;
+    const core::Payment *returnCard(const core::Check &c, const core::Check **sale) const;
+    void markReturned(const core::Check &c);
     qint64 selectedHit_ = 0;
     int searchRequest_ = 0;
     // A report that can cover several days, over `closed`.
@@ -1596,6 +1649,14 @@ private:
     // empty: just added (Cancel Item takes it off).
     std::optional<core::OrderLine> choosingBefore_;
     QString weighing_;                // an item sold by weight, waiting for its weight
+    QString variantAsk_;              // an item with sizes and colors, waiting for which
+    std::string variantNext_;         // the size and color addItem rings in
+    bool priceCheckOn_ = false;
+    QVariantMap priceChecked_;
+    double variantStock(const core::MenuItem &m, const std::string &key) const;   // -1: not counted
+    std::pair<const core::MenuItem *, std::string> findVariantCode(const QString &code) const;
+    QVariantList variantCells(const core::MenuItem &m) const;
+    QVariantList variantAxesOf(const core::MenuItem &m) const;
     bool retireMeAtFinish_ = false;   // setup guide: this sample manager goes off at Finish
     qint64 selectedLine_ = 0;
     QVariantMap readerToken_;          // the latest connection token for this terminal's reader

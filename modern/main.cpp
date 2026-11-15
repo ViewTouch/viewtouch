@@ -542,7 +542,8 @@ int runTerminal(const Args &cli, const Options &o)
         remote.setOfflineJournal(QDir(dataDir).filePath(u"offline.db"_s));
         if (cli.isSet(o.selfOrder))
             remote.setRequestedScreen(u"selfOrder"_s);
-        else if (cli.value(o.screen) == u"timeClock" || cli.value(o.screen) == u"nowServing")
+        else if (cli.value(o.screen) == u"timeClock" || cli.value(o.screen) == u"nowServing"
+                 || cli.value(o.screen) == u"menuBoard")
             remote.setRequestedScreen(cli.value(o.screen));
         QObject::connect(&remote, &vt::net::RemoteSession::credentialsChanged, &remote, save);
         remote.connectTo(creds->host, creds->port);

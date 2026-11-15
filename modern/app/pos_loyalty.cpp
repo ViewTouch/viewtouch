@@ -6,6 +6,7 @@
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 
+#include <QRegularExpression>
 #include <QDateTime>
 
 #include <algorithm>
@@ -268,6 +269,10 @@ QString PosService::scanCode(const QString &code)
         return applyCoupon(c) ? u"coupon"_s : QString();
     if (s_->giftCard(ss(c)))
         return lookupGiftCard(c) ? u"giftCard"_s : QString();
+    // A receipt's barcode (R and the sale's number): its items can come back.
+    static const QRegularExpression receipt(u"^R(\\d{1,15})$"_s);
+    if (const auto m = receipt.match(c); m.hasMatch())
+        return startReturn(m.captured(1).toLongLong()) ? u"return"_s : QString();
     fail(tr("Nothing has the code %1.").arg(c));
     return {};
 }

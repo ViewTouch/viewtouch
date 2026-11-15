@@ -3,6 +3,10 @@
   "one": "%1 for %n guest",
   "other": "%1 for %n guests"
  },
+ "%1: %n size(s) and color(s)": {
+  "one": "%1: %n size and color",
+  "other": "%1: %n sizes and colors"
+ },
  "%1: added %n item(s). Change any of it as you like.": {
   "one": "%1: added %n item. Change any of it as you like.",
   "other": "%1: added %n items. Change any of it as you like."
@@ -90,6 +94,10 @@
  "%n item(s) removed from the menu": {
   "one": "%n item removed from the menu",
   "other": "%n items removed from the menu"
+ },
+ "%n kind(s): %1": {
+  "one": "%n kind: %1",
+  "other": "%n kinds: %1"
  },
  "%n menu item(s)": {
   "one": "%n menu item",
@@ -258,6 +266,10 @@
  "Change %n price(s) %1": {
   "one": "Change %n price %1",
   "other": "Change %n prices %1"
+ },
+ "Coming back: %n item(s)": {
+  "one": "Coming back: %n item",
+  "other": "Coming back: %n items"
  },
  "Counted %n item(s): %1 missing": {
   "one": "Counted %n item: %1 missing",
