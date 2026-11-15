@@ -10,6 +10,7 @@
 #include <QLocale>
 
 #include <algorithm>
+#include <set>
 
 using namespace Qt::StringLiterals;
 using namespace vt::core;
@@ -37,16 +38,30 @@ QVariantList PosService::kitchenTicketsNow() const
     // has not bumped yet. Closed checks count too (pay-first counters).
     struct Ticket { const Check *check; std::int64_t sentAt; std::vector<const OrderLine *> lines; };
     std::vector<Ticket> tickets;
+    const std::int64_t t0 = now();
     auto collect = [&](const Check &c) {
+        // A send with something still to make (or a void the kitchen hasn't
+        // seen: crossed out until bumped); what's made there stays, dimmed.
         std::map<std::int64_t, std::vector<const OrderLine *>> bySend;
+        std::set<std::int64_t> open;
         for (const OrderLine &l : c.lines) {
+            if (!l.sent || !(l.isComment() || l.forKitchen()))
+                continue;
             const bool partsLeft = std::ranges::any_of(l.modifiers, [&](const Modifier &m) { return isPart(l, m) && !m.made; });
-            if (l.sent && (!l.made || partsLeft) && !l.voided && (l.isComment() || l.forKitchen()))
-                bySend[l.sentAt].push_back(&l);
+            const bool freshVoid = l.voided && !l.made && t0 - l.sentAt < 3 * 3'600'000;
+            if (l.voided && !freshVoid)
+                continue;
+            bySend[l.sentAt].push_back(&l);
+            if ((!l.made || partsLeft) && (!l.isComment() || l.voided))
+                open.insert(l.sentAt);
         }
+        bool any = false;
         for (auto &[sentAt, lines] : bySend)
-            tickets.push_back({&c, sentAt, std::move(lines)});
-        return !bySend.empty();
+            if (open.contains(sentAt)) {
+                tickets.push_back({&c, sentAt, std::move(lines)});
+                any = true;
+            }
+        return any;
     };
     for (const auto &[id, c] : s_->open)
         if (!c.training)   // practice never reaches the kitchen
@@ -68,8 +83,11 @@ QVariantList PosService::kitchenTicketsNow() const
                 if (!m.kitchenHide && !isPart(*l, m))
                     mods << qs(m.kitchenText());
             }
-            if (!l->made)
+            const bool partsLeft = std::ranges::any_of(l->modifiers, [&](const Modifier &m) { return isPart(*l, m) && !m.made; });
+            if (!l->made || partsLeft || !l->isComment())
                 lines.append(QVariantMap{{u"name"_s, qs(l->isComment() ? l->name : l->kitchenText())},
+                                         {u"id"_s, qint64(l->id)}, {u"item"_s, qs(l->itemId)},
+                                         {u"made"_s, l->made}, {u"voided"_s, l->voided},
                                          {u"color"_s, qs(l->kitchenColor)}, {u"quantity"_s, l->quantity},
                                          {u"contains"_s, allergenNames(allergyHits(*t.check, *l))},
                                          {u"modifiers"_s, mods}, {u"comment"_s, l->isComment()}, {u"note"_s, qs(l->note)},
@@ -94,7 +112,17 @@ QVariantList PosService::kitchenTicketsNow() const
                 target = std::max(target, prepMinutesFor(l.itemId));
         const int late = target > 0 ? target + 2 : s_->settings.kitchenLateMinutes;
         const int warn = target > 0 ? std::max(1, target * 3 / 4) : s_->settings.kitchenWarnMinutes;
+        // The check's next course, on hold: on its latest ticket, to see coming.
+        QVariantList held;
+        if (std::ranges::none_of(tickets, [&](const Ticket &o) { return o.check == t.check && o.sentAt > t.sentAt; }))
+            for (const OrderLine &l : t.check->lines)
+                if (t.check->held(l) && l.forKitchen() && !l.isComment())
+                    held.append(QVariantMap{{u"name"_s, qs(l.kitchenText())}, {u"quantity"_s, l.quantity},
+                                            {u"course"_s, l.course}, {u"seat"_s, l.seat},
+                                            {u"printer"_s, qs(l.printerOf())}, {u"station"_s, qs(stationOf(l))}});
         out.append(QVariantMap{
+            {u"held"_s, held},
+            {u"firesAt"_s, t.check->fireAt && !held.isEmpty() ? i18n::timeText(QDateTime::fromMSecsSinceEpoch(t.check->fireAt).time()) : QString()},
             {u"checkId"_s, qint64(t.check->id)}, {u"sentAt"_s, qint64(t.sentAt)},
             {u"label"_s, qs(t.check->label)}, {u"server"_s, qs(t.check->serverName)},
             {u"type"_s, qs(toString(t.check->type))}, {u"customer"_s, qs(t.check->customer.name)},
@@ -174,8 +202,16 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
     int n = 0;
     bool learned = false;
     for (OrderLine &l : c->lines) {
-        if (!l.sent || l.voided || l.sentAt != sentAt)
+        if (!l.sent || l.sentAt != sentAt)
             continue;
+        if (l.voided) {   // the kitchen saw it crossed out
+            if (!l.made && atStation(l, where)) {
+                l.made = true;
+                l.madeAt = now();
+                ++n;
+            }
+            continue;
+        }
         if (!l.made && atStation(l, where)) {
             l.made = true;
             l.madeAt = now();
@@ -247,6 +283,77 @@ void PosService::tellFoodReady(const Check &c, std::int64_t sentAt)
     if (s_->messages.size() > 50)
         s_->messages.erase(s_->messages.begin());
     emit s_->dayChanged();   // every screen looks
+}
+
+// One item on a ticket made (or not after all); the ticket goes when it's all made.
+bool PosService::bumpLine(qint64 checkId, qint64 lineId, bool made)
+{
+    Check *c = findAnyCheck(s_, checkId);
+    if (!c)
+        return fail(tr("That ticket is gone."));
+    OrderLine *l = c->line(lineId);
+    if (!l || !l->sent)
+        return fail(tr("That item is gone."));
+    if (l->made == made)
+        return true;
+    l->made = made;
+    l->madeAt = made ? now() : 0;
+    if (made) {
+        // Learn what it takes, as a whole ticket's bump does.
+        const std::int64_t took = (l->madeAt - l->sentAt) / 1000;
+        if (!l->isComment() && !l->voided && took > 0 && took < 90 * 60 && !c->training) {
+            int &avg = s_->settings.prepSeconds[l->itemId];
+            avg = avg == 0 ? int(took) : int(std::lround(0.8 * avg + 0.2 * double(took)));
+            s_->savePrepTimes();
+        }
+        // The last one: the ticket's done (Recall brings it back).
+        const bool done = std::ranges::none_of(c->lines, [&](const OrderLine &x) {
+            return x.sent && x.sentAt == l->sentAt && !x.made && (x.forKitchen() || x.isComment()) && !x.isComment();
+        });
+        if (done) {
+            for (OrderLine &x : c->lines)   // its notes go with it
+                if (x.sent && x.sentAt == l->sentAt && x.isComment() && !x.made) {
+                    x.made = true;
+                    x.madeAt = now();
+                }
+            s_->bumped.push_back({checkId, l->sentAt, {}});
+        }
+    } else {
+        s_->kitchenAgain(c->id);
+    }
+    if (s_->sink)
+        s_->sink->saveCheck(*c);
+    if (made)
+        tellFoodReady(*c, l->sentAt);
+    emit s_->checksChanged();
+    return true;
+}
+
+// The kitchen's out of it: sold out (86) for everyone, and the floor told.
+bool PosService::kitchenSoldOut(const QString &itemId)
+{
+    for (int i = 0; i < int(s_->menu.size()); ++i) {
+        MenuItem &m = s_->menu[i];
+        if (qs(m.id) != itemId)
+            continue;
+        if (!m.available)
+            return true;
+        m.available = false;
+        m.autoSoldOut = false;
+        m.soldOutToday = true;
+        if (s_->sink)
+            s_->sink->saveMenuItem(m, i);
+        ++s_->adminRevision;
+        emit s_->menuChanged();
+        PosShared::Message msg{++s_->lastMessageId, now(), ss(tr("Kitchen")), "floor", ss(tr("86: %1").arg(qs(m.name)))};
+        s_->messages.push_back(msg);
+        if (s_->messages.size() > 50)
+            s_->messages.erase(s_->messages.begin());
+        emit s_->dayChanged();
+        emit notice(tr("%1 is sold out (86)").arg(qs(m.name)));
+        return true;
+    }
+    return fail(tr("'%1' is not on the menu.").arg(itemId));
 }
 
 // --- the expediter -------------------------------------------------------------------------
@@ -380,6 +487,35 @@ bool PosService::setKitchenStation(const QString &station)
     ++s_->adminRevision;
     emit s_->adminChanged();
     emit notice(station.isEmpty() ? tr("This screen shows its page's orders") : tr("This screen: %1").arg(stationName(ss(station))));
+    return true;
+}
+
+bool PosService::kitchenSound() const
+{
+    if (!s_->settings.kitchenSounds)
+        return false;
+    for (const TerminalConfig &t : s_->settings.terminals)
+        if (qs(t.name) == terminal_)
+            return !t.quiet;
+    return true;
+}
+
+bool PosService::setKitchenSound(bool on)
+{
+    // Like the station: this screen only, nobody logged in needed.
+    auto &list = s_->settings.terminals;
+    auto it = std::ranges::find_if(list, [&](const TerminalConfig &t) { return qs(t.name) == terminal_; });
+    if (it == list.end()) {
+        TerminalConfig t;
+        t.name = ss(terminal_);
+        list.push_back(t);
+        it = list.end() - 1;
+    }
+    it->quiet = !on;
+    s_->saveSettings();
+    ++s_->adminRevision;
+    emit s_->adminChanged();
+    emit notice(on ? tr("Sound on") : tr("Sound off"));
     return true;
 }
 

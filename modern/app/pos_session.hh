@@ -112,6 +112,8 @@ class PosSession : public QObject {
     Q_PROPERTY(int screenSaverMinutes READ screenSaverMinutes NOTIFY adminChanged)
     Q_PROPERTY(QVariantList kitchenStations READ kitchenStations NOTIFY adminChanged)
     Q_PROPERTY(QString kitchenStation READ kitchenStation NOTIFY adminChanged)
+    // This kitchen screen chimes (the store's setting, and not turned off here).
+    Q_PROPERTY(bool kitchenSound READ kitchenSound NOTIFY adminChanged)
     // Messages between screens, the last hour's, newest first.
     Q_PROPERTY(QVariantList messages READ messages NOTIFY dayChanged)
     // Shift notes for the manager logged in, not read yet.
@@ -374,6 +376,7 @@ public:
     virtual int screenSaverMinutes() const = 0;
     virtual QVariantList kitchenStations() const = 0;
     virtual QString kitchenStation() const = 0;
+    virtual bool kitchenSound() const = 0;
     virtual QVariantList messages() const = 0;
     virtual QVariantList handoff() const = 0;
     // A screen that lost its server: the store's standby is there, ready.
@@ -617,6 +620,15 @@ public:
     // Orders for later: ready at this time (ms since 1970; 0 = as soon as possible).
     Q_INVOKABLE void setDueAt(double at) { invoke(QStringLiteral("setDueAt"), {qint64(at)}); }
     Q_INVOKABLE void setKitchenStation(const QString &id) { invoke(QStringLiteral("setKitchenStation"), {id}); }
+    Q_INVOKABLE void setKitchenSound(bool on) { invoke(QStringLiteral("setKitchenSound"), {on}); }
+    Q_INVOKABLE void bumpLine(qint64 checkId, qint64 lineId, bool made) { invoke(QStringLiteral("bumpLine"), {checkId, lineId, made}); }
+    Q_INVOKABLE void kitchenSoldOut(const QString &itemId) { invoke(QStringLiteral("kitchenSoldOut"), {itemId}); }
+    // serverId: null leaves who works it as it is.
+    Q_INVOKABLE void saveSection(const QString &name, const QStringList &tables, const QVariant &serverId = QVariant())
+    {
+        invoke(QStringLiteral("saveSection"), {name, tables, serverId});
+    }
+    Q_INVOKABLE void removeSection(const QString &name) { invoke(QStringLiteral("removeSection"), {name}); }
     // The setup guide's steps.
     Q_INVOKABLE void setupStore(const QString &name, const QString &lines, const QString &serviceMode = QString())
     {

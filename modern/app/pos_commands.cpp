@@ -145,6 +145,14 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"undoLast"_s, [](PosService &p, const QVariantList &) { return QVariant(p.undoLast()); }},
         {u"repeatLine"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.repeatLine(a.value(0).toLongLong())); }},
         {u"sendOrder"_s, [](PosService &p, const QVariantList &) { return QVariant(p.sendOrder()); }},
+        {u"saveSection"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.saveSection(a.value(0).toString(), a.value(1).toStringList(),
+                                           a.value(2).isNull() ? QString() : a.value(2).toString())); }},
+        {u"removeSection"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeSection(a.value(0).toString())); }},
+        {u"bumpLine"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.bumpLine(a.value(0).toLongLong(), a.value(1).toLongLong(), a.value(2).toBool())); }},
+        {u"kitchenSoldOut"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.kitchenSoldOut(a.value(0).toString())); }},
+        {u"setKitchenSound"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setKitchenSound(a.value(0).toBool())); }},
         {u"setKitchenStation"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setKitchenStation(a.value(0).toString())); }},
         {u"addWeighed"_s, [](PosService &p, const QVariantList &) { return QVariant(p.addWeighed()); }},

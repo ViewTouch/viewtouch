@@ -13,6 +13,7 @@ Item {
     readonly property var status: !w.pos || !w.name || w.pos.checksRevision < 0 ? ({ open: false }) : w.pos.tableStatus(w.name)
     readonly property string floorState: status.floor ?? ""
     readonly property color tint: floorState === "dirty" ? zone.statusColor("tableDirty", "#7a3b3b")
+                                  : floorState === "cleaning" ? zone.statusColor("tableCleaning", "#3b6f7a")
                                   : floorState === "reserved" ? zone.statusColor("tableReserved", "#5b4aa8")
                                   : floorState === "joined" ? zone.statusColor("tableOpen", "#a86a12")
                                   : !status.open ? (zone.st.fill ?? Ui.button)
@@ -155,6 +156,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             visible: w.floorState !== ""
             text: w.floorState === "dirty" ? qsTr("Needs bussing")
+                : w.floorState === "cleaning" ? qsTr("Being cleaned")
                 : w.floorState === "joined" ? qsTr("With %1").arg(w.status.with ?? "")
                 : qsTr("Held: %1").arg(w.status.party ?? "") + (w.status.time ? "  ·  " + w.status.time : "")
             color: w.ink

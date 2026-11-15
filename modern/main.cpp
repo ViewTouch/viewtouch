@@ -26,6 +26,7 @@
 #include "storage/layout_store.hh"
 #include "storage/pos_store.hh"
 
+#include <set>
 #include <QCommandLineParser>
 #include <QDir>
 #include <QEventLoop>
@@ -1182,6 +1183,20 @@ int runStore(const Args &cli, const Options &o)
 
     // Every save of the pages goes through the hub, which tells the terminals.
     vt::net::LayoutHub hub(*layout, haveStore ? &store : nullptr);
+    // The tables on the store's floor plans and their seats (the host stand's
+    // best table, the waitlist's quotes): from the pages as they are now.
+    shared->tableSeats = [&hub] {
+        std::vector<std::pair<std::string, int>> out;
+        std::set<QString> seen;
+        for (const vt::layout::Page &p : hub.layout().pages)
+            for (const vt::layout::Zone &z : p.zones) {
+                const QString name = z.label.trimmed();
+                if (z.kind != u"table" || name.isEmpty() || !seen.insert(name.toLower()).second)
+                    continue;
+                out.emplace_back(name.toStdString(), z.props.value(u"seats"_s).toInt());
+            }
+        return out;
+    };
 
     // A store brought over from legacy ViewTouch (Manager -> Bring Over a
     // Legacy Store): what its dat folder has, then (a backup first) bringing

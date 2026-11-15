@@ -52,6 +52,45 @@ int PosService::quoteFor(int ahead) const
     return std::max(5, (minutes + 4) / 5 * 5);   // to the next 5 minutes
 }
 
+int PosService::quoteFor(int size, const std::vector<int> &aheadSizes) const
+{
+    // From the tables a party this size fits: when each is free (now, once
+    // bussed, or when its guests are likely done). The parties ahead that
+    // fit them take them first, in their order. Nothing to go on (no tables
+    // known, none big enough): the store's minutes a party.
+    const auto seats = s_->tableSeats ? s_->tableSeats() : std::vector<std::pair<std::string, int>>{};
+    const QVariantMap f = floor();
+    struct Spot { int seats; int freeIn; };
+    std::vector<Spot> spots;
+    for (const auto &[table, n] : seats) {
+        if (n <= 0)
+            continue;
+        const QVariantMap t = f.value(qs(table)).toMap();
+        const QString state = t.value(u"state"_s).toString();
+        if (state.isEmpty())
+            spots.push_back({n, 0});
+        else if (state == u"dirty" || state == u"cleaning")
+            spots.push_back({n, std::max(2, s_->settings.busMinutes - t.value(u"minutes"_s).toInt())});
+        else if (state == u"seated" && !t.contains(u"with"_s))
+            spots.push_back({n, std::max(0, t.value(u"freeIn"_s).toInt())});
+    }
+    if (std::ranges::none_of(spots, [&](const Spot &s) { return s.seats >= size; }))
+        return quoteFor(int(aheadSizes.size()));
+    std::ranges::sort(spots, {}, &Spot::freeIn);
+    // The parties ahead, each at the soonest table that fits them (no bigger than needed... first free).
+    std::vector<bool> taken(spots.size(), false);
+    for (const int ahead : aheadSizes)
+        for (size_t i = 0; i < spots.size(); ++i)
+            if (!taken[i] && spots[i].seats >= ahead) {
+                taken[i] = true;
+                break;
+            }
+    for (size_t i = 0; i < spots.size(); ++i)
+        if (!taken[i] && spots[i].seats >= size)
+            return std::max(5, (spots[i].freeIn + 4) / 5 * 5);
+    return quoteFor(int(aheadSizes.size()));   // all of them spoken for: as before
+}
+
 QVariantMap PosService::waitlistInfoNow() const
 {
     if (!user())
@@ -118,6 +157,16 @@ QVariantMap PosService::waitlistInfoNow() const
         {u"waiting"_s, waiting}, {u"booked"_s, booked}, {u"seatedToday"_s, seated},
         {u"averageWait"_s, seated ? int(waitedTotal / seated / kMinute) : 0}, {u"noShows"_s, noShows},
         {u"nextQuote"_s, quoteFor(int(waiting.size()))},
+        // A new party's quote by its size (1 to 12): from the tables that fit it.
+        {u"quotes"_s, [&] {
+             std::vector<int> ahead;
+             for (const Party *p : line)
+                 ahead.push_back(p->size);
+             QVariantList q{0};
+             for (int n = 1; n <= 12; ++n)
+                 q << quoteFor(n, ahead);
+             return q;
+         }()},
     };
 }
 
@@ -157,10 +206,15 @@ qint64 PosService::addParty(const QVariantMap &r, bool reservation)
         p.reservedFor = at;
         p.status = Party::Status::Booked;
     } else {
-        int ahead = 0;
+        std::vector<const Party *> line;
         for (const Party &x : s_->parties)
-            ahead += x.inLine() ? 1 : 0;
-        p.quotedMinutes = r.contains(u"quote"_s) ? std::clamp(r.value(u"quote"_s).toInt(), 0, 600) : quoteFor(ahead);
+            if (x.inLine())
+                line.push_back(&x);
+        std::ranges::sort(line, {}, &Party::waitingSince);
+        std::vector<int> ahead;
+        for (const Party *x : line)
+            ahead.push_back(x->size);
+        p.quotedMinutes = r.contains(u"quote"_s) ? std::clamp(r.value(u"quote"_s).toInt(), 0, 600) : quoteFor(p.size, ahead);
         p.status = Party::Status::Waiting;
     }
     p.id = ++s_->lastPartyId;
@@ -358,14 +412,22 @@ QVariantMap PosService::floorNow() const
                                       {u"nudge"_s, nudge}, {u"nudgeLevel"_s, nudgeLevel}, {u"party"_s, qs(c.customer.name)}});
     }
     // Who gets the next table: of the servers on the clock, the one with the
-    // fewest guests seated now, and then the one seated longest ago.
+    // fewest guests seated now, and then the one seated longest ago. With
+    // sections, of the servers working one.
+    const auto onClock = [&](const std::string &id) {
+        return std::ranges::any_of(s_->punches, [&](const TimePunch &p) { return p.employeeId == id && p.clockOut == 0; });
+    };
+    std::set<std::string> sectionServers;
+    for (const PosSettings::Section &x : s_->settings.sections)
+        if (!x.serverId.empty() && onClock(x.serverId))
+            sectionServers.insert(x.serverId);
     {
         struct Up { const Employee *e; int covers = 0; std::int64_t last = 0; };
         std::vector<Up> ups;
         for (const Employee &e : s_->employees) {
-            if (!e.active || e.role != "server")
+            if (!e.active || (e.role != "server" && !sectionServers.contains(e.id)))
                 continue;
-            if (!std::ranges::any_of(s_->punches, [&](const TimePunch &p) { return p.employeeId == e.id && p.clockOut == 0; }))
+            if (!onClock(e.id) || (!sectionServers.empty() && !sectionServers.contains(e.id)))
                 continue;
             Up u{&e};
             for (const auto &[id, c] : s_->open)
@@ -382,9 +444,27 @@ QVariantMap PosService::floorNow() const
             const Up &next = *std::ranges::min_element(ups, [](const Up &a, const Up &b) {
                 return a.covers != b.covers ? a.covers < b.covers : a.last < b.last;
             });
+            QString section;
+            for (const PosSettings::Section &x : s_->settings.sections)
+                if (x.serverId == next.e->id)
+                    section = qs(x.name);
             out.insert(u"_next"_s, QVariantMap{{u"id"_s, qs(next.e->id)}, {u"name"_s, qs(next.e->name)},
-                                               {u"covers"_s, next.covers}});
+                                               {u"covers"_s, next.covers}, {u"section"_s, section}});
         }
+    }
+    // The sections, with who works each today.
+    if (!s_->settings.sections.empty()) {
+        QVariantList list;
+        for (const PosSettings::Section &x : s_->settings.sections) {
+            const Employee *e = x.serverId.empty() ? nullptr : s_->employee(x.serverId);
+            QStringList tables;
+            for (const std::string &t : x.tables)
+                tables << qs(t);
+            list.append(QVariantMap{{u"name"_s, qs(x.name)}, {u"color"_s, qs(x.color)}, {u"tables"_s, tables},
+                                    {u"serverId"_s, qs(x.serverId)}, {u"server"_s, e ? qs(e->name) : QString()},
+                                    {u"onClock"_s, e && onClock(e->id)}});
+        }
+        out.insert(u"_sections"_s, list);
     }
     for (const PosSettings::TableState &s : s_->settings.tableStates) {
         const QString label = qs(s.table);
@@ -397,8 +477,12 @@ QVariantMap PosService::floorNow() const
                 with.insert(u"with"_s, qs(s.with));
                 out.insert(label, with);
             }
-        } else if (s.state == "dirty") {
-            out.insert(label, QVariantMap{{u"state"_s, u"dirty"_s}, {u"minutes"_s, int((t - s.since) / kMinute)}});
+        } else if (s.state == "dirty" || s.state == "cleaning") {
+            // Waiting to be bussed (orange past the store's minutes), or being cleaned: by whom.
+            const int minutes = int((t - s.since) / kMinute);
+            out.insert(label, QVariantMap{{u"state"_s, qs(s.state)}, {u"minutes"_s, minutes},
+                                          {u"late"_s, s.state == "dirty" && minutes >= s_->settings.busMinutes},
+                                          {u"by"_s, s.state == "cleaning" ? qs(s.by) : QString()}});
         } else if (s.state == "reserved") {
             const Party *p = nullptr;
             for (const Party &x : s_->parties)
@@ -411,7 +495,97 @@ QVariantMap PosService::floorNow() const
                                           {u"time"_s, p->reservedFor ? clock(p->reservedFor) : QString()}});
         }
     }
+    // The best tables for a party of each size: free and clean, seating them
+    // with the fewest seats to spare, in the section of whoever's next up.
+    if (s_->tableSeats) {
+        const std::string nextSection = ss(out.value(u"_next"_s).toMap().value(u"section"_s).toString());
+        const auto sectionOf = [&](const std::string &table) -> std::string {
+            for (const PosSettings::Section &x : s_->settings.sections)
+                if (std::ranges::find(x.tables, table) != x.tables.end())
+                    return x.name;
+            return {};
+        };
+        struct Free { std::string table; int seats; std::string section; };
+        std::vector<Free> free;
+        int most = 0;
+        for (const auto &[table, seats] : s_->tableSeats())
+            if (seats > 0 && !out.contains(qs(table))) {
+                free.push_back({table, seats, sectionOf(table)});
+                most += seats;
+            }
+        QVariantMap best;
+        for (int size = 1; size <= std::min(most, 20); ++size) {
+            struct Pick { std::vector<std::string> tables; int seats; std::string section; };
+            std::vector<Pick> picks;
+            for (const Free &x : free)
+                if (x.seats >= size)
+                    picks.push_back({{x.table}, x.seats, x.section});
+            if (picks.empty())   // two pushed together, in one section
+                for (size_t i = 0; i < free.size(); ++i)
+                    for (size_t j = i + 1; j < free.size(); ++j)
+                        if (free[i].section == free[j].section && free[i].seats + free[j].seats >= size)
+                            picks.push_back({{free[i].table, free[j].table}, free[i].seats + free[j].seats, free[i].section});
+            std::ranges::stable_sort(picks, [&](const Pick &a, const Pick &b) {
+                const bool an = !nextSection.empty() && a.section == nextSection, bn = !nextSection.empty() && b.section == nextSection;
+                if (a.seats != b.seats)
+                    return a.seats < b.seats;
+                return an && !bn;
+            });
+            QVariantList list;
+            for (size_t i = 0; i < picks.size() && i < 3; ++i) {
+                QStringList tables;
+                for (const std::string &x : picks[i].tables)
+                    tables << qs(x);
+                list.append(QVariantMap{{u"tables"_s, tables}, {u"seats"_s, picks[i].seats}, {u"section"_s, qs(picks[i].section)}});
+            }
+            if (!list.isEmpty())
+                best.insert(QString::number(size), list);
+        }
+        out.insert(u"_best"_s, best);
+    }
     return out;
+}
+
+bool PosService::saveSection(const QString &name, const QStringList &tables, const QString &serverId, const QString &color)
+{
+    if (!require(perm::Order, tr("Sections")))
+        return false;
+    const std::string n = ss(name.trimmed());
+    if (n.empty())
+        return fail(tr("Give the section a name."));
+    auto &list = s_->settings.sections;
+    auto it = std::ranges::find_if(list, [&](const PosSettings::Section &x) { return x.name == n; });
+    if (it == list.end()) {
+        static const char *colors[] = {"#2f6fb3", "#2e8b57", "#b8860b", "#8e44ad", "#c0392b", "#16a085"};
+        list.push_back({n, colors[list.size() % 6], {}, {}});
+        it = list.end() - 1;
+    }
+    std::vector<std::string> mine;
+    for (const QString &t : tables)
+        if (!t.trimmed().isEmpty())
+            mine.push_back(ss(t.trimmed()));
+    for (PosSettings::Section &x : list)   // a table is in one section
+        if (x.name != n)
+            std::erase_if(x.tables, [&](const std::string &t) { return std::ranges::find(mine, t) != mine.end(); });
+    it->tables = mine;
+    if (!serverId.isNull())
+        it->serverId = ss(serverId);
+    if (!color.isEmpty())
+        it->color = ss(color);
+    s_->saveSettings();
+    emit s_->checksChanged();
+    return true;
+}
+
+bool PosService::removeSection(const QString &name)
+{
+    if (!require(perm::Order, tr("Sections")))
+        return false;
+    if (!std::erase_if(s_->settings.sections, [&](const PosSettings::Section &x) { return qs(x.name) == name; }))
+        return fail(tr("No section named %1.").arg(name));
+    s_->saveSettings();
+    emit s_->checksChanged();
+    return true;
 }
 
 void PosService::tableEmptied(const std::string &table)
@@ -435,21 +609,25 @@ void PosService::tableEmptied(const std::string &table)
 
 bool PosService::setTableState(const QString &table, const QString &state)
 {
-    if (!require(perm::Order, tr("The host stand")))
+    // Bussing (cleaning one, ready) is anyone's on the clock; dirty is the host's.
+    if (!user())
+        return fail(tr("Log in first."));
+    if (state == u"dirty" && !require(perm::Order, tr("The host stand")))
         return false;
     const std::string label = ss(table.trimmed());
     if (label.empty())
         return fail(tr("Choose a table."));
-    if (state != u"clean" && state != u"dirty")
+    if (state != u"clean" && state != u"dirty" && state != u"cleaning")
         return fail(tr("Mark it clean or dirty."));
     if (tableTaken(table))
         return fail(tr("%1 has guests: close its check first.").arg(table));
     auto &states = s_->settings.tableStates;
     std::erase_if(states, [&](const PosSettings::TableState &s) { return s.table == label; });
-    if (state == u"dirty")
-        states.push_back({label, "dirty", {}, user()->name, 0, now()});
+    if (state == u"dirty" || state == u"cleaning")
+        states.push_back({label, ss(state), {}, user()->name, 0, now()});
     s_->saveSettings();
-    emit notice(state == u"dirty" ? tr("%1 needs bussing").arg(table) : tr("%1 is ready").arg(table));
+    emit notice(state == u"dirty" ? tr("%1 needs bussing").arg(table)
+                : state == u"cleaning" ? tr("%1: being cleaned").arg(table) : tr("%1 is ready").arg(table));
     emit s_->checksChanged();
     return true;
 }

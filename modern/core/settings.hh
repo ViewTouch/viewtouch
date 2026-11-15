@@ -67,6 +67,7 @@ struct TerminalConfig {
     std::string screen;
     // Its kitchen screen shows this station (a Station id or a printer id; empty = the page's).
     std::string station;
+    bool quiet = false;   // its kitchen screen: no chimes (Sound off)
     // Its own look (a Look id: the bar dark, the patio light); empty = the store's.
     std::string look;
     // The on-screen keyboard for typing: "on", "off", or empty = on (but the
@@ -596,6 +597,14 @@ struct PosSettings {
         bool operator==(const TableState &) const = default;
     };
     std::vector<TableState> tableStates;
+    // Server sections: tables in each, and who works it (kept from day to day).
+    struct Section {
+        std::string name, color;
+        std::vector<std::string> tables;
+        std::string serverId;
+        bool operator==(const Section &) const = default;
+    };
+    std::vector<Section> sections;
     std::vector<ChecklistTick> checklistTicks;
     // Kitchen stations, each with its own screen (Manager -> Menu: where an item is made).
     std::vector<Station> stations;

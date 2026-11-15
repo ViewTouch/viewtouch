@@ -404,8 +404,12 @@ TEST_CASE("Kitchen display: a station bumps only its own lines", "[net][kitchen]
     REQUIRE(pos.bumpTicket(t[u"checkId"_s].toLongLong(), t[u"sentAt"_s].toLongLong(), u"bar"_s));
     QVariantList left = pos.kitchenTickets();
     REQUIRE(left.size() == 1);
-    REQUIRE(left[0].toMap()[u"lines"_s].toList().size() == 1);
-    CHECK(left[0].toMap()[u"lines"_s].toList()[0].toMap()[u"name"_s].toString() == u"Cobb"_s);
+    // The wine stays on the ticket, made (dimmed on the screens); the Cobb is still to make.
+    const QVariantList lines = left[0].toMap()[u"lines"_s].toList();
+    REQUIRE(lines.size() == 2);
+    CHECK(lines[0].toMap()[u"name"_s].toString() == u"Cobb"_s);
+    CHECK_FALSE(lines[0].toMap()[u"made"_s].toBool());
+    CHECK(lines[1].toMap()[u"made"_s].toBool());
 
     REQUIRE(pos.recallTicket());     // brings the wine back only
     CHECK(pos.kitchenTickets()[0].toMap()[u"lines"_s].toList().size() == 2);

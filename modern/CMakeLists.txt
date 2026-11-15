@@ -219,6 +219,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetFactoryReset.qml
             ui/qml/WidgetLegacyImport.qml
             ui/qml/WidgetTablesSetup.qml
+            ui/qml/WidgetBusList.qml
             ui/qml/PrinterFinder.qml
             ui/qml/WidgetNetwork.qml
             ui/qml/WidgetReceiveDelivery.qml

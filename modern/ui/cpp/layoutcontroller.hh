@@ -132,8 +132,10 @@ public:
     // A short two-note chime (the Now Serving board: an order called), played
     // by the computer's own player (aplay, pw-play, paplay); none: silent.
     // Its file, made once; true when a player was started.
-    Q_INVOKABLE bool chime();
+    // kind "late": the kitchen's late order (three lower notes).
+    Q_INVOKABLE bool chime(const QString &kind = {});
     static QString chimeFile();
+    static QString toneFile(const QString &kind);
     void setScreenSaverForTesting(int ms) { sleepOverrideMs_ = ms; restartSleep(); }
     EditorController *editor() const { return editor_; }
     bool busy() const { return pending_ > 0; }

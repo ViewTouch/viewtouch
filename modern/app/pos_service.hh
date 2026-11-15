@@ -289,6 +289,8 @@ public:
     std::int64_t todayLastId = 0;
     // Older time punches from the store (Time Punches reaches a month back).
     std::function<std::vector<core::TimePunch>(std::int64_t from, std::int64_t to)> punchHistory;
+    // The store's tables and their seats (from its floor plans): best table, wait quotes.
+    std::function<std::vector<std::pair<std::string, int>>()> tableSeats;
     // Drawers opened in [from, to) (the Exceptions and Loss Watch reports' no sales).
     std::function<std::vector<core::DrawerSession>(std::int64_t from, std::int64_t to)> drawerHistory;
     std::vector<core::TimePunch> olderPunches;   // loaded from it for editing
@@ -664,6 +666,8 @@ public:
     QVariantList kitchenStations() const override;
     QString kitchenStation() const override;
     bool setKitchenStation(const QString &station);
+    bool setKitchenSound(bool on);   // this screen's chimes
+    bool kitchenSound() const override;
     QString stationName(const std::string &id) const;
     // Event tickets: sold so far (all days), and left (-1: not an event).
     int ticketsSold(const core::MenuItem &item) const;
@@ -1259,7 +1263,11 @@ public:
     bool seatPartyAt(qint64 partyId, const QStringList &tables, const QString &serverId);
     bool seatWalkIn(int size, const QStringList &tables, const QString &serverId);
     bool reserveTables(qint64 partyId, const QStringList &tables);
-    bool setTableState(const QString &table, const QString &state);
+    bool setTableState(const QString &table, const QString &state);   // "dirty", "cleaning", "clean"
+    // A server section: its tables (each in one section) and who works it today.
+    bool saveSection(const QString &name, const QStringList &tables, const QString &serverId = QString(),
+                     const QString &color = {});
+    bool removeSection(const QString &name);
     bool tableTaken(const QString &table) const;   // an open table check is on it
     void tableEmptied(const std::string &table);   // its last check closed: dirty
     // Left the line, or (a reservation) never came.
@@ -1375,6 +1383,7 @@ private:
     core::Party *party(qint64 id);
     void saveParty(const core::Party &p);
     int quoteFor(int ahead) const;
+    int quoteFor(int size, const std::vector<int> &aheadSizes) const;   // from the tables that fit
     QVariantMap promotionRecord(const core::PosSettings::Promotion &p) const;
     bool savePromotionRecord(int index, const QVariantMap &record);
     QVariantMap customerSummary(const core::CustomerRecord &c) const;
@@ -1467,6 +1476,10 @@ private:
     int nextOrderNumber() const;
     void callOrder(core::Check &c);   // ready: the screens say so (and which pager to buzz)
     void tellFoodReady(const core::Check &c, std::int64_t sentAt);   // all made: its server is told
+public:
+    bool bumpLine(qint64 checkId, qint64 lineId, bool made);   // one item on a kitchen ticket
+    bool kitchenSoldOut(const QString &itemId);                // 86 from the kitchen screen
+private:
     QString orderLabel(const core::Check &c) const;
     bool kioskToGo_ = false;
     QVariantMap lastKioskOrder_;   // the confirmation the guest sees

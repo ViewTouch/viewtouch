@@ -778,7 +778,7 @@ Item {
                             objectName: "lineQuantity"
                             textFormat: Text.PlainText
                             visible: !row.modelData.sent
-                            width: qtyBar.key * 1.1
+                            width: Math.max(qtyBar.key * 1.1, w.tapH)
                             height: qtyBar.keyH
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter

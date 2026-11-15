@@ -173,6 +173,7 @@ public:
     int screenSaverMinutes() const override { return v(u"screenSaverMinutes").toInt(); }
     QVariantList kitchenStations() const override { return v(u"kitchenStations").toList(); }
     QString kitchenStation() const override { return v(u"kitchenStation").toString(); }
+    bool kitchenSound() const override { return v(u"kitchenSound").toBool(); }
     QVariantList messages() const override { return v(u"messages").toList(); }
     QVariantList handoff() const override { return v(u"handoff").toList(); }
     bool standbyReady() const override { return !welcomed_ && !standbyHost_.isEmpty(); }

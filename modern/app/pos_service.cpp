@@ -550,6 +550,8 @@ QVariantMap PosService::userPrefs() const
             start = it->second;
         else if (job == "host")
             start = "seating";   // hosts: the seating screen (when the layout has it)
+        else if (job == "busser")
+            start = "bussing";   // bussers: the tables to clean
     }
     // This device's start screen wins: the patio handheld opens on the patio, whoever has it.
     if (!deviceStart.empty())

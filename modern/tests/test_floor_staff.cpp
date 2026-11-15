@@ -292,3 +292,222 @@ TEST_CASE("Bartenders: a drink asks for the guest's ID once a check; under age t
     REQUIRE(f.pos.addItem(u"coffee"_s));
     CHECK(f.pos.checkInfo()[u"idAsk"_s].isNull());
 }
+
+TEST_CASE("Kitchen: a void stays crossed out until bumped; one item made at a time; the next course on hold", "[floorstaff][kitchen]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(12);
+    pos.shared()->setClock([&] { return clock; });
+    pos.shared()->settings.askReasons = false;
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.selectTable(u"T1"_s) == PosService::TableNeedsGuests);
+    REQUIRE(pos.startCheck(core::CheckType::DineIn));
+    pos.addItem(u"cobb"_s);
+    pos.addItem(u"caesar"_s);
+    REQUIRE(pos.setCourse(2));
+    pos.addItem(u"classic-burger"_s);   // the main: course 2, on hold
+    REQUIRE(pos.sendOrder());
+    const auto ticket = [&] { return pos.kitchenTickets().value(0).toMap(); };
+    const auto lineNamed = [&](const QString &name) {
+        for (const QVariant &v : ticket()[u"lines"_s].toList())
+            if (v.toMap()[u"name"_s].toString().contains(name))
+                return v.toMap();
+        return QVariantMap();
+    };
+    // The burger waits, listed under it.
+    QVariantList held = ticket()[u"held"_s].toList();
+    REQUIRE(held.size() == 1);
+    CHECK(held.first().toMap()[u"course"_s] == 2);
+    CHECK(ticket()[u"firesAt"_s].toString().isEmpty());
+    REQUIRE(pos.fireCourseIn(10));
+    CHECK_FALSE(ticket()[u"firesAt"_s].toString().isEmpty());
+
+    // The Caesar voided after it went: crossed out, still on the ticket.
+    pos.selectLine(lineNamed(u"Caesar"_s)[u"id"_s].toLongLong());
+    REQUIRE(pos.voidItem());
+    CHECK(lineNamed(u"Caesar"_s)[u"voided"_s].toBool());
+
+    // The Cobb made on its own: it stays, made; the ticket stays for the void.
+    const qint64 checkId = ticket()[u"checkId"_s].toLongLong();
+    REQUIRE(pos.bumpLine(checkId, lineNamed(u"Cobb"_s)[u"id"_s].toLongLong(), true));
+    CHECK(lineNamed(u"Cobb"_s)[u"made"_s].toBool());
+    REQUIRE(pos.kitchenTickets().size() == 1);
+    // Not made after all, then made.
+    REQUIRE(pos.bumpLine(checkId, lineNamed(u"Cobb"_s)[u"id"_s].toLongLong(), false));
+    CHECK_FALSE(lineNamed(u"Cobb"_s)[u"made"_s].toBool());
+    REQUIRE(pos.bumpLine(checkId, lineNamed(u"Cobb"_s)[u"id"_s].toLongLong(), true));
+    // The void seen: the ticket's done, and Recall brings it back.
+    REQUIRE(pos.bumpLine(checkId, lineNamed(u"Caesar"_s)[u"id"_s].toLongLong(), true));
+    CHECK(pos.kitchenTickets().isEmpty());
+    REQUIRE(pos.recallTicket());
+    CHECK(pos.kitchenTickets().size() == 1);
+    REQUIRE(pos.bumpTicket(checkId, ticket()[u"sentAt"_s].toLongLong()));
+    CHECK(pos.kitchenTickets().isEmpty());
+
+    // A void long after it went (an old check): not brought back.
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.fireCourse());
+    clock += 4 * 3'600'000;
+    for (const QVariant &v : pos.kitchenTickets())
+        for (const QVariant &l : v.toMap()[u"lines"_s].toList())
+            CHECK_FALSE(l.toMap()[u"voided"_s].toBool());
+}
+
+TEST_CASE("Kitchen: sold out (86) from the kitchen screen, nobody logged in; the floor is told", "[floorstaff][kitchen][86]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    CHECK(pos.kitchenSoldOut(u"cobb"_s));
+    CHECK_FALSE(pos.findItem(u"cobb"_s)->available);
+    bool told = false;
+    for (const QVariant &v : pos.messages())
+        told = told || (v.toMap()[u"to"_s] == u"floor"_s && v.toMap()[u"text"_s].toString().contains(u"86"_s));
+    CHECK(told);
+    CHECK_FALSE(pos.kitchenSoldOut(u"no-such-thing"_s));
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK_FALSE(pos.addItem(u"cobb"_s));   // servers can't ring it
+}
+
+TEST_CASE("Kitchen: each screen's sound on or off; the store's switch for all", "[floorstaff][kitchen][sound]")
+{
+    PosService store(test::seedPosData(), nullptr);
+    PosService pos(store.shared(), u"Grill"_s);
+    CHECK(pos.kitchenSound());
+    REQUIRE(pos.setKitchenSound(false));
+    CHECK_FALSE(pos.kitchenSound());
+    CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).terminals.back().quiet);
+    REQUIRE(pos.setKitchenSound(true));
+    CHECK(pos.kitchenSound());
+    pos.shared()->settings.kitchenSounds = false;
+    CHECK_FALSE(pos.kitchenSound());
+}
+
+namespace {
+// The store's tables and seats, as the floor plans would say.
+void tablesOf(PosService &pos)
+{
+    pos.shared()->tableSeats = [] {
+        return std::vector<std::pair<std::string, int>>{{"T1", 2}, {"T2", 4}, {"T3", 4}, {"T4", 6}, {"T5", 2}};
+    };
+}
+QStringList bestFor(PosService &pos, int size)
+{
+    QStringList out;
+    for (const QVariant &v : pos.floor().value(u"_best"_s).toMap().value(QString::number(size)).toList())
+        out << v.toMap().value(u"tables"_s).toStringList().join(u'+');
+    return out;
+}
+} // namespace
+
+TEST_CASE("Hosts: the best table for a party: the fewest seats to spare, free and clean", "[floorstaff][host][best]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(18);
+    pos.shared()->setClock([&] { return clock; });
+    tablesOf(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK(bestFor(pos, 2).first() == u"T1"_s);   // a two-top for two
+    CHECK(bestFor(pos, 2).size() == 3);           // and two more to choose from
+    CHECK(bestFor(pos, 3).first() == u"T2"_s);
+    CHECK(bestFor(pos, 5) == QStringList{u"T4"_s});
+    CHECK(bestFor(pos, 8).first().split(u'+').size() == 2);   // none big enough: two pushed together
+    // Taken, dirty or held: not offered.
+    REQUIRE(pos.seatWalkIn(2, {u"T1"_s}, {}));
+    REQUIRE(pos.setTableState(u"T2"_s, u"dirty"_s));
+    CHECK(bestFor(pos, 2).first() == u"T5"_s);
+    CHECK(bestFor(pos, 3).first() == u"T3"_s);
+}
+
+TEST_CASE("Hosts: server sections: their tables, who works each, next up among them", "[floorstaff][host][sections]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(18);
+    pos.shared()->setClock([&] { return clock; });
+    tablesOf(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.clockInEmployee(u"sam"_s));
+    REQUIRE(pos.clockInEmployee(u"rosa"_s));
+    REQUIRE(pos.saveSection(u"Window"_s, {u"T1"_s, u"T2"_s}, u"sam"_s));
+    REQUIRE(pos.saveSection(u"Back"_s, {u"T3"_s, u"T4"_s, u"T5"_s}, u"rosa"_s));
+    CHECK_FALSE(pos.saveSection(u"  "_s, {}));
+    QVariantList sections = pos.floor().value(u"_sections"_s).toList();
+    REQUIRE(sections.size() == 2);
+    CHECK(sections[0].toMap()[u"server"_s].toString() == u"Sam"_s);
+    CHECK(sections[0].toMap()[u"onClock"_s].toBool());
+
+    // Sam gets four in his section: Rosa's next, and her section's tables come first.
+    REQUIRE(pos.seatWalkIn(4, {u"T2"_s}, u"sam"_s));
+    const QVariantMap next = pos.floor().value(u"_next"_s).toMap();
+    CHECK(next[u"id"_s] == u"rosa"_s);
+    CHECK(next[u"section"_s] == u"Back"_s);
+    CHECK(bestFor(pos, 2).first() == u"T5"_s);   // a two-top in Rosa's section before Sam's T1
+
+    // A table is in one section: moving T1 takes it out of Window.
+    REQUIRE(pos.saveSection(u"Back"_s, {u"T1"_s, u"T3"_s, u"T4"_s, u"T5"_s}));
+    sections = pos.floor().value(u"_sections"_s).toList();
+    CHECK(sections[0].toMap()[u"tables"_s].toStringList() == QStringList{u"T2"_s});
+    CHECK(sections[1].toMap()[u"serverId"_s] == u"rosa"_s);   // who works it kept
+    // Kept with the settings (tomorrow starts with today's).
+    CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).sections == pos.shared()->settings.sections);
+    REQUIRE(pos.removeSection(u"Window"_s));
+    CHECK(pos.floor().value(u"_sections"_s).toList().size() == 1);
+    CHECK_FALSE(pos.removeSection(u"Window"_s));
+}
+
+TEST_CASE("Hosts: a wait quote from the tables that fit the party, not minutes a party", "[floorstaff][host][quotes]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(18);
+    pos.shared()->setClock([&] { return clock; });
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    // Without tables known: the store's 10 minutes a party, as before.
+    CHECK(pos.waitlistInfo()[u"quotes"_s].toList()[2].toInt() == 10);
+    tablesOf(pos);
+    // A free table that fits: a short wait.
+    CHECK(pos.waitlistInfo()[u"quotes"_s].toList()[2].toInt() == 5);
+    // Every table seated just now: the soonest one to free up that fits them.
+    for (const char *t : {"T1", "T2", "T3", "T4", "T5"})
+        REQUIRE(pos.seatWalkIn(2, {QString::fromLatin1(t)}, {}));
+    const int two = pos.waitlistInfo()[u"quotes"_s].toList()[2].toInt();
+    CHECK(two >= 30);
+    CHECK(two % 5 == 0);
+    // A party of 6 fits only T4; one of 6 ahead of them takes it: the old way.
+    REQUIRE(pos.addToWaitlist({{u"name"_s, u"Big"_s}, {u"size"_s, 6}}));
+    CHECK(pos.waitlistInfo()[u"quotes"_s].toList()[6].toInt() == 20);   // 2 parties x 10 minutes
+    // The quote given a party: theirs.
+    const qint64 id = pos.addToWaitlist({{u"name"_s, u"Pat"_s}, {u"size"_s, 2}});
+    REQUIRE(id > 0);
+    for (const QVariant &v : pos.waitlistInfo()[u"waiting"_s].toList())
+        if (v.toMap()[u"name"_s] == u"Pat"_s)
+            CHECK(v.toMap()[u"quoted"_s].toInt() == two);
+}
+
+TEST_CASE("Bussers: tables to clean, cleaning, ready; no other say", "[floorstaff][host][bussing]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = todayAt(18);
+    pos.shared()->setClock([&] { return clock; });
+    core::Employee bo;
+    bo.id = "bo";
+    bo.name = "Bo";
+    bo.role = "busser";
+    bo.pinSalt = "s";
+    bo.pinHash = app::hashPin(u"7777"_s, bo.pinSalt);
+    pos.shared()->employees.push_back(bo);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.setTableState(u"T2"_s, u"dirty"_s));
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"7777"_s));
+    CHECK(pos.userPrefs()[u"startPage"_s] == u"bussing"_s);
+    clock += 6 * 60'000;
+    QVariantMap t2 = pos.floor().value(u"T2"_s).toMap();
+    CHECK(t2[u"state"_s] == u"dirty"_s);
+    CHECK(t2[u"late"_s].toBool());           // past 5 minutes
+    REQUIRE(pos.setTableState(u"T2"_s, u"cleaning"_s));
+    t2 = pos.floor().value(u"T2"_s).toMap();
+    CHECK(t2[u"state"_s] == u"cleaning"_s);
+    CHECK(t2[u"by"_s] == u"Bo"_s);
+    CHECK(pos.tableStatus(u"T2"_s)[u"floor"_s] == u"cleaning"_s);
+    REQUIRE(pos.setTableState(u"T2"_s, u"clean"_s));
+    CHECK_FALSE(pos.floor().contains(u"T2"_s));
+    CHECK_FALSE(pos.setTableState(u"T3"_s, u"dirty"_s));   // the host's call
+}

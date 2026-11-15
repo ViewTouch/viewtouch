@@ -220,13 +220,24 @@ void LayoutController::sleepTimeout()
 
 QString LayoutController::chimeFile()
 {
-    const QString file = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath(u"vtmodern-chime.wav"_s);
+    return toneFile({});
+}
+
+QString LayoutController::toneFile(const QString &kind)
+{
+    // "late": three falling notes, lower (G5 E5 C5) and longer, to tell
+    // apart from a new order's two (E6, C6).
+    const bool late = kind == u"late";
+    const QString file = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
+                             .filePath(late ? u"vtmodern-late.wav"_s : u"vtmodern-chime.wav"_s);
     if (QFileInfo(file).size() > 44)
         return file;
-    // Two notes (E6, C6), 0.35 s each, fading out: 16-bit mono at 22050 Hz.
-    constexpr int rate = 22050, perNote = rate * 35 / 100;
+    // Each note 0.35 s (late: 0.4 s), fading out: 16-bit mono at 22050 Hz.
+    constexpr int rate = 22050;
+    const int perNote = late ? rate * 40 / 100 : rate * 35 / 100;
+    const std::vector<double> notes = late ? std::vector<double>{784.0, 659.3, 523.3} : std::vector<double>{1318.5, 1046.5};
     QByteArray pcm;
-    for (const double hz : {1318.5, 1046.5})
+    for (const double hz : notes)
         for (int i = 0; i < perNote; ++i) {
             const double t = double(i) / rate, fade = 1.0 - double(i) / perNote;
             const auto v = qint16(std::lround(9000.0 * fade * fade * std::sin(2 * M_PI * hz * t)));
@@ -250,9 +261,9 @@ QString LayoutController::chimeFile()
     return file;
 }
 
-bool LayoutController::chime()
+bool LayoutController::chime(const QString &kind)
 {
-    const QString file = chimeFile();
+    const QString file = toneFile(kind);
     for (const QString &player : {u"pw-play"_s, u"aplay"_s, u"paplay"_s}) {
         const QString path = QStandardPaths::findExecutable(player);
         if (path.isEmpty())

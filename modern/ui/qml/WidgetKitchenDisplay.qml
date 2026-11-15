@@ -52,11 +52,21 @@ Item {
         if (!pos) return []
         if (expo) return pos.expoTickets
         const out = []
+        const here = l => station === "" || l.station === station || l.printer === station
         for (const t of pos.kitchenTickets) {
-            const lines = station === "" ? t.lines
-                        : t.lines.filter(l => l.station === station || l.printer === station || l.comment)
-            if (lines.some(l => !l.comment))
-                out.push(Object.assign({}, t, { lines: lines }))
+            const lines = t.lines.filter(l => l.comment || here(l))
+            // Something still to make here (or a void to see): its made ones stay, dimmed.
+            if (!lines.some(l => !l.comment && !l.made))
+                continue
+            // The next course, on hold: listed under it, greyed, to see coming.
+            const held = (t.held ?? []).filter(here)
+            const shown = held.length === 0 ? lines : lines.concat(
+                [{ heldHeader: true, name: t.firesAt ? qsTr("Course %1 on hold · fires %2").arg(held[0].course).arg(t.firesAt)
+                                                     : qsTr("Course %1 on hold").arg(held[0].course), comment: true, made: true }],
+                held.map(h => Object.assign({ held: true, comment: false, made: true, modifiers: [] }, h)))
+            // A later send while the first is still up: ADDED, so it isn't taken for a new table.
+            const added = out.some(o => o.checkId === t.checkId && o.sentAt < t.sentAt)
+            out.push(Object.assign({}, t, { lines: shown, added: added }))
         }
         return out
     }
@@ -70,6 +80,7 @@ Item {
             return
         ticketsKey = key
         tickets = incoming
+        listen()
     }
     Component.onCompleted: incomingChanged()
 
@@ -90,7 +101,10 @@ Item {
         interval: 1000
         running: true
         repeat: true
-        onTriggered: w.now = Date.now()
+        onTriggered: {
+            w.now = Date.now()
+            w.listenLate()
+        }
     }
 
     function elapsed(sentAt) {
@@ -108,13 +122,59 @@ Item {
     // "All day": everything still to make here, by item, most first.
     property bool showAllDay: false
     readonly property var allDay: {
-        const counts = {}
+        const counts = {}, items = {}
         for (const t of tickets)
             for (const l of t.lines)
-                if (!l.comment)
+                if (!l.comment && !l.made && !l.voided && !l.held) {
                     counts[l.name] = (counts[l.name] ?? 0) + l.quantity
-        return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a, b) => b.count - a.count)
+                    if (l.item) items[l.name] = l.item
+                }
+        return Object.keys(counts).map(k => ({ name: k, count: counts[k], item: items[k] ?? "" }))
+                     .sort((a, b) => b.count - a.count)
     }
+
+    // Sounds: a chime for a new order, three lower notes when one turns late
+    // (each once; what's already up when the screen starts is quiet).
+    property var heard: ({})
+    property var lateHeard: ({})
+    property bool primed: false
+    readonly property bool sound: !!(pos && pos.kitchenSound) && !(zone && zone.editing)
+    function listen() {
+        const seen = {}
+        let fresh = false
+        for (const t of tickets) {
+            const key = t.checkId + ":" + t.sentAt + (expo && t.ready ? ":ready" : "")
+            seen[key] = true
+            if (primed && !heard[key] && (!expo || t.ready))
+                fresh = true
+        }
+        heard = seen
+        if (!primed) {
+            for (const t of tickets)
+                if ((now - t.sentAt) / 60000 >= (t.lateMinutes ?? 15))
+                    lateHeard[t.checkId + ":" + t.sentAt] = true
+        }
+        primed = true
+        if (fresh && sound && zone && zone.controller)
+            zone.controller.chime()
+    }
+    function listenLate() {
+        if (expo || !primed)
+            return
+        for (const t of tickets) {
+            const key = t.checkId + ":" + t.sentAt
+            if (!lateHeard[key] && (now - t.sentAt) / 60000 >= (t.lateMinutes ?? 15)) {
+                lateHeard[key] = true
+                if (sound && zone && zone.controller)
+                    zone.controller.chime("late")
+                return   // one at a time
+            }
+        }
+    }
+
+    // A touch on one item: made, not made, or sold out (86). A void: seen.
+    property var lineMenu: null   // {checkId, line}
+    property real lineTapAt: 0
 
     // What's above a ticket's lines: RUSH / VIP / ready time, the expediter's
     // "waiting on", the guest's allergies, the note. A continued card shows
@@ -150,6 +210,18 @@ Item {
             font.family: w.face
             font.pixelSize: 20 * w.k
             font.bold: isArmed
+        }
+        Text {
+            objectName: "kdsAdded"
+            textFormat: Text.PlainText
+            visible: cardTop.first && (cardTop.ticket.added ?? false)
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr("ADDED to %1").arg(cardTop.ticket.label ?? "")
+            color: "#d9480f"
+            font.family: w.face
+            font.pixelSize: 24 * w.k
+            font.bold: true
         }
         // The guest's allergies: big, on red, before anything else is read.
         Rectangle {
@@ -188,32 +260,44 @@ Item {
 
     // One item and its choices ("S2 1  Cobb Salad", "› No Onion").
     component TicketLine: Column {
-        id: line
+        id: ticketLine
         property var line: ({})
+        property real ticketId: 0   // its check
+        // Made here already (touched alone): dimmed with ✓. Voided: crossed out, VOID.
+        // On hold (the next course): grey.
+        readonly property bool dim: !w.expo && ((ticketLine.line.made && !ticketLine.line.comment) || ticketLine.line.held === true)
+        readonly property bool touchable: !w.expo && !ticketLine.line.comment && !ticketLine.line.part && !ticketLine.line.held && !!ticketLine.line.id
+        opacity: ticketLine.dim && !ticketLine.line.voided ? 0.45 : 1
         Text {
             textFormat: Text.PlainText
             width: parent.width
             wrapMode: Text.WordWrap
             // "S2 1  Cobb Salad", course 2+ marked: the kitchen
             // plates by seat and knows what was fired later.
-            text: (line.line.seat > 0 ? "S" + line.line.seat + "  " : "")
-                  + (line.line.comment ? "** " + line.line.name + " **"
-                                       : line.line.quantity + "  " + line.line.name)
-                  + (line.line.course > 1 ? "   (course " + line.line.course + ")" : "")
-                  + (w.expo ? "   " + (line.line.made ? "✓" : "· " + line.line.station) : "")
-            color: line.line.comment ? "#b83232"
-                 : w.expo && line.line.made ? "#2b8a3e" : w.inkFor(line.line.color)
+            text: (ticketLine.line.heldHeader ? "⏸ " + ticketLine.line.name
+                   : (!w.expo && ticketLine.line.made && !ticketLine.line.comment && !ticketLine.line.voided && !ticketLine.line.held ? "✓ " : "")
+                     + (ticketLine.line.seat > 0 ? "S" + ticketLine.line.seat + "  " : "")
+                     + (ticketLine.line.comment ? "** " + ticketLine.line.name + " **"
+                                          : ticketLine.line.quantity + "  " + ticketLine.line.name)
+                     + (ticketLine.line.course > 1 && !ticketLine.line.held ? "   (" + qsTr("course %1").arg(ticketLine.line.course) + ")" : "")
+                     + (ticketLine.line.voided ? "   " + qsTr("VOID") : "")
+                     + (w.expo ? "   " + (ticketLine.line.made ? "✓" : "· " + ticketLine.line.station) : ""))
+            color: ticketLine.line.heldHeader || ticketLine.line.held ? "#6b6b6b"
+                 : ticketLine.line.voided ? "#c92a2a"
+                 : ticketLine.line.comment ? "#b83232"
+                 : w.expo && ticketLine.line.made ? "#2b8a3e" : w.inkFor(ticketLine.line.color)
             font.family: w.face
-            font.pixelSize: 26 * w.k
-            font.bold: true
-            font.italic: line.line.comment === true
+            font.pixelSize: (ticketLine.line.heldHeader ? 20 : ticketLine.line.held ? 22 : 26) * w.k
+            font.bold: !ticketLine.line.held
+            font.italic: ticketLine.line.comment === true || ticketLine.line.held === true
+            font.strikeout: ticketLine.line.voided === true
         }
         Repeater {
-            model: line.line.modifiers ?? []
+            model: ticketLine.line.modifiers ?? []
             delegate: Text {
                 textFormat: Text.PlainText
                 required property string modelData
-                width: line.width
+                width: ticketLine.width
                 leftPadding: 28 * w.k
                 wrapMode: Text.WordWrap
                 text: "› " + modelData
@@ -226,24 +310,32 @@ Item {
         Text {
             objectName: "kdsLineNote"
             textFormat: Text.PlainText
-            visible: !!line.line.note
-            width: line.width
+            visible: !!ticketLine.line.note
+            width: ticketLine.width
             leftPadding: 28 * w.k
             wrapMode: Text.WordWrap
-            text: "** " + (line.line.note ?? "") + " **"
+            text: "** " + (ticketLine.line.note ?? "") + " **"
             color: "#b83232"
             font.family: w.face
             font.pixelSize: 22 * w.k
             font.bold: true
             font.italic: true
         }
+        TapHandler {
+            enabled: ticketLine.touchable
+            onTapped: {
+                if (TouchGuard.covered(point.scenePressPosition)) return
+                w.lineTapAt = Date.now()
+                w.lineMenu = { checkId: ticketLine.ticketId, line: ticketLine.line }
+            }
+        }
         Text {
             textFormat: Text.PlainText
-            visible: (line.line.contains ?? []).length > 0
-            width: line.width
+            visible: (ticketLine.line.contains ?? []).length > 0
+            width: ticketLine.width
             leftPadding: 28 * w.k
             wrapMode: Text.WordWrap
-            text: qsTr("!! CONTAINS %1").arg((line.line.contains ?? []).join(", ").toUpperCase())
+            text: qsTr("!! CONTAINS %1").arg((ticketLine.line.contains ?? []).join(", ").toUpperCase())
             color: "#c62828"
             font.family: w.face
             font.pixelSize: 22 * w.k
@@ -385,7 +477,7 @@ Item {
         // One row; the buttons in the order the editor gives them.
         GridLayout {
             id: header
-            readonly property var keys: ["station", "message", "waste", "labels", "allDay", "recall"]
+            readonly property var keys: ["station", "message", "waste", "labels", "allDay", "recall", "sound"]
             // A phone: the title on its own row, the buttons three to a row
             // under it (in one row they were cut to "Station…", "Messa…").
             readonly property bool stacked: w.width * (w.zone ? w.zone.screenScale : 1) < 700
@@ -504,6 +596,21 @@ Item {
                 pixelSize: header.keyPx
                 onClicked: w.expo ? w.pos.expoRecall() : w.pos.recallTicket()
             }
+            // This screen's chimes (the store's setting can turn them all off).
+            WidgetKey {
+                objectName: "kdsSound"
+                visible: header.shown("sound")
+                Layout.column: header.col("sound")
+                Layout.row: header.row("sound")
+                Layout.preferredWidth: header.stacked ? 0 : w.keyWidth * 0.7
+                Layout.fillWidth: header.stacked
+                Layout.minimumWidth: 56
+                Layout.fillHeight: true
+                text: w.sound ? "🔔" : "🔕"
+                fontScale: 0.5
+                pixelSize: header.keyPx
+                onClicked: w.pos.setKitchenSound(!w.pos.kitchenSound)
+            }
         }
 
         // Rush Radar: a strip when this station (or, on the expo, any) is about to back up.
@@ -540,6 +647,8 @@ Item {
         Flickable {
             id: board
             objectName: "kdsBoard"
+            // Under an item's menu: off, or the card under its key took the same touch.
+            enabled: w.lineMenu === null
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
@@ -584,6 +693,7 @@ Item {
 
                     Rectangle {
                         id: head
+                        objectName: "kdsHead"
                         width: parent.width
                         height: 72 * w.k
                         radius: 10
@@ -667,6 +777,7 @@ Item {
                             delegate: TicketLine {
                                 required property var modelData
                                 line: modelData
+                                ticketId: card.ticket.checkId
                                 width: body.width
                             }
                         }
@@ -690,7 +801,11 @@ Item {
                             if (TouchGuard.covered(point.scenePressPosition)) return   // the keyboard's touch
                             const t = card.ticket
                             if (!w.expo) {
-                                w.pos.bumpTicket(t.checkId, t.sentAt, w.station)
+                                // A touch on one of its items is that item's (its menu), not the whole ticket.
+                                Qt.callLater(() => {
+                                    if (Date.now() - w.lineTapAt > 100 && w.lineMenu === null)
+                                        w.pos.bumpTicket(t.checkId, t.sentAt, w.station)
+                                })
                             } else if (t.ready || (w.armed && w.armed.checkId === t.checkId && w.armed.sentAt === t.sentAt)) {
                                 w.armed = null
                                 w.pos.expoBump(t.checkId, t.sentAt)   // out to the table
@@ -729,8 +844,16 @@ Item {
                 Repeater {
                     model: w.allDay
                     delegate: RowLayout {
+                        id: allDayRow
                         required property var modelData
+                        objectName: "allDay-" + modelData.item
                         Layout.fillWidth: true
+                        // Touched: sold out (86) from here too.
+                        TapHandler {
+                            enabled: allDayRow.modelData.item !== ""
+                            onTapped: w.lineMenu = { checkId: 0, line: { name: allDayRow.modelData.name, quantity: allDayRow.modelData.count,
+                                                                         item: allDayRow.modelData.item } }
+                        }
                         Text {
                             textFormat: Text.PlainText
                             text: modelData.count
@@ -795,6 +918,80 @@ Item {
             anchors.fill: parent
             onClicked: board.contentX = Math.min(Math.max(0, board.contentWidth - board.width),
                                                  board.contentX + Math.max(w.cardWidth + 12, board.width - w.cardWidth))
+        }
+    }
+
+    // One item's choices: made (just it), not made after all, sold out (86).
+    Rectangle {
+        id: lineSheet
+        objectName: "kdsLineMenu"
+        anchors.fill: parent
+        z: 20
+        visible: w.lineMenu !== null
+        color: Qt.rgba(0, 0, 0, 0.6)
+        MouseArea { anchors.fill: parent; onClicked: w.lineMenu = null }
+        readonly property var l: w.lineMenu ? w.lineMenu.line : ({})
+        function act(f) {
+            const m = w.lineMenu
+            w.lineMenu = null
+            f(m)
+        }
+        Rectangle {
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 40, 520 * w.k)
+            height: menuColumn.implicitHeight + 48
+            radius: 14
+            color: "#f4f1ea"
+            MouseArea { anchors.fill: parent }   // a touch between its keys stays here
+            Column {
+                id: menuColumn
+                anchors.centerIn: parent
+                width: parent.width - 48
+                spacing: 12
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    text: (lineSheet.l.quantity ?? 1) + "  " + (lineSheet.l.name ?? "")
+                    color: "#1b1b1b"
+                    font.family: w.face
+                    font.pixelSize: 30 * w.k
+                    font.bold: true
+                }
+                WidgetKey {
+                    objectName: "kdsLineMade"
+                    visible: !!lineSheet.l.id && !lineSheet.l.made
+                    width: parent.width; height: 84 * w.k
+                    fontScale: 0.4
+                    text: lineSheet.l.voided ? qsTr("Got It (Void)") : qsTr("Made ✓")
+                    baseColor: Ui.go
+                    onClicked: lineSheet.act(m => w.pos.bumpLine(m.checkId, m.line.id, true))
+                }
+                WidgetKey {
+                    objectName: "kdsLineNotMade"
+                    visible: !!lineSheet.l.id && !!lineSheet.l.made && !lineSheet.l.voided
+                    width: parent.width; height: 84 * w.k
+                    fontScale: 0.4
+                    text: qsTr("Not Made After All")
+                    onClicked: lineSheet.act(m => w.pos.bumpLine(m.checkId, m.line.id, false))
+                }
+                WidgetKey {
+                    objectName: "kdsSoldOut"
+                    visible: !!lineSheet.l.item && !lineSheet.l.voided
+                    width: parent.width; height: 84 * w.k
+                    fontScale: 0.4
+                    text: qsTr("Sold Out (86)")
+                    baseColor: "#b83232"
+                    onClicked: lineSheet.act(m => w.pos.kitchenSoldOut(m.line.item))
+                }
+                WidgetKey {
+                    width: parent.width; height: 64 * w.k
+                    fontScale: 0.4
+                    text: qsTr("Cancel")
+                    onClicked: w.lineMenu = null
+                }
+            }
         }
     }
 

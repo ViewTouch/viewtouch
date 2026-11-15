@@ -154,16 +154,16 @@ inline QVariantList storeSections(const QVariantList &fields)
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
         {"stock", PosService::tr("Inventory"), {"targetFoodCostPercent", "stockCountShowsExpected", "wasteReasons", "labelPrinter"}},
-        {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "expoSkips", "laterLeadMinutes"}},
+        {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "kitchenSounds", "foodReadyNotice", "expoSkips", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee", "deliveryFeeToDriver"}},
         {"cards", PosService::tr("Cards"),
          {"stripeSecretKey", "cardCurrency", "cardTipOn", "surchargePercent", "cashDiscountPercent", "tabHold", "offlineCards",
           "offlineCardMax", "offlineCardTotal"}},
-        {"screens", PosService::tr("Screens"), {"style", "screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "screensUpdate", "tableLongMinutes", "sendToTables", "closeWhenPaid"}},
+        {"screens", PosService::tr("Screens"), {"style", "screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "screensUpdate", "tableLongMinutes", "orderWaitMinutes", "checkBackMinutes", "sendToTables", "closeWhenPaid", "fastCash", "idCheck", "idAge"}},
         {"display", PosService::tr("Customer display"), {"displayAccent", "displaySlides"}},
         {"loyalty", PosService::tr("Loyalty"), {"loyaltyEnabled", "pointsPerDollar", "rewards"}},
-        {"waitlist", PosService::tr("Waitlist and texts"), {"hostsTakePayments", "waitMinutesPerParty", "tableReadyText", "orderReadyText", "textWebhook"}},
+        {"waitlist", PosService::tr("Waitlist and texts"), {"hostsTakePayments", "waitMinutesPerParty", "busMinutes", "tableReadyText", "orderReadyText", "textWebhook"}},
         {"kiosk", PosService::tr("Self-order kiosk"),
          {"kioskSendNow", "kioskSlip", "kioskIdleSeconds", "kioskWelcome", "kioskAskWhere", "kioskAskName", "kioskEasyReach",
           "kioskSizePercent", "kioskBackground", "kioskCard", "kioskGo", "kioskText", "kioskFont"}},
@@ -178,7 +178,7 @@ inline QVariantList storeSections(const QVariantList &fields)
     static const std::pair<const char *, const char *> when[] = {
         {"clockInEarlyMinutes", "scheduleRequired"}, {"gratuityMinGuests", "gratuityPercent"},
         {"offlineCardMax", "offlineCards"}, {"offlineCardTotal", "offlineCards"},
-        {"pointsPerDollar", "loyaltyEnabled"}, {"watchVoid", "watch"}, {"watchComp", "watch"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
+        {"pointsPerDollar", "loyaltyEnabled"}, {"watchVoid", "watch"}, {"watchComp", "watch"}, {"idAge", "idCheck"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
     };
     // Numbers: what 0 means, and a bigger step where 1 is too fine.
     struct Number {
@@ -194,6 +194,7 @@ inline QVariantList storeSections(const QVariantList &fields)
         {"takeoutMinutes", none, 5}, {"deliveryMinutes", none, 5}, {"minutesPerOrderWaiting", none, 1},
         {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"phoneLockSeconds", {}, 1}, {"tableLongMinutes", {}, 5},
         {"kioskIdleSeconds", {}, 10}, {"kioskSizePercent", {}, 5}, {"waitMinutesPerParty", {}, 1},
+        {"orderWaitMinutes", {}, 1}, {"checkBackMinutes", {}, 5}, {"busMinutes", {}, 1},
     };
     QHash<QString, QVariantMap> byPath;
     for (const QVariant &f : fields)

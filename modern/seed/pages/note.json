@@ -17,7 +17,7 @@
         "x": 592,
         "y": 104,
         "w": 1312,
-        "h": 72
+        "h": 64
       },
       "shape": "rect",
       "behavior": "none",
@@ -28,9 +28,9 @@
       "kind": "button",
       "rect": {
         "x": 592,
-        "y": 184,
+        "y": 176,
         "w": 249,
-        "h": 80
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -48,6 +48,9 @@
         "normal": {
           "fontSize": 26
         }
+      },
+      "showWhen": {
+        "screen": "standard"
       }
     },
     {
@@ -55,9 +58,9 @@
       "kind": "button",
       "rect": {
         "x": 857,
-        "y": 184,
+        "y": 176,
         "w": 249,
-        "h": 80
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -75,6 +78,9 @@
         "normal": {
           "fontSize": 26
         }
+      },
+      "showWhen": {
+        "screen": "standard"
       }
     },
     {
@@ -82,9 +88,9 @@
       "kind": "button",
       "rect": {
         "x": 1122,
-        "y": 184,
+        "y": 176,
         "w": 249,
-        "h": 80
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -102,6 +108,9 @@
         "normal": {
           "fontSize": 26
         }
+      },
+      "showWhen": {
+        "screen": "standard"
       }
     },
     {
@@ -109,9 +118,9 @@
       "kind": "button",
       "rect": {
         "x": 1387,
-        "y": 184,
+        "y": 176,
         "w": 249,
-        "h": 80
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -129,6 +138,9 @@
         "normal": {
           "fontSize": 26
         }
+      },
+      "showWhen": {
+        "screen": "standard"
       }
     },
     {
@@ -136,9 +148,9 @@
       "kind": "button",
       "rect": {
         "x": 1652,
-        "y": 184,
+        "y": 176,
         "w": 249,
-        "h": 80
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -156,6 +168,9 @@
         "normal": {
           "fontSize": 26
         }
+      },
+      "showWhen": {
+        "screen": "standard"
       }
     },
     {
@@ -163,9 +178,9 @@
       "kind": "keyboard",
       "rect": {
         "x": 592,
-        "y": 280,
+        "y": 296,
         "w": 1312,
-        "h": 500
+        "h": 544
       },
       "shape": "rect",
       "behavior": "none"
@@ -175,9 +190,9 @@
       "kind": "button",
       "rect": {
         "x": 592,
-        "y": 800,
+        "y": 848,
         "w": 400,
-        "h": 120
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -194,9 +209,9 @@
       "kind": "button",
       "rect": {
         "x": 1048,
-        "y": 800,
+        "y": 848,
         "w": 400,
-        "h": 120
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",
@@ -217,9 +232,9 @@
       "kind": "button",
       "rect": {
         "x": 1504,
-        "y": 800,
+        "y": 848,
         "w": 400,
-        "h": 120
+        "h": 112
       },
       "shape": "rect",
       "behavior": "blink",

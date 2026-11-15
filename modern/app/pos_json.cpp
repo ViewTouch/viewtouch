@@ -1010,7 +1010,7 @@ QJsonObject toJson(const PosSettings &s)
         terminals.append(QJsonObject{{u"name"_s, qs(t.name)}, {u"receiptPrinter"_s, qs(t.receiptPrinter)},
                                      {u"drawer"_s, qs(t.drawer)}, {u"id"_s, qs(t.id)}, {u"key"_s, qs(t.key)},
                                      {u"pairedAt"_s, qint64(t.pairedAt)}, {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)},
-                                     {u"station"_s, qs(t.station)}, {u"keyboard"_s, qs(t.keyboard)}, {u"guestScreen"_s, qs(t.guestScreen)},
+                                     {u"station"_s, qs(t.station)}, {u"quiet"_s, t.quiet}, {u"keyboard"_s, qs(t.keyboard)}, {u"guestScreen"_s, qs(t.guestScreen)},
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                                      {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}, {u"startPage"_s, qs(t.startPage)},
                                      {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize},
@@ -1165,6 +1165,13 @@ QJsonObject toJson(const PosSettings &s)
              for (const PosSettings::TableState &t : s.tableStates)
                  a.append(QJsonObject{{u"table"_s, qs(t.table)}, {u"state"_s, qs(t.state)}, {u"with"_s, qs(t.with)},
                                       {u"by"_s, qs(t.by)}, {u"partyId"_s, qint64(t.partyId)}, {u"since"_s, qint64(t.since)}});
+             return a;
+         }()},
+        {u"sections"_s, [&] {
+             QJsonArray a;
+             for (const PosSettings::Section &x : s.sections)
+                 a.append(QJsonObject{{u"name"_s, qs(x.name)}, {u"color"_s, qs(x.color)}, {u"tables"_s, strings(x.tables)},
+                                      {u"serverId"_s, qs(x.serverId)}});
              return a;
          }()},
         {u"prepSeconds"_s, [&] {
@@ -1337,6 +1344,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.pairedAt = i64(t.value(u"pairedAt"));
         c.screen = ss(t.value(u"screen").toString());
         c.station = ss(t.value(u"station").toString());
+        c.quiet = t.value(u"quiet").toBool();
         c.look = ss(t.value(u"look").toString());
         c.keyboard = ss(t.value(u"keyboard").toString());
         c.guestScreen = ss(t.value(u"guestScreen").toString());
@@ -1492,6 +1500,11 @@ PosSettings settingsFromJson(const QJsonObject &o)
         s.tableStates.push_back({ss(x.value(u"table").toString()), ss(x.value(u"state").toString()),
                                  ss(x.value(u"with").toString()), ss(x.value(u"by").toString()),
                                  i64(x.value(u"partyId")), i64(x.value(u"since"))});
+    }
+    for (const QJsonValue &v : o.value(u"sections").toArray()) {
+        const QJsonObject x = v.toObject();
+        s.sections.push_back({ss(x.value(u"name").toString()), ss(x.value(u"color").toString()),
+                              strings(x.value(u"tables").toArray()), ss(x.value(u"serverId").toString())});
     }
     const QJsonObject prep = o.value(u"prepSeconds").toObject();
     for (auto it = prep.begin(); it != prep.end(); ++it)

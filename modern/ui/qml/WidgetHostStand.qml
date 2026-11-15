@@ -32,7 +32,37 @@ Item {
     property string serverId: ""    // chosen by the host ("": whoever is next up)
     // Who gets the next table: fewest guests now, then seated longest ago.
     readonly property var nextUp: floor._next ?? null
-    readonly property string seatServer: serverId !== "" ? serverId : (nextUp ? nextUp.id : "")
+    // Server sections: the tables in each and who works it.
+    readonly property var sections: floor._sections ?? []
+    function sectionOf(name) { return sections.find(x => x.tables.indexOf(name) >= 0) ?? null }
+    // The picked table's section's server (on the clock), else whoever's next up.
+    readonly property string sectionServer: {
+        const x = picked.length ? sectionOf(picked[0]) : null
+        return x && x.onClock ? x.serverId : ""
+    }
+    readonly property string seatServer: serverId !== "" ? serverId : sectionServer !== "" ? sectionServer : (nextUp ? nextUp.id : "")
+    // The best tables for the party: free, clean, the fewest seats to spare, next up's section first.
+    readonly property var best: partySize > 0 ? ((floor._best ?? {})[String(partySize)] ?? []) : []
+    // Sections: the one being drawn (touch tables to put them in it), "" for none.
+    property string editingSection: ""
+    property bool sectionsOpen: false
+    function tableInSection(name) {
+        const x = sections.find(y => y.name === editingSection)
+        if (!x) return
+        const tables = x.tables.slice()
+        const i = tables.indexOf(name)
+        if (i >= 0) tables.splice(i, 1); else tables.push(name)
+        pos.saveSection(x.name, tables)
+    }
+    function seatAt(tables) {
+        partyId === -1 ? pos.seatWalkIn(walkInSize, tables, serverFor(tables)) : pos.seatPartyAt(partyId, tables, serverFor(tables))
+        done()
+    }
+    function serverFor(tables) {
+        if (serverId !== "") return serverId
+        const x = sectionOf(tables[0])
+        return x && x.onClock ? x.serverId : (nextUp ? nextUp.id : "")
+    }
     readonly property var party: {
         for (const p of waiting.concat(booked))
             if (p.id === partyId) return p
@@ -48,7 +78,7 @@ Item {
     // A party's tables, or one they hold, are theirs to pick.
     function stateOf(name) { return (floor[name] ?? {}).state ?? "available" }
     function counts() {
-        const c = { available: 0, seated: 0, dirty: 0, reserved: 0 }
+        const c = { available: 0, seated: 0, dirty: 0, reserved: 0, cleaning: 0 }
         for (const t of tables) c[stateOf(t.name)] = (c[stateOf(t.name)] ?? 0) + 1
         return c
     }
@@ -56,6 +86,7 @@ Item {
     function colorFor(state) {
         return state === "seated" ? zone.statusColor("tableOpen", "#a86a12")
              : state === "dirty" ? zone.statusColor("tableDirty", "#7a3b3b")
+             : state === "cleaning" ? zone.statusColor("tableCleaning", "#3b6f7a")
              : state === "reserved" ? zone.statusColor("tableReserved", "#5b4aa8")
              : zone.statusColor("tableFree", "#1f7a4a")
     }
@@ -129,7 +160,7 @@ Item {
                 spacing: w.unit * 0.8
                 Repeater {
                     model: [["available", qsTr("Available")], ["seated", qsTr("Seated")],
-                            ["dirty", qsTr("Dirty")], ["reserved", qsTr("Held")]]
+                            ["dirty", qsTr("Dirty")], ["cleaning", qsTr("Cleaning")], ["reserved", qsTr("Held")]]
                     delegate: Row {
                         required property var modelData
                         spacing: w.unit * 0.3
@@ -168,8 +199,17 @@ Item {
                 prefix: "host-"
                 tabPrefix: "hostPlan-"
                 floorName: "hostFloor"
-                tint: name => w.colorFor(w.stateOf(name))
-                picked: name => w.picked.indexOf(name) >= 0
+                // Drawing sections: each table in its section's color.
+                tint: name => {
+                    if (w.sectionsOpen) {
+                        const x = w.sectionOf(name)
+                        return x ? x.color : Ui.button
+                    }
+                    return w.colorFor(w.stateOf(name))
+                }
+                picked: name => w.sectionsOpen ? (w.sectionOf(name)?.name ?? "") === w.editingSection && w.editingSection !== ""
+                                               : w.picked.indexOf(name) >= 0
+                                                 || (w.picked.length === 0 && w.best.length > 0 && w.best[0].tables.indexOf(name) >= 0)
                 lines: (name, seats) => {
                     const f = w.floor[name] ?? {}
                     const state = f.state ?? "available"
@@ -179,16 +219,126 @@ Item {
                           .concat(f.with || f.freeIn === undefined ? []
                                   : [f.stage === "paying" ? qsTr("Paying: free soon")
                                      : qsTr("Free ~%1m").arg(f.freeIn)])
-                        : state === "dirty" ? [qsTr("Dirty %1m").arg(f.minutes ?? 0)]
+                        : w.sectionsOpen ? [w.sectionOf(name)?.name ?? qsTr("No section")]
+                        : state === "dirty" ? [(f.late ? "⚠ " : "") + qsTr("Dirty %1m").arg(f.minutes ?? 0)]
+                        : state === "cleaning" ? [qsTr("Cleaning · %1").arg(f.by ?? ""), qsTr("%1m").arg(f.minutes ?? 0)]
                         : state === "reserved" ? [(f.party ?? "") + (f.time ? " " + f.time : "")]
                         : [qsTr("%n seat(s)", "", seats)]
                 }
-                onTableTouched: name => w.toggle(name)
+                onTableTouched: name => w.sectionsOpen ? (w.editingSection !== "" ? w.tableInSection(name) : null) : w.toggle(name)
             }
         }
 
-        // --- the parties, and what to do ---
+        // --- the parties, and what to do (or, drawing sections, the sections) ---
         ColumnLayout {
+            objectName: "hostSectionsPanel"
+            visible: w.sectionsOpen
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: w.unit * 0.4
+            Small {
+                text: w.editingSection !== "" ? qsTr("Touch tables to put them in %1 (or take them out).").arg(w.editingSection)
+                                              : qsTr("Touch a section to draw it on the floor, and pick who works it today.")
+                color: w.ink
+            }
+            ListView {
+                id: sectionList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: w.unit * 0.3
+                model: w.sections
+                delegate: Rectangle {
+                    id: sectionRow
+                    required property var modelData
+                    objectName: "hostSection-" + modelData.name
+                    width: sectionList.width
+                    height: sectionCol.implicitHeight + w.unit * 0.8
+                    radius: 8
+                    color: w.editingSection === modelData.name ? Qt.darker(modelData.color, 1.2) : "#262b33"
+                    border.color: modelData.color
+                    border.width: 3
+                    TapHandler { onTapped: w.editingSection = w.editingSection === sectionRow.modelData.name ? "" : sectionRow.modelData.name }
+                    ColumnLayout {
+                        id: sectionCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.margins: w.unit * 0.5
+                        Text {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            text: sectionRow.modelData.name + "  ·  " + (sectionRow.modelData.tables.length ? sectionRow.modelData.tables.join(", ") : qsTr("no tables yet"))
+                            color: w.ink
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.9
+                            font.bold: true
+                            elide: Text.ElideRight
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            ComboBox {
+                                objectName: "hostSectionServer-" + sectionRow.modelData.name
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
+                                font.pixelSize: w.unit * 0.85
+                                model: [qsTr("Nobody yet")].concat(w.servers.map(x => x.name))
+                                currentIndex: Math.max(0, w.servers.findIndex(x => x.id === sectionRow.modelData.serverId) + 1)
+                                onActivated: i => w.pos.saveSection(sectionRow.modelData.name, sectionRow.modelData.tables,
+                                                                    i === 0 ? "" : w.servers[i - 1].id)
+                            }
+                            Key {
+                                text: qsTr("Remove")
+                                Layout.fillWidth: false
+                                Layout.preferredWidth: w.unit * 5
+                                onClicked: { if (w.editingSection === sectionRow.modelData.name) w.editingSection = ""; w.pos.removeSection(sectionRow.modelData.name) }
+                            }
+                        }
+                    }
+                }
+                Small {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    visible: sectionList.count === 0
+                    text: qsTr("No sections yet: add one, then touch its tables.")
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                TextField {
+                    id: newSection
+                    objectName: "hostNewSection"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
+                    font.pixelSize: w.unit * 0.9
+                    placeholderText: qsTr("New section's name (Patio, Section 1…)")
+                    onAccepted: addSection.clicked()
+                }
+                Key {
+                    id: addSection
+                    objectName: "hostAddSection"
+                    Layout.fillWidth: false
+                    Layout.preferredWidth: w.unit * 6
+                    text: qsTr("+ Add")
+                    enabled: newSection.text.trim() !== ""
+                    onClicked: {
+                        const name = newSection.text.trim()
+                        w.pos.saveSection(name, [])
+                        w.editingSection = name
+                        newSection.text = ""
+                    }
+                }
+            }
+            Key {
+                objectName: "hostSectionsDone"
+                text: qsTr("Sections Done")
+                tint: Ui.accent
+                onClicked: { w.sectionsOpen = false; w.editingSection = "" }
+            }
+        }
+        ColumnLayout {
+            visible: !w.sectionsOpen
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: w.unit * 0.4
@@ -317,6 +467,26 @@ Item {
                     onActivated: i => w.serverId = w.servers[i].id
                 }
             }
+            // The best table for them, a touch to seat; or one of the next two to pick.
+            RowLayout {
+                objectName: "hostBest"
+                Layout.fillWidth: true
+                visible: w.best.length > 0 && w.picked.length === 0 && !w.sectionsOpen
+                spacing: w.unit * 0.3
+                Repeater {
+                    model: w.best
+                    delegate: Key {
+                        required property var modelData
+                        required property int index
+                        objectName: "hostBest-" + index
+                        Layout.fillWidth: index === 0
+                        Layout.preferredWidth: index === 0 ? -1 : w.unit * 5
+                        text: index === 0 ? qsTr("Seat at %1").arg(modelData.tables.join(" + ")) : modelData.tables.join(" + ")
+                        tint: index === 0 ? Ui.go : Ui.button
+                        onClicked: index === 0 ? w.seatAt(modelData.tables) : (w.picked = modelData.tables)
+                    }
+                }
+            }
             // What the picks add up to, and what can be done with them.
             Small {
                 objectName: "hostHint"
@@ -404,6 +574,19 @@ Item {
                     tint: "#2a62b8"
                     enabled: w.partySize === 0 && w.picked.length === 1 && w.stateOf(w.picked[0]) === "seated"
                     onClicked: { const t = w.picked[0]; w.done(); w.zone.controller.payTable(t) }
+                }
+                Key {
+                    objectName: "hostSections"
+                    text: w.sectionsOpen ? qsTr("Sections Done") : qsTr("Sections…")
+                    tint: w.sectionsOpen ? Ui.accent : Ui.button
+                    onClicked: { w.sectionsOpen = !w.sectionsOpen; w.editingSection = ""; w.done() }
+                }
+                Key {
+                    objectName: "hostBussing"
+                    readonly property int dirty: (w.tally.dirty ?? 0) + (w.tally.cleaning ?? 0)
+                    text: qsTr("Tables to Clean (%1)").arg(dirty)
+                    tint: dirty > 0 ? w.zone.statusColor("tableDirty", "#7a3b3b") : Ui.button
+                    onClicked: w.zone.controller.jumpTo("bussing")
                 }
             }
         }

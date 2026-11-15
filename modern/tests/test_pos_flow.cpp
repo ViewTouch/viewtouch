@@ -10712,7 +10712,7 @@ TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut 
     REQUIRE(s.pos.kitchenTickets().size() == 3);
     CHECK(kept);
 
-    // Touching any of its cards bumps the whole order.
+    // Touching any of its cards (not one of its items) bumps the whole order.
     cards.clear();
     collect(board);
     REQUIRE(s.pos.kitchenTickets().size() == 3);   // touching "more" bumped nothing
@@ -10721,7 +10721,7 @@ TEST_CASE("UI: a long order goes on in the next column (Continued), nothing cut 
         if (c->objectName() == u"kdsCard-%1-2"_s.arg(big))
             second = c;
     REQUIRE(second);
-    s.tapItem(second);
+    s.tapItem(Screen::findBy(second, "objectName", u"kdsHead"_s));
     QTest::qWait(100);
     CHECK(s.pos.kitchenTickets().size() == 2);
 }
@@ -11577,4 +11577,134 @@ TEST_CASE("UI: bartenders: Check ID before a beer goes; Cash Exact closes the ta
     QTest::qWait(100);
     CHECK_FALSE(s.pos.hasCheck());
     CHECK(s.pos.openChecks().isEmpty());
+}
+
+TEST_CASE("UI: kitchen: ADDED, the next course on hold, an item made on its own, 86 from a line", "[flow][ui][floorstaff][kds]")
+{
+    Screen s(false, 1600, 900);
+    for (core::ModifierGroup &g : s.pos.shared()->settings.modifierGroups)
+        g.min = 0;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"cobb"_s);
+    s.pos.addItem(u"house-salad"_s);
+    REQUIRE(s.pos.setCourse(2));
+    s.pos.addItem(u"classic-burger"_s);
+    REQUIRE(s.pos.sendOrder());
+    REQUIRE(s.pos.setCourse(1));
+    s.pos.addItem(u"caesar"_s);
+    REQUIRE(s.pos.sendOrder());   // more for T4 while the first is up
+    s.pos.releaseCheck();
+    s.pos.logout();
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    QTest::qWait(300);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    CHECK(find(u"kdsAdded"_s));
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"⏸ Course 2 on hold"_s));
+    CHECK(find(u"kdsSound"_s));
+    s.shot("floorstaff-kds");
+
+    // The Cobb alone: made, the ticket stays (dimmed ✓).
+    QQuickItem *cobb = nullptr;
+    for (const char *name : {"1  Cobb", "1  Cobb Salad"})
+        if (!cobb)
+            cobb = Screen::findBy(s.window->contentItem(), "text", QString::fromUtf8(name));
+    REQUIRE(cobb);
+    s.tapItem(cobb);
+    QTest::qWait(150);
+    CHECK(s.pos.kitchenTickets().size() == 2);   // the touch on the item didn't bump its ticket
+    QQuickItem *made = find(u"kdsLineMade"_s);
+    REQUIRE(made);
+    s.shot("floorstaff-kds-line");
+    s.tapItem(made);
+    QTest::qWait(150);
+    CHECK(s.pos.kitchenTickets().size() == 2);   // nothing bumped by the same touch
+    bool cobbMade = false;
+    for (const QVariant &v : s.pos.kitchenTickets().first().toMap()[u"lines"_s].toList())
+        cobbMade = cobbMade || (v.toMap()[u"name"_s].toString().contains(u"Cobb"_s) && v.toMap()[u"made"_s].toBool());
+    CHECK(cobbMade);
+
+    // The Caesar: sold out, from its line.
+    QQuickItem *caesar = nullptr;
+    for (const char *name : {"1  Caesar", "1  Caesar Salad"})
+        if (!caesar)
+            caesar = Screen::findBy(s.window->contentItem(), "text", QString::fromUtf8(name));
+    REQUIRE(caesar);
+    s.tapItem(caesar);
+    QTest::qWait(150);
+    QQuickItem *out = find(u"kdsSoldOut"_s);
+    REQUIRE(out);
+    s.tapItem(out);
+    QTest::qWait(150);
+    CHECK_FALSE(s.pos.findItem(u"caesar"_s)->available);
+    CHECK(s.pos.kitchenTickets().size() == 2);
+
+    // The ticket's own head bumps the whole of it.
+    QQuickItem *head = find(u"kdsHead"_s);
+    REQUIRE(head);
+    s.tapItem(head);
+    QTest::qWait(600);
+    CHECK(s.pos.kitchenTickets().size() == 1);
+}
+
+TEST_CASE("UI: hosts: Seat at the best table; sections drawn on the floor; tables to clean", "[flow][ui][floorstaff][hoststand]")
+{
+    Screen s;
+    // The seats on the floor plans (main.cpp gives the store's).
+    s.pos.shared()->tableSeats = [&s] {
+        std::vector<std::pair<std::string, int>> out;
+        for (const QVariant &v : s.c.tables())
+            out.emplace_back(v.toMap()[u"name"_s].toString().toStdString(), v.toMap()[u"seats"_s].toInt());
+        return out;
+    };
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.clockInEmployee(u"sam"_s));
+    REQUIRE(s.c.jumpTo(u"seating"_s));
+    QTest::qWait(100);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        CAPTURE(name);
+        QQuickItem *it = find(name);
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+
+    // Walk-in of two: the best table, one touch.
+    tap(u"hostWalkIn"_s);
+    QQuickItem *best = find(u"hostBest-0"_s);
+    REQUIRE(best);
+    const QString label = best->property("text").toString();
+    CHECK(label.startsWith(u"Seat at "_s));
+    s.shot("floorstaff-host-best");
+    s.tapItem(best);
+    QTest::qWait(100);
+    const QString table = label.mid(8);
+    CHECK(s.pos.floor().value(table).toMap().value(u"state"_s) == u"seated"_s);
+
+    // Sections: a new one, a table touched into it.
+    tap(u"hostSections"_s);
+    QQuickItem *name = find(u"hostNewSection"_s);
+    REQUIRE(name);
+    name->setProperty("text", u"Window"_s);
+    tap(u"hostAddSection"_s);
+    REQUIRE(s.pos.shared()->settings.sections.size() == 1);
+    QQuickItem *t = Screen::findBy(s.window->contentItem(), "objectName", u"host-T2"_s);
+    REQUIRE(t);
+    s.tapItem(t);
+    QTest::qWait(100);
+    CHECK(s.pos.shared()->settings.sections.front().tables == std::vector<std::string>{"T2"});
+    s.shot("floorstaff-host-sections");
+    tap(u"hostSectionsDone"_s);
+
+    // A table to bus: the list, cleaning, ready.
+    REQUIRE(s.pos.setTableState(u"T3"_s, u"dirty"_s));
+    tap(u"hostBussing"_s);
+    CHECK(s.c.pageId() == u"bussing"_s);
+    tap(u"bus-T3-key"_s);
+    CHECK(s.pos.floor().value(u"T3"_s).toMap().value(u"state"_s) == u"cleaning"_s);
+    s.shot("floorstaff-bussing");
+    tap(u"bus-T3-key"_s);
+    CHECK_FALSE(s.pos.floor().contains(u"T3"_s));
 }

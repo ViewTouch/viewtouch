@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "bussing",
+  "name": "Tables to Clean",
+  "kind": "custom",
+  "canvas": {
+    "w": 1920,
+    "h": 1080
+  },
+  "grid": 8,
+  "zones": [
+    {
+      "id": "title",
+      "kind": "label",
+      "rect": {
+        "x": 16,
+        "y": 16,
+        "w": 1888,
+        "h": 80
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Tables to clean"
+    },
+    {
+      "id": "bus-list",
+      "kind": "busList",
+      "rect": {
+        "x": 16,
+        "y": 112,
+        "w": 1888,
+        "h": 816
+      },
+      "shape": "rect",
+      "behavior": "none"
+    },
+    {
+      "id": "back",
+      "kind": "button",
+      "rect": {
+        "x": 16,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "‹ Tables",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "tables"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "kind": "button",
+      "rect": {
+        "x": 1472,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "command",
+          "name": "logout"
+        }
+      ]
+    }
+  ]
+}

@@ -209,7 +209,14 @@ TEST_CASE("Expediter: every station's ticket, ready when all made, run out, reca
     REQUIRE(pos.expoBump(id, sentAt));
     CHECK(pos.expoTickets().isEmpty());
     REQUIRE(pos.kitchenTickets().size() == 1);
-    CHECK(pos.kitchenTickets().first().toMap()[u"lines"_s].toList().first().toMap()[u"name"_s].toString().contains(u"Beer"_s));
+    {
+        QStringList toMake;   // (the Cobb stays on it, made)
+        for (const QVariant &v : pos.kitchenTickets().first().toMap()[u"lines"_s].toList())
+            if (!v.toMap()[u"made"_s].toBool())
+                toMake << v.toMap()[u"name"_s].toString();
+        REQUIRE(toMake.size() == 1);
+        CHECK(toMake.first().contains(u"Beer"_s));
+    }
     REQUIRE(pos.bumpTicket(id, sentAt, u"bar"_s));
     CHECK(pos.kitchenTickets().isEmpty());               // the stations are clear
     // A ticket of drinks only never reaches expo.

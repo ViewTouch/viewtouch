@@ -47,15 +47,18 @@ Item {
     property int newSize: 2
     property string newNote: ""
     property bool reservation: false
-    property int quote: info.nextQuote ?? 10
+    // The quote for a party this size: from the tables that fit it (else the store's minutes a party).
+    function quoteForSize() { return (info.quotes ?? [])[Math.min(newSize, 12)] ?? info.nextQuote ?? 10 }
+    property int quote: quoteForSize()
     property bool quoteTouched: false
-    onInfoChanged: if (!quoteTouched) quote = info.nextQuote ?? 10
+    onInfoChanged: if (!quoteTouched) quote = quoteForSize()
+    onNewSizeChanged: if (!quoteTouched) quote = quoteForSize()
     property int dayOffset: 0
     property string time: "7:00 PM"
 
     function clearForm() {
         newName = ""; newPhone = ""; newSize = 2; newNote = ""; quoteTouched = false
-        quote = info.nextQuote ?? 10
+        quote = quoteForSize()
     }
     function add() {
         const p = { name: newName, phone: newPhone, size: newSize, note: newNote }

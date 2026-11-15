@@ -98,7 +98,7 @@ Item {
     readonly property var safeColors: ({
         tableMine: "#0072b2", tableOpen: "#e69f00", tableCurrent: "#56b4e9", tableLong: "#f0e442",
         tableWaiting: "#e69f00", tableLate: "#d55e00",
-        tableReserved: "#cc79a7", tableDirty: "#6b5d52", tableFree: "#0072b2",
+        tableReserved: "#cc79a7", tableDirty: "#6b5d52", tableFree: "#0072b2", tableCleaning: "#56b4e9",
         kitchenNew: "#0072b2", kitchenWarn: "#f0e442", kitchenLate: "#d55e00", kitchenReady: "#009e73",
         soldOut: "#d55e00", low: "#f0e442"
     })
@@ -229,7 +229,7 @@ Item {
         "soldOutList", "orderList", "loginPad", "guestCount", "numPad",
         "paymentPanel", "checkList", "keyboard", "clock", "logoutPanel", "statusBar",
         "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "kitchenDisplay", "customerInfo",
-        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "legacyImport", "tablesSetup", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor", "floorPlan", "tableKey", "truckOrders"]
+        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "legacyImport", "tablesSetup", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "busList", "deliveryBoard", "decor", "floorPlan", "tableKey", "truckOrders"]
     readonly property bool hasWidget: isWidget && builtWidgets.includes(kind)
     readonly property bool interactive: zoneEnabled && behavior !== "passthrough"
                                         && (kind === "button" || kind === "image")
