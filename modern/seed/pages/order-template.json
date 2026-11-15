@@ -100,7 +100,7 @@
       "rect": {
         "x": 226,
         "y": 972,
-        "w": 202,
+        "w": 150,
         "h": 98
       },
       "shape": "rect",
@@ -117,9 +117,9 @@
       "id": "flow-extra",
       "kind": "button",
       "rect": {
-        "x": 436,
+        "x": 384,
         "y": 972,
-        "w": 202,
+        "w": 150,
         "h": 98
       },
       "shape": "rect",
@@ -136,9 +136,9 @@
       "id": "flow-lite",
       "kind": "button",
       "rect": {
-        "x": 646,
+        "x": 542,
         "y": 972,
-        "w": 202,
+        "w": 150,
         "h": 98
       },
       "shape": "rect",
@@ -155,9 +155,9 @@
       "id": "flow-side",
       "kind": "button",
       "rect": {
-        "x": 856,
+        "x": 700,
         "y": 972,
-        "w": 202,
+        "w": 150,
         "h": 98
       },
       "shape": "rect",
@@ -174,9 +174,9 @@
       "id": "flow-sub",
       "kind": "button",
       "rect": {
-        "x": 1066,
+        "x": 858,
         "y": 972,
-        "w": 202,
+        "w": 150,
         "h": 98
       },
       "shape": "rect",
@@ -193,9 +193,9 @@
       "id": "flow-void",
       "kind": "button",
       "rect": {
-        "x": 1276,
+        "x": 1032,
         "y": 972,
-        "w": 202,
+        "w": 200,
         "h": 98
       },
       "shape": "rect",
@@ -217,9 +217,9 @@
       "id": "flow-send",
       "kind": "button",
       "rect": {
-        "x": 1486,
+        "x": 1248,
         "y": 972,
-        "w": 202,
+        "w": 300,
         "h": 98
       },
       "shape": "rect",
@@ -245,9 +245,9 @@
       "id": "flow-manager",
       "kind": "button",
       "rect": {
-        "x": 1486,
+        "x": 1248,
         "y": 972,
-        "w": 202,
+        "w": 300,
         "h": 98
       },
       "shape": "rect",
@@ -269,9 +269,9 @@
       "id": "flow-pay",
       "kind": "button",
       "rect": {
-        "x": 1696,
+        "x": 1564,
         "y": 972,
-        "w": 202,
+        "w": 340,
         "h": 98
       },
       "shape": "rect",

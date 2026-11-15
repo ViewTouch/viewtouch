@@ -411,7 +411,7 @@ void endToEnd(const QString &dat)
     std::optional<app::PosData> data = store.load(&problems);
     REQUIRE(data);
     CHECK(problems.isEmpty());
-    CHECK(data->settings.style == "classic");   // the store's own look
+    CHECK(data->settings.style == "modern");    // a new store's look (the import doesn't change it)
     const std::size_t days = std::size_t(legacy.archives.size());
     CHECK(data->pastDays.size() == std::min<std::size_t>(days, 60));
     // Every closed check back, each paid in full for what legacy took.

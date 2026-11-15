@@ -28,6 +28,9 @@ Item {
             font.family: w.face
             font.pixelSize: parent.size
             font.bold: parent.strong
+            // Smaller before "…": "Balance due" stays whole on a narrow panel with big text.
+            fontSizeMode: Text.HorizontalFit
+            minimumPixelSize: Math.round(parent.size * 0.6)
             elide: Text.ElideRight
         }
         Text {
@@ -270,7 +273,10 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: w.unit * 3
             radius: 10
-            color: w.owing ? "#3a2020" : "#173a26"
+            // Owed: the one number that matters, calm (it isn't an error); paid: green.
+            color: w.owing ? Qt.rgba(Ui.accent.r, Ui.accent.g, Ui.accent.b, 0.22) : "#173a26"
+            border.color: w.owing ? Ui.accent : "transparent"
+            border.width: 2
             Line {
                 anchors.fill: parent
                 anchors.margins: w.unit * 0.6
@@ -278,7 +284,7 @@ Item {
                 value: w.owing ? (w.totals.balance ?? "") : (w.totals.hasChange ? w.totals.change : "")
                 strong: true
                 size: w.unit * 1.4
-                tint: w.owing ? "#ff9a9e" : "#7ee2a8"
+                tint: w.owing ? Ui.text : Ui.ok
             }
         }
     }

@@ -12,6 +12,7 @@
   "formFactor": "phone",
   "hiddenZones": [
     "ask-tip",
+    "discounts-title",
     "off-amount",
     "off-percent"
   ],
@@ -23,7 +24,7 @@
         "x": 16,
         "y": 16,
         "w": 1048,
-        "h": 744
+        "h": 600
       }
     },
     {

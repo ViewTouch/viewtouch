@@ -64,12 +64,7 @@
           "mode": "push",
           "page": "dashboard"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
-      }
+      ]
     },
     {
       "id": "admin-reports",
@@ -155,12 +150,7 @@
           "mode": "push",
           "page": "checklists"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f6f73"
-        }
-      }
+      ]
     },
     {
       "id": "store-check",
@@ -193,7 +183,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Find a Check…",
+      "label": "Find a Check\u2026",
       "actions": [
         {
           "type": "jump",
@@ -242,12 +232,7 @@
           "mode": "push",
           "page": "menu-builder"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
-      }
+      ]
     },
     {
       "id": "admin-menu",
@@ -282,7 +267,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Sold Out (86)…",
+      "label": "Sold Out (86)\u2026",
       "actions": [
         {
           "type": "jump",
@@ -434,7 +419,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Customers…",
+      "label": "Customers\u2026",
       "actions": [
         {
           "type": "jump",
@@ -454,7 +439,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Gift Cards…",
+      "label": "Gift Cards\u2026",
       "actions": [
         {
           "type": "jump",
@@ -584,7 +569,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Your Tables…",
+      "label": "Your Tables\u2026",
       "actions": [
         {
           "type": "jump",
@@ -626,7 +611,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Network…",
+      "label": "Network\u2026",
       "actions": [
         {
           "type": "jump",
@@ -668,7 +653,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Log Waste…",
+      "label": "Log Waste\u2026",
       "actions": [
         {
           "type": "jump",
@@ -716,12 +701,7 @@
           "type": "command",
           "name": "editMode"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
-      }
+      ]
     },
     {
       "id": "kitchen-display",
@@ -800,12 +780,7 @@
           "type": "command",
           "name": "selfOrder"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
-      }
+      ]
     },
     {
       "id": "setup-guide",
@@ -818,25 +793,20 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Setup Guide… {setup.left}",
+      "label": "Setup Guide\u2026 {setup.left}",
       "actions": [
         {
           "type": "command",
           "name": "setupGuide"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f6f73"
-        }
-      }
+      ]
     },
     {
       "id": "close-app",
       "kind": "button",
       "rect": {
         "x": 1520,
-        "y": 740,
+        "y": 846,
         "w": 352,
         "h": 92
       },
@@ -851,7 +821,10 @@
       ],
       "style": {
         "normal": {
-          "fill": "#b83232"
+          "frame": "border",
+          "frameWidth": 4,
+          "borderColor": "#d64545",
+          "textColor": "#ff8a80"
         }
       }
     },
@@ -860,13 +833,13 @@
       "kind": "button",
       "rect": {
         "x": 1520,
-        "y": 838,
+        "y": 944,
         "w": 352,
         "h": 92
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "Factory Reset…",
+      "label": "Factory Reset\u2026",
       "actions": [
         {
           "type": "jump",
@@ -876,7 +849,10 @@
       ],
       "style": {
         "normal": {
-          "fill": "#b83232"
+          "frame": "border",
+          "frameWidth": 4,
+          "borderColor": "#d64545",
+          "textColor": "#ff8a80"
         }
       }
     },
@@ -891,7 +867,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "‹ Back",
+      "label": "\u2039 Back",
       "actions": [
         {
           "type": "jump",
@@ -1126,13 +1102,13 @@
       },
       "close-app": {
         "x": 1520,
-        "y": 756,
+        "y": 854,
         "w": 352,
         "h": 92
       },
       "factory-reset": {
         "x": 1520,
-        "y": 854,
+        "y": 952,
         "w": 352,
         "h": 92
       },

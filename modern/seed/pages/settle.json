@@ -45,7 +45,7 @@
         "x": 1468,
         "y": 16,
         "w": 436,
-        "h": 90
+        "h": 150
       },
       "shape": "rect",
       "behavior": "blink",
@@ -67,9 +67,9 @@
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 110,
+        "y": 178,
         "w": 436,
-        "h": 90
+        "h": 150
       },
       "shape": "rect",
       "behavior": "blink",
@@ -91,9 +91,9 @@
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 204,
-        "w": 436,
-        "h": 90
+        "y": 340,
+        "w": 214,
+        "h": 96
       },
       "shape": "rect",
       "behavior": "blink",
@@ -104,21 +104,16 @@
           "mode": "push",
           "page": "gift-card"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f6f73"
-        }
-      }
+      ]
     },
     {
       "id": "tender-house",
       "kind": "button",
       "rect": {
-        "x": 1468,
-        "y": 298,
-        "w": 436,
-        "h": 90
+        "x": 1690,
+        "y": 340,
+        "w": 214,
+        "h": 96
       },
       "shape": "rect",
       "behavior": "blink",
@@ -128,10 +123,25 @@
           "type": "tender",
           "tender": "house"
         }
-      ],
+      ]
+    },
+    {
+      "id": "discounts-title",
+      "kind": "label",
+      "rect": {
+        "x": 1468,
+        "y": 438,
+        "w": 436,
+        "h": 58
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "label": "Discounts",
       "style": {
         "normal": {
-          "fill": "#1f6f73"
+          "fontSize": 24,
+          "bold": true,
+          "textColor": "#8a94a6"
         }
       }
     },
@@ -140,8 +150,8 @@
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 392,
-        "w": 436,
+        "y": 496,
+        "w": 140,
         "h": 90
       },
       "shape": "rect",
@@ -152,20 +162,15 @@
           "type": "tender",
           "tender": "discount"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#a86a12"
-        }
-      }
+      ]
     },
     {
       "id": "tender-comp",
       "kind": "button",
       "rect": {
-        "x": 1468,
-        "y": 486,
-        "w": 436,
+        "x": 1616,
+        "y": 496,
+        "w": 140,
         "h": 90
       },
       "shape": "rect",
@@ -176,20 +181,15 @@
           "type": "tender",
           "tender": "comp"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#6b46c1"
-        }
-      }
+      ]
     },
     {
       "id": "tender-staff-meal",
       "kind": "button",
       "rect": {
-        "x": 1468,
-        "y": 580,
-        "w": 436,
+        "x": 1764,
+        "y": 496,
+        "w": 140,
         "h": 90
       },
       "shape": "rect",
@@ -200,21 +200,16 @@
           "type": "tender",
           "tender": "staff-meal"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#6b46c1"
-        }
-      }
+      ]
     },
     {
       "id": "receipt",
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 652,
-        "w": 520,
-        "h": 120
+        "y": 834,
+        "w": 256,
+        "h": 110
       },
       "shape": "rect",
       "behavior": "blink",
@@ -231,9 +226,9 @@
       "kind": "button",
       "rect": {
         "x": 932,
-        "y": 788,
+        "y": 652,
         "w": 520,
-        "h": 120
+        "h": 170
       },
       "shape": "rect",
       "behavior": "blink",
@@ -254,10 +249,10 @@
       "id": "remove-payment",
       "kind": "button",
       "rect": {
-        "x": 932,
-        "y": 924,
-        "w": 520,
-        "h": 120
+        "x": 1196,
+        "y": 834,
+        "w": 256,
+        "h": 110
       },
       "shape": "rect",
       "behavior": "blink",
@@ -274,8 +269,8 @@
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 678,
-        "w": 212,
+        "y": 700,
+        "w": 214,
         "h": 90
       },
       "shape": "rect",
@@ -293,9 +288,9 @@
       "id": "drawer",
       "kind": "button",
       "rect": {
-        "x": 1692,
-        "y": 678,
-        "w": 212,
+        "x": 1690,
+        "y": 700,
+        "w": 214,
         "h": 90
       },
       "shape": "rect",
@@ -314,7 +309,7 @@
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 772,
+        "y": 798,
         "w": 436,
         "h": 90
       },
@@ -326,19 +321,14 @@
           "type": "command",
           "name": "askForTip"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f6f73"
-        }
-      }
+      ]
     },
     {
       "id": "off-amount",
       "kind": "button",
       "rect": {
         "x": 1468,
-        "y": 866,
+        "y": 594,
         "w": 140,
         "h": 90
       },
@@ -350,19 +340,14 @@
           "type": "command",
           "name": "amountOff"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#a86a12"
-        }
-      }
+      ]
     },
     {
       "id": "off-percent",
       "kind": "button",
       "rect": {
         "x": 1616,
-        "y": 866,
+        "y": 594,
         "w": 140,
         "h": 90
       },
@@ -374,19 +359,14 @@
           "type": "command",
           "name": "percentOff"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#a86a12"
-        }
-      }
+      ]
     },
     {
       "id": "coupon",
       "kind": "button",
       "rect": {
         "x": 1764,
-        "y": 866,
+        "y": 594,
         "w": 140,
         "h": 90
       },
@@ -398,12 +378,7 @@
           "type": "command",
           "name": "coupon"
         }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#a86a12"
-        }
-      }
+      ]
     },
     {
       "id": "done",
@@ -428,10 +403,10 @@
       "id": "cash-exact",
       "kind": "button",
       "rect": {
-        "x": 592,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "x": 932,
+        "y": 960,
+        "w": 96,
+        "h": 104
       },
       "shape": "rect",
       "behavior": "blink",
@@ -441,19 +416,16 @@
           "type": "tender",
           "tender": "cash"
         }
-      ],
-      "showWhen": {
-        "style": "modern"
-      }
+      ]
     },
     {
       "id": "cash-20",
       "kind": "button",
       "rect": {
-        "x": 762,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "x": 1038,
+        "y": 960,
+        "w": 96,
+        "h": 104
       },
       "shape": "rect",
       "behavior": "blink",
@@ -464,19 +436,16 @@
           "tender": "cash",
           "amount": 2000
         }
-      ],
-      "showWhen": {
-        "style": "modern"
-      }
+      ]
     },
     {
       "id": "cash-40",
       "kind": "button",
       "rect": {
-        "x": 932,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "x": 1144,
+        "y": 960,
+        "w": 96,
+        "h": 104
       },
       "shape": "rect",
       "behavior": "blink",
@@ -487,19 +456,16 @@
           "tender": "cash",
           "amount": 4000
         }
-      ],
-      "showWhen": {
-        "style": "modern"
-      }
+      ]
     },
     {
       "id": "cash-50",
       "kind": "button",
       "rect": {
-        "x": 1102,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "x": 1250,
+        "y": 960,
+        "w": 96,
+        "h": 104
       },
       "shape": "rect",
       "behavior": "blink",
@@ -510,19 +476,16 @@
           "tender": "cash",
           "amount": 5000
         }
-      ],
-      "showWhen": {
-        "style": "modern"
-      }
+      ]
     },
     {
       "id": "cash-100",
       "kind": "button",
       "rect": {
-        "x": 1272,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "x": 1356,
+        "y": 960,
+        "w": 96,
+        "h": 104
       },
       "shape": "rect",
       "behavior": "blink",
@@ -533,10 +496,7 @@
           "tender": "cash",
           "amount": 10000
         }
-      ],
-      "showWhen": {
-        "style": "modern"
-      }
+      ]
     }
   ],
   "styleRects": {
@@ -550,80 +510,80 @@
       "tender-cash": {
         "x": 592,
         "y": 16,
-        "w": 272,
-        "h": 120
+        "w": 416,
+        "h": 140
       },
       "tender-credit": {
-        "x": 876,
+        "x": 1016,
         "y": 16,
-        "w": 272,
-        "h": 120
+        "w": 416,
+        "h": 140
       },
       "tender-gift": {
-        "x": 1160,
-        "y": 16,
-        "w": 272,
-        "h": 120
+        "x": 592,
+        "y": 280,
+        "w": 416,
+        "h": 100
       },
       "tender-house": {
-        "x": 592,
-        "y": 148,
-        "w": 272,
-        "h": 120
+        "x": 1016,
+        "y": 280,
+        "w": 416,
+        "h": 100
       },
       "tender-discount": {
-        "x": 876,
-        "y": 148,
-        "w": 272,
-        "h": 120
+        "x": 592,
+        "y": 440,
+        "w": 268,
+        "h": 96
       },
       "tender-comp": {
-        "x": 1160,
-        "y": 148,
-        "w": 272,
-        "h": 120
+        "x": 878,
+        "y": 440,
+        "w": 268,
+        "h": 96
       },
       "tender-staff-meal": {
-        "x": 592,
-        "y": 280,
-        "w": 272,
-        "h": 120
+        "x": 1164,
+        "y": 440,
+        "w": 268,
+        "h": 96
       },
       "off-amount": {
-        "x": 876,
-        "y": 280,
-        "w": 130,
-        "h": 120
+        "x": 592,
+        "y": 548,
+        "w": 268,
+        "h": 96
       },
       "off-percent": {
-        "x": 1018,
-        "y": 280,
-        "w": 130,
-        "h": 120
+        "x": 878,
+        "y": 548,
+        "w": 268,
+        "h": 96
       },
       "coupon": {
-        "x": 1160,
-        "y": 280,
-        "w": 272,
-        "h": 120
+        "x": 1164,
+        "y": 548,
+        "w": 268,
+        "h": 96
       },
       "split": {
         "x": 592,
-        "y": 428,
+        "y": 660,
         "w": 416,
-        "h": 100
+        "h": 96
       },
       "drawer": {
         "x": 1016,
-        "y": 428,
+        "y": 660,
         "w": 416,
-        "h": 100
+        "h": 96
       },
       "ask-tip": {
         "x": 592,
-        "y": 544,
+        "y": 768,
         "w": 840,
-        "h": 100
+        "h": 96
       },
       "receipt": {
         "x": 592,
@@ -657,33 +617,39 @@
       },
       "cash-exact": {
         "x": 592,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "y": 168,
+        "w": 160,
+        "h": 96
       },
       "cash-20": {
         "x": 762,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "y": 168,
+        "w": 160,
+        "h": 96
       },
       "cash-40": {
         "x": 932,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "y": 168,
+        "w": 160,
+        "h": 96
       },
       "cash-50": {
         "x": 1102,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "y": 168,
+        "w": 160,
+        "h": 96
       },
       "cash-100": {
         "x": 1272,
-        "y": 660,
-        "w": 158,
-        "h": 100
+        "y": 168,
+        "w": 160,
+        "h": 96
+      },
+      "discounts-title": {
+        "x": 592,
+        "y": 382,
+        "w": 840,
+        "h": 58
       }
     }
   }

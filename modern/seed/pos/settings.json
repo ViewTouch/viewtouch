@@ -43,7 +43,7 @@
   "autoLogoutMinutes": 3,
   "phoneLockSeconds": 30,
   "screensUpdate": true,
-  "style": "classic",
+  "style": "modern",
   "tableLongMinutes": 90,
   "loyalty": {
     "enabled": true,

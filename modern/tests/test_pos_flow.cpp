@@ -416,10 +416,10 @@ TEST_CASE("UI flow: keypad login, table map, guest pad, menu, pay", "[flow][ui]"
 
     s.tapCanvas(16 + 7 * 237 + 110, 980 + 42);   // Pay
     CHECK(s.c.pageId() == u"settle"_s);
-    s.tapCanvas(1468 + 218, 16 + 86 + 38);       // Credit Card, the second payment type (exact balance)
+    s.tapCanvas(1468 + 218, 178 + 75);           // Credit Card, under Cash (exact balance)
     CHECK(s.pos.totals()[u"balanceCents"_s].toLongLong() == 0);
     s.shot("3-settle");
-    s.tapCanvas(932 + 260, 788 + 60);            // Close Check
+    s.tapCanvas(932 + 260, 652 + 85);            // Close Check, under the keypad
     CHECK_FALSE(s.pos.hasCheck());
     CHECK(s.c.pageId() == u"tables"_s);
     CHECK(s.sink.checks.begin()->second.status == core::CheckStatus::Closed);
@@ -4790,7 +4790,7 @@ TEST_CASE("Store style: Modern's own buttons (Pay's cash amounts, my checks by t
     REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
     s.pos.addItem(u"cobb"_s);
     REQUIRE(s.c.jumpTo(u"settle"_s));
-    CHECK_FALSE(zoneIds().contains(u"cash-20"_s));   // Classic: not there
+    CHECK(zoneIds().contains(u"cash-20"_s));          // quick cash: in Classic too now
     CHECK_FALSE(s.c.stylePalette().contains(u"panel"_s));   // Classic's colors: Ui.qml's own
 
     QFile f(QStringLiteral(VTM_SEED_DIR "/themes/modern.json"));
@@ -11967,4 +11967,40 @@ TEST_CASE("Text size: every page at Small and Largest, in Classic and Modern: wo
     }
     INFO(report.size() << " found");
     CHECK(report.isEmpty());
+}
+
+TEST_CASE("UI: Aa sets my text size and effect; the screens follow it", "[flow][ui][look]")
+{
+    Screen s(false, 1600, 900);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.selectTable(u"T3"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    for (core::ModifierGroup &g : s.pos.shared()->settings.modifierGroups)
+        g.min = 0;
+    s.pos.addItem(u"cobb"_s);
+    s.pos.addItem(u"soda"_s);
+    REQUIRE(s.c.showPage(u"index-lunch"_s));
+    QTest::qWait(200);
+    const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *item = find(name);
+        REQUIRE(item);
+        s.tapItem(item);
+        QTest::qWait(150);
+    };
+    tap(u"myLook"_s);
+    REQUIRE(find(u"myLookSheet"_s));
+    tap(u"myTextSize-115"_s);
+    tap(u"myTextEffect-embossed"_s);
+    CHECK(s.pos.userPrefs()[u"textSize"_s].toInt() == 115);
+    CHECK(s.pos.userPrefs()[u"textEffect"_s] == u"embossed"_s);
+    s.shot("look-sheet");
+    tap(u"myLookDone"_s);
+    CHECK_FALSE(find(u"myLookSheet"_s));
+    s.shot("look-embossed");
+    // Back to as it was, for the Pay picture.
+    REQUIRE(s.pos.setMyLook(100, QString()));
+    s.c.activate(u"flow-pay"_s);
+    QTest::qWait(200);
+    s.shot("look-pay");
 }
