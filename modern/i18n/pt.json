@@ -1796,7 +1796,7 @@
  "Duplicate": "Duplicar",
  "Duplicate an item": "Duplicar um item",
  "Duplicate this page": "Duplicar esta página",
- "During a rush, receipts print only when Receipt is touched.": "No pico, os recibos só saem ao tocar em Recibo.",
+ "During a rush, receipts print only when Print Receipt is touched.": "No pico, os recibos só saem ao tocar em Imprimir recibo.",
  "During a rush, sends the new items (put before going to pay).": "No pico, envia os itens novos (coloque antes de ir pagar).",
  "ESC/POS (thermal)": "ESC/POS (térmica)",
  "Each check gets the same: whole items while they go around, the rest in even pieces.": "Cada conta recebe o mesmo: itens inteiros enquanto dá, o resto em partes iguais.",

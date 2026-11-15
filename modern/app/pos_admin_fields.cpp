@@ -560,7 +560,7 @@ QVariantList PosService::adminFieldsAll(const QString &panel)
                            tr("Prep counts: when this few are left, the item's button says so, and the menu board too.")),
                       u"min"_s, 1), u"max"_s, 200),
             field(u"rushNoReceipt"_s, tr("No receipts during a rush"), u"bool"_s,
-                  tr("During a rush, receipts print only when Receipt is touched.")),
+                  tr("During a rush, receipts print only when Print Receipt is touched.")),
             field(u"menuBoardOrders"_s, tr("Menu board shows ready orders too"), u"bool"_s,
                   tr("One TV for both: the menu, with the orders that are ready down the side.")),
             field(u"receiptBarcode"_s, tr("Retail receipts: a barcode for returns"), u"bool"_s,

@@ -57,6 +57,11 @@
 
 <!-- ======================================================================= -->
 <h1>What's new since 0.21</h1>
+<p>For food trucks and shops:</p>
+<ul>
+<li><b>Food trucks:</b> <b>prep counts</b> (made 60, the screens count down, sold out at none); <b>Rush</b>, one touch for every screen: no tip question or receipt, Pay sends, bigger keys; and a <b>menu board</b> on a TV, crossing off what's 86'd as it happens (chapter 11, A food truck).</li>
+<li><b>Shops:</b> <b>returns and exchanges</b> from the receipt's barcode, back as cash, to the card or as store credit, back on the shelf unless damaged; <b>Price Check</b>; and items in <b>sizes and colors</b>, each with its own barcode, price and stock (chapter 11, A shop).</li>
+</ul>
 <p>Easier for the people on the floor:</p>
 <ul>
 <li><b>Servers:</b> <b>Qty</b> on the check rings the next item as 6 at once, and touching an item's count types it; a <b>note goes on the item</b> just rung (<i>Note for Cobb Salad</i>, with quick notes like <i>No onions</i>); a table waiting on its server turns <b>orange, then red</b>, until <b>Checked On</b>; and when the whole order is made, the server's screens chime: <b>"T5: food is up"</b> (chapters 2, 3 and 4).</li>
@@ -1211,6 +1216,34 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <h3>When a second screen loses the main computer</h3>
 <p>A truck with a second screen (a tablet at the window, say) keeps selling if the cable or Wi-Fi to the main computer is lost: it goes on as the Counter, with names, pagers and cash. Its orders are numbered from 100 above the store's (<i>#103</i>), so they never match the main computer's, which keeps counting. When it's back, its orders reach the main computer with their numbers, names and pagers, and show on Orders. (A truck with one computer has nothing to lose: the register is the store's computer.)</p>
 
+<h3>Prep counts: how many are left</h3>
+<p class="shot"><img src="shots/m221-truck-prep.jpg" width="560" height="315"></p>
+<p class="caption">Prep: 4 sodas left (low, in orange) and 20 juices.</p>
+<p>Before service, say how many you made of what runs out: <b>Prep</b> on the truck's order screen, then <b>Add Item…</b>, the item, and how many (<i>60</i> birria tacos). Each order sent counts it down; a void of one not made yet gives it back.</p>
+<ul>
+<li><b>−1</b>, <b>+1</b> and <b>+10</b> when more are made (or one is dropped); <b>Set…</b> types how many are left now; <b>Stop</b> stops counting it.</li>
+<li>When few are left (10, or what <b>Show how many are left at</b> says in Store Settings → How you serve), the item's button says <b>5 left</b>, so whoever takes the order can tell the guest.</li>
+<li>At none left it is <b>sold out</b> on every screen, the kiosk and the menu board, and every screen's message bar says <i>86: Birria Tacos</i>. Making more (+10) puts it back.</li>
+<li>Prep counts are for the day: End of Day clears them, and the items come back.</li>
+</ul>
+<p class="shot"><img src="shots/m222-truck-prep-pad.jpg" width="480" height="270"></p>
+
+<h3>Rush</h3>
+<p class="shot"><img src="shots/m220-truck-rush.jpg" width="560" height="315"></p>
+<p class="caption">RUSH ✓: on for every screen of the truck.</p>
+<p>When the line gets long, touch <b>Rush</b> (top of the truck's order screen). On every screen until it's touched again (<b>RUSH ✓</b>), or until End of Day:</p>
+<ul>
+<li>the guest isn't asked for a tip;</li>
+<li>no receipt prints unless someone touches <b>Print Receipt</b> on the Pay screen (Store Settings → How you serve: <b>No receipts during a rush</b>);</li>
+<li><b>Pay</b> sends what isn't sent yet first, so it's one touch instead of Send, then Pay;</li>
+<li>the menu's keys get bigger and fewer to a row, easier to hit fast.</li>
+</ul>
+
+<h3>A menu board on a TV</h3>
+<p class="shot"><img src="shots/m223-truck-menu-board.jpg" width="560" height="315"></p>
+<p class="caption">The menu board: the soda crossed off when it's 86'd, "Only 2 left!" for the juice, and the ready orders down the side.</p>
+<p>A TV by the window can show the menu: set it up like the Now Serving board, with <b>Menu board</b> instead (Manager → Terminals → Screen layout, or <code>--screen menuBoard</code>). It shows each category with its items and today's prices; an item <b>86'd</b> on any screen (or prepped out) is crossed off at once with <i>Sold out</i>, and one running low says <i>Only 4 left!</i>. Items kept off the kiosk are kept off the board too. A long menu turns its pages every 12 seconds (<i>2 of 3</i>). With <b>Menu board shows ready orders too</b> (Store Settings → How you serve), one TV does both: the orders that are ready run down the right side. As on the Now Serving board, holding the top-left corner for 3 seconds shows the login page for a minute.</p>
+
 <h3>The Manager screens</h3>
 <p>From the order screen: touch <b>Orders</b>, then <b>Manager</b> (bottom right), and enter a manager's PIN. Reports, End of Day, Store Settings and every manager page work as usual. <b>Log Out</b> goes back to whoever is working, with the order in progress still open.</p>
 <ul>
@@ -1218,6 +1251,47 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <li><b>Switch Person</b> (on the login, while someone is working): the next PIN takes over without End of Shift.</li>
 </ul>
 <p class="shot"><img src="shots/m176-truck-phone.jpg" width="200" height="400"></p>
+
+<h2>A shop</h2>
+<p>A shop's order screen (Retail, above) has <b>Return…</b> and <b>Price Check</b> beside <b>Scan or search an item…</b>.</p>
+
+<h3>Price check</h3>
+<p class="shot"><img src="shots/m224-retail-pricecheck.jpg" width="560" height="315"></p>
+<p class="caption">Price Check, then a scan: the price and how many are in stock. Nothing is rung in.</p>
+<p>A customer asks what something costs: touch <b>Price Check</b>, then scan it (or touch it on the menu). The card shows its name, its price, and how many are in stock (when the item counts its stock), or each size and color's count. Nothing goes on the sale. <b>Ring It In</b> adds it after all; <b>Done</b> closes the card (it closes by itself after 30 seconds).</p>
+
+<h3>Returns and exchanges</h3>
+<table cellpadding="4"><tr>
+<td><img src="shots/m225-retail-return-scan.jpg" width="280" height="158"><br><small>Return…: scan the receipt</small></td>
+<td><img src="shots/m226-retail-return-pick.jpg" width="280" height="158"><br><small>What comes back, and why</small></td>
+</tr></table>
+<ul>
+<li><b>With the receipt:</b> a shop's receipt ends with a <b>barcode of the sale</b> (Store Settings → Receipts: <b>Retail receipts: a barcode for returns</b>). Scan it anywhere, or touch <b>Return…</b> and scan it, type the sale number, or <b>Find a Check…</b> (and its <b>Return Items…</b>). The sale's items show with how many can still come back and what each was paid (after any discount on the sale).</li>
+<li><b>What comes back:</b> <b>+</b> and <b>−</b> on each item, a reason (<i>Changed mind</i>, <i>Wrong size</i>, <i>Damaged</i>…), then <b>Bring Back</b>. <b>Damaged: not back in stock</b> keeps the item off the shelf count; otherwise it goes back in stock when the return is done.</li>
+<li><b>Without a receipt:</b> <b>No Receipt…</b>, a reason, then the item: it comes back at today's price. This always needs a manager.</li>
+<li><b>Who:</b> returns are a manager's. With <b>Cashiers may take returns with a receipt</b> on, a cashier takes those within <b>Returns are taken within</b> days (30 to start); after that, a manager.</li>
+</ul>
+<p class="shot"><img src="shots/m227-retail-return-due.jpg" width="560" height="315"></p>
+<p class="caption">RETURN Soda in red, its tax back, and how the $3.19 goes back.</p>
+<p>The items go on the sale in red as <b>RETURN</b>, below zero, with their tax back. Under the total, <b>Owed back</b> and how to give it:</p>
+<ul>
+<li><b>Cash:</b> out of the drawer, and the sale closes.</li>
+<li><b>To Visa 4242</b> (when the sale was paid by card): back to that card through Stripe, or recorded to give back on the card machine it was taken on.</li>
+<li><b>Store Credit:</b> a new gift card with the amount on it, printed on the receipt.</li>
+</ul>
+<p><b>An exchange:</b> ring the new item in on the same sale. If it costs more, the customer pays the difference as usual; if less, the rest is owed back. The sale it came from remembers what came back, so it can't come back twice.</p>
+
+<h3>Sizes and colors</h3>
+<p class="shot"><img src="shots/m228-retail-variants.jpg" width="560" height="315"></p>
+<p class="caption">Ringing in an item with sizes and colors: which one, with each one's price (and how many are left, when counted).</p>
+<p>A T-shirt in S, M, L and XL, in Black, White and Red: one item, with each kind its own. In the Menu Builder, the item's card → <b>Sizes and Colors…</b>: type the sizes, then the colors (commas between), and <b>Make the List</b>. Each kind then has:</p>
+<ul>
+<li>its <b>barcode</b> (scan the tag) and <b>SKU</b>: scanning it rings that kind in directly;</li>
+<li>a <b>price</b> of its own, or empty for the item's (XL at $2 more, say);</li>
+<li><b>Sold</b>: off for one you don't carry (it's left out of the grid);</li>
+<li><b>On hand</b>, with <b>Track stock</b> on for the item: each kind counts its own, in Count Stock and the Stock report too, and the item is sold out only when every kind is.</li>
+</ul>
+<p>Touching the item on the order screen shows the grid: sizes down, colors across, each with its price and how many are left. The sale says <i>T-Shirt (M, Red)</i>. Price tags (Menu Builder → Select… → Price Tags…) print one for each kind, with its barcode and price.</p>
 <p class="caption">On a phone or a small tablet: Orders at the top right; New Order, Log Out, Send and Pay at the bottom.</p>
 
 <h2>Taxes, payment types, printers and terminals</h2>
