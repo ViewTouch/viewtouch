@@ -4886,6 +4886,7 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
     // Without the screen watching: it would redraw after every one of thousands of changes.
     s.c.setPos(nullptr);
     REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+    s.pos.shared()->messages.clear();   // the demo's "food is up" and other passing messages: not across the pictures
     // The demo's note to everyone ("86 Smoked Brisket tonight") would be across the top of every picture.
     s.pos.shared()->settings.notices.clear();
     s.c.setPos(&s.pos);
@@ -5403,6 +5404,7 @@ TEST_CASE("Manual: every page, in Classic and in Modern", "[.manual][.pages]")
         // A lived-in store, a manager on, a table going.
         s.c.setPos(nullptr);
         REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+        s.pos.shared()->messages.clear();   // the demo's "food is up" and other passing messages: not across the pictures
         s.pos.shared()->settings.notices.clear();
         s.c.setPos(&s.pos);
         if (look.modern) {
@@ -5483,6 +5485,7 @@ TEST_CASE("Manual: reports, the item list, stock and barcodes", "[.manual]")
     const auto lived = [](Screen &s) {
         s.c.setPos(nullptr);
         REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+        s.pos.shared()->messages.clear();   // the demo's "food is up" and other passing messages: not across the pictures
         s.pos.shared()->settings.notices.clear();
         s.c.setPos(&s.pos);
         REQUIRE(s.pos.loginWithPin(u"1234"_s));
