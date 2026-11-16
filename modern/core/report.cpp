@@ -814,6 +814,8 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
         {"Payments and discounts taken back", {"unpay", "undiscount"}, true},
         {"Reopened checks", {"reopen"}, true},
         {"Tax-exempt sales (tax not charged)", {"exempt"}, true},
+        {"Returns", {"return", "returnNoReceipt"}, true},
+        {"Returns without a receipt", {"returnNoReceipt"}, true},
         {"Moved, transferred or merged", {"move", "transfer", "merge"}, false},
     };
     struct Big { Money amount; std::string what; const Check *check; std::string who; };
@@ -834,6 +836,7 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
             {"Unusual: discounts and comps", {"discount"}},
             {"Unusual: payments and discounts taken back", {"unpay", "undiscount"}},
             {"Unusual: reopened checks", {"reopen"}},
+            {"Unusual: returns", {"return", "returnNoReceipt"}},
             {"Unusual: drawer opened with no sale", {"noSale"}},
         };
         bool noted = false;

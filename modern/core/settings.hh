@@ -385,6 +385,8 @@ struct PosSettings {
     bool rushNoReceipt = true;
     // The menu board shows the orders that are ready beside the menu.
     bool menuBoardOrders = false;
+    // The store's secret for receipts' return codes (receiptCode); made once.
+    std::string receiptKey;
     // A retail receipt ends with a barcode of its sale, scanned for a return.
     bool receiptBarcode = true;
     // Items come back within this many days of the sale (0: any time).

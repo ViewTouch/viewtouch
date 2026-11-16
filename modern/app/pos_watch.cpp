@@ -25,7 +25,8 @@ constexpr std::int64_t kHour = 3'600'000;
 
 bool watched(const std::string &kind)
 {
-    return kind == "void" || kind == "discount" || kind == "unpay" || kind == "undiscount" || kind == "reopen";
+    return kind == "void" || kind == "discount" || kind == "unpay" || kind == "undiscount" || kind == "reopen"
+           || kind == "returnNoReceipt";   // a return without a receipt: a classic way to take cash
 }
 
 } // namespace
@@ -75,6 +76,8 @@ QVariantList PosService::lossAlertsNow() const
                                                                      printed ? tr(", after it printed") : QString());
             } else if (e.kind == "reopen" && cash) {
                 text = tr("%1 reopened %2, paid in cash (%3)").arg(who(e.who), label, money);
+            } else if (e.kind == "returnNoReceipt") {
+                text = tr("%1 took back an item without a receipt on %2 (%3)").arg(who(e.who), label, money) + reason;
             }
             if (!text.isEmpty())
                 out.push_back({e.at, QString::fromStdString(e.kind) + u'-' + QString::number(c.id) + u'-' + QString::number(e.at),

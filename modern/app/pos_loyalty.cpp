@@ -270,9 +270,9 @@ QString PosService::scanCode(const QString &code)
     if (s_->giftCard(ss(c)))
         return lookupGiftCard(c) ? u"giftCard"_s : QString();
     // A receipt's barcode (R and the sale's number): its items can come back.
-    static const QRegularExpression receipt(u"^R(\\d{1,15})$"_s);
+    static const QRegularExpression receipt(u"^R(\\d{1,15})(?:-([0-9A-Za-z]{6}))?$"_s);
     if (const auto m = receipt.match(c); m.hasMatch())
-        return startReturn(m.captured(1).toLongLong()) ? u"return"_s : QString();
+        return startReturn(m.captured(1).toLongLong(), m.captured(2)) ? u"return"_s : QString();
     fail(tr("Nothing has the code %1.").arg(c));
     return {};
 }

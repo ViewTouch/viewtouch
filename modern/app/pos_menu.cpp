@@ -109,6 +109,8 @@ bool PosService::chooseLine(qint64 lineId)
     const OrderLine *l = c ? c->line(lineId) : nullptr;
     if (!l || l->sent)
         return fail(tr("Only items not yet sent can be changed."));
+    if (l->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     const MenuItem *item = findItem(qs(l->itemId));
     if (!item || item->modifierGroups.empty())
         return fail(tr("%1 has no choices.").arg(qs(l->displayName())));
@@ -125,6 +127,8 @@ bool PosService::chooseOption(const QString &groupId, int index)
     OrderLine *l = c ? c->line(choosingLine_) : nullptr;
     if (!l)
         return fail(tr("Nothing to choose for."));
+    if (l->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     const ModifierGroup *g = s_->settings.modifierGroup(ss(groupId));
     if (!g || index < 0 || index >= int(g->options.size()))
         return false;
@@ -228,6 +232,8 @@ bool PosService::setChoice(const QString &groupId, int index, const QString &how
     OrderLine *l = c ? c->line(choosingLine_) : nullptr;
     if (!l)
         return fail(tr("Nothing to choose for."));
+    if (l->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     const ModifierGroup *g = s_->settings.modifierGroup(ss(groupId));
     if (!g || index < 0 || index >= int(g->options.size()))
         return false;

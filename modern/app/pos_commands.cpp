@@ -67,7 +67,7 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"setVariantStock"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setVariantStock(a.value(0).toString(), a.value(1).toString(), a.value(2).toInt())); }},
         {u"setPriceCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setPriceCheck(a.value(0).toBool())); }},
         {u"priceCheckCode"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.priceCheckCode(a.value(0).toString())); }},
-        {u"startReturn"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startReturn(a.value(0).toLongLong())); }},
+        {u"startReturn"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startReturn(a.value(0).toLongLong(), a.value(1).toString())); }},
         {u"cancelReturn"_s, [](PosService &p, const QVariantList &) { p.cancelReturn(); return QVariant(true); }},
         {u"returnLines"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.returnLines(a.value(0).toList(), a.value(1).toString())); }},
         {u"returnItem"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.returnItem(a.value(0).toString(), a.value(1).toLongLong(), a.value(2).toString(), a.value(3, true).toBool())); }},

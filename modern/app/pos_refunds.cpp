@@ -33,6 +33,10 @@ Check *PosService::closedCheckFor(qint64 checkId)
 Money PosShared::refundedSoFar(const Check &check, std::int64_t paymentId) const
 {
     Money sum;
+    // What returns of the sale's items gave back on this payment.
+    for (const Payment &p : check.payments)
+        if (p.id == paymentId)
+            sum += p.returnedBack;
     std::set<std::int64_t> seen;
     for (const Refund &r : check.refunds)
         if (r.paymentId == paymentId && seen.insert(r.id).second)

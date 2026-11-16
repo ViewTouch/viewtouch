@@ -82,6 +82,10 @@ core::Party partyFromJson(const QJsonObject &o);
 QJsonObject toJson(const core::PosSettings &s);
 // A text effect as kept: "none", "embossed", "outline", or empty (not set: the next one's).
 std::string textEffectFrom(const QString &value);
+// A receipt's return code: 6 letters and digits from an HMAC-SHA256 of the
+// sale's number, keyed by the store's secret (PosSettings::receiptKey), so a
+// receipt's barcode can't be made up from a sale number.
+std::string receiptCode(const std::string &key, std::int64_t checkId);
 core::PosSettings settingsFromJson(const QJsonObject &o);
 
 QJsonArray modifierGroupsToJson(const std::vector<core::ModifierGroup> &groups);

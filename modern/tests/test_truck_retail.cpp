@@ -6,7 +6,9 @@
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
+#include <QCoreApplication>
 #include <QDateTime>
+#include <QDeadlineTimer>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -358,6 +360,14 @@ TEST_CASE("Retail: a cashier needs a manager for a return, unless the store lets
     CHECK_FALSE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
     CHECK_FALSE(cashier.returnItem(u"soda"_s, 0, u"No receipt"_s));
     shared.settings.cashierReturns = true;
+    // The sale's number typed (a guess would do): still a manager's.
+    CHECK_FALSE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    CHECK(cashier.scanCode(u"R%1-AAAAAA"_s.arg(sale)) == u"return"_s);   // a made-up code: the same
+    CHECK_FALSE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    // The receipt's own barcode: the cashier may.
+    const QString code = QString::fromStdString(app::receiptCode(shared.settings.receiptKey, sale));
+    REQUIRE(code.size() == 6);
+    CHECK(cashier.scanCode(u"R%1-%2"_s.arg(sale).arg(code)) == u"return"_s);
     REQUIRE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
     CHECK_FALSE(cashier.returnItem(u"soda"_s, 0, u"No receipt"_s));   // still a manager's
 }
@@ -371,7 +381,10 @@ TEST_CASE("Retail: the receipt's barcode brings the sale up for a return", "[tru
     const print::Document doc = print::receipt(s.lastClosed(), ctx);
     const auto barcode = std::ranges::find(doc.lines, print::Document::Kind::Barcode, &print::Document::Line::kind);
     REQUIRE(barcode != doc.lines.end());
-    CHECK(barcode->text == "R" + std::to_string(sale));
+    // The sale's number and its code, made with the store's own secret.
+    CHECK(barcode->text == "R" + std::to_string(sale) + "-" + app::receiptCode(s.shared.settings.receiptKey, sale));
+    CHECK(app::receiptCode(s.shared.settings.receiptKey, sale) != app::receiptCode(s.shared.settings.receiptKey, sale + 1));
+    CHECK(app::receiptCode("another store", sale) != app::receiptCode(s.shared.settings.receiptKey, sale));
 
     CHECK(s.pos.scanCode(QString::fromStdString(barcode->text)) == u"return"_s);
     CHECK(s.pos.returnSale()[u"id"_s].toLongLong() == sale);
@@ -455,4 +468,202 @@ TEST_CASE("Retail: sizes and colors, each with its barcode, price and stock", "[
     // Another item's barcode isn't one of these.
     CHECK_FALSE(s.pos.setItemVariants(u"juice"_s, {QVariantMap{{u"values"_s, QVariantList{u"Big"_s}}}},
                                       {QVariantMap{{u"key"_s, u"Big"_s}, {u"barcode"_s, u"0001234500"_s}}}));
+}
+
+// --- returns: what a cashier (or anyone) must not be able to do --------------------------------
+
+TEST_CASE("Returns: a card return counts against the sale's refunds, and the other way round", "[truckretail][returns][security]")
+{
+    Shop s;
+    const qint64 sale = s.sell(u"soda"_s, 2, u"credit"_s);
+    const qint64 cardId = s.lastClosed().payments.front().id;
+    REQUIRE(s.pos.startReturn(sale));
+    REQUIRE(s.pos.returnLines({QVariantMap{{u"line"_s, s.saleLine()[u"id"_s]}, {u"qty"_s, 2}}}, u"Changed mind"_s));
+    REQUIRE(s.pos.refundReturn(u"card"_s));
+    // Everything came back to the card: Find a Check -> Refund has nothing left to give.
+    const std::optional<core::Check> sold = s.shared.saleById(sale);
+    REQUIRE(sold);
+    CHECK(sold->payments.front().returnedBack.cents() > 0);
+    CHECK_FALSE(s.pos.refundPayment(sale, cardId, 0, u"Again"_s));
+
+    // The other way: a sale refunded first, then brought back: a manager's call.
+    const qint64 second = s.sell(u"soda"_s, 1, u"credit"_s);
+    REQUIRE(s.pos.refundPayment(second, s.lastClosed().payments.front().id, 0, u"Refunded"_s));
+    s.shared.settings.cashierReturns = true;
+    PosService cashier(&s.shared, u"Shop 2"_s);
+    REQUIRE(cashier.loginWithPin(u"1111"_s));
+    const QString code = QString::fromStdString(app::receiptCode(s.shared.settings.receiptKey, second));
+    REQUIRE(cashier.scanCode(u"R%1-%2"_s.arg(second).arg(code)) == u"return"_s);
+    const qint64 line = cashier.returnSale()[u"lines"_s].toList().first().toMap()[u"id"_s].toLongLong();
+    CHECK_FALSE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+}
+
+TEST_CASE("Returns: nothing else happens on the check while its card refund is on its way", "[truckretail][returns][security]")
+{
+    Shop s;
+    const qint64 sale = s.sell(u"soda"_s, 1, u"credit"_s);
+    // As if taken on a Stripe reader.
+    for (core::Check &c : s.shared.closedToday)
+        if (c.id == sale) {
+            c.payments.front().processor = "stripe";
+            c.payments.front().reference = "pi_test";
+        }
+    s.shared.settings.stripeSecretKey = "sk_test";
+    std::function<void(const QString &, const QString &)> answer;
+    s.shared.stripeRefund = [&](const QString &, std::int64_t, std::function<void(const QString &, const QString &)> done) {
+        answer = std::move(done);
+    };
+    REQUIRE(s.pos.startReturn(sale));
+    REQUIRE(s.pos.returnLines({QVariantMap{{u"line"_s, s.saleLine()[u"id"_s]}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    REQUIRE(s.pos.refundReturn(u"card"_s));
+    REQUIRE(answer);
+    CHECK_FALSE(s.pos.refundReturn(u"cash"_s));    // not the cash too
+    CHECK_FALSE(s.pos.refundReturn(u"credit"_s));
+    CHECK_FALSE(s.pos.closeCheck());
+    CHECK_FALSE(s.pos.addItem(u"juice"_s));
+    CHECK_FALSE(s.pos.voidItem());
+    answer(u"re_1"_s, QString());
+    CHECK_FALSE(s.pos.hasCheck());   // refunded, then closed
+    CHECK(s.lastClosed().payments.back().reference == "re_1");
+}
+
+TEST_CASE("Returns: an earlier day's sale can't come back twice from two screens", "[truckretail][returns][security]")
+{
+    test::RecordingSink sink;
+    app::PosData d = shopData();
+    app::PosShared shared(d, &sink);
+    PosService a(&shared, u"Shop"_s), b(&shared, u"Shop 2"_s);
+    REQUIRE(a.loginWithPin(u"1234"_s));
+    REQUIRE(b.loginWithPin(u"1234"_s));
+    a.openDrawerSession();
+    b.openDrawerSession();
+    REQUIRE(a.addItem(u"soda"_s));
+    const qint64 sale = a.checkInfo()[u"id"_s].toLongLong();
+    REQUIRE(a.tender(u"cash"_s));
+    REQUIRE(a.closeCheck());
+    // Yesterday's now: only in the database.
+    shared.closedToday.clear();
+    shared.findChecks = [&sink](const app::PosShared::CheckFind &) {
+        std::vector<core::Check> out;
+        for (const auto &[id, c] : sink.checks)
+            if (c.status == core::CheckStatus::Closed)
+                out.push_back(c);
+        return out;
+    };
+    const auto line = [&](PosService &p) { return p.returnSale()[u"lines"_s].toList().first().toMap()[u"id"_s].toLongLong(); };
+    REQUIRE(a.startReturn(sale));
+    REQUIRE(b.startReturn(sale));
+    REQUIRE(a.returnLines({QVariantMap{{u"line"_s, line(a)}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    // The other screen: it's coming back on the first one already.
+    CHECK_FALSE(b.returnLines({QVariantMap{{u"line"_s, line(b)}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    REQUIRE(a.refundReturn(u"cash"_s));
+    CHECK(sink.checks.at(sale).lines.front().returned == 1);   // saved where it's kept
+    REQUIRE(b.startReturn(sale));
+    CHECK(b.returnSale()[u"lines"_s].toList().first().toMap()[u"left"_s].toInt() == 0);
+    CHECK_FALSE(b.returnLines({QVariantMap{{u"line"_s, line(b)}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    // And again later (a search on the screen meanwhile changes nothing).
+    REQUIRE(a.searchChecks(u"zz"_s, 0, 0));
+    QDeadlineTimer done(10000);   // (the search runs away from the screen: let it finish)
+    while (a.checkSearch()[u"loading"_s].toBool() && !done.hasExpired())
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    REQUIRE_FALSE(a.checkSearch()[u"loading"_s].toBool());
+    REQUIRE(a.startReturn(sale));
+    CHECK(a.returnSale()[u"lines"_s].toList().first().toMap()[u"left"_s].toInt() == 0);
+}
+
+TEST_CASE("Returns: no choices or add-ons on what comes back; no-receipt prices are today's", "[truckretail][returns][security]")
+{
+    Shop s;
+    const qint64 sale = s.sell(u"soda"_s, 1);
+    REQUIRE(s.pos.startReturn(sale));
+    REQUIRE(s.pos.returnLines({QVariantMap{{u"line"_s, s.saleLine()[u"id"_s]}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    const qint64 back = s.pos.lines().first().toMap()[u"id"_s].toLongLong();
+    const QString due = s.pos.checkInfo()[u"refundDue"_s].toString();
+    CHECK_FALSE(s.pos.chooseLine(back));
+    for (const core::MenuItem &m : s.shared.menu)
+        if (m.isModifier && m.price.cents() > 0) {
+            s.pos.selectLine(back);
+            s.pos.addItem(QString::fromStdString(m.id));
+            break;
+        }
+    CHECK(s.pos.checkInfo()[u"refundDue"_s].toString() == due);   // not a cent more
+    s.pos.releaseCheck();
+
+    // A manager may type a price, within reason.
+    CHECK_FALSE(s.pos.returnItem(u"soda"_s, 50'000, u"Gift"_s));
+    REQUIRE(s.pos.returnItem(u"soda"_s, 500, u"Gift"_s));
+    CHECK(s.pos.lines().last().toMap()[u"price"_s].toString() == u"-$5.00"_s);
+    s.pos.releaseCheck();
+
+    // A cashier's typed price is ignored, even with the manager's OK.
+    PosService cashier(&s.shared, u"Shop 2"_s);
+    REQUIRE(cashier.loginWithPin(u"1111"_s));
+    cashier.invoke(u"returnItem"_s, {u"soda"_s, 50'000, u"Gift"_s, true});
+    REQUIRE(cashier.approve(u"1234"_s));
+    REQUIRE(cashier.hasCheck());
+    CHECK(cashier.lines().last().toMap()[u"price"_s].toString() == u"-$2.95"_s);
+}
+
+TEST_CASE("Returns: cash back for a gift card sale is a manager's; cash is rounded where pennies are gone", "[truckretail][returns][security]")
+{
+    Shop s;
+    s.shared.settings.cashierReturns = true;
+    const qint64 sale = s.sell(u"soda"_s, 1);
+    for (core::Check &c : s.shared.closedToday)
+        if (c.id == sale) {
+            c.payments.front().kind = core::TenderKind::GiftCard;
+            c.payments.front().tenderName = "Gift Card";
+        }
+    PosService cashier(&s.shared, u"Shop 2"_s);
+    REQUIRE(cashier.loginWithPin(u"1111"_s));
+    cashier.openDrawerSession();
+    const QString code = QString::fromStdString(app::receiptCode(s.shared.settings.receiptKey, sale));
+    REQUIRE(cashier.scanCode(u"R%1-%2"_s.arg(sale).arg(code)) == u"return"_s);
+    const qint64 line = cashier.returnSale()[u"lines"_s].toList().first().toMap()[u"id"_s].toLongLong();
+    REQUIRE(cashier.returnLines({QVariantMap{{u"line"_s, line}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    CHECK_FALSE(cashier.refundReturn(u"cash"_s));     // a manager's
+    REQUIRE(cashier.refundReturn(u"credit"_s));       // store credit: fine
+
+    // Pennies gone: $3.19 back is handed over as $3.20, and the check closes.
+    s.shared.settings.tax.cashRoundingCents = 5;
+    const qint64 other = s.sell(u"soda"_s, 1);
+    REQUIRE(s.pos.startReturn(other));
+    REQUIRE(s.pos.returnLines({QVariantMap{{u"line"_s, s.saleLine()[u"id"_s]}, {u"qty"_s, 1}}}, u"Changed mind"_s));
+    REQUIRE(s.pos.refundReturn(u"cash"_s));
+    CHECK(s.lastClosed().payments.back().amount.cents() % 5 == 0);
+    CHECK(s.lastClosed().totals(s.shared.settings.tax).balance.cents() == 0);
+}
+
+TEST_CASE("Returns: a coupon on an exchange is taxed on what was bought, not what came back", "[truckretail][returns][security]")
+{
+    core::TaxRates rates;
+    rates.foodPpm = 100'000;   // 10%
+    core::Check c;
+    core::OrderLine sold;
+    sold.itemId = "shirt";
+    sold.unitPrice = Money::fromCents(5000);
+    sold.taxClass = core::TaxClass::Food;
+    c.lines.push_back(sold);
+    core::OrderLine back = sold;
+    back.unitPrice = Money::fromCents(3000);
+    back.quantity = -1;
+    back.noDiscount = true;
+    c.lines.push_back(back);
+    core::Tender coupon;
+    coupon.kind = core::TenderKind::Discount;
+    c.addPayment(coupon, Money()).amount = Money::fromCents(1000);
+    const core::Totals t = c.totals(rates);
+    CHECK(t.subtotal.cents() == 1000);
+    CHECK(t.tax.cents() == 100);   // 10% of the $10 left, not of $16
+}
+
+TEST_CASE("Returns: without a receipt, on the Loss Watch", "[truckretail][returns][security]")
+{
+    Shop s;
+    s.shared.settings.watch = true;
+    REQUIRE(s.pos.returnItem(u"soda"_s, 0, u"Gift"_s));
+    bool alerted = false;
+    for (const QVariant &v : s.pos.lossAlertsNow())
+        alerted = alerted || v.toMap()[u"kind"_s] == u"returnNoReceipt"_s;
+    CHECK(alerted);
 }

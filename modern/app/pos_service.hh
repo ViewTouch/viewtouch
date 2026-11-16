@@ -388,6 +388,8 @@ public:
         int limit = 50, offset = 0;
     };
     std::function<std::vector<core::Check>(const CheckFind &)> findChecks;
+    // A closed sale as it is now: today's, else the database's (returns).
+    std::optional<core::Check> saleById(std::int64_t id) const;
     // Refunds made in [from, to), whatever day their check was (range reports).
     std::function<std::vector<core::Refund>(std::int64_t from, std::int64_t to)> refundHistory;
 
@@ -568,7 +570,7 @@ public:
     // (its receipt scanned, or found), what comes back (each a line below
     // zero, at what was paid), or one without a receipt (a manager's); what's
     // owed back given as cash, to the sale's card, or as store credit.
-    bool startReturn(qint64 checkId);
+    bool startReturn(qint64 checkId, const QString &code = {});   // code: the receipt barcode's
     void cancelReturn();
     QVariantMap returnSale() const override;
     bool returnLines(const QVariantList &picks, const QString &reason);
@@ -1412,11 +1414,15 @@ private:
     void returnArrived();
     int returnableLeft(const core::Check &sale, const core::OrderLine &l) const;
     int saleDaysAgo(const core::Check &sale) const;
-    bool mayTakeReturn(const core::Check *sale);
+    bool mayTakeReturn(const core::Check *sale, const QString &what = {});
+    bool returnVerified_ = false;   // the sale came from its receipt's barcode (its code matched)
+    bool refundUnderway(const core::Check &c) const;   // a return's card refund on its way: the check waits
+    bool paidOtherwise(const core::Check &c) const;    // items from a sale paid by gift card or on account
+    QString returnProblem(const core::Check &c) const; // closing: what comes back still can
     Money returnPrice(const core::Check &sale, const core::OrderLine &l) const;
     core::OrderLine returnLineFrom(const core::Check &sale, const core::OrderLine &l, int qty, const QString &reason) const;
     Money refundDueOn(const core::Check &c) const;
-    const core::Payment *returnCard(const core::Check &c, const core::Check **sale) const;
+    std::optional<core::Payment> returnCard(const core::Check &c, std::optional<core::Check> *sale) const;
     void markReturned(const core::Check &c);
     qint64 selectedHit_ = 0;
     int searchRequest_ = 0;

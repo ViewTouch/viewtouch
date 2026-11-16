@@ -47,6 +47,7 @@ QJsonObject PosService::offlineKitShared() const
     settings.backupSalt.clear();
     settings.replicaKey.clear();
     settings.stripeSecretKey.clear();
+    settings.receiptKey.clear();   // a screen working alone prints receipts a manager takes back
     settings.stripeReaders.clear();
     settings.textWebhook.clear();
     settings.maintainerPinHash.clear();

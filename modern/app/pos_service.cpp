@@ -5,6 +5,7 @@
 #include "app/pos_json.hh"
 
 #include <QDateTime>
+#include <QRandomGenerator>
 #include <QLocale>
 
 using namespace Qt::StringLiterals;
@@ -95,6 +96,15 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
         lastDayId = std::max(lastDayId, day.id);
     } else {
         startDay();
+    }
+    // The secret for receipts' return codes: made once, kept with the settings.
+    if (settings.receiptKey.empty()) {
+        QByteArray key(24, Qt::Uninitialized);
+        for (char &b : key)
+            b = char(QRandomGenerator::system()->bounded(256));
+        settings.receiptKey = key.toHex().toStdString();
+        if (sink)
+            sink->saveSettings(settings);
     }
     // Every store has an owner: before there were owners, its first manager.
     const auto owns = [](const Employee &e) { return e.active && (e.role == "owner" || e.role == "admin"); };
@@ -1366,6 +1376,8 @@ bool PosService::addItem(const QString &idOrName)
     if (!current() && !startCheck(CheckType::Quick))
         return false;
     Check &c = *current();
+    if (refundUnderway(c))
+        return fail(tr("A refund is on its way on this check."));
 
     const Qualifier q = qualifier_;
     // No / Lite / Side go on a choice or an add-on, not a whole item: still
@@ -1382,6 +1394,8 @@ bool PosService::addItem(const QString &idOrName)
         OrderLine *target = c.line(selectedLine_);
         if (!target || target->sent || target->isComment())
             target = c.lastItemLine();
+        if (target && target->isReturn())
+            return fail(tr("Coming back: Void it, and choose again on the Return page."));
         MenuItem sub = *item;
         sub.price = item->substitutePrice;
         if (!target || !c.addModifier(target->id, sub, q))
@@ -1391,6 +1405,8 @@ bool PosService::addItem(const QString &idOrName)
         OrderLine *target = c.line(selectedLine_);
         if (!target || target->sent || target->isComment())
             target = c.lastItemLine();
+        if (target && target->isReturn())
+            return fail(tr("Coming back: Void it, and choose again on the Return page."));
         MenuItem modifier = *item;
         modifier.price = extra(item->price);
         if (!target || !c.addModifier(target->id, modifier, q))
@@ -1536,6 +1552,8 @@ bool PosService::voidItem()
     Check *c = current();
     if (!c)
         return fail(tr("No check is open."));
+    if (refundUnderway(*c))
+        return fail(tr("A refund is on its way on this check."));
     OrderLine *l = c->line(selectedLine_);
     if (!l || l->voided) {
         // Default to the newest line still counting toward the total.
@@ -1955,6 +1973,8 @@ bool PosService::tender(const QString &tenderId, std::optional<std::int64_t> amo
     Check *c = current();
     if (!c)
         return fail(tr("No check is open."));
+    if (refundUnderway(*c))
+        return fail(tr("A refund is on its way on this check."));
     const Tender *t = s_->settings.tender(ss(tenderId));
     if (!t)
         return fail(tr("Payment type '%1' is not set up.").arg(tenderId));
@@ -2067,6 +2087,8 @@ bool PosService::removePayment()
     Check *c = current();
     if (!c || c->payments.empty())
         return fail(tr("No payment to remove."));
+    if (refundUnderway(*c))
+        return fail(tr("A refund is on its way on this check."));
     if (!require(perm::Settle, tr("Removing payments")))
         return false;
     // The selected payment, else the most recent one.
@@ -2114,8 +2136,13 @@ bool PosService::closeCheck()
     const Totals t = c->totals(s_->settings.tax);
     if (t.balance.cents() > 0)
         return fail(tr("%1 is still due.").arg(format(t.balance)));
+    if (refundUnderway(*c))
+        return fail(tr("A refund is on its way on this check."));
     if (const Money back = refundDueOn(*c); back.cents() > 0)
         return fail(tr("%1 is owed back: give it as cash, to the card or as store credit.").arg(format(back)));
+    if (c->hasReturns())
+        if (const QString problem = returnProblem(*c); !problem.isEmpty())
+            return fail(problem);
     if (c->training)
         return closePractice(*c);
     // (A cash tip handed over for the server is cash here too; cash given
@@ -2331,7 +2358,7 @@ QVariantMap PosService::checkInfo() const
         {u"fastCash"_s, fastCashFor(*c)},
         // A return: what's owed back, and the card it can go back to.
         {u"refundDue"_s, refundDueOn(*c).cents() > 0 ? format(refundDueOn(*c)) : QString()},
-        {u"refundCard"_s, [&] { const Payment *p = returnCard(*c, nullptr); return p ? (p->last4.empty() ? qs(p->tenderName) : u"%1 %2"_s.arg(qs(p->tenderName), qs(p->last4))) : QString(); }()},
+        {u"refundCard"_s, [&] { const std::optional<Payment> p = c->hasReturns() ? returnCard(*c, nullptr) : std::nullopt; return p ? (p->last4.empty() ? qs(p->tenderName) : u"%1 %2"_s.arg(qs(p->tenderName), qs(p->last4))) : QString(); }()},
         // Check ID: the drink just rung, and the birthday that's old enough.
         {u"idAsk"_s, idPending(*c) ? QVariantMap{
              {u"item"_s, [&] { const OrderLine *l = c->line(idAskLine_); return l ? qs(l->displayName()) : QString(); }()},

@@ -1,5 +1,7 @@
 #include "print/tickets.hh"
 
+#include "app/pos_json.hh"
+
 #include <QString>
 
 #include <algorithm>
@@ -224,7 +226,10 @@ Document receipt(const Check &check, const TicketContext &ctx)
     // A shop's: the sale's barcode, scanned to bring it up for a return.
     if (ctx.settings.receiptBarcode && ctx.settings.serviceMode == "retail" && check.id > 0 && !check.training) {
         d.blank();
-        d.barcode("R" + std::to_string(check.id));
+        // The sale's number and its code (no code: a screen working on its own,
+        // whose receipts a manager takes back).
+        const std::string code = app::receiptCode(ctx.settings.receiptKey, check.id);
+        d.barcode("R" + std::to_string(check.id) + (code.empty() ? std::string() : "-" + code));
     }
     return d;
 }

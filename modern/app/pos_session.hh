@@ -637,7 +637,7 @@ public:
     Q_INVOKABLE void setVariantStock(const QString &itemId, const QString &key, int onHand) { invoke(QStringLiteral("setVariantStock"), {itemId, key, onHand}); }
     Q_INVOKABLE void setPriceCheck(bool on) { invoke(QStringLiteral("setPriceCheck"), {on}); }
     Q_INVOKABLE void priceCheckCode(const QString &code) { invoke(QStringLiteral("priceCheckCode"), {code}); }
-    Q_INVOKABLE void startReturn(qint64 checkId) { invoke(QStringLiteral("startReturn"), {checkId}); }
+    Q_INVOKABLE void startReturn(qint64 checkId, const QString &code = {}) { invoke(QStringLiteral("startReturn"), {checkId, code}); }
     Q_INVOKABLE void cancelReturn() { invoke(QStringLiteral("cancelReturn"), {}); }
     Q_INVOKABLE void returnLines(const QVariantList &picks, const QString &reason) { invoke(QStringLiteral("returnLines"), {QVariant(picks), reason}); }
     Q_INVOKABLE void returnItem(const QString &itemId, qint64 cents, const QString &reason, bool restock = true) { invoke(QStringLiteral("returnItem"), {itemId, cents, reason, restock}); }

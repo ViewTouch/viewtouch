@@ -229,6 +229,8 @@ bool PosService::splitLine(qint64 targetCheckId, bool all)
         return fail(tr("No check is open."));
     if (!c->line(selectedLine_))
         return fail(tr("Touch an item on the check first."));
+    if (c->line(selectedLine_)->isReturn())
+        return fail(tr("Coming back: Void it, and choose again on the Return page."));
     if (!c->payments.empty())
         return fail(tr("Remove payments before splitting this check."));
 
@@ -276,7 +278,7 @@ bool PosService::shareLine(int parts)
         return fail(tr("Touch an item on the check first."));
     if (!c->payments.empty())
         return fail(tr("Remove payments before splitting this check."));
-    if (l->isComment() || l->voided)
+    if (l->isComment() || l->voided || l->isReturn())
         return fail(tr("%1 can't be shared.").arg(qs(l->displayName())));
     if (l->isShare())
         return fail(tr("%1 is already shared: Put Back Together first.").arg(qs(l->displayName())));

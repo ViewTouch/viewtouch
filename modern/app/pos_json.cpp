@@ -2,6 +2,7 @@
 #include "app/i18n.hh"
 
 #include <QCryptographicHash>
+#include <QMessageAuthenticationCode>
 #include <QRandomGenerator>
 #include <QRegularExpression>
 
@@ -174,6 +175,7 @@ QJsonObject toJson(const Check &c)
             {u"processor"_s, qs(p.processor)}, {u"cardBrand"_s, qs(p.cardBrand)}, {u"last4"_s, qs(p.last4)},
             {u"offline"_s, qs(p.offline)}, {u"surcharge"_s, qint64(p.surcharge.cents())},
             {u"surchargeBp"_s, qint64(p.surchargeBp)}, {u"funding"_s, qs(p.funding)},
+            {u"returnedBack"_s, qint64(p.returnedBack.cents())},
             {u"classShares"_s, [&p] {
                  if (p.classShares.empty())
                      return QJsonValue();
@@ -326,6 +328,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
         p.surcharge = money(po.value(u"surcharge"));
         p.surchargeBp = fraction(po.value(u"surchargeBp"), 10000);
         p.funding = ss(po.value(u"funding").toString());
+        p.returnedBack = Money::fromCents(std::max<qint64>(0, i64(po.value(u"returnedBack"))));
         const QJsonObject shares = po.value(u"classShares").toObject();
         for (auto it = shares.begin(); it != shares.end(); ++it)
             p.classShares[taxClassFromString(ss(it.key()))] = money(it.value());
@@ -1334,7 +1337,7 @@ QJsonObject toJson(const PosSettings &s)
          }()},
         {u"kitchenWarnMinutes"_s, s.kitchenWarnMinutes}, {u"kitchenLateMinutes"_s, s.kitchenLateMinutes},
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
-        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"afterSendTables"_s, s.sendToTables},
+        {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes}, {u"afterSendTables"_s, s.sendToTables}, {u"receiptKey"_s, qs(s.receiptKey)},
         {u"closeWhenPaid"_s, s.closeWhenPaid},
         {u"watch"_s, s.watch}, {u"watchVoid"_s, qint64(s.watchVoid.cents())}, {u"watchComp"_s, qint64(s.watchComp.cents())},
         {u"alertsSeenAt"_s, qint64(s.alertsSeenAt)},
@@ -1684,6 +1687,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.laterLeadMinutes = std::clamp(o.value(u"laterLeadMinutes").toInt(20), 0, 240);
     s.requireOrderName = o.value(u"requireOrderName").toBool();
     s.sendToTables = o.value(u"afterSendTables").toBool(true);
+    s.receiptKey = ss(o.value(u"receiptKey").toString());
     s.closeWhenPaid = o.value(u"closeWhenPaid").toBool();
     s.watch = o.value(u"watch").toBool(true);
     if (o.contains(u"watchVoid"))
@@ -2007,6 +2011,19 @@ Shift shiftFromJson(const QJsonObject &o)
 std::string textEffectFrom(const QString &value)
 {
     return value == u"none" || value == u"embossed" || value == u"outline" ? value.toStdString() : std::string();
+}
+
+std::string receiptCode(const std::string &key, std::int64_t checkId)
+{
+    if (key.empty() || checkId <= 0)
+        return {};
+    const QByteArray mac = QMessageAuthenticationCode::hash(QByteArray::number(qint64(checkId)), QByteArray::fromStdString(key),
+                                                            QCryptographicHash::Sha256);
+    static const char alphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // no 0/O or 1/I to misread
+    std::string out;
+    for (int i = 0; i < 6; ++i)
+        out += alphabet[static_cast<unsigned char>(mac[i]) % 32];
+    return out;
 }
 
 } // namespace vt::app

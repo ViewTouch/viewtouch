@@ -523,6 +523,7 @@ Totals Check::totals(const TaxRates &now) const
     // something off (an alcohol line that can't be discounted keeps its tax).
     std::map<TaxClass, Money> discountableByClass, staffDiscountableByClass;
     Money returns;   // items coming back: nothing comes off them
+    std::map<TaxClass, Money> goodsByClass;   // by class, without returns: what a fixed amount off is shared over
     for (const OrderLine &l : lines) {
         const Money lt = l.total();
         t.items += lt;
@@ -542,6 +543,8 @@ Totals Check::totals(const TaxRates &now) const
         }
         if (l.taxClass != TaxClass::None)
             byClass[l.taxClass] += lt;
+        if (l.taxClass != TaxClass::None && !l.isReturn())
+            goodsByClass[l.taxClass] += lt;
     }
 
     // Discounts: each is a share of the items total; together they never
@@ -569,7 +572,8 @@ Totals Check::totals(const TaxRates &now) const
                 if (const auto it = p.classShares.find(cls); it != p.classShares.end())
                     share += it->second;
             } else if (discounted.cents() > 0) {
-                share += p.amount.scaled(amount.cents(), discounted.cents());
+                const auto goods = goodsByClass.find(cls);
+                share += p.amount.scaled(goods == goodsByClass.end() ? 0 : goods->second.cents(), discounted.cents());
             }
             discountShare[cls] += share;
         }
@@ -631,11 +635,13 @@ Totals Check::totals(const TaxRates &now) const
     }
     // Paid in cash where pennies are gone: what was owed when the cash came
     // is rounded to the nearest 5 (10) cents.
-    if (rates.cashRoundingCents > 1 && t.cashPaid.cents() > 0) {
+    if (rates.cashRoundingCents > 1 && t.cashPaid.cents() != 0) {
         const std::int64_t step = rates.cashRoundingCents;
         const std::int64_t due = (t.total - (t.paid - t.cashPaid)).cents();
         if (due > 0)
             t.rounding = Money::fromCents((due + step / 2) / step * step - due);
+        else if (due < 0 && t.cashPaid.cents() < 0)   // cash given back (a return): rounded the same way
+            t.rounding = Money::fromCents(-((-due + step / 2) / step * step) - due);
     }
     t.balance = t.total + t.rounding - t.paid;
     t.change = t.balance.cents() < 0 ? -t.balance : Money();

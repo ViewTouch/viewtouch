@@ -156,6 +156,10 @@ struct Payment {
     // the drinks): what of it comes off each tax class, so the tax falls
     // where the items are. Empty: spread over the check by sales.
     std::map<TaxClass, Money> classShares;
+    // Given back on this payment by returns of the sale's items (cash, the
+    // card, store credit): counted with its refunds, so neither gives back
+    // more than it took.
+    Money returnedBack;
     // A card taken on a reader: whose ("stripe", "simulated"), and which card.
     std::string processor;
     std::string cardBrand;        // "visa", "mastercard"...
