@@ -85,6 +85,8 @@ bool PosService::addVariant(const QString &itemId, const QString &key)
     if (!m)
         return fail(tr("'%1' is not on the menu.").arg(itemId));
     const MenuItem::Variant *v = m->variant(ss(key));
+    if (m->byWeight)
+        return fail(tr("Sizes and colors are for items sold one at a time."));
     if (!v || v->hidden)
         return fail(tr("%1 doesn't come in %2.").arg(qs(m->name), variantLabel(ss(key))));
     variantAsk_.clear();

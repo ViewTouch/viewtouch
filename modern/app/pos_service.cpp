@@ -1744,6 +1744,7 @@ bool PosService::repeatLine(qint64 lineId)
     copy.unshare();
     copy.sent = copy.voided = copy.made = copy.served = false;
     copy.sentAt = copy.madeAt = copy.servedAt = 0;
+    copy.queueAtSend = -1;   // its own station queue when it's sent (Rush Radar)
     c->lines.push_back(copy);
     selectedLine_ = copy.id;
     choosingLine_ = 0;

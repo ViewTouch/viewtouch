@@ -305,7 +305,9 @@ bool PosService::setAvailable(const QString &itemId, bool available)
         MenuItem &m = s_->menu[i];
         if (qs(m.id) != itemId)
             continue;
-        if (m.available == available)
+        // Sold out by itself (out of stock, prepped out) and now 86'd by a
+        // person: theirs, so a void or more made doesn't bring it back.
+        if (m.available == available && !(m.autoSoldOut && !available))
             return true;
         m.available = available;
         m.autoSoldOut = false;   // a person decided

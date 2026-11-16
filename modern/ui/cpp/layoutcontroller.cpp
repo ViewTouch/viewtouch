@@ -2583,6 +2583,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
             // A restaurant's table only (never a food truck's or a shop's screen).
             const bool toTables = prefs.value(u"sendToTables"_s).toBool()
                                   && pos_->serviceInfo().value(u"mode"_s).toString() == u"restaurant"
+                                  && !rolePage(u"tables"_s).isEmpty()   // (a layout with no tables page: stay)
                                   && check.value(u"type"_s).toString() == u"dineIn"
                                   && !check.value(u"label"_s).toString().isEmpty();
             // An order called by its number (a food truck's): put away, it

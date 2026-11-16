@@ -1248,7 +1248,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <h3>Rush</h3>
 <p class="shot"><img src="shots/m220-truck-rush.jpg" width="560" height="315"></p>
 <p class="caption">RUSH ✓: on for every screen of the truck.</p>
-<p>When the line gets long, touch <b>Rush</b> (top of the truck's order screen). On every screen until it's touched again (<b>RUSH ✓</b>), or until End of Day:</p>
+<p>When the line gets long, a manager touches <b>Rush</b> (top of the truck's order screen; with the Counter working, it asks for a manager's PIN, because it turns receipts off for everyone). On every screen until it's touched again (<b>RUSH ✓</b>), or until End of Day:</p>
 <ul>
 <li>the guest isn't asked for a tip;</li>
 <li>no receipt prints unless someone touches <b>Print Receipt</b> on the Pay screen (Store Settings → How you serve: <b>No receipts during a rush</b>);</li>
@@ -1285,15 +1285,17 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <ul>
 <li><b>With the receipt:</b> a shop's receipt ends with a <b>barcode of the sale</b> (Store Settings → Receipts: <b>Retail receipts: a barcode for returns</b>). Scan it anywhere, or touch <b>Return…</b> and scan it, type the sale number, or <b>Find a Check…</b> (and its <b>Return Items…</b>). The sale's items show with how many can still come back and what each was paid (after any discount on the sale).</li>
 <li><b>What comes back:</b> <b>+</b> and <b>−</b> on each item, a reason (<i>Changed mind</i>, <i>Wrong size</i>, <i>Damaged</i>…), then <b>Bring Back</b>. <b>Damaged: not back in stock</b> keeps the item off the shelf count; otherwise it goes back in stock when the return is done.</li>
-<li><b>Without a receipt:</b> <b>No Receipt…</b>, a reason, then the item: it comes back at today's price. This always needs a manager.</li>
-<li><b>Who:</b> returns are a manager's. With <b>Cashiers may take returns with a receipt</b> on, a cashier takes those within <b>Returns are taken within</b> days (30 to start); after that, a manager.</li>
+<li><b>Without a receipt:</b> <b>No Receipt…</b>, a reason, then the item: it comes back at today's price (a manager logged in may type another, up to three times the price). This always needs a manager, and it shows on the Loss Watch.</li>
+<li><b>Who:</b> returns are a manager's. With <b>Cashiers may take returns with a receipt</b> on, a cashier takes those within <b>Returns are taken within</b> days (30 to start) when they <b>scan the receipt's own barcode</b>. A typed sale number, Find a Check, a sale already refunded another way, or one past the days is a manager's.</li>
+<li><b>The receipt's barcode</b> is the sale's number and a short code only your store can make (<i>R1042-KQ7XHM</i>), so a barcode can't be made up from a sale number. Receipts printed by a screen working on its own have no code: a manager takes those back.</li>
+<li><b>Never twice:</b> what came back is checked again when the return is paid out, so the same item can't come back twice, from two screens or on two days; and a sale given money back through Find a Check → Refund counts against its returns, and the other way round.</li>
 </ul>
 <p class="shot"><img src="shots/m227-retail-return-due.jpg" width="560" height="315"></p>
 <p class="caption">RETURN Soda in red, its tax back, and how the $3.19 goes back.</p>
 <p>The items go on the sale in red as <b>RETURN</b>, below zero, with their tax back. Under the total, <b>Owed back</b> and how to give it:</p>
 <ul>
-<li><b>Cash:</b> out of the drawer, and the sale closes.</li>
-<li><b>To Visa 4242</b> (when the sale was paid by card): back to that card through Stripe, or recorded to give back on the card machine it was taken on.</li>
+<li><b>Cash:</b> out of the drawer, and the sale closes (rounded to 5¢ where pennies are gone). Cash for items paid with a gift card or on a house account is a manager's; store credit isn't.</li>
+<li><b>To Visa 4242</b> (when everything coming back is from one sale paid by card): back to that card through Stripe, or recorded to give back on the card machine it was taken on. While Stripe answers, nothing else can be done on the check.</li>
 <li><b>Store Credit:</b> a new gift card with the amount on it, printed on the receipt.</li>
 </ul>
 <p><b>An exchange:</b> ring the new item in on the same sale. If it costs more, the customer pays the difference as usual; if less, the rest is owed back. The sale it came from remembers what came back, so it can't come back twice.</p>

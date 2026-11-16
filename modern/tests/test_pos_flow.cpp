@@ -11507,6 +11507,7 @@ TEST_CASE("UI: servers: × then an item rings that many; a note on the item; the
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
         CAPTURE(name);
+        test::waitFor([&] { return find(name) != nullptr; }, 8000);   // (slower under the sanitizers)
         QQuickItem *it = find(name);
         REQUIRE(it);
         REQUIRE(it->isVisible());
@@ -11696,6 +11697,7 @@ TEST_CASE("UI: hosts: Seat at the best table; sections drawn on the floor; table
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
         CAPTURE(name);
+        test::waitFor([&] { return find(name) != nullptr; }, 8000);   // (slower under the sanitizers)
         QQuickItem *it = find(name);
         REQUIRE(it);
         s.tapItem(it);
@@ -11754,6 +11756,7 @@ TEST_CASE("UI: a truck's prep counts, a rush, and the menu board", "[flow][ui][t
     QTest::qWait(200);
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
+        test::waitFor([&] { return find(name) != nullptr; }, 8000);   // (slower under the sanitizers)
         QQuickItem *item = find(name);
         REQUIRE(item);
         s.tapItem(item);
@@ -11765,12 +11768,17 @@ TEST_CASE("UI: a truck's prep counts, a rush, and the menu board", "[flow][ui][t
     CHECK(s.pos.stockLeft()[u"soda"_s].toInt() == 3);
     s.shot("truck-order");
 
-    // Rush: on for every screen; the key says so.
+    // Rush: on for every screen (a manager's PIN); the key says so.
     s.c.activate(u"tab-rush-on"_s);
     QTest::qWait(150);
+    REQUIRE(s.pos.approve(u"1234"_s));
+    test::waitFor([&] { return s.pos.serviceInfo()[u"rush"_s].toBool(); }, 5000);
     CHECK(s.pos.serviceInfo()[u"rush"_s] == true);
     s.shot("truck-rush");
     s.c.activate(u"tab-rush-off"_s);
+    QTest::qWait(100);
+    REQUIRE(s.pos.approve(u"1234"_s));
+    test::waitFor([&] { return !s.pos.serviceInfo()[u"rush"_s].toBool(); }, 5000);
     CHECK(s.pos.serviceInfo()[u"rush"_s] == false);
 
     // Prep: +1 for the soda; another item, 20 made.
@@ -11836,6 +11844,7 @@ TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and co
     QTest::qWait(200);
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
+        test::waitFor([&] { return find(name) != nullptr; }, 8000);   // (slower under the sanitizers)
         QQuickItem *item = find(name);
         REQUIRE(item);
         s.tapItem(item);
@@ -11845,6 +11854,7 @@ TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and co
     // Price check: scanned, its price and how many; nothing rung in.
     s.c.activate(u"flow-pricecheck"_s);
     QTest::qWait(100);
+    test::waitFor([&] { return find(u"priceSheet"_s) != nullptr; }, 8000);
     REQUIRE(find(u"priceSheet"_s));
     s.c.scanned(u"303"_s);
     QTest::qWait(150);
@@ -11873,6 +11883,7 @@ TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and co
     tap(u"returnBringBack"_s);
     QTest::qWait(150);
     CHECK(s.c.pageId() == u"index-lunch"_s);
+    test::waitFor([&] { return find(u"refundRow"_s) != nullptr; }, 8000);
     REQUIRE(find(u"refundRow"_s));
     s.shot("retail-return-due");
     tap(u"refundCredit"_s);
@@ -11885,6 +11896,7 @@ TEST_CASE("UI: a shop's price check, a return for store credit, and sizes and co
          QVariantMap{{u"name"_s, u"Color"_s}, {u"values"_s, QVariantList{u"Red"_s, u"Blue"_s}}}}, {}));
     s.c.orderItem(u"juice"_s);
     QTest::qWait(200);
+    test::waitFor([&] { return find(u"variantSheet"_s) != nullptr; }, 8000);
     REQUIRE(find(u"variantSheet"_s));
     CHECK(s.pos.lines().isEmpty());
     s.shot("retail-variants");
@@ -11988,12 +12000,14 @@ TEST_CASE("UI: Aa sets my text size and effect; the screens follow it", "[flow][
     QTest::qWait(200);
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
+        test::waitFor([&] { return find(name) != nullptr; }, 8000);   // (slower under the sanitizers)
         QQuickItem *item = find(name);
         REQUIRE(item);
         s.tapItem(item);
         QTest::qWait(150);
     };
     tap(u"myLook"_s);
+    test::waitFor([&] { return find(u"myLookSheet"_s) != nullptr; }, 8000);
     REQUIRE(find(u"myLookSheet"_s));
     tap(u"myTextSize-115"_s);
     tap(u"myTextEffect-embossed"_s);

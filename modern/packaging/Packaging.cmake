@@ -85,6 +85,8 @@ install(FILES ${VTM_PKG}/vtmodern.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/a
 install(FILES ${VTM_PKG}/vtmodern.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
 install(FILES ${VTM_REPO_ROOT}/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
+# The fonts built in (Inter: SIL Open Font License, which goes with them).
+install(FILES ${CMAKE_SOURCE_DIR}/assets/fonts/Inter-LICENSE.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
 
 set(CPACK_PACKAGE_NAME vtmodern)
 # The version with this build's number (0.9.1283), as the program shows it.

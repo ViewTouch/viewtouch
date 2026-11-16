@@ -351,17 +351,19 @@ bool PosService::addPrepped(const QString &itemId, int more)
     const MenuItem *m = findItem(itemId);
     if (!m)
         return fail(tr("'%1' is not on the menu.").arg(itemId));
+    if (more < -9999 || more > 9999)
+        return fail(tr("That's more than 9999."));
     const auto &list = s_->settings.prepCounts;
     const auto it = std::ranges::find(list, m->id, &PosSettings::PrepCount::itemId);
     const int left = it == list.end() ? 0 : std::max(0, it->made - it->sold);
-    return setPrepCount(qs(m->id), std::max(0, left + more));
+    return setPrepCount(qs(m->id), std::clamp(left + more, 0, 9999));
 }
 
 void PosService::countPrepped(const std::vector<OrderLine> &lines, int sign)
 {
     bool changed = false;
     for (const OrderLine &l : lines) {
-        if ((l.voided && sign > 0) || l.isComment())
+        if ((l.voided && sign > 0) || l.isComment() || (l.isReturn() && !l.restock))
             continue;
         for (PosSettings::PrepCount &p : s_->settings.prepCounts)
             if (p.itemId == l.itemId) {
@@ -370,7 +372,7 @@ void PosService::countPrepped(const std::vector<OrderLine> &lines, int sign)
             }
     }
     if (changed)
-        s_->saveSettings();
+        s_->savePrepSoon();
 }
 
 bool PosService::prepOut(const std::string &itemId) const
@@ -396,7 +398,8 @@ bool PosService::setRush(bool on)
 {
     if (!user())
         return fail(tr("Log in first."));
-    if (!require(perm::Order, tr("Rush")))
+    // Rush turns receipts off on every screen: a manager's.
+    if (!require(perm::Manager, tr("Rush")))
         return false;
     if (s_->settings.rush == on)
         return true;

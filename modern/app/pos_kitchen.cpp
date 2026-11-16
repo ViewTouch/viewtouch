@@ -336,8 +336,9 @@ bool PosService::kitchenSoldOut(const QString &itemId)
         MenuItem &m = s_->menu[i];
         if (qs(m.id) != itemId)
             continue;
-        if (!m.available)
+        if (!m.available && !m.autoSoldOut)
             return true;
+        // (Sold out by itself already: now a person's 86, kept for the day.)
         m.available = false;
         m.autoSoldOut = false;
         m.soldOutToday = true;

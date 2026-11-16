@@ -425,6 +425,10 @@ public:
     }
     // Save the settings and tell every terminal (paired devices changed...).
     void saveSettings();
+    // Prep counts going down as orders go out: saved within two seconds, a
+    // burst of orders at once (not the whole store's settings refreshed each time).
+    void savePrepSoon();
+    QTimer *prepSave_ = nullptr;
     // The kitchen's learned prep times: saved quietly, at most once a minute
     // (no screen needs telling; the tickets show them anyway). Any other
     // save of the settings saves them too.

@@ -1335,6 +1335,23 @@ void PosShared::savePrepTimes()
     sink->saveSettings(settings);
 }
 
+void PosShared::savePrepSoon()
+{
+    if (!sink)
+        return;
+    if (!prepSave_) {
+        prepSave_ = new QTimer(this);
+        prepSave_->setSingleShot(true);
+        prepSave_->setInterval(2000);
+        connect(prepSave_, &QTimer::timeout, this, [this] {
+            if (sink)
+                sink->saveSettings(settings);
+        });
+    }
+    if (!prepSave_->isActive())
+        prepSave_->start();
+}
+
 void PosShared::saveSettings()
 {
     if (sink)

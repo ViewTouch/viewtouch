@@ -123,10 +123,9 @@ TEST_CASE("Truck: zero prepped sells it out, End of Day clears the counts and th
 
     REQUIRE(pos.setPrepCount(u"soda"_s, 0));
     CHECK_FALSE(itemOf(shared, "soda")->available);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // Rush is a manager's
     REQUIRE(pos.setRush(true));
     CHECK(pos.serviceInfo()[u"rush"_s] == true);
-
-    REQUIRE(pos.loginWithPin(u"1234"_s));
     clock += 3'600'000;
     INFO(pos.dayInfo()[u"blockers"_s].toStringList().join(u" | "_s).toStdString());
     REQUIRE(pos.endOfDay());
@@ -141,7 +140,9 @@ TEST_CASE("Truck: a rush skips the receipt, and Pay sends first", "[truckretail]
     PosService pos(&shared, u"Truck"_s);
     PosService other(&shared, u"Truck 2"_s);
 
-    REQUIRE(pos.setRush(true));
+    CHECK_FALSE(pos.setRush(true));                  // the Counter: a manager's call
+    pos.invoke(u"setRush"_s, {true});
+    REQUIRE(pos.approve(u"1234"_s));                 // the manager's PIN
     CHECK(other.serviceInfo()[u"rush"_s] == true);   // every screen
 
     REQUIRE(pos.addItem(u"soda"_s));
@@ -152,7 +153,8 @@ TEST_CASE("Truck: a rush skips the receipt, and Pay sends first", "[truckretail]
     REQUIRE(pos.rushSend());   // nothing new: nothing happens
 
     // Not a rush: Pay doesn't send.
-    REQUIRE(pos.setRush(false));
+    pos.invoke(u"setRush"_s, {false});
+    REQUIRE(pos.approve(u"1234"_s));
     REQUIRE(pos.addItem(u"soda"_s));
     REQUIRE(pos.setCustomer({{u"name"_s, u"Cy"_s}}));
     REQUIRE(pos.rushSend());

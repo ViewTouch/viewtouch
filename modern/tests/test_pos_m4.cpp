@@ -553,10 +553,11 @@ TEST_CASE("Admin: tax change re-totals open checks; settings are saved", "[m4][a
     QVariantMap tax = pos.adminRecords(u"taxes"_s)[0].toMap();
     tax[u"food"_s] = 10.0;
     QSignalSpy changed(&pos, &PosService::checkChanged);
+    const int before = sink.settingsSaves;   // (a new store saved its receipt secret when it started)
     REQUIRE(pos.adminSave(u"taxes"_s, 0, tax));
     CHECK(changed.size() >= 1);
     CHECK(pos.totals()[u"total"_s].toString() == u"$9.35"_s);
-    CHECK(sink.settingsSaves == 1);
+    CHECK(sink.settingsSaves == before + 1);
 
     tax[u"food"_s] = 150.0;
     CHECK_FALSE(pos.adminSave(u"taxes"_s, 0, tax));
