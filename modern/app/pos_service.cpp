@@ -842,11 +842,28 @@ const Employee *PosService::employeeByPin(const QString &pin) const
         return &maintainerEmployee();
     }
     for (const Employee &e : s_->employees) {
-        if (e.active && e.pinHash == hashPin(pin, e.pinSalt)) {
+        if (e.active && sameHash(e.pinHash, hashPin(pin, e.pinSalt))) {
             guard.wrong = 0;
             return &e;
         }
     }
+    noteWrongPin();
+    return nullptr;
+}
+
+QString PosService::pinWaitNow() const
+{
+    const PosShared::PinGuard &guard = s_->pinGuards[terminalName()];
+    const std::int64_t t = now();
+    const std::int64_t waitUntil = std::max(guard.waitUntil, s_->storeWaitUntil);
+    return waitUntil > t ? tr("Too many wrong PINs: try again in %n second(s).", "", int((waitUntil - t + 999) / 1000))
+                         : QString();
+}
+
+void PosService::noteWrongPin() const
+{
+    PosShared::PinGuard &guard = s_->pinGuards[terminalName()];
+    const std::int64_t t = now();
     ++guard.wrong;
     auto &lately = s_->wrongPinsLately;
     lately.push_back(t);
@@ -862,7 +879,6 @@ const Employee *PosService::employeeByPin(const QString &pin) const
         s_->noteProblem("wrongPins", "store", std::to_string(lately.size()));
         qWarning().noquote() << lately.size() << "wrong PINs in the store in 10 minutes";
     }
-    return nullptr;
 }
 
 bool PosService::login()

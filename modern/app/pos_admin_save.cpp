@@ -21,6 +21,24 @@ using namespace admin;
 
 bool PosService::adminSave(const QString &panel, int index, const QVariantMap &record)
 {
+    // Taxes and Store Settings are one record, always the first.
+    const bool single = panel == u"taxes" || panel == u"store";
+    if (single)
+        index = 0;
+    // A new one (or one past the end: new too): the owner's and the
+    // maintainer's fields, typed in it, are theirs to type.
+    if (const int count = index < 0 ? 0 : int(adminRecords(panel).size()); index < 0 || index >= count) {
+        if (panel == u"cardReaders" && !require(perm::Owner, tr("Pairing a card reader")))
+            return false;
+        for (auto it = record.begin(); it != record.end(); ++it) {
+            const char *p = fieldPermission(panel, it.key());
+            if (!p || can(QString::fromLatin1(p)) || it.value().toString().isEmpty())
+                continue;
+            return fail(qstrcmp(p, perm::Maintain) == 0 ? tr("Only the maintainer can change that.")
+                                                       : tr("Only the owner can change that."));
+        }
+        index = -1;
+    }
     // A new one: added, by its name.
     if (index < 0) {
         if (const char *p = fieldPermission(panel, {}); p && !can(QString::fromLatin1(p)))
@@ -54,7 +72,7 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
         }
     }
     QVariantMap full = record;
-    if ((panel == u"taxes" || panel == u"store") && index == 0 && !before.isEmpty()) {
+    if (single && !before.isEmpty()) {
         full = before[0].toMap();
         full.remove(u"useSuggested"_s);
         for (auto it = record.begin(); it != record.end(); ++it)
@@ -897,12 +915,17 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     if (!pin.isEmpty() && (role == u"manager" || role == u"admin" || role == u"owner") && pin.size() < 6)
         return fail(tr("Managers' PINs are 6 to 8 digits."));
     if (!pin.isEmpty()) {
-        for (int i = 0; i < int(s_->employees.size()); ++i) {
-            if (i != index && s_->employees[i].pinHash == hashPin(pin, s_->employees[i].pinSalt))
-                return fail(tr("Someone else already uses that PIN."));
-        }
-        if (s_->isMaintainerPin(pin))
+        // (Each "in use" is a PIN found: it counts like a wrong one, so
+        // trying PINs here waits like trying them at the login.)
+        if (const QString wait = pinWaitNow(); !wait.isEmpty())
+            return fail(wait);
+        bool taken = s_->isMaintainerPin(pin);
+        for (int i = 0; i < int(s_->employees.size()); ++i)
+            taken = taken || (i != index && sameHash(s_->employees[i].pinHash, hashPin(pin, s_->employees[i].pinSalt)));
+        if (taken) {
+            noteWrongPin();
             return fail(tr("Someone else already uses that PIN."));
+        }
     }
     std::set<std::string> allow, deny;
     for (const char *p : AllPermissions) {
@@ -1014,6 +1037,9 @@ QString PosService::ownerRule(const Employee *before, const Employee &after) con
             return tr("Only the owner can make someone a manager or the owner, or change a manager's job.");
         if (before && boss(before->role) && before->active && !after.active)
             return tr("Only the owner can deactivate a manager.");
+        // Another manager's PIN (or the owner's): set, it's theirs to log in as.
+        if (before && boss(before->role) && before->pinHash != after.pinHash && !(user() && user()->id == before->id))
+            return tr("Only the owner can change a manager's PIN (managers change their own).");
         if (before ? (before->payRate != after.payRate || before->otherJobs != after.otherJobs)
                    : (after.payRate.cents() != 0 || !after.otherJobs.empty()))
             return tr("Only the owner can change pay.");

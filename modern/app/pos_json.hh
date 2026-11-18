@@ -102,6 +102,8 @@ QString dateTimeField(std::int64_t ms);
 
 // Salted SHA-256 of a PIN, hex encoded.
 std::string hashPin(const QString &pin, const std::string &salt);
+// Two hashes the same, taking as long whatever they hold.
+bool sameHash(const std::string &a, const std::string &b);
 std::string newSalt();
 
 // "12.50" -> 1250 cents; percent 8.25 -> 82500 ppm. Exact for inputs with

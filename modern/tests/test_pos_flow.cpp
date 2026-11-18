@@ -6977,7 +6977,7 @@ TEST_CASE("Phone audit: every page on a phone (pictures, small controls)", "[.][
 {
     Screen s(false, 412, 915, u"phone"_s);
     REQUIRE(s.pos.loginWithPin(u"1234"_s));
-    s.pos.setupFinish(true);
+    s.pos.shared()->settings.setupDone = true;   // (the sample manager is still on)
     s.c.closeSetup();
     QStringList report;
     QDir pages(QStringLiteral(VTM_SEED_DIR "/pages"));
@@ -7011,7 +7011,7 @@ TEST_CASE("Phones don't edit pages: they're made on a bigger screen", "[ui][phon
 {
     Screen s(false, 412, 915, u"phone"_s);
     REQUIRE(s.pos.loginWithPin(u"1234"_s));
-    s.pos.setupFinish(true);
+    s.pos.shared()->settings.setupDone = true;   // (the sample manager is still on)
     s.c.closeSetup();
     REQUIRE(s.c.jumpTo(u"manager"_s));
     CHECK_FALSE(s.c.requestEditMode());

@@ -355,6 +355,14 @@ bool PosService::setupFinish(bool done)
 {
     if (!require(perm::Manager, tr("Setting up the store")))
         return false;
+    // The sample managers' PINs (1234) are the same in every ViewTouch: the
+    // store isn't set up while one can still log in (but whoever is running
+    // the guide, a sample, goes off at Finish).
+    if (done && std::ranges::any_of(s_->employees, [this](const Employee &e) {
+            return e.active && e.sample && (e.role == "manager" || e.role == "owner" || e.role == "admin")
+                   && !(retireMeAtFinish_ && user() && user()->id == e.id);
+        }))
+        return fail(tr("Set your own owner PIN first: add yourself as a manager, then Retire the sample staff."));
     s_->settings.setupDone = done;
     s_->saveSettings();
     ++s_->adminRevision;

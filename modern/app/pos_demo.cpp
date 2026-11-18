@@ -520,6 +520,13 @@ QString fillDemoData(PosService &pos, std::int64_t realNow)
         lou[u"pin"_s] = u"7777"_s;
         lou[u"payRate"_s] = 12.0;
         pos.adminSave(u"employees"_s, -1, lou);
+        // A demo PIN, like the samples': retired with them.
+        for (Employee &e : s->employees)
+            if (e.id == "lou") {
+                e.sample = true;
+                if (s->sink)
+                    s->sink->saveEmployee(e);
+            }
     }
     s->settings.deliveryFee = Money::fromCents(350);
     s->settings.tipOuts = {{"busser", 1500, "tips"}, {"bartender", 200, "sales"}};

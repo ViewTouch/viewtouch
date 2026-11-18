@@ -1553,6 +1553,10 @@ private:
     bool fail(const QString &message);
     void changed(core::Check &check);   // persist + notify
     const core::Employee *employeeByPin(const QString &pin) const;
+    // A wrong PIN (or a PIN probed another way): counts toward this screen's
+    // and the store's waits. The wait now, or empty.
+    void noteWrongPin() const;
+    QString pinWaitNow() const;
     QString ownerRule(const core::Employee *before, const core::Employee &after) const;
     QVariantList adminFieldsAll(const QString &panel);
     const char *fieldPermission(const QString &panel, const QString &path) const;

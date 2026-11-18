@@ -592,6 +592,16 @@ std::string newSalt()
     return QByteArray(reinterpret_cast<const char *>(words), sizeof words).toHex().toStdString();
 }
 
+bool sameHash(const std::string &a, const std::string &b)
+{
+    if (a.size() != b.size() || a.empty())
+        return false;
+    unsigned char diff = 0;
+    for (std::size_t i = 0; i < a.size(); ++i)
+        diff |= static_cast<unsigned char>(a[i] ^ b[i]);
+    return diff == 0;
+}
+
 std::string hashPin(const QString &pin, const std::string &salt)
 {
     QCryptographicHash h(QCryptographicHash::Sha256);
