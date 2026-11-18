@@ -145,6 +145,9 @@ struct PosData {
     std::int64_t lastCheckId = 0;
     // A screen working offline: its food truck orders start here (the store's own go on below).
     int firstOrderNumber = 0;
+    // A screen working offline, from the store's kit: only staff can log in
+    // (managers' PINs never leave the store's computer).
+    bool alone = false;
     std::int64_t lastPunchId = 0;
     std::optional<core::BusinessDay> currentDay;  // none: the service opens one
     std::int64_t lastDayId = 0;
@@ -332,6 +335,7 @@ public:
     core::GiftCard *giftCard(const std::string &number);
     std::int64_t lastCheckId = 0;
     int firstOrderNumber = 0;   // PosData::firstOrderNumber
+    bool alone = false;         // PosData::alone
     std::int64_t lastPunchId = 0;
     PosSink *sink = nullptr;
     PosPrinter *printer = nullptr;

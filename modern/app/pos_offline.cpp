@@ -57,9 +57,18 @@ QJsonObject PosService::offlineKitShared() const
     QJsonArray menu, employees, open, punches, drawers;
     for (const MenuItem &m : s_->menu)
         menu.append(toJson(m));
-    for (const Employee &e : s_->employees)
-        if (e.active)
-            employees.append(toJson(e));
+    // Staff who can log in on a screen working alone. Not managers or the
+    // owner: their PINs would be on every handheld, and a PIN of 4 to 8
+    // digits is found from its hash in moments (a lost tablet: every
+    // manager's PIN). Nor anyone's pay.
+    for (const Employee &e : s_->employees) {
+        if (!e.active || e.role == "manager" || e.role == "owner" || e.role == "admin")
+            continue;
+        QJsonObject j = toJson(e);
+        j.remove(u"payRate"_s);
+        j.remove(u"otherJobs"_s);
+        employees.append(j);
+    }
     for (const auto &[id, c] : s_->open)
         open.append(toJson(c));
     for (const TimePunch &p : s_->punches)
@@ -107,6 +116,7 @@ std::optional<PosData> offlineData(const QJsonObject &kit)
     d.settings = settingsFromJson(kit.value(u"settings").toObject());
     d.menu = menuFromJson(kit.value(u"menu").toArray());
     d.employees = employeesFromJson(kit.value(u"employees").toArray());
+    d.alone = true;
     for (const QJsonValue &v : kit.value(u"openChecks").toArray())
         if (auto c = checkFromJson(v.toObject()))
             d.openChecks.push_back(*c);

@@ -1321,6 +1321,11 @@ TEST_CASE("Working offline: the kit keeps the store's secrets, and a check is ta
     CHECK(std::ranges::none_of(data->settings.terminals, [](const core::TerminalConfig &t) { return !t.cardReader.empty(); }));
     CHECK_FALSE(data->employees.empty());
     CHECK(!data->employees.front().pinHash.empty());   // PINs are checked there: memory only
+    // Staff only: never a manager's or the owner's PIN, nor anyone's pay.
+    CHECK(std::ranges::none_of(data->employees, [](const core::Employee &e) {
+        return e.role == "manager" || e.role == "owner" || e.role == "admin" || e.payRate.cents() != 0;
+    }));
+    CHECK(data->employees.size() < shared.employees.size());
 
     // A check made offline, kept until taken in, the journal surviving a restart.
     QTemporaryDir dir;

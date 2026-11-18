@@ -9,6 +9,7 @@
 using namespace Qt::StringLiterals;
 using namespace vt;
 using vt::app::PosService;
+using vt::app::PosShared;
 
 // What a manager, a paired screen or a file from outside can't do: the
 // security review's findings, one test each.
@@ -214,4 +215,16 @@ TEST_CASE("Security: a card payment a screen reports is checked with Stripe", "[
     CHECK_FALSE(pos.cardForwarded({{u"localRef"_s, u"local-1"_s}, {u"status"_s, u"ok"_s}, {u"id"_s, u"pi_1/../x"_s}}));
     REQUIRE(pos.cardForwarded({{u"localRef"_s, u"local-1"_s}, {u"status"_s, u"ok"_s}, {u"id"_s, u"pi_forged"_s}}));
     CHECK(flagged() == 3);
+}
+
+TEST_CASE("Security: a screen working alone can't log a manager in (their PINs stay on the store's computer)", "[security][offline]")
+{
+    PosShared store(test::seedPosData(), nullptr);
+    PosService bar(&store, u"Bar"_s);
+    const auto data = app::offlineData(bar.offlineKit());
+    REQUIRE(data);
+    PosShared alone(*data, nullptr);
+    PosService screen(&alone, u"Bar"_s);
+    CHECK_FALSE(screen.loginWithPin(u"1234"_s));   // Morgan, the owner
+    CHECK(screen.loginWithPin(u"1111"_s));         // Sam, a server
 }

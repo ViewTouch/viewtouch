@@ -58,6 +58,7 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , images(std::move(data.images))
     , lastCheckId(data.lastCheckId)
     , firstOrderNumber(data.firstOrderNumber)
+    , alone(data.alone)
     , lastPunchId(data.lastPunchId)
     , sink(sink)
     , lastDayId(data.lastDayId)
@@ -413,7 +414,8 @@ bool PosService::approve(const QString &pin)
     const Employee *m = employeeByPin(pin);
     const std::string permission = ss(approval_.value(u"permission"_s).toString());
     if (!m || !m->active || !m->can(permission))
-        return fail(pinRefused(tr("That PIN can't approve this.")));
+        return fail(pinRefused(s_->alone ? tr("A manager approves this when the store's computer is back.")
+                                          : tr("That PIN can't approve this.")));
     approved_ = Approved{permission, m->name};
     const QString method = approvalMethod_;
     const QVariantList args = approvalArgs_;
@@ -893,7 +895,8 @@ bool PosService::loginWithPin(const QString &pin)
 {
     const Employee *e = employeeByPin(pin);
     if (!e)
-        return fail(pinRefused(tr("That PIN is not recognized.")));
+        return fail(pinRefused(s_->alone ? tr("That PIN is not recognized. (Managers log in when the store's computer is back.)")
+                                          : tr("That PIN is not recognized.")));
     userId_ = e->id;
     if (counterMode()) {
         if (counterUser_.empty() && !s_->settings.truckNoLogin && e->id != maintainerEmployee().id) {
