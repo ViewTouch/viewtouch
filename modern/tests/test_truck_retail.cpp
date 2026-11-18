@@ -512,7 +512,7 @@ TEST_CASE("Returns: nothing else happens on the check while its card refund is o
         }
     s.shared.settings.stripeSecretKey = "sk_test";
     std::function<void(const QString &, const QString &)> answer;
-    s.shared.stripeRefund = [&](const QString &, std::int64_t, std::function<void(const QString &, const QString &)> done) {
+    s.shared.stripeRefund = [&](const QString &, std::int64_t , const QString &, std::function<void(const QString &, const QString &)> done) {
         answer = std::move(done);
     };
     REQUIRE(s.pos.startReturn(sale));

@@ -79,7 +79,7 @@ TEST_CASE("Cards on a reader: charge, record once, refund on Undo Payment", "[ca
     std::function<void(const QString &, const QString &)> answer;
     QString refunded;
     std::int64_t refundCents = 0;
-    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t cents, auto done) {
+    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t cents, const QString &, auto done) {
         refunded = pi;
         refundCents = cents;
         answer = done;
@@ -106,8 +106,11 @@ TEST_CASE("Cards on a reader: charge, record once, refund on Undo Payment", "[ca
     answer(u"re_2"_s, {});
     QVariantMap sim = approval(check, 298, u"sim_1"_s);
     sim[u"processor"_s] = u"simulated"_s;
+    CHECK_FALSE(pos.recordCardPayment(sim));   // a store with Stripe: its cards come through Stripe
+    pos.shared()->settings.stripeSecretKey.clear();
     REQUIRE(pos.recordCardPayment(sim));
     REQUIRE(pos.removePayment());
+    pos.shared()->settings.stripeSecretKey = "sk_test_x";
     CHECK(pos.payments().isEmpty());
 
     // The receipt shows the card and Stripe's payment id.
@@ -201,13 +204,15 @@ TEST_CASE("StripeApi: connection tokens and refunds, with the key", "[cards][str
     CHECK(requests.last().contains(u"Authorization: Bearer sk_test_key"_s, Qt::CaseInsensitive));   // header names: any case
 
     QString refund;
-    api.refund(u"pi_123"_s, 250, [&](const QString &id, const QString &e) { refund = id; error = e; });
+    api.refund(u"pi_123"_s, 250, u"s1-refund-7"_s, [&](const QString &id, const QString &e) { refund = id; error = e; });
     wait([&] { return !refund.isEmpty(); });
     CHECK(refund == u"re_123"_s);
     CHECK(requests.last().contains(u"payment_intent=pi_123&amount=250"_s));
+    // Sent again (an answer lost): Stripe knows it by its key, and refunds once.
+    CHECK(requests.last().contains(u"Idempotency-Key: vt-s1-refund-7"_s, Qt::CaseInsensitive));
 
     bool done = false;
-    api.refund(u"pi_bad"_s, 0, [&](const QString &, const QString &e) { error = e; done = true; });
+    api.refund(u"pi_bad"_s, 0, {}, [&](const QString &, const QString &e) { error = e; done = true; });
     wait([&] { return done; });
     CHECK(done);
     CHECK(error == u"No such payment_intent: pi_bad"_s);
@@ -330,7 +335,7 @@ TEST_CASE("Stripe test mode, live: pair a simulated reader, approved, declined, 
     pos.shared()->settings.stripeSecretKey = key.toStdString();
     net::StripeApi api([&] { return key; });
     pos.shared()->stripeCall = [&](const QString &m, const QString &p, const QString &f, auto done) { api.call(m, p, f, done); };
-    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t c, auto done) { api.refund(pi, c, done); };
+    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t c, const QString &once, auto done) { api.refund(pi, c, once, done); };
     QStringList notices;
     QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
     const auto wait = [](const std::function<bool()> &ready, int ms = 30000) {
@@ -511,6 +516,7 @@ TEST_CASE("A bar tab's card, held: set aside on open; charged with a tip, raised
     QVariantMap answer{{u"approved"_s, true}, {u"hold"_s, true}, {u"reference"_s, u"sim_1"_s}, {u"brand"_s, u"visa"_s},
                        {u"last4"_s, u"4242"_s}, {u"amountCents"_s, 5000}, {u"checkId"_s, charge[u"checkId"_s]},
                        {u"processor"_s, u"simulated"_s}};
+    pos.shared()->settings.stripeSecretKey.clear();   // a pretend reader: a store without Stripe
     REQUIRE(pos.recordCardHold(answer));
     REQUIRE(pos.recordCardHold(answer));                                   // sent twice: once
     CHECK(pos.checkInfo()[u"hold"_s].toMap()[u"card"_s] == u"Visa •••• 4242"_s);

@@ -89,7 +89,12 @@ bool PosService::recordCardHold(const QVariantMap &r)
 {
     if (!require(perm::Settle, tr("Holding a card")))
         return false;
-    return addCardHold(r);
+    if (const QString no = cardClaimProblem(r); !no.isEmpty() && !r.value(u"offline"_s).toBool())
+        return fail(no);
+    if (!addCardHold(r))
+        return false;
+    checkCardWithStripe(r.value(u"reference"_s).toString(), r.value(u"amountCents"_s).toLongLong(), true);
+    return true;
 }
 
 bool PosService::addCardHold(const QVariantMap &r)

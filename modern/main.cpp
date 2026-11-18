@@ -1053,9 +1053,9 @@ int runStore(const Args &cli, const Options &o)
     shared->stripeConnectionToken = [&stripe](std::function<void(const QString &, const QString &)> done) {
         stripe.connectionToken(std::move(done));
     };
-    shared->stripeRefund = [&stripe](const QString &paymentId, std::int64_t cents,
+    shared->stripeRefund = [&stripe](const QString &paymentId, std::int64_t cents, const QString &once,
                                      std::function<void(const QString &, const QString &)> done) {
-        stripe.refund(paymentId, cents, std::move(done));
+        stripe.refund(paymentId, cents, once, std::move(done));
     };
     shared->stripeCall = [&stripe](const QString &method, const QString &path, const QString &form,
                                    std::function<void(const QJsonObject &, const QString &)> done) {

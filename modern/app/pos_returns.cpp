@@ -475,7 +475,9 @@ bool PosService::refundReturn(const QString &how)
         QPointer<PosService> self(this);
         PosShared *shared = s_;
         const std::int64_t checkId = c->id;
-        s_->stripeRefund(qs(card->reference), due.cents(), [shared, self, key, checkId, t, due, paid = *card](const QString &refundId, const QString &error) {
+        const QString once = u"%1-return-%2-%3-%4-%5"_s.arg(qs(s_->settings.serverId)).arg(checkId).arg(card->id)
+                                 .arg(s_->refundedSoFar(*sale, card->id).cents()).arg(due.cents());
+        s_->stripeRefund(qs(card->reference), due.cents(), once, [shared, self, key, checkId, t, due, paid = *card](const QString &refundId, const QString &error) {
             shared->refundsUnderway.remove(key);
             if (!self)
                 return;

@@ -7384,7 +7384,7 @@ TEST_CASE("Find a Check: show all, a check's history, refund part of it", "[ui][
     s.pos.entryKey(u"10000"_s);
     REQUIRE(s.pos.openDrawerSession());
     s.pos.shared()->settings.stripeSecretKey = "sk_test_x";
-    s.pos.shared()->stripeRefund = [](const QString &, std::int64_t, auto done) { done(u"re_ui"_s, {}); };
+    s.pos.shared()->stripeRefund = [](const QString &, std::int64_t , const QString &, auto done) { done(u"re_ui"_s, {}); };
     REQUIRE(s.pos.startCheck(core::CheckType::Quick));
     REQUIRE(s.pos.addItem(u"coffee"_s));
     const qint64 id = s.pos.checkInfo()[u"id"_s].toLongLong();

@@ -321,7 +321,8 @@ public:
     // down): one terminal's service sends them (PosService::sendWaitingReceipts).
     QObject *receiptSender = nullptr;
     std::map<std::int64_t, std::int64_t> receiptTried;   // check id -> when last tried (ms)
-    std::function<void(const QString &paymentId, std::int64_t cents,
+    // `once`: the same for the same refund sent again (Stripe does it once).
+    std::function<void(const QString &paymentId, std::int64_t cents, const QString &once,
                        std::function<void(const QString &refundId, const QString &error)>)> stripeRefund;
     // Any Stripe call (countertop readers, pairing): "GET" / "POST", a path
     // ("/v1/terminal/readers/tmr_1"), a form ("a=1&b[c]=2").
@@ -1283,6 +1284,8 @@ public:
     QVariantMap cardCharge(const QString &tenderId);   // {ok, amountCents, tipCents, currency...} or {ok: false}
     bool recordCardPayment(const QVariantMap &result);
     bool addCardPayment(const QVariantMap &result);   // recordCardPayment, without asking who
+    QString cardClaimProblem(const QVariantMap &result) const;
+    void checkCardWithStripe(const QString &reference, std::int64_t cents, bool held = false);
     void requestReaderToken();
     // A Stripe reader beside this screen, run from the store's computer.
     QVariantMap counterCharge() const override { return counter_; }

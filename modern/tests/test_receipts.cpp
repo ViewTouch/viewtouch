@@ -152,7 +152,8 @@ TEST_CASE("Receipts: Stripe emails the receipt for a card from a Stripe reader",
                             std::function<void(const QJsonObject &, const QString &)> done) {
         calls << method + u' ' + path + (form.isEmpty() ? QString() : u" ?"_s + form);
         if (path == u"/v1/payment_intents/pi_7")
-            return done({{u"latest_charge"_s, u"ch_7"_s}}, {});
+            return done({{u"latest_charge"_s, u"ch_7"_s}, {u"status"_s, u"succeeded"_s}, {u"amount_received"_s, 298},
+                         {u"currency"_s, u"usd"_s}}, {});
         return done({}, {});
     };
     PosService pos(&shared, u"Handheld"_s);
@@ -199,7 +200,8 @@ TEST_CASE("Receipts: a card taken offline: the receipt says approval pending; th
             return done({}, u"Host not found"_s);
         calls << method + u' ' + path + (form.isEmpty() ? QString() : u" ?"_s + form);
         if (path.startsWith(u"/v1/payment_intents/pi_"_s))
-            return done({{u"latest_charge"_s, u"ch_"_s + path.section(u'_', 2)}}, {});
+            return done({{u"latest_charge"_s, u"ch_"_s + path.section(u'_', 2)}, {u"status"_s, u"succeeded"_s},
+                         {u"amount_received"_s, 298}, {u"currency"_s, u"usd"_s}}, {});
         return done({}, {});
     };
     PosService pos(&shared, u"Handheld"_s);
@@ -258,7 +260,8 @@ TEST_CASE("Receipts: emailed with the internet down: it waits and goes by itself
             return done({}, u"Host not found"_s);
         calls << method + u' ' + path + (form.isEmpty() ? QString() : u" ?"_s + form);
         if (path == u"/v1/payment_intents/pi_7")
-            return done({{u"latest_charge"_s, u"ch_7"_s}}, {});
+            return done({{u"latest_charge"_s, u"ch_7"_s}, {u"status"_s, u"succeeded"_s}, {u"amount_received"_s, 298},
+                         {u"currency"_s, u"usd"_s}}, {});
         return done({}, {});
     };
     PosService pos(&shared, u"Handheld"_s);

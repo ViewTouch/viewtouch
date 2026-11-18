@@ -12,6 +12,8 @@
 #include <QJsonDocument>
 #include <QLocale>
 #include <QPointer>
+#include <QRegularExpression>
+#include <QDateTime>
 #include <QUrl>
 
 #include <algorithm>
@@ -106,7 +108,93 @@ bool PosService::recordCardPayment(const QVariantMap &r)
 {
     if (!require(perm::Settle, tr("Taking payments")))
         return false;
-    return addCardPayment(r);
+    if (const QString no = cardClaimProblem(r); !no.isEmpty())
+        return fail(no);
+    if (!addCardPayment(r))
+        return false;
+    checkCardWithStripe(r.value(u"reference"_s).toString(), r.value(u"amountCents"_s).toLongLong());
+    return true;
+}
+
+// What a screen says its card reader took, before it goes on a check: a
+// Stripe payment's id (it goes in Stripe's addresses), a card taken offline
+// only where the store takes them, a pretend reader only where the store has
+// no Stripe (or in practice).
+QString PosService::cardClaimProblem(const QVariantMap &r) const
+{
+    const QString processor = r.value(u"processor"_s).toString();
+    if (r.value(u"offline"_s).toBool()) {
+        static const QRegularExpression local(u"^[A-Za-z0-9_-]{1,80}$"_s);
+        if (!local.match(r.value(u"localRef"_s).toString()).hasMatch())
+            return tr("The card reader didn't say which payment it was.");
+        if (!s_->settings.offlineCards)
+            return tr("This store doesn't take cards offline: refund it in Stripe, or take it again.");
+        return {};
+    }
+    if (processor == u"stripe")
+        return isStripeId(r.value(u"reference"_s).toString()) ? QString() : tr("That isn't a Stripe payment.");
+    const auto it = s_->open.find(r.value(u"checkId"_s).toLongLong());
+    if (!s_->settings.stripeSecretKey.empty() && !(it != s_->open.end() && it->second.training))
+        return tr("Cards go through the store's card readers.");
+    return {};
+}
+
+// A card a screen says Stripe approved: Stripe is asked. Not what was said
+// (no such payment, less, or not approved): the payment is flagged for a
+// manager, and Loss Watch sees it. (Without the store's key: nothing to ask.)
+void PosService::checkCardWithStripe(const QString &reference, std::int64_t cents, bool held)
+{
+    if (!isStripeId(reference) || !s_->stripeCall || s_->settings.stripeSecretKey.empty())
+        return;
+    PosShared *shared = s_;
+    QPointer<PosService> self(this);
+    const QString currency = qs(s_->settings.cardCurrency).toLower();
+    s_->stripeCall(u"GET"_s, u"/v1/payment_intents/%1"_s.arg(reference), {},
+                   [shared, self, reference, cents, held, currency](const QJsonObject &pi, const QString &error) {
+        if (pi.isEmpty() && !error.isEmpty())
+            return;   // Stripe not reached: nothing known either way
+        const QString status = pi.value(u"status").toString();
+        const qint64 got = status == u"succeeded"          ? pi.value(u"amount_received").toInteger()
+                         : status == u"requires_capture" ? pi.value(u"amount_capturable").toInteger()
+                                                           : 0;
+        const bool ok = error.isEmpty() && got >= cents && (held || status == u"succeeded")
+                        && (currency.isEmpty() || pi.value(u"currency").toString().toLower() == currency);
+        if (ok)
+            return;
+        const std::string ref = ss(reference);
+        const auto flag = [&](Check &c) {
+            bool found = false;
+            for (Payment &p : c.payments)
+                if (p.reference == ref && p.offline.empty()) {
+                    p.offline = "unverified";
+                    found = true;
+                }
+            if (qs(c.hold.reference) == reference) {
+                c.hold = {};
+                found = true;
+            }
+            if (!found)
+                return false;
+            c.note(QDateTime::currentMSecsSinceEpoch(), "Stripe",
+                   ss(tr("Stripe has no such card payment (%1): %2").arg(reference, error.isEmpty() ? status : error)), "pay");
+            shared->noteProblem("cardUnverified", c.label, ss(reference));
+            qWarning().noquote() << "A card payment Stripe doesn't know:" << reference << "on" << qs(c.label);
+            if (self)
+                self->saveAnyCheck(c);
+            else if (shared->sink)
+                shared->sink->saveCheck(c);
+            return true;
+        };
+        for (auto &[id, c] : shared->open)
+            if (flag(c))
+                break;
+        for (Check &c : shared->closedToday)
+            if (flag(c))
+                break;
+        ++shared->adminRevision;
+        emit shared->adminChanged();
+        emit shared->dayChanged();
+    });
 }
 
 bool PosService::addCardPayment(const QVariantMap &r)
@@ -191,8 +279,12 @@ bool PosService::cardForwarded(const QVariantMap &r)
             if (p.reference != ref)
                 continue;
             if (status == u"ok") {
-                p.reference = ss(r.value(u"id"_s).toString());
+                const QString id = r.value(u"id"_s).toString();
+                if (!isStripeId(id))
+                    return fail(tr("That isn't a Stripe payment."));
+                p.reference = ss(id);
                 p.offline.clear();
+                checkCardWithStripe(id, (p.amount + p.tip + p.surcharge).cents());
                 c->note(now(), "Stripe", ss(tr("Card payment sent to Stripe: %1").arg(qs(p.reference))), "pay");
                 if (!c->receiptEmail.empty() && !c->receiptEmailSent) {
                     const std::int64_t id = c->id;
@@ -225,6 +317,10 @@ QVariantList PosService::cardAlerts() const
                 out.append(QVariantMap{{u"ref"_s, qs(p.reference)}, {u"checkId"_s, qint64(c->id)},
                                        {u"text"_s, tr("%1: a card taken offline was declined (%2, %3). The store didn't get that money: ask the guest to pay again if you can.")
                                                        .arg(qs(c->label), cardText(p), format(p.amount + p.tip))}});
+            else if (p.offline == "unverified")
+                out.append(QVariantMap{{u"ref"_s, qs(p.reference)}, {u"checkId"_s, qint64(c->id)},
+                                       {u"text"_s, tr("%1: a screen recorded a card payment Stripe doesn't have (%2, %3). The store may not have that money: look it up in Stripe.")
+                                                       .arg(qs(c->label), cardText(p), format(p.amount + p.tip))}});
     return out;
 }
 
@@ -234,7 +330,7 @@ bool PosService::seeCardAlert(const QString &ref)
         return false;
     for (Check *c : checksToday())
         for (Payment &p : c->payments)
-            if (qs(p.reference) == ref && p.offline == "declined") {
+            if (qs(p.reference) == ref && (p.offline == "declined" || p.offline == "unverified")) {
                 p.offline = "seen";
                 c->note(now(), user() ? user()->name : std::string(), ss(tr("Declined card: dealt with")), "pay");
                 saveAnyCheck(*c);
@@ -330,7 +426,9 @@ PosService::RefundStart PosService::refundCardPayment(const Check &c, const Paym
     const std::int64_t checkId = c.id, paymentId = p.id;
     const std::string who = user() ? user()->name : std::string();
     const QString label = format(p.amount + p.tip + p.surcharge);
-    s_->stripeRefund(qs(p.reference), (p.amount + p.tip + p.surcharge).cents(),
+    // (The whole payment, once: sent again, Stripe refunds it once.)
+    const QString once = u"%1-pay-%2-%3"_s.arg(qs(s_->settings.serverId)).arg(c.id).arg(p.id);
+    s_->stripeRefund(qs(p.reference), (p.amount + p.tip + p.surcharge).cents(), once,
                      [self, shared, checkId, paymentId, who, label](const QString &refundId, const QString &error) {
         if (self)
             self->refunding_.erase(paymentId);

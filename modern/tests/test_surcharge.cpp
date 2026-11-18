@@ -114,7 +114,7 @@ TEST_CASE("Surcharge: a credit card pays it, a debit card doesn't; receipt, refu
     // A refund gives its share of the surcharge back too.
     pos.shared()->settings.stripeSecretKey = "sk_test_x";
     std::int64_t refunded = 0;
-    pos.shared()->stripeRefund = [&](const QString &, std::int64_t cents, auto done) {
+    pos.shared()->stripeRefund = [&](const QString &, std::int64_t cents, const QString &, auto done) {
         refunded = cents;
         done(u"re_1"_s, {});
     };
@@ -289,7 +289,7 @@ TEST_CASE("Stripe test mode, live: a credit card pays the surcharge, a debit car
     pos.shared()->settings.surchargeBp = 300;
     net::StripeApi api([&] { return key; });
     pos.shared()->stripeCall = [&](const QString &m, const QString &p, const QString &f, auto done) { api.call(m, p, f, done); };
-    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t c, auto done) { api.refund(pi, c, done); };
+    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t c, const QString &once, auto done) { api.refund(pi, c, once, done); };
     QStringList notices;
     QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
     const auto wait = [](const std::function<bool()> &ready, int ms = 45000) {

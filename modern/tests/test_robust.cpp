@@ -92,7 +92,7 @@ TEST_CASE("A refund is recorded even if its register disconnects; never twice fr
     PosShared shared(test::seedPosData(), nullptr);
     shared.settings.stripeSecretKey = "sk_test_x";
     std::vector<std::function<void(const QString &, const QString &)>> answers;
-    shared.stripeRefund = [&](const QString &, std::int64_t, auto done) { answers.push_back(done); };
+    shared.stripeRefund = [&](const QString &, std::int64_t , const QString &, auto done) { answers.push_back(done); };
     const core::Check old = oldCheck(77, "T4", 2000, "pi_old");
     shared.findChecks = [&](const PosShared::CheckFind &) { return std::vector<core::Check>{old}; };
 
@@ -129,7 +129,7 @@ TEST_CASE("Undo Payment's card refund comes off the check even if the register d
     PosShared shared(test::seedPosData(), nullptr);
     shared.settings.stripeSecretKey = "sk_test_x";
     std::function<void(const QString &, const QString &)> answer;
-    shared.stripeRefund = [&](const QString &, std::int64_t, auto done) { answer = done; };
+    shared.stripeRefund = [&](const QString &, std::int64_t , const QString &, auto done) { answer = done; };
     auto *reg = new PosService(&shared, u"Register"_s);
     login(*reg);
     REQUIRE(reg->startCheck(core::CheckType::Quick));

@@ -102,6 +102,8 @@ QString dateTimeField(std::int64_t ms);
 
 // Salted SHA-256 of a PIN, hex encoded.
 std::string hashPin(const QString &pin, const std::string &salt);
+// A Stripe id, safe in a path: "pi_3Mtw..." (letters, digits, "_" after the prefix).
+bool isStripeId(const QString &id, QStringView prefix = u"pi_");
 // Two hashes the same, taking as long whatever they hold.
 bool sameHash(const std::string &a, const std::string &b);
 std::string newSalt();

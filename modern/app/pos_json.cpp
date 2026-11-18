@@ -592,6 +592,12 @@ std::string newSalt()
     return QByteArray(reinterpret_cast<const char *>(words), sizeof words).toHex().toStdString();
 }
 
+bool isStripeId(const QString &id, QStringView prefix)
+{
+    static const QRegularExpression ok(QStringLiteral("^[A-Za-z0-9_]{1,100}$"));
+    return id.startsWith(prefix) && id.size() > prefix.size() && ok.match(id).hasMatch();
+}
+
 bool sameHash(const std::string &a, const std::string &b)
 {
     if (a.size() != b.size() || a.empty())

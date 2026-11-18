@@ -134,3 +134,84 @@ TEST_CASE("Security: setup isn't finished while the sample manager (PIN 1234) ca
     CHECK_FALSE(pos.loginWithPin(u"1234"_s));
     CHECK(pos.loginWithPin(u"481516"_s));
 }
+
+namespace {
+
+QVariantMap cardSaid(qint64 checkId, qint64 cents, const QString &ref)
+{
+    return {{u"approved"_s, true}, {u"reference"_s, ref}, {u"brand"_s, u"visa"_s}, {u"last4"_s, u"4242"_s},
+            {u"amountCents"_s, cents}, {u"tipCents"_s, 0}, {u"checkId"_s, checkId}, {u"tenderId"_s, u"credit"_s},
+            {u"processor"_s, u"stripe"_s}};
+}
+
+} // namespace
+
+TEST_CASE("Security: a card payment a screen reports is checked with Stripe", "[security][cards]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    pos.shared()->settings.stripeSecretKey = "sk_test_x";
+    // Stripe knows pi_good (paid $2.98) and nothing else.
+    QStringList asked;
+    pos.shared()->stripeCall = [&](const QString &method, const QString &path, const QString &, auto done) {
+        asked << method + u' ' + path;
+        if (path == u"/v1/payment_intents/pi_good")
+            return done({{u"status"_s, u"succeeded"_s}, {u"amount_received"_s, 298}, {u"currency"_s, u"usd"_s}}, {});
+        if (path == u"/v1/payment_intents/pi_small")
+            return done({{u"status"_s, u"succeeded"_s}, {u"amount_received"_s, 100}, {u"currency"_s, u"usd"_s}}, {});
+        return done({{u"error"_s, QJsonObject{{u"message"_s, u"No such payment_intent"_s}}}}, u"No such payment_intent"_s);
+    };
+    const auto check = [&] {
+        REQUIRE(pos.startCheck(core::CheckType::Quick));
+        REQUIRE(pos.addItem(u"coffee"_s));
+        return pos.checkInfo()[u"id"_s].toLongLong();
+    };
+    const auto flagged = [&] {
+        int n = 0;
+        for (const QVariant &a : pos.cardAlerts())
+            n += a.toMap()[u"text"_s].toString().contains(u"Stripe doesn't have"_s);
+        return n;
+    };
+
+    // Not an id that can go in Stripe's address.
+    qint64 id = check();
+    CHECK_FALSE(pos.recordCardPayment(cardSaid(id, 298, u"pi_x/../../v1/refunds"_s)));
+    CHECK_FALSE(pos.recordCardPayment(cardSaid(id, 298, u"pi_x?a=b"_s)));
+    // A pretend reader, on a store with Stripe: no.
+    QVariantMap sim = cardSaid(id, 298, u"sim_1"_s);
+    sim[u"processor"_s] = u"simulated"_s;
+    CHECK_FALSE(pos.recordCardPayment(sim));
+    // Offline cards where the store doesn't take them: no.
+    QVariantMap off = cardSaid(id, 298, {});
+    off[u"offline"_s] = true;
+    off[u"localRef"_s] = u"local-1"_s;
+    pos.shared()->settings.offlineCards = false;
+    CHECK_FALSE(pos.recordCardPayment(off));
+    CHECK(pos.payments().isEmpty());
+
+    // Real: on the check, nothing flagged.
+    REQUIRE(pos.recordCardPayment(cardSaid(id, 298, u"pi_good"_s)));
+    CHECK(asked.contains(u"GET /v1/payment_intents/pi_good"_s));
+    CHECK(flagged() == 0);
+    pos.releaseCheck();
+    // Made up, or less than said: flagged for a manager.
+    id = check();
+    REQUIRE(pos.recordCardPayment(cardSaid(id, 298, u"pi_madeup"_s)));
+    CHECK(flagged() == 1);
+    pos.releaseCheck();
+    id = check();
+    REQUIRE(pos.recordCardPayment(cardSaid(id, 298, u"pi_small"_s)));
+    CHECK(flagged() == 2);
+
+    // A card "taken offline" said to be sent: its id is checked too.
+    pos.releaseCheck();
+    pos.shared()->settings.offlineCards = true;
+    id = check();
+    off[u"checkId"_s] = id;
+    REQUIRE(pos.recordCardPayment(off));
+    CHECK_FALSE(pos.cardForwarded({{u"localRef"_s, u"local-1"_s}, {u"status"_s, u"ok"_s}, {u"id"_s, u"pi_1/../x"_s}}));
+    REQUIRE(pos.cardForwarded({{u"localRef"_s, u"local-1"_s}, {u"status"_s, u"ok"_s}, {u"id"_s, u"pi_forged"_s}}));
+    CHECK(flagged() == 3);
+}

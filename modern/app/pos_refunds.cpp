@@ -135,7 +135,11 @@ bool PosService::refundPayment(qint64 checkId, qint64 paymentId, qint64 cents, c
         emit notice(tr("Refunding %1 through Stripe…").arg(format(amount + r.surcharge)));
         const QString done = what(u"%1"_s);   // the reference goes in when it's known
         QPointer<PosService> self(this);
-        s_->stripeRefund(qs(paid.reference), (amount + r.surcharge).cents(),
+        // The same refund tried again (its answer lost): the same key, once at
+        // Stripe. A later one (more refunded by then) has a key of its own.
+        const QString once = u"%1-refund-%2-%3-%4-%5"_s.arg(qs(s_->settings.serverId)).arg(checkId).arg(paid.id)
+                                 .arg(s_->refundedSoFar(found, paid.id).cents()).arg((amount + r.surcharge).cents());
+        s_->stripeRefund(qs(paid.reference), (amount + r.surcharge).cents(), once,
                          [shared, self, key, r, found, done](const QString &refundId, const QString &error) mutable {
             shared->refundsUnderway.remove(key);
             if (!error.isEmpty()) {

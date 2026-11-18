@@ -77,7 +77,7 @@ TEST_CASE("Refunds: a manager's, through Stripe or the drawer, partial, on today
     openDrawer(pos);
     pos.shared()->settings.stripeSecretKey = "sk_test_x";
     QStringList refunded;
-    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t cents, auto done) {
+    pos.shared()->stripeRefund = [&](const QString &pi, std::int64_t cents, const QString &, auto done) {
         refunded << u"%1 %2"_s.arg(pi).arg(cents);
         done(u"re_%1"_s.arg(refunded.size()), {});
     };
@@ -155,7 +155,7 @@ TEST_CASE("Refunds: a check from years ago, found and refunded today", "[refunds
     PosService pos(test::seedPosData(), nullptr);
     openDrawer(pos);
     pos.shared()->settings.stripeSecretKey = "sk_test_x";
-    pos.shared()->stripeRefund = [](const QString &, std::int64_t, auto done) { done(u"re_old"_s, {}); };
+    pos.shared()->stripeRefund = [](const QString &, std::int64_t , const QString &, auto done) { done(u"re_old"_s, {}); };
     // The database: one check closed three years ago.
     core::Check old;
     old.id = 42;
