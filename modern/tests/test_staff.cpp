@@ -181,7 +181,12 @@ TEST_CASE("Overtime: daily and weekly rules, the larger counts", "[staff][overti
 namespace {
 QStringList tipRow(PosService &pos, const QString &name)
 {
-    for (const QVariant &v : pos.report(u"tips"_s)[u"rows"_s].toList()) {
+    // Reports are a manager's: Morgan reads it, in the office (this screen
+    // as it was).
+    PosService office(pos.shared(), u"Office"_s);
+    REQUIRE(office.loginWithPin(u"1234"_s));
+    const QVariantList rows = office.report(u"tips"_s)[u"rows"_s].toList();
+    for (const QVariant &v : rows) {
         const QStringList cells = v.toMap()[u"cells"_s].toStringList();
         if (!cells.isEmpty() && cells.first() == name)
             return cells;

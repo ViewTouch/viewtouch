@@ -252,7 +252,9 @@ TEST_CASE("Deliveries: the fee, a driver takes orders out, back, paid into their
     REQUIRE(bank != pos.shared()->drawers.end());
     CHECK(bank->employeeId == lou.toStdString());           // the cash is in Lou's bank
 
-    // The Drivers report.
+    // The Drivers report (a manager's).
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
     const QVariantMap report = pos.report(u"drivers"_s);
     bool found = false;
     for (const QVariant &v : report[u"rows"_s].toList()) {
