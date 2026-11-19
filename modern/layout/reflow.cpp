@@ -147,7 +147,6 @@ QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, in
     // Buttons about 56 high on a phone (150 of the page's 1080 across), not
     // stretched to fill it: what's left goes to the panels. Never under 130
     // (48 screen pixels on a phone 412 across: a finger).
-    Plan best;
     for (int columns : {3, 4}) {
         for (int rowHeight : {150, 130}) {
             Plan p = layOut(zones, order, area, gap, columns, rowHeight, rowHeight >= 150 ? 88 : 72);
@@ -155,24 +154,22 @@ QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, in
                 growMain(p);
                 return p.rects;
             }
-            if (best.rects.isEmpty() || p.height < best.height)
-                best = std::move(p);
         }
     }
     // Still too tall: the panels give up height together, as far as they can.
-    for (double squeeze : {0.85, 0.7, 0.55, 0.4}) {
+    // (Not below 0.7: past that the page scrolls instead.)
+    for (double squeeze : {0.85, 0.7}) {
         Plan p = layOut(zones, order, area, gap, 4, 130, 72, squeeze);
         if (p.height <= area.height()) {
             growMain(p);
             return p.rects;
         }
-        if (p.height < best.height)
-            best = std::move(p);
     }
-    return best.rects;   // doesn't fit: the most compact one (runs past the bottom)
+    // Doesn't fit: the page scrolls, so its buttons stay big (3 across).
+    return layOut(zones, order, area, gap, 3, 150, 88, 0.7).rects;
 }
 
-PhoneView phoneView(const Layout &l, const QString &id, bool useVersion)
+PhoneView phoneView(const Layout &l, const QString &id, bool useVersion, int height)
 {
     const Page *page = l.page(id);
     PhoneView s{id, page ? page->canvas : QSize(1920, 1080), {}, {}};
@@ -195,6 +192,18 @@ PhoneView phoneView(const Layout &l, const QString &id, bool useVersion)
         s.pageId = frame->id;
         s.canvas = frame->canvas;
         s.zones = l.effectiveZones(frame->id);
+        // A shorter screen than the frame was made for (a 16:9 Stripe reader
+        // showing a 19.5:9 phone's order screen): the menu area gives up the
+        // difference, down to 600, and what's under it moves up. Not the
+        // check: what was just added has to show on it.
+        QRect area = frame->contentArea;
+        if (const int take = std::clamp(frame->canvas.height() - height, 0, std::max(0, area.height() - 600)); take > 0) {
+            for (const Layout::PlacedZone &pz : std::as_const(s.zones))
+                if (pz.zone->rect.top() >= area.bottom())
+                    s.moved.insert(pz.zone, pz.zone->rect.translated(0, -take));
+            area.setHeight(area.height() - take);
+            s.canvas.setHeight(s.canvas.height() - take);
+        }
         QList<Layout::PlacedZone> own;
         for (const Layout::PlacedZone &pz : l.effectiveZones(id)) {
             if (chain.indexOf(pz.owner) < i)   // this page, or templates below the framed one
@@ -203,7 +212,7 @@ PhoneView phoneView(const Layout &l, const QString &id, bool useVersion)
         QList<const Zone *> zones;
         for (const Layout::PlacedZone &pz : own)
             zones.append(pz.zone);
-        const QList<QRect> rects = reflowZones(zones, frame->contentArea);
+        const QList<QRect> rects = reflowZones(zones, area);
         for (qsizetype k = 0; k < own.size(); ++k) {
             if (rects[k].isEmpty())
                 continue;
@@ -214,19 +223,23 @@ PhoneView phoneView(const Layout &l, const QString &id, bool useVersion)
     }
     // No phone version and no phone frame: the page's own zones laid out
     // again on a phone held upright.
-    static const QSize phone(1080, 2280);
+    const QSize phone(1080, std::max(1200, height));
     s.canvas = phone;
     const QList<Layout::PlacedZone> all = l.effectiveZones(id);
     QList<const Zone *> zones;
     for (const Layout::PlacedZone &pz : all)
         zones.append(pz.zone);
     const QList<QRect> rects = reflowZones(zones, QRect(24, 24, phone.width() - 48, phone.height() - 48));
+    int bottom = 0;
     for (qsizetype k = 0; k < all.size(); ++k) {
         if (rects[k].isEmpty())
             continue;
         s.zones.append(all[k]);
         s.moved.insert(all[k].zone, rects[k]);
+        bottom = std::max(bottom, rects[k].bottom() + 1);
     }
+    // More than fits (a long Manager page): the page is longer, and scrolls.
+    s.canvas.setHeight(std::max(phone.height(), bottom + 24));
     return s;
 }
 

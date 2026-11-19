@@ -48,110 +48,122 @@ Item {
     // Upright (a phone): fewer days and hours a row, bigger.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 380 : 900, narrow ? 0 : 560) : 1.4
-    Item {
-        width: w.width / w.zoom
-        height: w.height / w.zoom
-        scale: w.zoom
-        transformOrigin: Item.TopLeft
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: Math.max(height, (form.implicitHeight + 24) * w.zoom)
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 12
-            spacing: 10
+        Item {
+            width: w.width / w.zoom
+            height: scroller.contentHeight / w.zoom
+            scale: w.zoom
+            transformOrigin: Item.TopLeft
 
-            Label {
-                textFormat: Text.PlainText
-                objectName: "laterDue"
-                Layout.fillWidth: true
-                text: w.dueAt > 0 ? qsTr("Ready %1").arg(w.check.due ?? "") : qsTr("As soon as possible")
-                font.pixelSize: Ui.px(26)
-                font.bold: true
-                color: w.dueAt > 0 ? "#7ec8ff" : Ui.text
-            }
+            ColumnLayout {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 10
 
-            Label { textFormat: Text.PlainText; text: qsTr("Day"); opacity: 0.7; font.pixelSize: Ui.px(16) }
-            GridLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                columns: w.narrow ? 4 : 7
-                rowSpacing: 6
-                columnSpacing: 6
-                Repeater {
-                    model: 7
-                    Pick {
-                        required property int index
-                        objectName: "laterDay-" + index
-                        Layout.fillWidth: true
-                        implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: Ui.px(16)
-                        highlighted: w.day === index
-                        text: index === 0 ? qsTr("Today") : index === 1 ? qsTr("Tomorrow")
-                             : Qt.locale().toString(w.dateFor(index, 12, 0), "ddd d")
-                        onClicked: { w.day = index; w.apply() }
-                    }
+                Label {
+                    textFormat: Text.PlainText
+                    objectName: "laterDue"
+                    Layout.fillWidth: true
+                    text: w.dueAt > 0 ? qsTr("Ready %1").arg(w.check.due ?? "") : qsTr("As soon as possible")
+                    font.pixelSize: Ui.px(26)
+                    font.bold: true
+                    color: w.dueAt > 0 ? "#7ec8ff" : Ui.text
                 }
-            }
 
-            Label { textFormat: Text.PlainText; text: qsTr("Hour"); opacity: 0.7; font.pixelSize: Ui.px(16) }
-            GridLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                columns: w.narrow ? 6 : 9
-                rowSpacing: 6
-                columnSpacing: 6
-                Repeater {
-                    model: 18   // 6 AM to 11 PM
-                    Pick {
-                        required property int index
-                        readonly property int h: 6 + index
-                        objectName: "laterHour-" + h
-                        Layout.fillWidth: true
-                        implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: Ui.px(16)
-                        enabled: !w.passed(w.day, h, 45)
-                        highlighted: w.hour === h
-                        text: Qt.locale().toString(w.dateFor(0, h, 0), "h AP")
-                        onClicked: {
-                            w.hour = h
-                            if (w.passed(w.day, h, w.minute))   // later in this hour
-                                w.minute = [0, 15, 30, 45].find(m => !w.passed(w.day, h, m))
-                            w.apply()
+                Label { textFormat: Text.PlainText; text: qsTr("Day"); opacity: 0.7; font.pixelSize: Ui.px(16) }
+                GridLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    columns: w.narrow ? 4 : 7
+                    rowSpacing: 6
+                    columnSpacing: 6
+                    Repeater {
+                        model: 7
+                        Pick {
+                            required property int index
+                            objectName: "laterDay-" + index
+                            Layout.fillWidth: true
+                            implicitHeight: zone ? zone.touch(56) : 56
+                            font.pixelSize: Ui.px(16)
+                            highlighted: w.day === index
+                            text: index === 0 ? qsTr("Today") : index === 1 ? qsTr("Tomorrow")
+                                 : Qt.locale().toString(w.dateFor(index, 12, 0), "ddd d")
+                            onClicked: { w.day = index; w.apply() }
                         }
                     }
                 }
-            }
 
-            Label { textFormat: Text.PlainText; text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: Ui.px(16) }
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                spacing: 6
-                Repeater {
-                    model: [0, 15, 30, 45]
-                    Pick {
-                        required property int modelData
-                        objectName: "laterMinute-" + modelData
-                        Layout.fillWidth: true
-                        implicitHeight: zone ? zone.touch(56) : 56
-                        font.pixelSize: Ui.px(18)
-                        enabled: w.hour >= 0 && !w.passed(w.day, w.hour, modelData)
-                        highlighted: w.hour >= 0 && w.minute === modelData
-                        text: ":" + (modelData < 10 ? "0" : "") + modelData
-                        onClicked: { w.minute = modelData; w.apply() }
+                Label { textFormat: Text.PlainText; text: qsTr("Hour"); opacity: 0.7; font.pixelSize: Ui.px(16) }
+                GridLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    columns: w.narrow ? 6 : 9
+                    rowSpacing: 6
+                    columnSpacing: 6
+                    Repeater {
+                        model: 18   // 6 AM to 11 PM
+                        Pick {
+                            required property int index
+                            readonly property int h: 6 + index
+                            objectName: "laterHour-" + h
+                            Layout.fillWidth: true
+                            implicitHeight: zone ? zone.touch(56) : 56
+                            font.pixelSize: Ui.px(16)
+                            enabled: !w.passed(w.day, h, 45)
+                            highlighted: w.hour === h
+                            text: Qt.locale().toString(w.dateFor(0, h, 0), "h AP")
+                            onClicked: {
+                                w.hour = h
+                                if (w.passed(w.day, h, w.minute))   // later in this hour
+                                    w.minute = [0, 15, 30, 45].find(m => !w.passed(w.day, h, m))
+                                w.apply()
+                            }
+                        }
                     }
                 }
-            }
 
-            Item { Layout.fillHeight: true }
+                Label { textFormat: Text.PlainText; text: qsTr("Minutes"); opacity: 0.7; font.pixelSize: Ui.px(16) }
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    spacing: 6
+                    Repeater {
+                        model: [0, 15, 30, 45]
+                        Pick {
+                            required property int modelData
+                            objectName: "laterMinute-" + modelData
+                            Layout.fillWidth: true
+                            implicitHeight: zone ? zone.touch(56) : 56
+                            font.pixelSize: Ui.px(18)
+                            enabled: w.hour >= 0 && !w.passed(w.day, w.hour, modelData)
+                            highlighted: w.hour >= 0 && w.minute === modelData
+                            text: ":" + (modelData < 10 ? "0" : "") + modelData
+                            onClicked: { w.minute = modelData; w.apply() }
+                        }
+                    }
+                }
 
-            PosButton {
-                objectName: "laterAsap"
-                Layout.fillWidth: true
-                implicitHeight: zone ? zone.touch(56) : 56
-                font.pixelSize: Ui.px(17)
-                enabled: w.dueAt > 0
-                text: qsTr("As Soon as Possible")
-                onClicked: { w.hour = -1; w.pos.setDueAt(0) }
+                Item { Layout.fillHeight: true }
+
+                PosButton {
+                    objectName: "laterAsap"
+                    Layout.fillWidth: true
+                    implicitHeight: zone ? zone.touch(56) : 56
+                    font.pixelSize: Ui.px(17)
+                    enabled: w.dueAt > 0
+                    text: qsTr("As Soon as Possible")
+                    onClicked: { w.hour = -1; w.pos.setDueAt(0) }
+                }
             }
         }
     }

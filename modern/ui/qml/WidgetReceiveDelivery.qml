@@ -54,205 +54,217 @@ Item {
     // Upright (a phone): the delivery only (no "On hand", no recent deliveries).
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 460 : 900) : 1.4
-    Item {
-        width: w.width / w.zoom
-        height: w.height / w.zoom
-        scale: w.zoom
-        transformOrigin: Item.TopLeft
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: Math.max(height, (form.implicitHeight + 40) * w.zoom)
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 14
+        Item {
+            width: w.width / w.zoom
+            height: scroller.contentHeight / w.zoom
+            scale: w.zoom
+            transformOrigin: Item.TopLeft
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 8
-                Flow {   // which vendor
+            RowLayout {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 14
+
+                ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 6
-                    Repeater {
-                        model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
-                        delegate: PosButton {
-                            required property var modelData
-                            objectName: "vendor-" + modelData.id
-                            text: modelData.name
-                            checkable: true
-                            checked: w.vendor === modelData.id
-                            highlighted: checked
+                    Layout.fillHeight: true
+                    spacing: 8
+                    Flow {   // which vendor
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Repeater {
+                            model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
+                            delegate: PosButton {
+                                required property var modelData
+                                objectName: "vendor-" + modelData.id
+                                text: modelData.name
+                                checkable: true
+                                checked: w.vendor === modelData.id
+                                highlighted: checked
+                                implicitHeight: w.fingers(44)
+                                font.pixelSize: Ui.px(15)
+                                onClicked: w.vendor = modelData.id
+                            }
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        Label { textFormat: Text.PlainText; text: qsTr("Invoice #"); font.pixelSize: Ui.px(15) }
+                        TextField {
+                            id: invoice
+                            objectName: "deliveryInvoice"
+                            Layout.preferredWidth: 220
                             implicitHeight: w.fingers(44)
                             font.pixelSize: Ui.px(15)
-                            onClicked: w.vendor = modelData.id
+                        }
+                        Item { Layout.fillWidth: true }
+                    }
+                    RowLayout {   // headings
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
+                        Label { textFormat: Text.PlainText; visible: !w.narrow; text: qsTr("On hand"); opacity: 0.6; Layout.preferredWidth: 110 }
+                        Label { textFormat: Text.PlainText; text: qsTr("Received"); opacity: 0.6; Layout.preferredWidth: 110 }
+                        Label { textFormat: Text.PlainText; text: qsTr("Cost each"); opacity: 0.6; Layout.preferredWidth: 110 }
+                        Label { textFormat: Text.PlainText; text: qsTr("Total"); opacity: 0.6; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignRight }
+                    }
+                    ListView {
+                        id: list
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 4
+                        model: w.shown
+                        ScrollBar.vertical: TouchScrollBar { id: listBar; needed: list.contentHeight > list.height + 1 }
+                        delegate: RowLayout {
+                            id: row
+                            required property var modelData
+                            width: ListView.view.width - listBar.room
+                            height: 48
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: row.modelData.name
+                                font.pixelSize: Ui.px(16)
+                                font.bold: true
+                                color: row.modelData.low ? Ui.warn : "white"
+                                // Two lines before it's cut: "Veggie Patties" whole;
+                                // one long word ("Mushrooms" on a phone) a size smaller.
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 2
+                                lineHeight: 0.9
+                                Layout.fillHeight: true
+                                verticalAlignment: Text.AlignVCenter
+                                fontSizeMode: Text.Fit
+                                minimumPixelSize: 12
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                visible: !w.narrow
+                                Layout.preferredWidth: 110
+                                text: Number(row.modelData.onHand).toLocaleString(Qt.locale(), "f", 1).replace(/\.0$/, "") + " " + row.modelData.unit
+                                opacity: 0.8
+                            }
+                            TextField {
+                                objectName: "qty-" + row.modelData.id
+                                Layout.preferredWidth: 110
+                                implicitHeight: w.fingers(44)
+                                font.pixelSize: Ui.px(16)
+                                inputMethodHints: Qt.ImhDecimalNumbersOnly
+                                text: w.typed >= 0 ? (w.qty[row.modelData.id] ?? "") : ""
+                                placeholderText: row.modelData.unit
+                                onTextEdited: { w.qty[row.modelData.id] = text; ++w.typed }
+                            }
+                            TextField {
+                                objectName: "cost-" + row.modelData.id
+                                Layout.preferredWidth: 110
+                                implicitHeight: w.fingers(44)
+                                font.pixelSize: Ui.px(16)
+                                inputMethodHints: Qt.ImhDecimalNumbersOnly
+                                text: w.typed >= 0 ? (w.cost[row.modelData.id] ?? "") : ""
+                                placeholderText: Number(row.modelData.cost).toFixed(2)
+                                onTextEdited: { w.cost[row.modelData.id] = text; ++w.typed }
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.preferredWidth: 90
+                                horizontalAlignment: Text.AlignRight
+                                text: { if (w.typed < 0) return ""; const q = Number(w.qty[row.modelData.id] ?? 0)
+                                        return q > 0 ? "$" + (q * w.unitCost(row.modelData)).toFixed(2) : "" }
+                            }
                         }
                     }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    Label { textFormat: Text.PlainText; text: qsTr("Invoice #"); font.pixelSize: Ui.px(15) }
-                    TextField {
-                        id: invoice
-                        objectName: "deliveryInvoice"
-                        Layout.preferredWidth: 220
-                        implicitHeight: w.fingers(44)
-                        font.pixelSize: Ui.px(15)
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: w.shown.length === 0
+                        text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
+                                                                      : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
+                        opacity: 0.6
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
                     }
-                    Item { Layout.fillWidth: true }
-                }
-                RowLayout {   // headings
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
-                    Label { textFormat: Text.PlainText; visible: !w.narrow; text: qsTr("On hand"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { textFormat: Text.PlainText; text: qsTr("Received"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { textFormat: Text.PlainText; text: qsTr("Cost each"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { textFormat: Text.PlainText; text: qsTr("Total"); opacity: 0.6; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignRight }
-                }
-                ListView {
-                    id: list
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
-                    spacing: 4
-                    model: w.shown
-                    ScrollBar.vertical: TouchScrollBar { id: listBar; needed: list.contentHeight > list.height + 1 }
-                    delegate: RowLayout {
-                        id: row
-                        required property var modelData
-                        width: ListView.view.width - listBar.room
-                        height: 48
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: row.modelData.name
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        spacing: 10
+                        Label { textFormat: Text.PlainText; text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: Ui.px(20); font.bold: true; Layout.fillWidth: true }
+                        PosButton {
+                            text: qsTr("Clear")
+                            implicitHeight: 52
                             font.pixelSize: Ui.px(16)
-                            font.bold: true
-                            color: row.modelData.low ? Ui.warn : "white"
-                            // Two lines before it's cut: "Veggie Patties" whole;
-                            // one long word ("Mushrooms" on a phone) a size smaller.
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                            lineHeight: 0.9
-                            Layout.fillHeight: true
-                            verticalAlignment: Text.AlignVCenter
-                            fontSizeMode: Text.Fit
-                            minimumPixelSize: 12
-                            elide: Text.ElideRight
+                            onClicked: w.clear()
                         }
-                        Label {
-                            textFormat: Text.PlainText
-                            visible: !w.narrow
-                            Layout.preferredWidth: 110
-                            text: Number(row.modelData.onHand).toLocaleString(Qt.locale(), "f", 1).replace(/\.0$/, "") + " " + row.modelData.unit
-                            opacity: 0.8
-                        }
-                        TextField {
-                            objectName: "qty-" + row.modelData.id
-                            Layout.preferredWidth: 110
-                            implicitHeight: w.fingers(44)
-                            font.pixelSize: Ui.px(16)
-                            inputMethodHints: Qt.ImhDecimalNumbersOnly
-                            text: w.typed >= 0 ? (w.qty[row.modelData.id] ?? "") : ""
-                            placeholderText: row.modelData.unit
-                            onTextEdited: { w.qty[row.modelData.id] = text; ++w.typed }
-                        }
-                        TextField {
-                            objectName: "cost-" + row.modelData.id
-                            Layout.preferredWidth: 110
-                            implicitHeight: w.fingers(44)
-                            font.pixelSize: Ui.px(16)
-                            inputMethodHints: Qt.ImhDecimalNumbersOnly
-                            text: w.typed >= 0 ? (w.cost[row.modelData.id] ?? "") : ""
-                            placeholderText: Number(row.modelData.cost).toFixed(2)
-                            onTextEdited: { w.cost[row.modelData.id] = text; ++w.typed }
-                        }
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.preferredWidth: 90
-                            horizontalAlignment: Text.AlignRight
-                            text: { if (w.typed < 0) return ""; const q = Number(w.qty[row.modelData.id] ?? 0)
-                                    return q > 0 ? "$" + (q * w.unitCost(row.modelData)).toFixed(2) : "" }
+                        PosButton {
+                            objectName: "receiveDelivery"
+                            text: qsTr("Receive Delivery")
+                            highlighted: true
+                            enabled: w.total > 0 || Object.keys(w.qty).some(k => Number(w.qty[k]) > 0)
+                            implicitHeight: 52
+                            implicitWidth: 220
+                            font.pixelSize: Ui.px(17)
+                            onClicked: w.receive()
                         }
                     }
                 }
-                Label {
-                    textFormat: Text.PlainText
-                    visible: w.shown.length === 0
-                    text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
-                                                                  : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
-                    opacity: 0.6
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    spacing: 10
-                    Label { textFormat: Text.PlainText; text: qsTr("Total %1").arg("$" + w.total.toFixed(2)); font.pixelSize: Ui.px(20); font.bold: true; Layout.fillWidth: true }
-                    PosButton {
-                        text: qsTr("Clear")
-                        implicitHeight: 52
-                        font.pixelSize: Ui.px(16)
-                        onClicked: w.clear()
-                    }
-                    PosButton {
-                        objectName: "receiveDelivery"
-                        text: qsTr("Receive Delivery")
-                        highlighted: true
-                        enabled: w.total > 0 || Object.keys(w.qty).some(k => Number(w.qty[k]) > 0)
-                        implicitHeight: 52
-                        implicitWidth: 220
-                        font.pixelSize: Ui.px(17)
-                        onClicked: w.receive()
-                    }
-                }
-            }
 
-            ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
+                ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
 
-            ColumnLayout {
-                visible: !w.narrow
-                Layout.preferredWidth: parent.width * 0.3
-                Layout.fillWidth: false
-                Layout.fillHeight: true
-                spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Received lately"); font.bold: true; font.pixelSize: Ui.px(17) }
-                ListView {
-                    id: recent
-                    Layout.fillWidth: true
+                ColumnLayout {
+                    visible: !w.narrow
+                    Layout.preferredWidth: parent.width * 0.3
+                    Layout.fillWidth: false
                     Layout.fillHeight: true
-                    clip: true
                     spacing: 6
-                    model: w.info.recent ?? []
-                    ScrollBar.vertical: TouchScrollBar { id: recentBar; needed: recent.contentHeight > recent.height + 1 }
-                    delegate: ColumnLayout {
-                        required property var modelData
-                        width: ListView.view.width - recentBar.room
-                        spacing: 0
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: (modelData.vendor || qsTr("Delivery")) + "  ·  " + modelData.total
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: modelData.when + "  ·  " + qsTr("%n item(s)", "", modelData.items)
-                                  + (modelData.invoice ? "  ·  #" + modelData.invoice : "") + "  ·  " + modelData.by
-                            opacity: 0.6
-                            font.pixelSize: Ui.px(12)
-                            elide: Text.ElideRight
+                    Label { textFormat: Text.PlainText; text: qsTr("Received lately"); font.bold: true; font.pixelSize: Ui.px(17) }
+                    ListView {
+                        id: recent
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 6
+                        model: w.info.recent ?? []
+                        ScrollBar.vertical: TouchScrollBar { id: recentBar; needed: recent.contentHeight > recent.height + 1 }
+                        delegate: ColumnLayout {
+                            required property var modelData
+                            width: ListView.view.width - recentBar.room
+                            spacing: 0
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: (modelData.vendor || qsTr("Delivery")) + "  ·  " + modelData.total
+                                font.bold: true
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: modelData.when + "  ·  " + qsTr("%n item(s)", "", modelData.items)
+                                      + (modelData.invoice ? "  ·  #" + modelData.invoice : "") + "  ·  " + modelData.by
+                                opacity: 0.6
+                                font.pixelSize: Ui.px(12)
+                                elide: Text.ElideRight
+                            }
                         }
                     }
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    visible: (w.info.recent ?? []).length === 0
-                    text: qsTr("Nothing received yet.")
-                    opacity: 0.6
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: (w.info.recent ?? []).length === 0
+                        text: qsTr("Nothing received yet.")
+                        opacity: 0.6
+                    }
                 }
             }
         }

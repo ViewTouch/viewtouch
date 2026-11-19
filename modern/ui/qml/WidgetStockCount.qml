@@ -40,198 +40,210 @@ Item {
     // Upright (a phone): the count only.
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 460 : 900) : 1.4
-    Item {
-        width: w.width / w.zoom
-        height: w.height / w.zoom
-        scale: w.zoom
-        transformOrigin: Item.TopLeft
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: Math.max(height, (form.implicitHeight + 40) * w.zoom)
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 14
+        Item {
+            width: w.width / w.zoom
+            height: scroller.contentHeight / w.zoom
+            scale: w.zoom
+            transformOrigin: Item.TopLeft
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 8
-                Flow {   // which shelf: by vendor
+            RowLayout {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 14
+
+                ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 6
-                    Repeater {
-                        model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
-                        delegate: PosButton {
+                    Layout.fillHeight: true
+                    spacing: 8
+                    Flow {   // which shelf: by vendor
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Repeater {
+                            model: [{ id: "", name: qsTr("All items") }].concat(w.info.vendors ?? [])
+                            delegate: PosButton {
+                                required property var modelData
+                                objectName: "countVendor-" + modelData.id
+                                text: modelData.name
+                                checkable: true
+                                checked: w.vendor === modelData.id
+                                highlighted: checked
+                                implicitHeight: w.fingers(44)
+                                font.pixelSize: Ui.px(15)
+                                onClicked: w.vendor = modelData.id
+                            }
+                        }
+                    }
+                    RowLayout {   // headings
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
+                        Label { textFormat: Text.PlainText; visible: w.showExpected; text: qsTr("Should be"); opacity: 0.6; Layout.preferredWidth: 110 }
+                        Label { textFormat: Text.PlainText; text: qsTr("Counted"); opacity: 0.6; Layout.preferredWidth: 140 }
+                    }
+                    ListView {
+                        id: list
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 4
+                        model: w.shown
+                        ScrollBar.vertical: TouchScrollBar { id: listBar; needed: list.contentHeight > list.height + 1 }
+                        delegate: RowLayout {
+                            id: row
                             required property var modelData
-                            objectName: "countVendor-" + modelData.id
-                            text: modelData.name
-                            checkable: true
-                            checked: w.vendor === modelData.id
-                            highlighted: checked
-                            implicitHeight: w.fingers(44)
-                            font.pixelSize: Ui.px(15)
-                            onClicked: w.vendor = modelData.id
+                            width: ListView.view.width - listBar.room
+                            height: 52
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+                                Label {
+                                    textFormat: Text.PlainText
+                                    Layout.fillWidth: true
+                                    text: row.modelData.name
+                                    font.pixelSize: Ui.px(16)
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    textFormat: Text.PlainText
+                                    Layout.fillWidth: true
+                                    text: qsTr("Last counted %1").arg(row.modelData.lastCounted)
+                                    font.pixelSize: Ui.px(12)
+                                    opacity: 0.55
+                                    elide: Text.ElideRight
+                                }
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                visible: w.showExpected
+                                Layout.preferredWidth: 110
+                                text: (row.modelData.expected ?? "") + " " + row.modelData.unit
+                                opacity: 0.8
+                            }
+                            TextField {
+                                objectName: "counted-" + row.modelData.id
+                                Layout.preferredWidth: 140
+                                implicitHeight: w.fingers(46)
+                                font.pixelSize: Ui.px(17)
+                                inputMethodHints: Qt.ImhDecimalNumbersOnly
+                                text: w.typed >= 0 ? (w.counted[row.modelData.id] ?? "") : ""
+                                placeholderText: row.modelData.unit
+                                onTextEdited: { w.counted[row.modelData.id] = text; ++w.typed }
+                            }
+                        }
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: w.shown.length === 0
+                        text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
+                                                                      : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
+                        opacity: 0.6
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: qsTr("Only the items you type are counted; leave the rest empty.")
+                        opacity: 0.6
+                        font.pixelSize: Ui.px(13)
+                        wrapMode: Text.WordWrap
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        spacing: 10
+                        Label {
+                            textFormat: Text.PlainText
+                            objectName: "countedHowMany"
+                            text: qsTr("%1 of %2 counted").arg(w.howMany).arg((w.info.ingredients ?? []).length)
+                            font.pixelSize: Ui.px(18)
+                            font.bold: true
+                            Layout.fillWidth: true
+                        }
+                        PosButton {
+                            text: qsTr("Clear")
+                            implicitHeight: 52
+                            font.pixelSize: Ui.px(16)
+                            onClicked: w.clear()
+                        }
+                        PosButton {
+                            objectName: "saveStockCount"
+                            text: qsTr("Save Count")
+                            highlighted: true
+                            enabled: w.howMany > 0
+                            implicitHeight: 52
+                            implicitWidth: 200
+                            font.pixelSize: Ui.px(17)
+                            onClicked: w.save()
                         }
                     }
                 }
-                RowLayout {   // headings
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    Label { textFormat: Text.PlainText; text: qsTr("Item"); opacity: 0.6; Layout.fillWidth: true }
-                    Label { textFormat: Text.PlainText; visible: w.showExpected; text: qsTr("Should be"); opacity: 0.6; Layout.preferredWidth: 110 }
-                    Label { textFormat: Text.PlainText; text: qsTr("Counted"); opacity: 0.6; Layout.preferredWidth: 140 }
-                }
-                ListView {
-                    id: list
-                    Layout.fillWidth: true
+
+                ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
+
+                ColumnLayout {
+                    visible: !w.narrow
+                    Layout.preferredWidth: parent.width * 0.3
+                    Layout.fillWidth: false
                     Layout.fillHeight: true
-                    clip: true
-                    spacing: 4
-                    model: w.shown
-                    ScrollBar.vertical: TouchScrollBar { id: listBar; needed: list.contentHeight > list.height + 1 }
-                    delegate: RowLayout {
-                        id: row
-                        required property var modelData
-                        width: ListView.view.width - listBar.room
-                        height: 52
-                        ColumnLayout {
-                            Layout.fillWidth: true
+                    spacing: 6
+                    Label { textFormat: Text.PlainText; text: qsTr("Counted lately"); font.bold: true; font.pixelSize: Ui.px(17) }
+                    ListView {
+                        id: recent
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 6
+                        model: w.info.recent ?? []
+                        ScrollBar.vertical: TouchScrollBar { id: recentBar; needed: recent.contentHeight > recent.height + 1 }
+                        delegate: ColumnLayout {
+                            required property var modelData
+                            width: ListView.view.width - recentBar.room
                             spacing: 0
                             Label {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
-                                text: row.modelData.name
-                                font.pixelSize: Ui.px(16)
+                                text: modelData.when + "  ·  " + modelData.value
+                                color: modelData.short ? "#ff9a9e" : "white"
                                 font.bold: true
                                 elide: Text.ElideRight
                             }
                             Label {
                                 textFormat: Text.PlainText
                                 Layout.fillWidth: true
-                                text: qsTr("Last counted %1").arg(row.modelData.lastCounted)
+                                text: qsTr("%n item(s)", "", modelData.items) + "  ·  " + modelData.by
+                                opacity: 0.6
                                 font.pixelSize: Ui.px(12)
-                                opacity: 0.55
                                 elide: Text.ElideRight
                             }
                         }
-                        Label {
-                            textFormat: Text.PlainText
-                            visible: w.showExpected
-                            Layout.preferredWidth: 110
-                            text: (row.modelData.expected ?? "") + " " + row.modelData.unit
-                            opacity: 0.8
-                        }
-                        TextField {
-                            objectName: "counted-" + row.modelData.id
-                            Layout.preferredWidth: 140
-                            implicitHeight: w.fingers(46)
-                            font.pixelSize: Ui.px(17)
-                            inputMethodHints: Qt.ImhDecimalNumbersOnly
-                            text: w.typed >= 0 ? (w.counted[row.modelData.id] ?? "") : ""
-                            placeholderText: row.modelData.unit
-                            onTextEdited: { w.counted[row.modelData.id] = text; ++w.typed }
-                        }
                     }
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    visible: w.shown.length === 0
-                    text: (w.info.ingredients ?? []).length === 0 ? qsTr("Add ingredients in Manager → Inventory first.")
-                                                                  : qsTr("Nothing comes from this vendor yet (set it on each item in Inventory).")
-                    opacity: 0.6
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    text: qsTr("Only the items you type are counted; leave the rest empty.")
-                    opacity: 0.6
-                    font.pixelSize: Ui.px(13)
-                    wrapMode: Text.WordWrap
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    spacing: 10
                     Label {
                         textFormat: Text.PlainText
-                        objectName: "countedHowMany"
-                        text: qsTr("%1 of %2 counted").arg(w.howMany).arg((w.info.ingredients ?? []).length)
-                        font.pixelSize: Ui.px(18)
-                        font.bold: true
+                        visible: (w.info.recent ?? []).length === 0
+                        text: qsTr("Nothing counted yet.")
+                        opacity: 0.6
+                    }
+                    Label {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
+                        text: qsTr("Reports → Stock Count shows each item against what should be there.")
+                        opacity: 0.6
+                        font.pixelSize: Ui.px(12)
+                        wrapMode: Text.WordWrap
                     }
-                    PosButton {
-                        text: qsTr("Clear")
-                        implicitHeight: 52
-                        font.pixelSize: Ui.px(16)
-                        onClicked: w.clear()
-                    }
-                    PosButton {
-                        objectName: "saveStockCount"
-                        text: qsTr("Save Count")
-                        highlighted: true
-                        enabled: w.howMany > 0
-                        implicitHeight: 52
-                        implicitWidth: 200
-                        font.pixelSize: Ui.px(17)
-                        onClicked: w.save()
-                    }
-                }
-            }
-
-            ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
-
-            ColumnLayout {
-                visible: !w.narrow
-                Layout.preferredWidth: parent.width * 0.3
-                Layout.fillWidth: false
-                Layout.fillHeight: true
-                spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Counted lately"); font.bold: true; font.pixelSize: Ui.px(17) }
-                ListView {
-                    id: recent
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
-                    spacing: 6
-                    model: w.info.recent ?? []
-                    ScrollBar.vertical: TouchScrollBar { id: recentBar; needed: recent.contentHeight > recent.height + 1 }
-                    delegate: ColumnLayout {
-                        required property var modelData
-                        width: ListView.view.width - recentBar.room
-                        spacing: 0
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: modelData.when + "  ·  " + modelData.value
-                            color: modelData.short ? "#ff9a9e" : "white"
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: qsTr("%n item(s)", "", modelData.items) + "  ·  " + modelData.by
-                            opacity: 0.6
-                            font.pixelSize: Ui.px(12)
-                            elide: Text.ElideRight
-                        }
-                    }
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    visible: (w.info.recent ?? []).length === 0
-                    text: qsTr("Nothing counted yet.")
-                    opacity: 0.6
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    text: qsTr("Reports → Stock Count shows each item against what should be there.")
-                    opacity: 0.6
-                    font.pixelSize: Ui.px(12)
-                    wrapMode: Text.WordWrap
                 }
             }
         }

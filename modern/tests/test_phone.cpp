@@ -363,3 +363,55 @@ TEST_CASE("Phones held upright: every page fits the portrait screen", "[phone][p
     CHECK(landscape.isEmpty());
     CHECK(over.isEmpty());
 }
+
+TEST_CASE("A Stripe reader's 16:9 screen: nothing on a phone page covers anything else", "[phone][portrait][s700]")
+{
+    // The S700 and S710: 1080 x 1920, shorter than the phones the phone
+    // versions are made for (1080 x 2280). Panels beside a keypad used to
+    // stay put while what was below them moved up over them (Pay).
+    const layout::Layout l = seedLayout();
+    PosService pos(test::seedPosData(), nullptr);
+    LayoutController c(l);
+    c.setMealPeriod(u"lunch"_s);
+    c.setPos(&pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    c.setFormFactorOverride(u"phone"_s);
+    c.setViewAspect(1920.0 / 1080.0);
+    QStringList covered, tooShort;
+    for (const layout::Page &p : l.pages) {
+        if (p.formFactor == u"phone" || !p.service.isEmpty() || p.kind == u"template" || p.kind == u"library"
+            || !c.jumpTo(p.id))
+            continue;
+        const QSize canvas = c.canvasSize();
+        // As tall as the screen at least: longer ones scroll, none shrink to bands at the sides.
+        if (canvas.height() + 8 < canvas.width() * 1920 / 1080)
+            tooShort << p.id;
+        ZoneModel *m = c.zones();
+        struct Shown { QString id; QRect rect; };
+        QList<Shown> shown;
+        for (int r = 0; r < m->rowCount(); ++r) {
+            const QModelIndex i = m->index(r);
+            const QString kind = m->data(i, ZoneModel::KindRole).toString();
+            // Zones that only show sometimes take turns in one place; notes and floor pieces don't count.
+            if (kind == u"comment" || kind == u"decor" || !m->data(i, ZoneModel::ShowWhenRole).toMap().isEmpty())
+                continue;
+            const QRect rect(m->data(i, ZoneModel::ZoneXRole).toInt(), m->data(i, ZoneModel::ZoneYRole).toInt(),
+                             m->data(i, ZoneModel::ZoneWRole).toInt(), m->data(i, ZoneModel::ZoneHRole).toInt());
+            if (!rect.isEmpty())
+                shown.append({m->data(i, ZoneModel::ZoneIdRole).toString(), rect});
+        }
+        for (qsizetype a = 0; a < shown.size(); ++a)
+            for (qsizetype b = a + 1; b < shown.size(); ++b) {
+                const QRect both = shown[a].rect.intersected(shown[b].rect);
+                // (One drawn inside another, a key on a floor plan, is meant.)
+                if (both.width() > 4 && both.height() > 4 && !shown[a].rect.contains(shown[b].rect)
+                    && !shown[b].rect.contains(shown[a].rect))
+                    covered << p.id + u": "_s + shown[a].id + u" / "_s + shown[b].id;
+            }
+    }
+    INFO("covered: " << covered.join(u", "_s).toStdString());
+    INFO("shorter than the screen: " << tooShort.join(u", "_s).toStdString());
+    CHECK(covered.isEmpty());
+    CHECK(tooShort.isEmpty());
+}

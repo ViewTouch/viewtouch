@@ -12,7 +12,9 @@ Item {
     readonly property int done: pos ? (pos.checklists[list + "Done"] ?? 0) : 0
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: (Math.max(14, Math.min(w.width / 26, w.height / 20))) * Ui.textScale
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (Math.max(14, Math.min(w.width / 26, w.height / 20))) * Ui.textScale
     // A phone: each task a finger tall at least (it's the box to tick).
     readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
 
@@ -21,94 +23,108 @@ Item {
         radius: 12
         color: Ui.sunken
     }
-    ColumnLayout {
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
         anchors.fill: parent
-        anchors.margins: w.unit
-        spacing: w.unit * 0.4
-        RowLayout {
-            Layout.fillWidth: true
-            Text {
-                textFormat: Text.PlainText
+        contentWidth: width
+        contentHeight: Math.max(height, body.implicitHeight + 2 * (w.unit))
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
+
+        ColumnLayout {
+            id: body
+            x: w.unit
+            y: w.unit
+            width: scroller.width - 2 * (w.unit)
+            height: Math.max(implicitHeight, scroller.height - 2 * (w.unit))
+            spacing: w.unit * 0.4
+            RowLayout {
                 Layout.fillWidth: true
-                text: w.list === "opening" ? qsTr("Opening") : qsTr("Closing")
-                color: w.ink
-                font.family: w.face
-                font.pixelSize: w.unit * 1.4
-                font.bold: true
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: w.list === "opening" ? qsTr("Opening") : qsTr("Closing")
+                    color: w.ink
+                    font.family: w.face
+                    font.pixelSize: w.unit * 1.4
+                    font.bold: true
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    text: qsTr("%1 of %2 done").arg(w.done).arg(w.tasks.length)
+                    color: w.done === w.tasks.length && w.tasks.length > 0 ? "#5fd08a" : Ui.muted
+                    font.family: w.face
+                    font.pixelSize: w.unit * 0.9
+                }
             }
             Text {
                 textFormat: Text.PlainText
-                text: qsTr("%1 of %2 done").arg(w.done).arg(w.tasks.length)
-                color: w.done === w.tasks.length && w.tasks.length > 0 ? "#5fd08a" : Ui.muted
+                visible: w.tasks.length === 0
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: qsTr("No tasks yet: Manager → Settings, Opening / Closing checklist.")
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.9
             }
-        }
-        Text {
-            textFormat: Text.PlainText
-            visible: w.tasks.length === 0
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: qsTr("No tasks yet: Manager → Settings, Opening / Closing checklist.")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.9
-        }
-        Repeater {
-            model: w.tasks
-            delegate: Rectangle {
-                id: row
-                required property var modelData
-                required property int index
-                objectName: "task-" + w.list + "-" + index
-                Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(w.unit * 2.4, w.tapH)
-                radius: 8
-                color: tap.pressed ? "#2b3340" : modelData.done ? "#1f3a2b" : "#262c36"
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: w.unit * 0.5
-                    anchors.rightMargin: w.unit * 0.5
-                    spacing: w.unit * 0.5
-                    Rectangle {
-                        Layout.preferredWidth: w.unit * 1.3
-                        Layout.preferredHeight: w.unit * 1.3
-                        radius: 6
-                        color: row.modelData.done ? Ui.go : "transparent"
-                        border.color: row.modelData.done ? Ui.go : Ui.muted
-                        border.width: 2
+            Repeater {
+                model: w.tasks
+                delegate: Rectangle {
+                    id: row
+                    required property var modelData
+                    required property int index
+                    objectName: "task-" + w.list + "-" + index
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 2.4, w.tapH)
+                    radius: 8
+                    color: tap.pressed ? "#2b3340" : modelData.done ? "#1f3a2b" : "#262c36"
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: w.unit * 0.5
+                        anchors.rightMargin: w.unit * 0.5
+                        spacing: w.unit * 0.5
+                        Rectangle {
+                            Layout.preferredWidth: w.unit * 1.3
+                            Layout.preferredHeight: w.unit * 1.3
+                            radius: 6
+                            color: row.modelData.done ? Ui.go : "transparent"
+                            border.color: row.modelData.done ? Ui.go : Ui.muted
+                            border.width: 2
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.centerIn: parent
+                                visible: row.modelData.done
+                                text: "✓"
+                                color: "white"
+                                font.pixelSize: w.unit
+                                font.bold: true
+                            }
+                        }
                         Text {
                             textFormat: Text.PlainText
-                            anchors.centerIn: parent
-                            visible: row.modelData.done
-                            text: "✓"
-                            color: "white"
+                            Layout.fillWidth: true
+                            text: row.modelData.task
+                            color: row.modelData.done ? Ui.textSoft : w.ink
+                            font.family: w.face
                             font.pixelSize: w.unit
-                            font.bold: true
+                            font.strikeout: row.modelData.done
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            visible: row.modelData.done
+                            text: row.modelData.by + "  ·  " + row.modelData.at
+                            color: Ui.muted
+                            font.family: w.face
+                            font.pixelSize: w.unit * 0.75
                         }
                     }
-                    Text {
-                        textFormat: Text.PlainText
-                        Layout.fillWidth: true
-                        text: row.modelData.task
-                        color: row.modelData.done ? Ui.textSoft : w.ink
-                        font.family: w.face
-                        font.pixelSize: w.unit
-                        font.strikeout: row.modelData.done
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        textFormat: Text.PlainText
-                        visible: row.modelData.done
-                        text: row.modelData.by + "  ·  " + row.modelData.at
-                        color: Ui.muted
-                        font.family: w.face
-                        font.pixelSize: w.unit * 0.75
-                    }
+                    TapHandler { id: tap; onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.tickChecklist(w.list, row.index) } }
                 }
-                TapHandler { id: tap; onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.tickChecklist(w.list, row.index) } }
             }
+            Item { Layout.fillHeight: true }
         }
-        Item { Layout.fillHeight: true }
     }
 }

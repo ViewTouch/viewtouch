@@ -7494,13 +7494,16 @@ QQuickItem *findTyped(QQuickItem *root, const char *cls, const QString &value)
 // Scrolls the nearest Flickable so `item` is in view.
 void scrollTo(QQuickItem *item)
 {
+    // Every scroller it's in, the nearest first: a phone's page can scroll
+    // too, around a panel that scrolls (as a person would scroll both).
     for (QQuickItem *p = item->parentItem(); p; p = p->parentItem()) {
-        if (QByteArray(p->metaObject()->className()).contains("Flickable")) {
-            const qreal y = item->mapToItem(p->property("contentItem").value<QQuickItem *>(), QPointF(0, 0)).y();
-            p->setProperty("contentY", std::max<qreal>(0, y - p->height() / 2));
-            QTest::qWait(60);
-            return;
-        }
+        if (!QByteArray(p->metaObject()->className()).contains("Flickable"))
+            continue;
+        const qreal y = item->mapToItem(p->property("contentItem").value<QQuickItem *>(), QPointF(0, 0)).y();
+        const qreal top = p->property("originY").toReal();
+        const qreal last = top + std::max<qreal>(0, p->property("contentHeight").toReal() - p->height());
+        p->setProperty("contentY", std::clamp<qreal>(y - p->height() / 2, top, last));
+        QTest::qWait(60);
     }
 }
 

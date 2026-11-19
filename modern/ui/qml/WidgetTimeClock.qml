@@ -20,7 +20,9 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the keypad alone; then the person above their schedule.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: (narrow ? Math.max(14, Math.min(w.width / 20, w.height / 34))
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (narrow ? Math.max(14, Math.min(w.width / 20, w.height / 34))
                                         : Math.max(14, Math.min(w.width / 46, w.height / 26))) * Ui.textScale
     property string pin: ""
 

@@ -69,7 +69,9 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the numbers two a row, the lists one a row, scrolled.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: (narrow ? Math.max(12, Math.min(w.width / 22, 40))
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (narrow ? Math.max(12, Math.min(w.width / 22, 40))
                                         : Math.max(12, Math.min(w.width / 60, w.height / 34))) * Ui.textScale
     readonly property color muted: Ui.muted
     readonly property color good: "#5fd08a"

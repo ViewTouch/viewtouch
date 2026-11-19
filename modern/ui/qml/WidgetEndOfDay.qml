@@ -12,203 +12,219 @@ Item {
     readonly property var backup: day.backup ?? ({})
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: (Math.max(14, Math.min(30, w.width * 0.04))) * Ui.textScale
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (Math.max(14, Math.min(30, w.width * 0.04))) * Ui.textScale
     property bool armed: false
 
     Timer { id: disarm; interval: 3000; onTriggered: w.armed = false }
 
-    ColumnLayout {
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
         anchors.fill: parent
-        anchors.margins: w.unit
-        spacing: w.unit * 0.5
+        contentWidth: width
+        contentHeight: Math.max(height, body.implicitHeight + 2 * (w.unit))
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        Text {
-            textFormat: Text.PlainText
-            text: qsTr("Business day #%1").arg(w.day.id ?? "")
-            color: w.ink
-            font.family: w.face
-            font.pixelSize: w.unit * 1.5
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            text: qsTr("Opened %1").arg(w.day.opened ?? "")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.85
-        }
-        Text {
-            textFormat: Text.PlainText
-            text: qsTr("%1 checks closed · net sales %2").arg(w.day.closedChecks ?? 0).arg(w.day.netSales ?? "")
-            color: w.ink
-            font.family: w.face
-            font.pixelSize: w.unit
-        }
+        ColumnLayout {
+            id: body
+            x: w.unit
+            y: w.unit
+            width: scroller.width - 2 * (w.unit)
+            height: Math.max(implicitHeight, scroller.height - 2 * (w.unit))
+            spacing: w.unit * 0.5
 
-        Repeater {
-            model: w.day.blockers ?? []
-            delegate: Text {
+            Text {
                 textFormat: Text.PlainText
-                required property string modelData
-                Layout.fillWidth: true
-                text: "✗  " + modelData
-                color: "#ff9a9e"
+                text: qsTr("Business day #%1").arg(w.day.id ?? "")
+                color: w.ink
+                font.family: w.face
+                font.pixelSize: w.unit * 1.5
+                font.bold: true
+            }
+            Text {
+                textFormat: Text.PlainText
+                text: qsTr("Opened %1").arg(w.day.opened ?? "")
+                color: Ui.muted
+                font.family: w.face
+                font.pixelSize: w.unit * 0.85
+            }
+            Text {
+                textFormat: Text.PlainText
+                text: qsTr("%1 checks closed · net sales %2").arg(w.day.closedChecks ?? 0).arg(w.day.netSales ?? "")
+                color: w.ink
                 font.family: w.face
                 font.pixelSize: w.unit
-                wrapMode: Text.WordWrap
             }
-        }
-        // Still on the clock: clock them out now (or fix it later in Time Punches).
-        Text {
-            textFormat: Text.PlainText
-            visible: (w.day.clockedIn ?? []).length > 0
-            Layout.topMargin: w.unit * 0.4
-            text: qsTr("Still clocked in")
-            color: Ui.warn
-            font.family: w.face
-            font.pixelSize: w.unit
-            font.bold: true
-        }
-        Repeater {
-            model: w.day.clockedIn ?? []
-            delegate: RowLayout {
-                required property var modelData
+
+            Repeater {
+                model: w.day.blockers ?? []
+                delegate: Text {
+                    textFormat: Text.PlainText
+                    required property string modelData
+                    Layout.fillWidth: true
+                    text: "✗  " + modelData
+                    color: "#ff9a9e"
+                    font.family: w.face
+                    font.pixelSize: w.unit
+                    wrapMode: Text.WordWrap
+                }
+            }
+            // Still on the clock: clock them out now (or fix it later in Time Punches).
+            Text {
+                textFormat: Text.PlainText
+                visible: (w.day.clockedIn ?? []).length > 0
+                Layout.topMargin: w.unit * 0.4
+                text: qsTr("Still clocked in")
+                color: Ui.warn
+                font.family: w.face
+                font.pixelSize: w.unit
+                font.bold: true
+            }
+            Repeater {
+                model: w.day.clockedIn ?? []
+                delegate: RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: w.unit * 0.5
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: modelData.name + "  ·  " + qsTr("since %1").arg(modelData.since)
+                              + (modelData.onBreak ? "  ·  " + qsTr("on break") : "")
+                              + (modelData.overTwelve ? "  ·  " + qsTr("forgot to clock out?") : "")
+                        color: modelData.overTwelve ? "#ff9a9e" : w.ink
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.85
+                        elide: Text.ElideRight
+                    }
+                    WidgetKey {
+                        objectName: "eodClockOut-" + modelData.id
+                        Layout.preferredWidth: w.unit * 7
+                        Layout.preferredHeight: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(48) : 0)
+                        text: qsTr("Clock Out Now")
+                        fontScale: 0.32
+                        onClicked: w.pos.clockOutPunch(modelData.id)
+                    }
+                }
+            }
+            Text {
+                textFormat: Text.PlainText
+                visible: (w.day.clockedIn ?? []).some(p => p.overTwelve)
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: qsTr("Forgot hours ago? Clock them out, then fix the time in Schedule → Time Punches.")
+                color: Ui.muted
+                font.family: w.face
+                font.pixelSize: w.unit * 0.7
+            }
+            // The closing checklist: what's left (not a blocker).
+            RowLayout {
+                visible: (w.day.closingLeft ?? 0) > 0
                 Layout.fillWidth: true
                 spacing: w.unit * 0.5
                 Text {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
-                    text: modelData.name + "  ·  " + qsTr("since %1").arg(modelData.since)
-                          + (modelData.onBreak ? "  ·  " + qsTr("on break") : "")
-                          + (modelData.overTwelve ? "  ·  " + qsTr("forgot to clock out?") : "")
-                    color: modelData.overTwelve ? "#ff9a9e" : w.ink
+                    text: qsTr("%n closing task(s) not done yet", "", w.day.closingLeft ?? 0)
+                    color: Ui.warn
                     font.family: w.face
-                    font.pixelSize: w.unit * 0.85
-                    elide: Text.ElideRight
+                    font.pixelSize: w.unit * 0.9
+                    wrapMode: Text.WordWrap
                 }
                 WidgetKey {
-                    objectName: "eodClockOut-" + modelData.id
-                    Layout.preferredWidth: w.unit * 7
-                    Layout.preferredHeight: Math.max(w.unit * 1.8, w.zone ? w.zone.touch(48) : 0)
-                    text: qsTr("Clock Out Now")
-                    fontScale: 0.32
-                    onClicked: w.pos.clockOutPunch(modelData.id)
+                    objectName: "eodChecklist"
+                    Layout.preferredWidth: w.unit * 9
+                    Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
+                    text: qsTr("Checklists…")
+                    fontScale: 0.36
+                    onClicked: w.zone.controller.jumpTo("checklists")
                 }
             }
-        }
-        Text {
-            textFormat: Text.PlainText
-            visible: (w.day.clockedIn ?? []).some(p => p.overTwelve)
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: qsTr("Forgot hours ago? Clock them out, then fix the time in Schedule → Time Punches.")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.7
-        }
-        // The closing checklist: what's left (not a blocker).
-        RowLayout {
-            visible: (w.day.closingLeft ?? 0) > 0
-            Layout.fillWidth: true
-            spacing: w.unit * 0.5
             Text {
                 textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: qsTr("%n closing task(s) not done yet", "", w.day.closingLeft ?? 0)
-                color: Ui.warn
+                visible: w.day.ready ?? false
+                text: "✓  " + qsTr("Everything is settled and counted.")
+                color: "#7ee2a8"
                 font.family: w.face
-                font.pixelSize: w.unit * 0.9
-                wrapMode: Text.WordWrap
+                font.pixelSize: w.unit
             }
-            WidgetKey {
-                objectName: "eodChecklist"
-                Layout.preferredWidth: w.unit * 9
-                Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
-                text: qsTr("Checklists…")
-                fontScale: 0.36
-                onClicked: w.zone.controller.jumpTo("checklists")
+
+            Item { Layout.fillHeight: true }
+
+            // The last backup, and its second copy when one is set up; under it,
+            // a note for the next shift and backing up now, full width.
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: w.unit * 0.5
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    readonly property var b: w.backup
+                    text: !b.at ? qsTr("No backup yet this session.")
+                         : b.ok ? qsTr("Backed up at %1.").arg(b.at) + (b.copy ? "  " + b.copy : "")
+                                : qsTr("Backup failed at %1: %2").arg(b.at).arg(b.error)
+                    color: !b.at ? Ui.muted : (b.ok && b.copyOk !== false) ? "#7ee2a8" : "#ff9a9e"
+                    font.family: w.face
+                    font.pixelSize: w.unit * 0.75
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: w.unit * 0.5
+                    WidgetKey {
+                        objectName: "handoffNote"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
+                        visible: w.zone.keyShown("handoff")
+                        text: w.zone.keyText("handoff", qsTr("Note for the Next Shift…"))
+                        fontScale: 0.36
+                        onClicked: handoffWrite.open()
+                    }
+                    WidgetKey {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
+                        visible: w.zone.keyShown("backup")
+                        text: w.zone.keyText("backup", qsTr("Back Up Now"))
+                        fontScale: 0.36
+                        onClicked: w.pos.backupNow()
+                    }
+                }
             }
-        }
-        Text {
-            textFormat: Text.PlainText
-            visible: w.day.ready ?? false
-            text: "✓  " + qsTr("Everything is settled and counted.")
-            color: "#7ee2a8"
-            font.family: w.face
-            font.pixelSize: w.unit
-        }
 
-        Item { Layout.fillHeight: true }
-
-        // The last backup, and its second copy when one is set up; under it,
-        // a note for the next shift and backing up now, full width.
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: w.unit * 0.5
             Text {
                 textFormat: Text.PlainText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                readonly property var b: w.backup
-                text: !b.at ? qsTr("No backup yet this session.")
-                     : b.ok ? qsTr("Backed up at %1.").arg(b.at) + (b.copy ? "  " + b.copy : "")
-                            : qsTr("Backup failed at %1: %2").arg(b.at).arg(b.error)
-                color: !b.at ? Ui.muted : (b.ok && b.copyOk !== false) ? "#7ee2a8" : "#ff9a9e"
+                text: qsTr("Closing the day saves its reports (see Reports) and starts a new day. Checks cannot be reopened afterwards.")
+                color: Ui.muted
                 font.family: w.face
                 font.pixelSize: w.unit * 0.75
             }
-            RowLayout {
+            WidgetKey {
                 Layout.fillWidth: true
-                spacing: w.unit * 0.5
-                WidgetKey {
-                    objectName: "handoffNote"
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
-                    visible: w.zone.keyShown("handoff")
-                    text: w.zone.keyText("handoff", qsTr("Note for the Next Shift…"))
-                    fontScale: 0.36
-                    onClicked: handoffWrite.open()
+                Layout.preferredHeight: Math.max(w.unit * 3.2, w.zone ? w.zone.touch(48) : 0)
+                text: w.armed ? qsTr("Tap again to close the day") : qsTr("Close the Day")
+                baseColor: (w.day.ready ?? false) ? (w.armed ? "#b83232" : "#1f5f3a") : "#3a3f48"
+                // Not ready: dimmed (a touch still says what's missing).
+                textColor: (w.day.ready ?? false) ? "white" : "#9aa3b5"
+                fontScale: 0.3
+                onClicked: {
+                    if (!(w.day.ready ?? false)) {
+                        w.pos.endOfDay()   // explains what is missing
+                        return
+                    }
+                    if (!w.armed) {
+                        w.armed = true
+                        disarm.restart()
+                        return
+                    }
+                    w.armed = false
+                    w.pos.endOfDay()
                 }
-                WidgetKey {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.max(w.unit * 2.6, w.zone ? w.zone.touch(52) : 0)
-                    visible: w.zone.keyShown("backup")
-                    text: w.zone.keyText("backup", qsTr("Back Up Now"))
-                    fontScale: 0.36
-                    onClicked: w.pos.backupNow()
-                }
-            }
-        }
-
-        Text {
-            textFormat: Text.PlainText
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: qsTr("Closing the day saves its reports (see Reports) and starts a new day. Checks cannot be reopened afterwards.")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.75
-        }
-        WidgetKey {
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(w.unit * 3.2, w.zone ? w.zone.touch(48) : 0)
-            text: w.armed ? qsTr("Tap again to close the day") : qsTr("Close the Day")
-            baseColor: (w.day.ready ?? false) ? (w.armed ? "#b83232" : "#1f5f3a") : "#3a3f48"
-            // Not ready: dimmed (a touch still says what's missing).
-            textColor: (w.day.ready ?? false) ? "white" : "#9aa3b5"
-            fontScale: 0.3
-            onClicked: {
-                if (!(w.day.ready ?? false)) {
-                    w.pos.endOfDay()   // explains what is missing
-                    return
-                }
-                if (!w.armed) {
-                    w.armed = true
-                    disarm.restart()
-                    return
-                }
-                w.armed = false
-                w.pos.endOfDay()
             }
         }
     }

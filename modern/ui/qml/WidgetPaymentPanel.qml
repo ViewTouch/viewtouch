@@ -9,7 +9,9 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property string face: zone.st.font ?? Ui.font
-    readonly property real unit: Math.max(12, Math.min(zone.st.fontSize ?? 28, w.width * 0.05)) * zone.textScale
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: Math.max(12, Math.min(zone.st.fontSize ?? 28, w.width * 0.05)) * zone.textScale
     readonly property var totals: pos ? pos.totals : ({})
     readonly property bool owing: (totals.balanceCents ?? 0) > 0
 

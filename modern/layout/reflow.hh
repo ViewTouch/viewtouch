@@ -26,14 +26,16 @@ QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, in
 // A page as a phone shows it: its phone version when it has one (`useVersion`);
 // else, under a template with a phone version that frames pages (a content
 // area), that frame with the page's own zones laid out in the area; else the
-// page's zones laid out on a phone held upright. `moved`: where a zone laid
-// out again goes (zones not shown there are left out of `zones`).
+// page's zones laid out on a phone held upright, `height` tall for 1080 across
+// (the screen's shape; taller when they need more room: the page scrolls).
+// `moved`: where a zone laid out again goes (zones not shown there are left
+// out of `zones`).
 struct PhoneView {
     QString pageId;   // the page drawn: the version, the frame, or the page
     QSize canvas;
     QList<Layout::PlacedZone> zones;
     QHash<const Zone *, QRect> moved;
 };
-PhoneView phoneView(const Layout &layout, const QString &pageId, bool useVersion = true);
+PhoneView phoneView(const Layout &layout, const QString &pageId, bool useVersion = true, int height = 2280);
 
 } // namespace vt::layout

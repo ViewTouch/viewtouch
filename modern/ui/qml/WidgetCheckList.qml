@@ -10,6 +10,8 @@ import QtQuick.Controls.Fusion
 Item {
     id: w
     property ZoneItem zone
+    // Page pixels, bigger on a phone (ZoneItem.phoneText).
+    function px(n) { return Ui.px(n) * (zone ? zone.phoneText : 1) }
     readonly property PosService pos: zone ? zone.pos : null
     readonly property string face: zone.st.font ?? Ui.font
     function lastRoundText(m) { return m < 1 ? qsTr("last round just now") : qsTr("last round %1 ago").arg(minutesText(m)) }
@@ -82,21 +84,21 @@ Item {
             text: qsTr("Checks at %1 — touch here to show all").arg(w.filter)
             color: "white"
             font.family: w.face
-            font.pixelSize: Ui.px(26)
+            font.pixelSize: w.px(26)
         }
         TapHandler { onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.pos.checkFilter = "" } }
     }
 
     GridView {
         id: grid
-        ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * (170) > grid.height }
+        ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * w.px(170) > grid.height }
         anchors.fill: parent
         anchors.margins: 16
         anchors.topMargin: whose.visible ? 144 : banner.visible ? 96 : 16
         clip: true
-        readonly property int columns: Math.max(1, Math.floor((width - gridBar.width - 4) / 320))
-        cellWidth: Math.max(280, (width - gridBar.room) / columns)
-        cellHeight: 170
+        readonly property int columns: Math.max(1, Math.floor((width - gridBar.width - 4) / w.px(320)))
+        cellWidth: Math.max(w.px(280), (width - gridBar.room) / columns)
+        cellHeight: w.px(170)
         // Only the checks that changed drawn again (any screen's change reaches every list).
         model: LiveList { rows: w.checks }
 
@@ -120,7 +122,7 @@ Item {
                 visible: card.locked
                 anchors { right: parent.right; top: parent.top; margins: 22 }
                 text: "🔒"
-                font.pixelSize: Ui.px(24)
+                font.pixelSize: w.px(24)
             }
             Column {
                 anchors.fill: parent
@@ -132,7 +134,7 @@ Item {
                     text: card.modelData.label
                     color: "white"
                     font.family: w.face
-                    font.pixelSize: Ui.px(30)
+                    font.pixelSize: w.px(30)
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -142,7 +144,7 @@ Item {
                     // A tab near its card's hold: orange (time for a bigger hold, or to close).
                     color: w.mode === "tabs" && card.modelData.nearHold ? "#ffb347" : "white"
                     font.family: w.face
-                    font.pixelSize: Ui.px(26)
+                    font.pixelSize: w.px(26)
                 }
                 Text {
                     textFormat: Text.PlainText
@@ -160,7 +162,7 @@ Item {
                           + (card.modelData.busyOn ? " · " + qsTr("on %1").arg(card.modelData.busyOn) : "")
                     color: Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: Ui.px(20)
+                    font.pixelSize: w.px(20)
                     elide: Text.ElideRight
                 }
                 // The card held for the tab.
@@ -172,7 +174,7 @@ Item {
                     text: "💳 " + (card.modelData.hold ?? "")
                     color: card.modelData.nearHold ? "#ffb347" : Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: Ui.px(20)
+                    font.pixelSize: w.px(20)
                     elide: Text.ElideRight
                 }
             }
@@ -203,7 +205,7 @@ Item {
                  : w.mode === "merge" ? qsTr("No other open checks") : qsTr("No open checks")
             color: Ui.muted
             font.family: w.face
-            font.pixelSize: Ui.px(32)
+            font.pixelSize: w.px(32)
         }
     }
 }

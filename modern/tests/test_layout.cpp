@@ -527,8 +527,8 @@ TEST_CASE("Store style: the phone order frame's menu area moves with its buttons
     REQUIRE(l);
     const QRect classic = l->page(u"order-template-phone"_s)->contentArea;
     REQUIRE(l->useStyle(u"modern"_s, Theme{}));
-    CHECK(l->page(u"order-template-phone"_s)->contentArea == QRect(16, 718, 1048, 1274));
-    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 550);
+    CHECK(l->page(u"order-template-phone"_s)->contentArea == QRect(16, 926, 1048, 1066));
+    CHECK(l->page(u"order-template-phone"_s)->zone(u"order-list"_s)->rect.height() == 760);   // the check shows its lines
     REQUIRE(l->useStyle(u"classic"_s, Theme{}));
     CHECK(l->page(u"order-template-phone"_s)->contentArea == classic);
 }

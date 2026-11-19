@@ -14,7 +14,9 @@ Item {
     readonly property color ink: zone.st.textColor ?? "white"
     // Upright (a phone): the items, then the checks below, at a phone's size.
     readonly property bool narrow: zone ? zone.narrow : false
-    readonly property real unit: (narrow ? Math.max(14, Math.min(44, w.width * 0.045))
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (narrow ? Math.max(14, Math.min(44, w.width * 0.045))
                                         : Math.max(14, Math.min(28, w.width * 0.022))) * Ui.textScale
     readonly property var targets: {
         // Compared, not just read: an unused read is compiled away (no refresh).

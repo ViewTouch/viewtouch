@@ -54,195 +54,207 @@ Item {
 
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 460 : 900) : 1.4
-    Item {
-        width: w.width / w.zoom
-        height: w.height / w.zoom
-        scale: w.zoom
-        transformOrigin: Item.TopLeft
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: Math.max(height, (form.implicitHeight + 40) * w.zoom)
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        GridLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            columns: w.narrow ? 1 : 2
-            columnSpacing: 16
-            rowSpacing: 8
+        Item {
+            width: w.width / w.zoom
+            height: scroller.contentHeight / w.zoom
+            scale: w.zoom
+            transformOrigin: Item.TopLeft
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 8
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    FindField {
-                        objectName: "labelSearch"
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        implicitHeight: w.fingers(46)
-                        font.pixelSize: Ui.px(15)
-                        placeholderText: qsTr("Find…")
-                        onEdited: typed => w.search = typed
-                    }
-                    TextField {
-                        id: other
-                        objectName: "labelOther"
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        implicitHeight: w.fingers(46)
-                        font.pixelSize: Ui.px(15)
-                        placeholderText: qsTr("Or type what it is")
-                    }
-                }
-                GridView {
-                    id: grid
+            GridLayout {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 10
+                columns: w.narrow ? 1 : 2
+                columnSpacing: 16
+                rowSpacing: 8
+
+                ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumHeight: 100
-                    clip: true
-                    readonly property int columns: Math.max(2, Math.floor(width / 170))
-                    cellWidth: (width - gridBar.room) / columns
-                    cellHeight: w.fingers(52) + 6   // its buttons a finger tall
-                    model: shown
-                    ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
-                    delegate: PosButton {
-                        required property var modelData
-                        objectName: "label-" + modelData.id
-                        width: grid.cellWidth - 6
-                        height: grid.cellHeight - 6
-                        text: modelData.name
-                        checkable: true
-                        checked: w.chosen === modelData.id && other.text.trim() === ""
-                        highlighted: checked
-                        font.pixelSize: Ui.px(14)
-                        onClicked: w.choose(modelData)
-                    }
-                }
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.maximumWidth: w.narrow ? 100000 : 420
-                spacing: 8
-                // How it will look.
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: preview.implicitHeight + 16
-                    radius: 6
-                    color: "white"
-                    ColumnLayout {
-                        id: preview
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 0
-                        Text {
-                            textFormat: Text.PlainText
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        FindField {
+                            objectName: "labelSearch"
                             Layout.fillWidth: true
-                            text: w.name !== "" ? w.name : qsTr("(choose what it is)")
-                            color: "black"
-                            font.pixelSize: Ui.px(21)
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Text { textFormat: Text.PlainText; text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: Ui.px(15) }
-                        Text {
-                            textFormat: Text.PlainText
-                            visible: w.hours > 0
-                            text: qsTr("Use by %1").arg(w.fmt(new Date(Date.now() + w.hours * 3600000)))
-                            color: "black"
+                            Layout.preferredWidth: 1
+                            implicitHeight: w.fingers(46)
                             font.pixelSize: Ui.px(15)
-                            font.bold: true
+                            placeholderText: qsTr("Find…")
+                            onEdited: typed => w.search = typed
                         }
-                        Text {
-                            textFormat: Text.PlainText
-                            text: (note.text.trim() !== "" ? note.text.trim() + "  ·  " : "") + (w.pos ? w.pos.userName.split(" ")[0] : "")
-                            color: "black"
-                            font.pixelSize: Ui.px(13)
+                        TextField {
+                            id: other
+                            objectName: "labelOther"
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1
+                            implicitHeight: w.fingers(46)
+                            font.pixelSize: Ui.px(15)
+                            placeholderText: qsTr("Or type what it is")
                         }
                     }
-                }
-                Label { textFormat: Text.PlainText; text: qsTr("Keeps for"); font.pixelSize: Ui.px(13); opacity: 0.75 }
-                GridLayout {
-                    Layout.fillWidth: true
-                    columns: 3
-                    rowSpacing: 6
-                    columnSpacing: 6
-                    Repeater {
-                        model: w.keeps
+                    GridView {
+                        id: grid
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 100
+                        clip: true
+                        readonly property int columns: Math.max(2, Math.floor(width / 170))
+                        cellWidth: (width - gridBar.room) / columns
+                        cellHeight: w.fingers(52) + 6   // its buttons a finger tall
+                        model: shown
+                        ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: grid.contentHeight > grid.height + 1 }
                         delegate: PosButton {
                             required property var modelData
-                            objectName: "keeps-" + modelData.h
-                            text: modelData.t
+                            objectName: "label-" + modelData.id
+                            width: grid.cellWidth - 6
+                            height: grid.cellHeight - 6
+                            text: modelData.name
                             checkable: true
-                            checked: w.hours === modelData.h
+                            checked: w.chosen === modelData.id && other.text.trim() === ""
                             highlighted: checked
-                            Layout.fillWidth: true
-                            implicitHeight: w.fingers(42)
                             font.pixelSize: Ui.px(14)
-                            onClicked: w.hours = modelData.h
+                            onClicked: w.choose(modelData)
                         }
                     }
                 }
-                TextField {
-                    id: note
-                    objectName: "labelNote"
+
+                ColumnLayout {
                     Layout.fillWidth: true
-                    implicitHeight: w.fingers(42)
-                    font.pixelSize: Ui.px(14)
-                    placeholderText: qsTr("Note (batch, amount…)")
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    PosButton {
-                        objectName: "labelsLess"
-                        text: "−"
-                        implicitWidth: 52
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(20)
-                        onClicked: w.count = Math.max(1, w.count - 1)
+                    Layout.fillHeight: true
+                    Layout.maximumWidth: w.narrow ? 100000 : 420
+                    spacing: 8
+                    // How it will look.
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: preview.implicitHeight + 16
+                        radius: 6
+                        color: "white"
+                        ColumnLayout {
+                            id: preview
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 0
+                            Text {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: w.name !== "" ? w.name : qsTr("(choose what it is)")
+                                color: "black"
+                                font.pixelSize: Ui.px(21)
+                                font.bold: true
+                                elide: Text.ElideRight
+                            }
+                            Text { textFormat: Text.PlainText; text: qsTr("Made %1").arg(w.fmt(new Date())); color: "black"; font.pixelSize: Ui.px(15) }
+                            Text {
+                                textFormat: Text.PlainText
+                                visible: w.hours > 0
+                                text: qsTr("Use by %1").arg(w.fmt(new Date(Date.now() + w.hours * 3600000)))
+                                color: "black"
+                                font.pixelSize: Ui.px(15)
+                                font.bold: true
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                text: (note.text.trim() !== "" ? note.text.trim() + "  ·  " : "") + (w.pos ? w.pos.userName.split(" ")[0] : "")
+                                color: "black"
+                                font.pixelSize: Ui.px(13)
+                            }
+                        }
+                    }
+                    Label { textFormat: Text.PlainText; text: qsTr("Keeps for"); font.pixelSize: Ui.px(13); opacity: 0.75 }
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: 3
+                        rowSpacing: 6
+                        columnSpacing: 6
+                        Repeater {
+                            model: w.keeps
+                            delegate: PosButton {
+                                required property var modelData
+                                objectName: "keeps-" + modelData.h
+                                text: modelData.t
+                                checkable: true
+                                checked: w.hours === modelData.h
+                                highlighted: checked
+                                Layout.fillWidth: true
+                                implicitHeight: w.fingers(42)
+                                font.pixelSize: Ui.px(14)
+                                onClicked: w.hours = modelData.h
+                            }
+                        }
+                    }
+                    TextField {
+                        id: note
+                        objectName: "labelNote"
+                        Layout.fillWidth: true
+                        implicitHeight: w.fingers(42)
+                        font.pixelSize: Ui.px(14)
+                        placeholderText: qsTr("Note (batch, amount…)")
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        PosButton {
+                            objectName: "labelsLess"
+                            text: "−"
+                            implicitWidth: 52
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(20)
+                            onClicked: w.count = Math.max(1, w.count - 1)
+                        }
+                        Label {
+                            textFormat: Text.PlainText
+                            objectName: "labelCount"
+                            text: String(w.count)
+                            Layout.preferredWidth: 44
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: Ui.px(20)
+                            font.bold: true
+                        }
+                        PosButton {
+                            objectName: "labelsMore"
+                            text: "+"
+                            implicitWidth: 52
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(20)
+                            onClicked: w.count = Math.min(50, w.count + 1)
+                        }
+                        PosButton {
+                            objectName: "printLabels"
+                            Layout.fillWidth: true
+                            text: qsTr("Print %n label(s)", "", w.count)
+                            highlighted: true
+                            enabled: w.name !== "" && (w.info.printer ?? "") !== ""
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(16)
+                            onClicked: w.pos.printPrepLabels({ ingredient: other.text.trim() === "" ? w.chosen : "",
+                                                               name: other.text.trim(), hours: w.hours, count: w.count,
+                                                               note: note.text })
+                        }
                     }
                     Label {
                         textFormat: Text.PlainText
-                        objectName: "labelCount"
-                        text: String(w.count)
-                        Layout.preferredWidth: 44
-                        horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: Ui.px(20)
-                        font.bold: true
-                    }
-                    PosButton {
-                        objectName: "labelsMore"
-                        text: "+"
-                        implicitWidth: 52
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(20)
-                        onClicked: w.count = Math.min(50, w.count + 1)
-                    }
-                    PosButton {
-                        objectName: "printLabels"
                         Layout.fillWidth: true
-                        text: qsTr("Print %n label(s)", "", w.count)
-                        highlighted: true
-                        enabled: w.name !== "" && (w.info.printer ?? "") !== ""
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(16)
-                        onClicked: w.pos.printPrepLabels({ ingredient: other.text.trim() === "" ? w.chosen : "",
-                                                           name: other.text.trim(), hours: w.hours, count: w.count,
-                                                           note: note.text })
+                        text: (w.info.printer ?? "") !== "" ? qsTr("Prints on %1").arg(w.info.printer)
+                                                           : qsTr("No label printer: set one up in Manager → Printers.")
+                        color: (w.info.printer ?? "") !== "" ? "white" : Ui.warn
+                        opacity: 0.75
+                        font.pixelSize: Ui.px(13)
+                        wrapMode: Text.WordWrap
                     }
+                    Item { Layout.fillHeight: true }
                 }
-                Label {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    text: (w.info.printer ?? "") !== "" ? qsTr("Prints on %1").arg(w.info.printer)
-                                                       : qsTr("No label printer: set one up in Manager → Printers.")
-                    color: (w.info.printer ?? "") !== "" ? "white" : Ui.warn
-                    opacity: 0.75
-                    font.pixelSize: Ui.px(13)
-                    wrapMode: Text.WordWrap
-                }
-                Item { Layout.fillHeight: true }
             }
         }
     }

@@ -13,7 +13,9 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: Math.max(16, Math.min(w.width / 30, 40)) * (zone ? zone.textScale : 1)
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: Math.max(16, Math.min(w.width / 30, 40)) * (zone ? zone.textScale : 1)
     readonly property real tapH: w.zone ? w.zone.touch(64) : 48
 
     readonly property var sale: pos ? pos.returnSale : ({})

@@ -118,7 +118,8 @@ Rectangle {
                     color: "white"
                 }
                 Repeater {
-                    model: g.steps.length
+                    // (Not on a phone: ten dots ran over the title; "Step 3 of 10" says it.)
+                    model: g.narrow ? 0 : g.steps.length
                     delegate: Rectangle {
                         required property int index
                         width: 14; height: 14; radius: 7

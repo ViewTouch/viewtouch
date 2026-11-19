@@ -8,7 +8,9 @@ Item {
     readonly property PosService pos: zone ? zone.pos : null
     readonly property color ink: zone.st.textColor ?? "white"
     readonly property string face: zone.st.font ?? Ui.font
-    readonly property real unit: Math.min(w.height * 0.14, w.width * 0.07)
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: Math.min(w.height * 0.14, w.width * 0.07)
     readonly property int myChecks: {
         if (!pos) return 0
         return pos.openChecks.filter(c => c.mine).length

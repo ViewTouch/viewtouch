@@ -13,7 +13,9 @@ Item {
     readonly property var d: pos ? pos.drawer : ({})
     readonly property string face: zone.st.font ?? Ui.font
     readonly property color ink: zone.st.textColor ?? "white"
-    readonly property real unit: (Math.max(14, Math.min(30, w.width * 0.045))) * Ui.textScale
+    // On a phone, text at least 15 on the screen (ZoneItem.minText).
+    readonly property real unit: Math.max(baseUnit, zone ? zone.minText(15) : 0)
+    readonly property real baseUnit: (Math.max(14, Math.min(30, w.width * 0.045))) * Ui.textScale
     // A phone: its keys a finger tall at least.
     readonly property real tapH: zone ? zone.touch(48) : 0   // a finger tall on any screen
     readonly property bool bank: (d.mode ?? "") === "serverBank"
@@ -50,217 +52,231 @@ Item {
         Text { textFormat: Text.PlainText; text: parent.value; color: parent.tint; font.family: w.face; font.pixelSize: w.unit; font.bold: parent.strong }
     }
 
-    ColumnLayout {
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
         anchors.fill: parent
-        anchors.margins: w.unit * 0.8
-        spacing: w.unit * 0.4
-
-        Text {
-            textFormat: Text.PlainText
-            text: w.d.name ?? qsTr("Drawer 1")
-            color: w.ink
-            font.family: w.face
-            font.pixelSize: w.unit * 1.5
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            text: w.noDrawer ? qsTr("This terminal has no cash drawer")
-                 : !w.d.exists ? (w.bank ? qsTr("Starts with your first cash sale") : qsTr("Not started today"))
-                 : w.d.open ? qsTr("Open since %1 (%2)").arg(w.d.opened).arg(w.d.openedBy)
-                            : qsTr("Counted by %1").arg(w.d.closedBy)
-            color: w.d.open ? "#7ee2a8" : Ui.warn
-            font.family: w.face
-            font.pixelSize: w.unit * 0.85
-        }
+        contentWidth: width
+        contentHeight: Math.max(height, body.implicitHeight + 2 * (w.unit * 0.8))
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
         ColumnLayout {
-            visible: w.d.exists ?? false
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            spacing: w.unit * 0.2
-            Line { name: qsTr("Starting cash"); value: w.d.startingCash ?? "" }
-            Line { visible: !(w.d.blind ?? false); name: qsTr("Cash sales"); value: w.d.cashSales ?? "" }
-            Repeater {
-                model: w.d.movements ?? []
-                delegate: Line {
-                    required property var modelData
-                    name: modelData.what + "  (" + modelData.time + ")"
-                    value: modelData.amount
-                    tint: Ui.textSoft
-                }
-            }
-            Line { visible: !(w.d.blind ?? false); name: w.bank ? qsTr("Cash to turn in") : qsTr("Expected in drawer"); value: w.d.expected ?? ""; strong: true }
-            Line {
-                visible: w.d.blind ?? false
-                name: qsTr("Counted blind: what should be there shows after the count")
-                tint: Ui.textSoft
-            }
-            Repeater {
-                model: w.d.open ? [] : (w.d.countedPieces ?? [])
-                delegate: Line {
-                    required property var modelData
-                    name: "   " + modelData.text
-                    value: modelData.amount
-                    tint: Ui.textSoft
-                }
-            }
-            Line { visible: !w.d.open; name: qsTr("Counted"); value: w.d.counted ?? "" }
-            Line {
-                visible: !w.d.open && !(w.d.hideResult ?? false)
-                name: (w.d.overShortCents ?? 0) < 0 ? qsTr("Short") : (w.d.overShortCents ?? 0) > 0 ? qsTr("Over") : qsTr("Balanced")
-                value: w.d.overShort ?? ""
-                strong: true
-                tint: (w.d.overShortCents ?? 0) === 0 ? "#7ee2a8" : "#ff9a9e"
-            }
-        }
+            id: body
+            x: w.unit * 0.8
+            y: w.unit * 0.8
+            width: scroller.width - 2 * (w.unit * 0.8)
+            height: Math.max(implicitHeight, scroller.height - 2 * (w.unit * 0.8))
+            spacing: w.unit * 0.4
 
-        // Manager: other people's open banks / other terminals' drawers.
-        Text {
-            textFormat: Text.PlainText
-            visible: (w.d.others ?? []).length > 0
-            text: w.bank ? qsTr("Other open banks") : qsTr("Other open drawers")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.8
-        }
-        Repeater {
-            model: w.d.others ?? []
-            delegate: RowLayout {
-                id: other
-                required property var modelData
+            Text {
+                textFormat: Text.PlainText
+                text: w.d.name ?? qsTr("Drawer 1")
+                color: w.ink
+                font.family: w.face
+                font.pixelSize: w.unit * 1.5
+                font.bold: true
+            }
+            Text {
+                textFormat: Text.PlainText
+                text: w.noDrawer ? qsTr("This terminal has no cash drawer")
+                     : !w.d.exists ? (w.bank ? qsTr("Starts with your first cash sale") : qsTr("Not started today"))
+                     : w.d.open ? qsTr("Open since %1 (%2)").arg(w.d.opened).arg(w.d.openedBy)
+                                : qsTr("Counted by %1").arg(w.d.closedBy)
+                color: w.d.open ? "#7ee2a8" : Ui.warn
+                font.family: w.face
+                font.pixelSize: w.unit * 0.85
+            }
+
+            ColumnLayout {
+                visible: w.d.exists ?? false
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(w.unit * 2.2, w.tapH)
                 Layout.fillHeight: false
-                spacing: w.unit * 0.4
-                Text {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    text: other.modelData.name
-                    color: w.ink
-                    font.family: w.face
-                    font.pixelSize: w.unit * 0.9
-                    elide: Text.ElideRight
+                spacing: w.unit * 0.2
+                Line { name: qsTr("Starting cash"); value: w.d.startingCash ?? "" }
+                Line { visible: !(w.d.blind ?? false); name: qsTr("Cash sales"); value: w.d.cashSales ?? "" }
+                Repeater {
+                    model: w.d.movements ?? []
+                    delegate: Line {
+                        required property var modelData
+                        name: modelData.what + "  (" + modelData.time + ")"
+                        value: modelData.amount
+                        tint: Ui.textSoft
+                    }
                 }
-                Text {
-                    textFormat: Text.PlainText
-                    text: other.modelData.expected
-                    color: w.ink
-                    font.family: w.face
-                    font.pixelSize: w.unit * 0.9
+                Line { visible: !(w.d.blind ?? false); name: w.bank ? qsTr("Cash to turn in") : qsTr("Expected in drawer"); value: w.d.expected ?? ""; strong: true }
+                Line {
+                    visible: w.d.blind ?? false
+                    name: qsTr("Counted blind: what should be there shows after the count")
+                    tint: Ui.textSoft
+                }
+                Repeater {
+                    model: w.d.open ? [] : (w.d.countedPieces ?? [])
+                    delegate: Line {
+                        required property var modelData
+                        name: "   " + modelData.text
+                        value: modelData.amount
+                        tint: Ui.textSoft
+                    }
+                }
+                Line { visible: !w.d.open; name: qsTr("Counted"); value: w.d.counted ?? "" }
+                Line {
+                    visible: !w.d.open && !(w.d.hideResult ?? false)
+                    name: (w.d.overShortCents ?? 0) < 0 ? qsTr("Short") : (w.d.overShortCents ?? 0) > 0 ? qsTr("Over") : qsTr("Balanced")
+                    value: w.d.overShort ?? ""
+                    strong: true
+                    tint: (w.d.overShortCents ?? 0) === 0 ? "#7ee2a8" : "#ff9a9e"
+                }
+            }
+
+            // Manager: other people's open banks / other terminals' drawers.
+            Text {
+                textFormat: Text.PlainText
+                visible: (w.d.others ?? []).length > 0
+                text: w.bank ? qsTr("Other open banks") : qsTr("Other open drawers")
+                color: Ui.muted
+                font.family: w.face
+                font.pixelSize: w.unit * 0.8
+            }
+            Repeater {
+                model: w.d.others ?? []
+                delegate: RowLayout {
+                    id: other
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(w.unit * 2.2, w.tapH)
+                    Layout.fillHeight: false
+                    spacing: w.unit * 0.4
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: other.modelData.name
+                        color: w.ink
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.9
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        text: other.modelData.expected
+                        color: w.ink
+                        font.family: w.face
+                        font.pixelSize: w.unit * 0.9
+                    }
+                    WidgetKey {
+                        Layout.preferredWidth: w.unit * 5
+                        Layout.fillHeight: true
+                        text: qsTr("Count")
+                        fontScale: 0.4
+                        onClicked: w.count(other.modelData.id, other.modelData.name)
+                    }
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: w.noDrawer ? qsTr("Take cash on a terminal with a drawer, or have a manager give you your own bank (Manager → Employees → Cash handling).")
+                     : w.bank ? (w.d.open ? qsTr("At the end of your shift, touch Check Out and count your cash bill by bill (or type the total on the keypad first).")
+                                         : qsTr("Cash you take goes in your bank. To start with cash on hand, type it, then Start Bank."))
+                             : w.d.open ? qsTr("At the end of the shift, touch Count Drawer and count the cash bill by bill (or type the total on the keypad first).")
+                                        : qsTr("Type the starting cash on the keypad, then Start Drawer.")
+                color: Ui.muted
+                font.family: w.face
+                font.pixelSize: w.unit * 0.8
+            }
+            Text {
+                textFormat: Text.PlainText
+                visible: w.pos && w.pos.entry !== ""
+                text: qsTr("Entered: %1").arg(w.pos ? w.pos.entryAmount : "")
+                color: Ui.warn
+                font.family: w.face
+                font.pixelSize: w.unit
+            }
+            Text {
+                textFormat: Text.PlainText
+                visible: (w.d.open ?? false) && w.pos && w.pos.textEntry !== ""
+                text: qsTr("Reason: %1").arg(w.pos ? w.pos.textEntry : "")
+                color: Ui.warn
+                font.family: w.face
+                font.pixelSize: w.unit * 0.8
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+            }
+            RowLayout {
+                visible: !w.noDrawer
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
+                Layout.fillHeight: false   // nested layouts fill by default
+                spacing: w.unit * 0.4
+                layoutDirection: w.zone.keyOrder("drawer", ["drawer", "noSale"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: w.zone.keyShown("drawer")
+                    text: w.bank ? (w.d.open ? qsTr("Check Out") : qsTr("Start Bank"))
+                                 : w.d.open ? qsTr("Count Drawer") : qsTr("Start Drawer")
+                    accent: true
+                    fontScale: 0.34
+                    onClicked: w.d.open ? w.count(0, w.d.name ?? "") : w.pos.openDrawerSession()
                 }
                 WidgetKey {
-                    Layout.preferredWidth: w.unit * 5
+                    visible: !w.bank && w.zone.keyShown("noSale")   // server banks: no drawer to open
+                    Layout.fillWidth: true
                     Layout.fillHeight: true
-                    text: qsTr("Count")
-                    fontScale: 0.4
-                    onClicked: w.count(other.modelData.id, other.modelData.name)
+                    text: w.zone.keyText("noSale", qsTr("No Sale"))
+                    fontScale: 0.34
+                    onClicked: w.pos.noSale()
                 }
             }
-        }
-
-        Item { Layout.fillHeight: true }
-
-        Text {
-            textFormat: Text.PlainText
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: w.noDrawer ? qsTr("Take cash on a terminal with a drawer, or have a manager give you your own bank (Manager → Employees → Cash handling).")
-                 : w.bank ? (w.d.open ? qsTr("At the end of your shift, touch Check Out and count your cash bill by bill (or type the total on the keypad first).")
-                                     : qsTr("Cash you take goes in your bank. To start with cash on hand, type it, then Start Bank."))
-                         : w.d.open ? qsTr("At the end of the shift, touch Count Drawer and count the cash bill by bill (or type the total on the keypad first).")
-                                    : qsTr("Type the starting cash on the keypad, then Start Drawer.")
-            color: Ui.muted
-            font.family: w.face
-            font.pixelSize: w.unit * 0.8
-        }
-        Text {
-            textFormat: Text.PlainText
-            visible: w.pos && w.pos.entry !== ""
-            text: qsTr("Entered: %1").arg(w.pos ? w.pos.entryAmount : "")
-            color: Ui.warn
-            font.family: w.face
-            font.pixelSize: w.unit
-        }
-        Text {
-            textFormat: Text.PlainText
-            visible: (w.d.open ?? false) && w.pos && w.pos.textEntry !== ""
-            text: qsTr("Reason: %1").arg(w.pos ? w.pos.textEntry : "")
-            color: Ui.warn
-            font.family: w.face
-            font.pixelSize: w.unit * 0.8
-            Layout.fillWidth: true
-            elide: Text.ElideRight
-        }
-        RowLayout {
-            visible: !w.noDrawer
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
-            Layout.fillHeight: false   // nested layouts fill by default
-            spacing: w.unit * 0.4
-            layoutDirection: w.zone.keyOrder("drawer", ["drawer", "noSale"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight
-            WidgetKey {
+            // Manager: what a pay out is for (Store Settings: expense categories).
+            Flow {
+                visible: (w.d.open ?? false) && w.pos !== null && w.pos.can("manager") && (w.d.categories ?? []).length > 0
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                visible: w.zone.keyShown("drawer")
-                text: w.bank ? (w.d.open ? qsTr("Check Out") : qsTr("Start Bank"))
-                             : w.d.open ? qsTr("Count Drawer") : qsTr("Start Drawer")
-                accent: true
-                fontScale: 0.34
-                onClicked: w.d.open ? w.count(0, w.d.name ?? "") : w.pos.openDrawerSession()
-            }
-            WidgetKey {
-                visible: !w.bank && w.zone.keyShown("noSale")   // server banks: no drawer to open
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                text: w.zone.keyText("noSale", qsTr("No Sale"))
-                fontScale: 0.34
-                onClicked: w.pos.noSale()
-            }
-        }
-        // Manager: what a pay out is for (Store Settings: expense categories).
-        Flow {
-            visible: (w.d.open ?? false) && w.pos !== null && w.pos.can("manager") && (w.d.categories ?? []).length > 0
-            Layout.fillWidth: true
-            spacing: w.unit * 0.3
-            Repeater {
-                model: w.d.categories ?? []
-                delegate: WidgetKey {
-                    required property var modelData
-                    objectName: "expense-" + modelData.name
-                    width: w.unit * 6
-                    height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
-                    text: modelData.name
-                    fontScale: 0.32
-                    baseColor: modelData.chosen ? Ui.accent : Ui.key
-                    onClicked: w.pos.setExpenseCategory(modelData.name)
+                spacing: w.unit * 0.3
+                Repeater {
+                    model: w.d.categories ?? []
+                    delegate: WidgetKey {
+                        required property var modelData
+                        objectName: "expense-" + modelData.name
+                        width: w.unit * 6
+                        height: Math.max(w.unit * 2.2, w.zone ? w.zone.touch(48) : 0)
+                        text: modelData.name
+                        fontScale: 0.32
+                        baseColor: modelData.chosen ? Ui.accent : Ui.key
+                        onClicked: w.pos.setExpenseCategory(modelData.name)
+                    }
                 }
             }
-        }
-        // Manager: cash taken out (vendor, ice…) or put in (change). The
-        // reason comes from the Reason… keyboard page when typed.
-        RowLayout {
-            visible: w.d.open ?? false
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
-            Layout.fillHeight: false
-            spacing: w.unit * 0.4
-            layoutDirection: w.zone.keyOrder("payOut", ["payOut", "paidIn"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight
-            WidgetKey {
+            // Manager: cash taken out (vendor, ice…) or put in (change). The
+            // reason comes from the Reason… keyboard page when typed.
+            RowLayout {
+                visible: w.d.open ?? false
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                visible: w.zone.keyShown("payOut")
-                text: w.zone.keyText("payOut", qsTr("Pay Out"))
-                fontScale: 0.34
-                onClicked: w.pos.payout("payout")
-            }
-            WidgetKey {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                visible: w.zone.keyShown("paidIn")
-                text: w.zone.keyText("paidIn", qsTr("Paid In"))
-                fontScale: 0.34
-                onClicked: w.pos.payout("paidIn")
+                Layout.preferredHeight: Math.max(w.unit * 3, w.tapH)
+                Layout.fillHeight: false
+                spacing: w.unit * 0.4
+                layoutDirection: w.zone.keyOrder("payOut", ["payOut", "paidIn"]) === 1 ? Qt.RightToLeft : Qt.LeftToRight
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: w.zone.keyShown("payOut")
+                    text: w.zone.keyText("payOut", qsTr("Pay Out"))
+                    fontScale: 0.34
+                    onClicked: w.pos.payout("payout")
+                }
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: w.zone.keyShown("paidIn")
+                    text: w.zone.keyText("paidIn", qsTr("Paid In"))
+                    fontScale: 0.34
+                    onClicked: w.pos.payout("paidIn")
+                }
             }
         }
     }

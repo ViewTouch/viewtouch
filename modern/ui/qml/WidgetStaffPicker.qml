@@ -6,6 +6,8 @@ import QtQuick.Controls.Fusion
 Item {
     id: w
     property ZoneItem zone
+    // Page pixels, bigger on a phone (ZoneItem.phoneText).
+    function px(n) { return Ui.px(n) * (zone ? zone.phoneText : 1) }
     readonly property PosService pos: zone ? zone.pos : null
     readonly property string face: zone.st.font ?? Ui.font
     readonly property var people: {
@@ -20,7 +22,7 @@ Item {
         clip: true
         readonly property int columns: Math.max(1, Math.floor((width - gridBar.width - 4) / 360))
         cellWidth: (width - gridBar.room) / columns
-        cellHeight: 150
+        cellHeight: w.px(150)
         model: w.people
         ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * (150) > grid.height }
         delegate: Item {
@@ -45,7 +47,7 @@ Item {
                     text: cell.modelData.name
                     color: "white"
                     font.family: w.face
-                    font.pixelSize: Ui.px(30)
+                    font.pixelSize: w.px(30)
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -56,7 +58,7 @@ Item {
                     text: (w.pos ? w.pos.roleName(cell.modelData.role) : cell.modelData.role) + (cell.modelData.clockedIn ? qsTr(" · on the clock") : "")
                     color: Ui.textSoft
                     font.family: w.face
-                    font.pixelSize: Ui.px(20)
+                    font.pixelSize: w.px(20)
                 }
             }
             TapHandler {
@@ -75,7 +77,7 @@ Item {
             text: qsTr("Nobody else is set up")
             color: Ui.muted
             font.family: w.face
-            font.pixelSize: Ui.px(28)
+            font.pixelSize: w.px(28)
         }
     }
 }

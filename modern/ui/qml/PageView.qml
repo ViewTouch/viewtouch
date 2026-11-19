@@ -12,16 +12,39 @@ Item {
     property string selectedZoneId: ""
 
     readonly property size canvas: controller.canvasSize
-    readonly property real scaleFactor: Math.min(width / canvas.width, height / canvas.height)
+    // A phone page longer than the screen (a long Manager page, a 19.5:9
+    // phone's page on a 16:9 Stripe reader): as wide as the screen, and it
+    // scrolls, instead of shrinking under the finger with bands at the sides.
+    readonly property bool scrolls: !editing && controller.formFactor === "phone" && canvas.width > 0
+                                    && canvas.height * width / canvas.width > height + 1
+    readonly property real scaleFactor: scrolls ? width / canvas.width
+                                                : Math.min(width / canvas.width, height / canvas.height)
     readonly property var bg: controller.background
 
     Connections {
         target: view.controller
-        function onPageChanged() { view.selectedZoneId = "" }
+        function onPageChanged() {
+            view.selectedZoneId = ""
+            if (view.controller.pageId !== flick.lastPage) {   // another page: from its top
+                flick.lastPage = view.controller.pageId
+                flick.contentY = 0
+            }
+        }
     }
 
     // The page at canvas size (the editor's Preview shows it on other screens).
     readonly property Item surfaceItem: surface
+
+    Flickable {
+        id: flick
+        objectName: "pageScroll"
+        property string lastPage
+        anchors.fill: parent
+        interactive: view.scrolls
+        contentWidth: width
+        contentHeight: view.scrolls ? view.canvas.height * view.scaleFactor : height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: view.scrolls
 
     Item {
         id: surface
@@ -31,7 +54,7 @@ Item {
         scale: view.scaleFactor
         transformOrigin: Item.TopLeft
         x: (view.width - width * scale) / 2
-        y: (view.height - height * scale) / 2
+        y: view.scrolls ? 0 : (view.height - height * scale) / 2
         clip: true
 
         Rectangle {
@@ -85,6 +108,20 @@ Item {
             controller: view.controller
             scaleFactor: view.scaleFactor
         }
+    }
+    }
+
+    // Where it is on a page that scrolls.
+    Rectangle {
+        visible: view.scrolls
+        anchors.right: parent.right
+        anchors.rightMargin: 3
+        width: 5
+        radius: 2.5
+        color: "#80ffffff"
+        y: flick.visibleArea.yPosition * view.height
+        height: Math.max(24, flick.visibleArea.heightRatio * view.height)
+        opacity: flick.moving ? 0.9 : 0.45
     }
 
     // Canvas boundary while editing.

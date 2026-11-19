@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 // A message from another screen ("86 salmon", "need a runner"), across the
 // top of the screens it's for until someone here touches OK. A phone
-// (compact): one line, the page moved down under it rather than covered.
+// (compact): up to two lines, the page moved down under it rather than covered.
 Rectangle {
     id: banner
     property PosService pos
@@ -41,7 +41,7 @@ Rectangle {
     }
 
     visible: shown !== null
-    height: visible ? (compact ? 48 : 74) : 0
+    height: visible ? (compact ? Math.max(48, compactText.implicitHeight + 14) : 74) : 0
     color: ready ? Ui.go : Ui.accent
     border.color: "white"
     border.width: 2
@@ -52,8 +52,11 @@ Rectangle {
         anchors.rightMargin: 10
         spacing: 14
         Text {
+            id: compactText
             visible: banner.compact
             Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
             // What they typed, as typed (escaped), after who sent it in bold.
             text: banner.shown ? "<b>" + Qt.escapeHtml(String(banner.shown.from)) + ":</b> "
                                  + Qt.escapeHtml(String(banner.shown.text)) : ""

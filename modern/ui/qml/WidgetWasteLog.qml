@@ -52,186 +52,198 @@ Item {
 
     readonly property bool narrow: zone ? zone.narrow : false
     readonly property real zoom: zone ? zone.formZoom(narrow ? 460 : 900) : 1.4
-    Item {
-        width: w.width / w.zoom
-        height: w.height / w.zoom
-        scale: w.zoom
-        transformOrigin: Item.TopLeft
+    // A phone's bigger text can need more room than the panel has: then it scrolls.
+    Flickable {
+        id: scroller
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: Math.max(height, (form.implicitHeight + 40) * w.zoom)
+        interactive: contentHeight > height + 1
+        boundsBehavior: Flickable.StopAtBounds
+        clip: interactive
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 14
+        Item {
+            width: w.width / w.zoom
+            height: scroller.contentHeight / w.zoom
+            scale: w.zoom
+            transformOrigin: Item.TopLeft
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 8
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    PosButton {
-                        objectName: "wasteItems"
-                        text: qsTr("Menu item")
-                        checkable: true
-                        checked: !w.byIngredient
-                        highlighted: checked
-                        implicitHeight: w.fingers(46)
-                        font.pixelSize: Ui.px(15)
-                        onClicked: w.byIngredient = false
-                    }
-                    PosButton {
-                        objectName: "wasteIngredients"
-                        text: qsTr("Ingredient")
-                        checkable: true
-                        checked: w.byIngredient
-                        highlighted: checked
-                        implicitHeight: w.fingers(46)
-                        font.pixelSize: Ui.px(15)
-                        onClicked: w.byIngredient = true
-                    }
-                    FindField {
-                        objectName: "wasteSearch"
-                        Layout.fillWidth: true
-                        implicitHeight: w.fingers(46)
-                        font.pixelSize: Ui.px(15)
-                        placeholderText: qsTr("Find…")
-                        onEdited: typed => w.search = typed
-                    }
-                }
-                GridView {
-                    id: grid
+            RowLayout {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 14
+
+                ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumHeight: 100
-                    clip: true
-                    readonly property int columns: Math.max(2, Math.floor(width / 170))
-                    cellWidth: (width - gridBar.room) / columns
-                    cellHeight: w.fingers(52) + 6   // its buttons a finger tall
-                    model: shown
-                    // From the rows, not contentHeight (that follows cellWidth: a loop).
-                    ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * grid.cellHeight > grid.height + 1 }
-                    delegate: PosButton {
-                        required property var modelData
-                        objectName: "waste-" + modelData.id
-                        width: grid.cellWidth - 6
-                        height: grid.cellHeight - 6
-                        text: qsTranslate("Data", String(modelData.name ?? ""))
-                        lines: 2
-                        checkable: true
-                        checked: w.chosen === modelData.id
-                        highlighted: checked
-                        font.pixelSize: Ui.px(14)
-                        onClicked: w.chosen = modelData.id
-                    }
-                }
-                Flow {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    Repeater {
-                        model: w.info.reasons ?? []
-                        delegate: PosButton {
-                            required property string modelData
-                            required property int index
-                            objectName: "wasteReason-" + index
-                            text: modelData
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        PosButton {
+                            objectName: "wasteItems"
+                            text: qsTr("Menu item")
                             checkable: true
-                            checked: w.reason === modelData
+                            checked: !w.byIngredient
                             highlighted: checked
-                            implicitHeight: w.fingers(44)
-                            font.pixelSize: Ui.px(14)
-                            onClicked: w.reason = modelData
+                            implicitHeight: w.fingers(46)
+                            font.pixelSize: Ui.px(15)
+                            onClicked: w.byIngredient = false
+                        }
+                        PosButton {
+                            objectName: "wasteIngredients"
+                            text: qsTr("Ingredient")
+                            checkable: true
+                            checked: w.byIngredient
+                            highlighted: checked
+                            implicitHeight: w.fingers(46)
+                            font.pixelSize: Ui.px(15)
+                            onClicked: w.byIngredient = true
+                        }
+                        FindField {
+                            objectName: "wasteSearch"
+                            Layout.fillWidth: true
+                            implicitHeight: w.fingers(46)
+                            font.pixelSize: Ui.px(15)
+                            placeholderText: qsTr("Find…")
+                            onEdited: typed => w.search = typed
                         }
                     }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    Label { textFormat: Text.PlainText; text: qsTr("How much"); font.pixelSize: Ui.px(15) }
-                    PosButton {
-                        objectName: "wasteLess"
-                        text: "−"
-                        implicitWidth: 52
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(20)
-                        onClicked: qty.text = String(Math.max(1, (Number(qty.text) || 1) - 1))
-                    }
-                    TextField {
-                        id: qty
-                        objectName: "wasteQty"
-                        text: "1"
-                        implicitWidth: 100
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(18)
-                        horizontalAlignment: Text.AlignHCenter
-                        inputMethodHints: Qt.ImhDecimalNumbersOnly
-                    }
-                    PosButton {
-                        objectName: "wasteMore"
-                        text: "+"
-                        implicitWidth: 52
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(20)
-                        onClicked: qty.text = String((Number(qty.text) || 0) + 1)
-                    }
-                    Label { textFormat: Text.PlainText; text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: Ui.px(15) }
-                    PosButton {
-                        objectName: "logWaste"
+                    GridView {
+                        id: grid
                         Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        text: w.chosenOne ? qsTr("Log Waste: %1 %2").arg(qty.text).arg(w.chosenOne.name) : qsTr("Log Waste")
-                        highlighted: true
-                        enabled: w.chosen !== "" && w.reason !== "" && Number(qty.text) > 0
-                        implicitHeight: w.fingers(48)
-                        font.pixelSize: Ui.px(17)
-                        onClicked: w.log()
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 100
+                        clip: true
+                        readonly property int columns: Math.max(2, Math.floor(width / 170))
+                        cellWidth: (width - gridBar.room) / columns
+                        cellHeight: w.fingers(52) + 6   // its buttons a finger tall
+                        model: shown
+                        // From the rows, not contentHeight (that follows cellWidth: a loop).
+                        ScrollBar.vertical: TouchScrollBar { id: gridBar; needed: Math.ceil(grid.count / grid.columns) * grid.cellHeight > grid.height + 1 }
+                        delegate: PosButton {
+                            required property var modelData
+                            objectName: "waste-" + modelData.id
+                            width: grid.cellWidth - 6
+                            height: grid.cellHeight - 6
+                            text: qsTranslate("Data", String(modelData.name ?? ""))
+                            lines: 2
+                            checkable: true
+                            checked: w.chosen === modelData.id
+                            highlighted: checked
+                            font.pixelSize: Ui.px(14)
+                            onClicked: w.chosen = modelData.id
+                        }
+                    }
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Repeater {
+                            model: w.info.reasons ?? []
+                            delegate: PosButton {
+                                required property string modelData
+                                required property int index
+                                objectName: "wasteReason-" + index
+                                text: modelData
+                                checkable: true
+                                checked: w.reason === modelData
+                                highlighted: checked
+                                implicitHeight: w.fingers(44)
+                                font.pixelSize: Ui.px(14)
+                                onClicked: w.reason = modelData
+                            }
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Label { textFormat: Text.PlainText; text: qsTr("How much"); font.pixelSize: Ui.px(15) }
+                        PosButton {
+                            objectName: "wasteLess"
+                            text: "−"
+                            implicitWidth: 52
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(20)
+                            onClicked: qty.text = String(Math.max(1, (Number(qty.text) || 1) - 1))
+                        }
+                        TextField {
+                            id: qty
+                            objectName: "wasteQty"
+                            text: "1"
+                            implicitWidth: 100
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(18)
+                            horizontalAlignment: Text.AlignHCenter
+                            inputMethodHints: Qt.ImhDecimalNumbersOnly
+                        }
+                        PosButton {
+                            objectName: "wasteMore"
+                            text: "+"
+                            implicitWidth: 52
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(20)
+                            onClicked: qty.text = String((Number(qty.text) || 0) + 1)
+                        }
+                        Label { textFormat: Text.PlainText; text: w.byIngredient && w.chosenOne ? w.chosenOne.unit : ""; font.pixelSize: Ui.px(15) }
+                        PosButton {
+                            objectName: "logWaste"
+                            Layout.fillWidth: true
+                            Layout.leftMargin: 12
+                            text: w.chosenOne ? qsTr("Log Waste: %1 %2").arg(qty.text).arg(w.chosenOne.name) : qsTr("Log Waste")
+                            highlighted: true
+                            enabled: w.chosen !== "" && w.reason !== "" && Number(qty.text) > 0
+                            implicitHeight: w.fingers(48)
+                            font.pixelSize: Ui.px(17)
+                            onClicked: w.log()
+                        }
                     }
                 }
-            }
 
-            ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
+                ToolSeparator { Layout.fillHeight: true; visible: !w.narrow }
 
-            ColumnLayout {
-                visible: !w.narrow
-                Layout.preferredWidth: parent.width * 0.32
-                Layout.fillWidth: false
-                Layout.fillHeight: true
-                spacing: 6
-                Label { textFormat: Text.PlainText; text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: Ui.px(17) }
-                ListView {
-                    id: today
-                    Layout.fillWidth: true
+                ColumnLayout {
+                    visible: !w.narrow
+                    Layout.preferredWidth: parent.width * 0.32
+                    Layout.fillWidth: false
                     Layout.fillHeight: true
-                    clip: true
                     spacing: 6
-                    model: w.info.today ?? []
-                    ScrollBar.vertical: TouchScrollBar { id: todayBar; needed: today.contentHeight > today.height + 1 }
-                    delegate: ColumnLayout {
-                        required property var modelData
-                        width: ListView.view.width - todayBar.room
-                        spacing: 0
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: modelData.qty + " " + modelData.what + "  ·  " + modelData.value
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Label {
-                            textFormat: Text.PlainText
-                            Layout.fillWidth: true
-                            text: modelData.when + "  ·  " + modelData.reason + "  ·  " + modelData.by
-                            opacity: 0.6
-                            font.pixelSize: Ui.px(12)
-                            elide: Text.ElideRight
+                    Label { textFormat: Text.PlainText; text: qsTr("Thrown away today"); font.bold: true; font.pixelSize: Ui.px(17) }
+                    ListView {
+                        id: today
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        spacing: 6
+                        model: w.info.today ?? []
+                        ScrollBar.vertical: TouchScrollBar { id: todayBar; needed: today.contentHeight > today.height + 1 }
+                        delegate: ColumnLayout {
+                            required property var modelData
+                            width: ListView.view.width - todayBar.room
+                            spacing: 0
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: modelData.qty + " " + modelData.what + "  ·  " + modelData.value
+                                font.bold: true
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: modelData.when + "  ·  " + modelData.reason + "  ·  " + modelData.by
+                                opacity: 0.6
+                                font.pixelSize: Ui.px(12)
+                                elide: Text.ElideRight
+                            }
                         }
                     }
-                }
-                Label {
-                    textFormat: Text.PlainText
-                    visible: (w.info.today ?? []).length === 0
-                    text: qsTr("Nothing thrown away today.")
-                    opacity: 0.6
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: (w.info.today ?? []).length === 0
+                        text: qsTr("Nothing thrown away today.")
+                        opacity: 0.6
+                    }
                 }
             }
         }

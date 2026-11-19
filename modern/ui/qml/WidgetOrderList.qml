@@ -123,6 +123,17 @@ Item {
                 minimumPixelSize: Math.round(font.pixelSize * 0.7)
                 elide: Text.ElideRight
             }
+            // Folded (a phone): the total up here, so the room below is the lines'.
+            Text {
+                textFormat: Text.PlainText
+                objectName: "foldedTotal"
+                visible: w.folded
+                text: w.totals.total ?? ""
+                color: w.ink
+                font.family: w.face
+                font.pixelSize: w.unit * 1.2
+                font.bold: true
+            }
             // The table's reminder (nothing ordered, time to check back): touched, it starts again.
             WidgetKey {
                 objectName: "checkedOn"
@@ -423,6 +434,7 @@ Item {
             readonly property int seatCount: Math.max(guests, highest, current)   // (not "count": a list's own)
             visible: w.controls && w.pos !== null && w.pos.hasCheck && w.zone.keyShown("seat")
                      && (guests > 0 || current > 0 || highest > 0)
+                     && (!w.folded || w.check.type === "dineIn")   // folded: a takeout's room is its lines
             Layout.fillWidth: true
             Layout.preferredHeight: chip
             readonly property real chip: Math.max(w.unit * 1.5, w.zone.touch(48))
@@ -555,6 +567,7 @@ Item {
 
         ListView {
             id: list
+            objectName: "checkLines"
             ScrollBar.vertical: TouchScrollBar { id: listBar }
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -563,7 +576,11 @@ Item {
             // Only the lines that changed are drawn again (an item added to a
             // long check doesn't redo the others).
             model: LiveList { rows: w.pos ? w.pos.lines : [] }
-            onCountChanged: positionViewAtEnd()
+            // The newest line in view: once it's laid out too (a new line is
+            // the chosen one, a row of keys taller), and when the check gets
+            // shorter or taller (a phone's folded check).
+            onCountChanged: { positionViewAtEnd(); Qt.callLater(positionViewAtEnd) }
+            onHeightChanged: Qt.callLater(positionViewAtEnd)
 
             delegate: Rectangle {
                 id: row
@@ -908,11 +925,12 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Ui.line; visible: w.pos && w.pos.hasCheck }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Ui.line; visible: w.pos && w.pos.hasCheck && (!w.folded || w.paid) }
 
         GridLayout {
             Layout.fillWidth: true
-            visible: w.pos && w.pos.hasCheck
+            // Folded: the total is in the top row (what's paid and due still shows here).
+            visible: w.pos && w.pos.hasCheck && (!w.folded || w.paid)
             columns: 2
             rowSpacing: 0
 
@@ -934,8 +952,8 @@ Item {
             Cell { text: w.totals.tax ?? ""; visible: !w.folded }
             Cell { text: qsTr("Gratuity %1%").arg(w.totals.gratuityPercent ?? 0); visible: (w.totals.hasGratuity ?? false) && !w.folded; Layout.fillWidth: true }
             Cell { text: w.totals.gratuity ?? ""; visible: (w.totals.hasGratuity ?? false) && !w.folded }
-            Cell { text: qsTr("Total"); strong: true; Layout.fillWidth: true }
-            Cell { text: w.totals.total ?? ""; strong: true }
+            Cell { text: qsTr("Total"); strong: true; visible: !w.folded; Layout.fillWidth: true }
+            Cell { text: w.totals.total ?? ""; strong: true; visible: !w.folded }
             Cell { text: qsTr("Paid"); visible: w.paid; Layout.fillWidth: true }
             Cell { text: w.totals.paid ?? ""; visible: w.paid }
             Cell { text: qsTr("Balance due"); visible: w.paid; Layout.fillWidth: true }

@@ -30,7 +30,9 @@ Item {
     readonly property string face: zone.st.font ?? Ui.font
     // This screen's text size (Terminals: Text size), or the person's: the
     // tickets grow with it.
-    readonly property real k: zone ? zone.textScale : 1
+    // On a phone its 22-pixel lines at least 15 on the screen (ZoneItem.minText):
+    // a ticket about the screen's width, the columns side by side to swipe.
+    readonly property real k: zone ? zone.textScale * Math.max(1, zone.minText(15) / 22) : 1
     property real now: Date.now()
     // Header buttons and title fit a narrow screen (two or three stations side by side).
     readonly property real keyWidth: Math.max(96, Math.min(240, width * 0.12))

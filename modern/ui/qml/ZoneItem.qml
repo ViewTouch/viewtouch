@@ -40,14 +40,26 @@ Item {
     // Form widgets lay out desktop-sized controls (25 px) and scale them by
     // this: big enough for a finger (48 screen px), unless the content would
     // then be narrower than `minWidth` (or shorter than `minHeight`) canvas units.
-    // Taller than wide (a phone held upright): widgets stack their parts.
-    readonly property bool narrow: width < height * 0.9
+    // Taller than wide (a phone held upright), or on a phone at all (a wide,
+    // short panel there is still a phone's width): widgets stack their parts.
+    readonly property bool narrow: width < height * 0.9 || onPhone
     function formZoom(minWidth, minHeight) {
         const touch = 50 / (25 * Math.max(0.1, screenScale))   // (fields came out 44 at 46)
-        return Math.max(1, Math.min(touch, width / minWidth, minHeight ? height / minHeight : touch))
+        // A phone: as wide as its upright forms are made (380), so the text
+        // reads at a phone's size whatever the form asks for.
+        const wide = onPhone ? Math.min(minWidth, 380) : minWidth
+        return Math.max(1, Math.min(touch, width / wide, minHeight ? height / minHeight : touch))
     }
     // Canvas units for `px` screen pixels: keys at least a finger tall.
     function touch(px) { return px / Math.max(0.1, screenScale) }
+    // On a phone, text at least `px` on the screen (a page made for a
+    // 1920-wide screen, and the style's sizes, come out a third of that on a
+    // phone's 1080-wide page). Elsewhere 0: tablets and registers as they were.
+    readonly property bool onPhone: !editing && !!controller && controller.formFactor === "phone"
+    function minText(px) { return onPhone ? touch(px) : 0 }
+    // For a panel sized in page pixels (Ui.px) with body text about 20: what
+    // makes that 15 on a phone's screen. 1 elsewhere.
+    readonly property real phoneText: onPhone ? Math.max(1, touch(15) / 20) : 1
     property LayoutController controller
     property PosService pos
     // The logged-in person's text size (Employees: Text size); never while editing.
@@ -293,10 +305,10 @@ Item {
         verticalAlignment: Text.AlignVCenter
         wrapMode: Text.WordWrap
         fontSizeMode: Text.Fit
-        minimumPixelSize: 10
+        minimumPixelSize: Math.max(10, zone.minText(11))
         color: zone.ink
         font.family: zone.st.font ?? Ui.font
-        font.pixelSize: (zone.st.fontSize ?? 28) * zone.textScale
+        font.pixelSize: Math.max(zone.st.fontSize ?? 28, zone.minText(zone.kind === "label" ? 15 : 16)) * zone.textScale
         font.bold: zone.st.bold ?? true
         // The zone's own text effect (the editor's Text effect), else the
         // store's, the screen's or the person's (Ui.textStyle).

@@ -50,8 +50,10 @@ Item {
         objectName: "noteField"
         visible: w.phone
         anchors { left: parent.left; right: parent.right; top: parent.top; margins: 8 }
-        height: Math.max(48, w.height * 0.25)
-        font.pixelSize: Ui.px(18)
+        // Readable, and a finger tall, on the phone's own screen (a page
+        // pixel is a third of one there).
+        height: Math.max(48, w.zone.touch(52), w.height * 0.25)
+        font.pixelSize: Math.max(Ui.px(18), w.zone.minText(18))
         placeholderText: w.hint
         // Qt 6.12: a phone held sideways keeps the page in view, not a
         // full-screen box over it.
