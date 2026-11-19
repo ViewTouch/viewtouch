@@ -1,5 +1,4 @@
 import QtQuick
-import Qt.labs.lottieqt
 
 // A store's picture on a guest's screen (a slide, the kiosk's welcome): an
 // animated GIF or WebP plays (AnimatedImage, which reads it from its file),
@@ -27,23 +26,16 @@ Item {
         fillMode: pic.fillMode
         playing: visible && !Ui.reduceMotion
     }
-    // A Lottie animation draws at its own size: scaled to fit (or fill) here.
-    Item {
+    // A Lottie animation (LottiePicture.qml: Qt's Lottie module is only
+    // needed when one is shown).
+    Loader {
         anchors.fill: parent
-        clip: pic.fillMode === Image.PreserveAspectCrop
+        active: pic.lottie
         visible: pic.lottie
-        LottieAnimation {
-            id: lottie
-            objectName: "lottiePicture"
-            anchors.centerIn: parent
-            source: pic.lottie ? pic.source : ""
-            loops: LottieAnimation.Infinite
-            autoPlay: !Ui.reduceMotion
-            readonly property real fit: width > 0 && height > 0
-                ? (pic.fillMode === Image.PreserveAspectCrop ? Math.max(parent.width / width, parent.height / height)
-                                                              : Math.min(parent.width / width, parent.height / height))
-                : 1
-            scale: fit
+        source: "LottiePicture.qml"
+        onLoaded: {
+            item.source = Qt.binding(() => pic.source)
+            item.fillMode = Qt.binding(() => pic.fillMode)
         }
     }
 }

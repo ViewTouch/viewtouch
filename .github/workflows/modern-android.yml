@@ -50,7 +50,11 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y ninja-build
           python3 -m pip install --user aqtinstall
-          python3 -m aqt install-qt all_os android "${QT_VERSION}" ${{ matrix.qt_arch }} -O "$HOME/Qt" --autodesktop
+          # The add-ons the screens use, as tools/get-qt.sh fetches for the
+          # computers: Lottie (and the Quick Timeline it plays with), and
+          # image formats (WebP pictures).
+          python3 -m aqt install-qt all_os android "${QT_VERSION}" ${{ matrix.qt_arch }} -O "$HOME/Qt" --autodesktop \
+            -m qtlottie qtquicktimeline qtimageformats
           echo "QT_ANDROID=$HOME/Qt/${QT_VERSION}/${{ matrix.qt_arch }}" >> "$GITHUB_ENV"
           echo "QT_HOST=$(dirname "$(dirname "$(find "$HOME/Qt/${QT_VERSION}" -path '*gcc_64/bin/qmake' -o -path '*gcc_64/bin/qtpaths' | head -1)")")" >> "$GITHUB_ENV"
 
@@ -91,6 +95,12 @@ jobs:
             -DQT_ANDROID_SIGN_APK=ON \
             -DVTM_BUILD_TESTS=OFF
           cmake --build build-android --target apk
+          # Every Qt QML module the screens import is in this Qt (a missing
+          # one, and the app closed as it opened the store's pages).
+          for module in $(sed -n 's/.*RELATIVEPATH;\([^;]*\);TYPE;module.*/\1/p' build-android/.qt/qml_imports/*_build.cmake | sort -u); do
+            case "$module" in ViewTouch*|QML) continue ;; esac
+            [ -d "$QT_ANDROID/qml/$module" ] || { echo "::error::Qt for Android lacks the QML module $module"; exit 1; }
+          done
           mkdir -p dist
           apk=$(find build-android -name '*-release-signed.apk' | head -1)
           test -n "$apk" || { echo "No signed APK was made"; find build-android -name '*.apk'; exit 1; }
