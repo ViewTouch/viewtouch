@@ -5,6 +5,8 @@
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 
+#include <optional>
+
 #include <QRegularExpression>
 #include <QSet>
 
@@ -214,7 +216,9 @@ bool PosService::setItemVariants(const QString &itemId, const QVariantList &axes
     // Counting its stock: each size and color counts its own.
     const bool tracked = std::ranges::any_of(it->recipe, [&](const RecipeLine &r) { return r.ingredientId == ownStockId(it->id); });
     if (tracked) {
-        const Ingredient *own = s_->ingredient(ownStockId(it->id));
+        // (A copy: adding each size's stock moves the list, and a pointer into it.)
+        const Ingredient *ownNow = s_->ingredient(ownStockId(it->id));
+        const std::optional<Ingredient> own = ownNow ? std::optional(*ownNow) : std::nullopt;
         for (const MenuItem::Variant &v : it->variants) {
             const std::string id = variantStockId(it->id, v.key);
             if (s_->ingredient(id))

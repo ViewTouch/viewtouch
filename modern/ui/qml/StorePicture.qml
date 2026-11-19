@@ -29,13 +29,12 @@ Item {
     // A Lottie animation (LottiePicture.qml: Qt's Lottie module is only
     // needed when one is shown).
     Loader {
+        id: lottieLoader
         anchors.fill: parent
         active: pic.lottie
         visible: pic.lottie
         source: "LottiePicture.qml"
-        onLoaded: {
-            item.source = Qt.binding(() => pic.source)
-            item.fillMode = Qt.binding(() => pic.fillMode)
-        }
     }
+    Binding { target: lottieLoader.item; property: "source"; value: pic.source; when: lottieLoader.item !== null }
+    Binding { target: lottieLoader.item; property: "fillMode"; value: pic.fillMode; when: lottieLoader.item !== null }
 }
