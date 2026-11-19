@@ -277,8 +277,10 @@ QString RemoteSession::imageUrl(const QString &ref) const
         for (const QVariant &v : this->v(u"storeImages").toList())
             if (v.toMap().value(u"ref"_s).toString() == ref)
                 key = ref + u'#' + v.toMap().value(u"hash"_s).toString();
+    } else if (ref.startsWith(u"qrc:") || ref.startsWith(u":/")) {
+        return ref;   // the app's own
     } else if (!ref.startsWith(u'/')) {
-        return ref;
+        return {};    // a web address: never fetched by the screens
     }
     const QString local = localImage(ref, key);
     return local.isEmpty() ? QString() : QUrl::fromLocalFile(local).toString();

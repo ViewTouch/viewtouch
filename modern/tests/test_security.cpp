@@ -5,6 +5,8 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QFile>
+#include <QTemporaryDir>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -227,4 +229,40 @@ TEST_CASE("Security: a screen working alone can't log a manager in (their PINs s
     PosService screen(&alone, u"Bar"_s);
     CHECK_FALSE(screen.loginWithPin(u"1234"_s));   // Morgan, the owner
     CHECK(screen.loginWithPin(u"1111"_s));         // Sam, a server
+}
+
+TEST_CASE("Security: pictures are pictures: no web addresses, no other files from the store's computer", "[security][pictures]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QVariantMap store = pos.adminRecords(u"store"_s).value(0).toMap();
+    for (const QString &bad : {u"/etc/passwd"_s, u"http://tracker.example/x.png"_s, u"file:///home/x/.ssh/id_rsa"_s,
+                               u"/var/lib/vtmodern/../vtmodern/pos.db"_s, u"data:image/png;base64,AAAA"_s}) {
+        store[u"displayLogo"_s] = bad;
+        CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
+        CHECK(pos.imageUrl(bad).isEmpty());
+    }
+    store[u"displayLogo"_s] = u"logo:"_s;
+    store[u"displaySlides"_s] = u"image:https://tracker.example/a.png"_s;
+    CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
+    // A logo set (an older store, a restored database) to a file that isn't a
+    // picture, even named like one: never sent to the screens.
+    QTemporaryDir dir;
+    const QString fake = dir.filePath(u"secrets.png"_s);
+    {
+        QFile f(fake);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write("SQLite format 3\0 sk_live_...");
+    }
+    pos.shared()->settings.displayLogo = fake.toStdString();
+    CHECK(pos.storeImage(fake).isEmpty());
+    const QString real = dir.filePath(u"logo.png"_s);
+    {
+        QFile f(real);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write("\x89PNG\r\n\x1a\n....");
+    }
+    pos.shared()->settings.displayLogo = real.toStdString();
+    CHECK_FALSE(pos.storeImage(real).isEmpty());
+    CHECK(pos.storeImage(u"/etc/hostname"_s).isEmpty());   // not the store's picture at all
 }

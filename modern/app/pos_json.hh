@@ -102,6 +102,13 @@ QString dateTimeField(std::int64_t ms);
 
 // Salted SHA-256 of a PIN, hex encoded.
 std::string hashPin(const QString &pin, const std::string &salt);
+// A picture a page, a menu item or the screens may show: the store's
+// pictures (store:..., logo:), the app's own (qrc:, :/), or a picture file
+// on the store's computer by its full path. Not a web address (every screen
+// and kiosk would fetch it) or any other file.
+bool isPictureRef(const QString &ref);
+// The bytes are a picture (or a font, or an animation) the screens can show.
+bool looksLikePicture(const QByteArray &data);
 // A Stripe id, safe in a path: "pi_3Mtw..." (letters, digits, "_" after the prefix).
 bool isStripeId(const QString &id, QStringView prefix = u"pi_");
 // Two hashes the same, taking as long whatever they hold.

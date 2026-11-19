@@ -46,6 +46,8 @@ bool isLottie(const QByteArray &d)
     return o.value(u"layers").isArray() && o.value(u"fr").isDouble() && o.value(u"w").isDouble();
 }
 
+} // namespace
+
 bool looksLikePicture(const QByteArray &d)
 {
     return d.startsWith(QByteArray("\x00\x01\x00\x00", 4)) || d.startsWith("OTTO") || d.startsWith("true")   // fonts
@@ -53,6 +55,8 @@ bool looksLikePicture(const QByteArray &d)
            || (d.startsWith("RIFF") && d.mid(8, 4) == "WEBP")
            || d.left(512).contains("<svg") || isLottie(d);
 }
+
+namespace {
 
 QString contentHash(const QByteArray &data)
 {
@@ -90,9 +94,11 @@ QString PosService::imageUrl(const QString &ref) const
         const QString file = s_->imageFile(ref);
         return file.isEmpty() ? QString() : QUrl::fromLocalFile(file).toString();
     }
+    if (!isPictureRef(ref))
+        return {};   // a web address, another file: nothing (shown, it would be fetched by every screen)
     if (ref.startsWith(u'/'))
         return QUrl::fromLocalFile(ref).toString();
-    return ref;   // qrc:, file:, http...
+    return ref;   // qrc:, :/, file:
 }
 
 QVariantList PosService::storeImages() const

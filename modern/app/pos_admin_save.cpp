@@ -499,8 +499,12 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             std::ranges::sort(rewards, {}, &PosSettings::Reward::points);
             s_->settings.rewards = rewards;
         }
-        if (record.contains(u"displayLogo"_s))
-            s_->settings.displayLogo = ss(record.value(u"displayLogo"_s).toString().trimmed());
+        if (record.contains(u"displayLogo"_s)) {
+            const QString logo = record.value(u"displayLogo"_s).toString().trimmed();
+            if (!isPictureRef(logo))
+                return fail(tr("Pictures come from the store's pictures (or a picture file on the store's computer)."));
+            s_->settings.displayLogo = ss(logo);
+        }
         if (record.contains(u"receiptLogo"_s))
             s_->settings.receiptLogo = record.value(u"receiptLogo"_s).toBool();
         if (record.contains(u"displayAccent"_s) && !record.value(u"displayAccent"_s).toString().isEmpty())
@@ -508,8 +512,11 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (record.contains(u"displaySlides"_s)) {
             s_->settings.displaySlides.clear();
             for (const QString &line : record.value(u"displaySlides"_s).toString().split(u'\n', Qt::SkipEmptyParts))
-                if (!line.trimmed().isEmpty())
+                if (!line.trimmed().isEmpty()) {
+                    if (line.trimmed().startsWith(u"image:") && !isPictureRef(line.trimmed().mid(6)))
+                        return fail(tr("Pictures come from the store's pictures (or a picture file on the store's computer)."));
                     s_->settings.displaySlides.push_back(ss(line.trimmed()));
+                }
         }
         if (record.contains(u"scheduleRequired"_s))
             s_->settings.scheduleRequired = record.value(u"scheduleRequired"_s).toBool();

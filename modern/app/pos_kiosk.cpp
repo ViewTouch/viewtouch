@@ -215,13 +215,18 @@ QString PosService::storeImage(const QString &path) const
         known = known || m.image == p;
     for (const std::string &slide : s_->settings.displaySlides)
         known = known || slide == "image:" + p;
-    if (!known)
+    // ...and a picture: a path set to anything else (the database, a key)
+    // is never sent.
+    if (!known || !p.starts_with('/') || !isPictureRef(path))
         return {};
     QFile f(path);
     constexpr qint64 kMaxBytes = 8 * 1024 * 1024;
     if (f.size() > kMaxBytes || !f.open(QIODevice::ReadOnly))
         return {};
-    return QString::fromLatin1(f.readAll().toBase64());
+    const QByteArray bytes = f.readAll();
+    if (!looksLikePicture(bytes))
+        return {};
+    return QString::fromLatin1(bytes.toBase64());
 }
 
 QVariantMap PosService::kioskMenu() const

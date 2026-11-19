@@ -4,7 +4,9 @@
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
 #include <QRandomGenerator>
+#include <QFileInfo>
 #include <QRegularExpression>
+#include <QUrl>
 
 #include <algorithm>
 #include <cmath>
@@ -590,6 +592,19 @@ std::string newSalt()
     quint32 words[4];
     QRandomGenerator::system()->fillRange(words);
     return QByteArray(reinterpret_cast<const char *>(words), sizeof words).toHex().toStdString();
+}
+
+bool isPictureRef(const QString &ref)
+{
+    if (ref.isEmpty() || ref == u"logo:" || ref.startsWith(u"store:") || ref.startsWith(u"qrc:") || ref.startsWith(u":/"))
+        return true;
+    QString path = ref;
+    if (ref.startsWith(u"file:"))
+        path = QUrl(ref).toLocalFile();
+    if (!path.startsWith(u'/') || path.contains(u"/../") || path.endsWith(u"/.."))
+        return false;
+    static const QStringList pictures{u"png"_s, u"jpg"_s, u"jpeg"_s, u"gif"_s, u"webp"_s, u"svg"_s, u"bmp"_s};
+    return pictures.contains(QFileInfo(path).suffix().toLower());
 }
 
 bool isStripeId(const QString &id, QStringView prefix)

@@ -686,8 +686,11 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
     item.family = family;
     if (card.contains(u"price"_s) && price >= 0)
         item.price = Money::fromCents(price);
-    if (card.contains(u"image"_s))
+    if (card.contains(u"image"_s)) {
+        if (!isPictureRef(card.value(u"image"_s).toString()))
+            return fail(tr("Pictures come from the store's pictures (or a picture file on the store's computer)."));
         item.image = ss(card.value(u"image"_s).toString());
+    }
     if (card.contains(u"description"_s))
         item.description = ss(card.value(u"description"_s).toString().trimmed());
     if (card.contains(u"available"_s) && card.value(u"available"_s).toBool() != item.available) {
