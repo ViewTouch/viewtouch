@@ -27,7 +27,15 @@ struct FoundServer {
     quint16 port = DefaultPort;
     QString role = QStringLiteral("main");   // "main", or "standby" (a copy, ready to take over)
     int term = 0;   // goes up each time a standby takes over: the newest main wins
+    // Signed with the store's standby key, for this search: really the
+    // store's main or standby (anyone on the network can answer otherwise).
+    bool proven = false;
 };
+
+// The signature on an answer: HMAC-SHA256 with the store's standby key over
+// the search's nonce and what the answer says.
+QByteArray discoverySignature(const QByteArray &key, const QByteArray &nonce, const QString &id, const QString &role,
+                              int term, int port);
 
 // Server side: answers probes.
 class DiscoveryResponder : public QObject {
@@ -42,6 +50,8 @@ public:
     // "main" (serves the store) or "standby".
     void setRole(const QString &role) { role_ = role; }
     void setTerm(int term) { term_ = term; }
+    // The store's standby key (raw): answers to a search with a nonce are signed.
+    void setKey(std::function<QByteArray()> key) { key_ = std::move(key); }
     quint16 port() const { return socket_.localPort(); }
     QString errorString() const { return socket_.errorString(); }
 
@@ -52,6 +62,7 @@ private:
     quint16 tcpPort_;
     QString role_ = QStringLiteral("main");
     int term_ = 0;
+    std::function<QByteArray()> key_;
     QUdpSocket socket_;
 };
 
@@ -61,6 +72,9 @@ class ServerFinder : public QObject {
 
 public:
     explicit ServerFinder(QObject *parent = nullptr);
+    // The store's standby key (raw): searches carry a nonce, and answers
+    // signed for it are `proven`.
+    void setKey(std::function<QByteArray()> key) { key_ = std::move(key); }
 
     // Broadcast on every network this device is on.
     void search(quint16 udpPort = DiscoveryPort);
@@ -75,9 +89,12 @@ signals:
 
 private:
     void onReadyRead();
+    void newNonce();
 
     QUdpSocket socket_;
     QList<FoundServer> servers_;
+    std::function<QByteArray()> key_;
+    QList<QByteArray> nonces_;   // the last few searches'
 };
 
 } // namespace vt::net

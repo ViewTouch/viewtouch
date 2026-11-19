@@ -59,6 +59,10 @@ private:
 
     QString db_;
     Credentials credentials_;
+    // Where the main server was last let in from (saved): an address heard
+    // on the network is tried, and saved only once it knows the store's key.
+    QString savedHost_;
+    quint16 savedPort_ = 0;
     QSslSocket socket_;
     std::unique_ptr<LineChannel> channel_;
     std::unique_ptr<storage::AsyncWriter> writer_;

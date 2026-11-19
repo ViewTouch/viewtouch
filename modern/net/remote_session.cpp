@@ -127,7 +127,12 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         // (once could be a server restarting mid-handshake).
         const bool refused = e == QAbstractSocket::SslHandshakeFailedError
                              || (e == QAbstractSocket::RemoteHostClosedError && !encrypted_ && !welcomed_);
-        if (refused && !welcomed_ && ++refusals_ >= 2) {
+        if (refused && !welcomed_ && (host_ != trustedHost_ || port_ != trustedPort_)) {
+            qCWarning(lcRemote).noquote() << host_ << "doesn't know this terminal's key: back to" << trustedHost_;
+            host_ = trustedHost_;
+            port_ = trustedPort_;
+            refusals_ = 0;
+        } else if (refused && !welcomed_ && ++refusals_ >= 2) {
             qCWarning(lcRemote) << "the server refused this device's key";
             rejected_ = true;
             reconnect_.stop();
@@ -158,10 +163,9 @@ RemoteSession::RemoteSession(QString terminalName, QObject *parent)
         if (welcomed_ || s.id != credentials_.serverId || (s.host == host_ && s.port == port_)
             || socket_.state() != QAbstractSocket::UnconnectedState)
             return;
-        qCInfo(lcRemote).noquote() << "the server moved to" << s.host;
-        host_ = credentials_.host = s.host;
-        port_ = credentials_.port = s.port;
-        emit credentialsChanged(credentials_);
+        qCInfo(lcRemote).noquote() << "the server may have moved to" << s.host;
+        host_ = s.host;   // saved once it lets this terminal in
+        port_ = s.port;
         reconnect_.stop();
         encrypted_ = false;
         connectingSince_ = QDateTime::currentMSecsSinceEpoch();
@@ -326,8 +330,8 @@ void RemoteSession::setCredentials(const Credentials &credentials)
 
 void RemoteSession::connectTo(const QString &host, quint16 port)
 {
-    host_ = host;
-    port_ = port;
+    host_ = trustedHost_ = host;
+    port_ = trustedPort_ = port;
     rejected_ = false;
     encrypted_ = false;
     connectingSince_ = QDateTime::currentMSecsSinceEpoch();
@@ -436,6 +440,11 @@ void RemoteSession::handle(const QJsonObject &m)
         storeUpdate_ = m.value(u"update").toObject().toVariantMap();
         emit updateChanged();
         welcomed_ = true;
+        if (host_ != trustedHost_ || port_ != trustedPort_) {   // it knew this terminal's key: it's the store
+            trustedHost_ = credentials_.host = host_;
+            trustedPort_ = credentials_.port = port_;
+            emit credentialsChanged(credentials_);
+        }
         for (auto it = wanted_.cbegin(); it != wanted_.cend(); ++it)
             if (it.value() > 0)
                 send({{u"t"_s, u"want"_s}, {u"k"_s, it.key()}, {u"on"_s, true}});

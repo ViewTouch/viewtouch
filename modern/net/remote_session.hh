@@ -243,6 +243,12 @@ private:
     QString requestedScreen_;
     QString host_;
     quint16 port_ = 0;
+    // Where this terminal knows the server is (it was paired there, or was
+    // let in there): an address only heard on the network isn't saved, and
+    // its refusing the key isn't the server unpairing this terminal (anyone
+    // on the network can answer a search).
+    QString trustedHost_;
+    quint16 trustedPort_ = 0;
     QSslSocket socket_;
     Credentials credentials_;
     bool rejected_ = false;

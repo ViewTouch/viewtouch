@@ -31,6 +31,8 @@ ReplicaClient::ReplicaClient(QString databasePath, Credentials credentials, QObj
     , credentials_(std::move(credentials))
     , channel_(std::make_unique<LineChannel>(&socket_))
 {
+    savedHost_ = credentials_.host;
+    savedPort_ = credentials_.port;
     socket_.setSslConfiguration(tlsConfiguration());
     connect(&socket_, &QSslSocket::preSharedKeyAuthenticationRequired, this, [this](QSslPreSharedKeyAuthenticator *a) {
         a->setIdentity("r:" + credentials_.serverId.toLatin1());
@@ -38,6 +40,11 @@ ReplicaClient::ReplicaClient(QString databasePath, Credentials credentials, QObj
     });
     connect(&socket_, &QSslSocket::encrypted, this, [this] {
         failures_ = 0;
+        if (credentials_.host != savedHost_ || credentials_.port != savedPort_) {
+            savedHost_ = credentials_.host;
+            savedPort_ = credentials_.port;
+            emit credentialsChanged(credentials_);
+        }
         setStatus(tr("Connected to the main server; copying the store…"));
         channel_->send({{u"t"_s, u"hello"_s}, {u"role"_s, u"standby"_s}, {u"protocol"_s, ProtocolVersion}});
     });
@@ -54,6 +61,11 @@ ReplicaClient::ReplicaClient(QString databasePath, Credentials credentials, QObj
     connect(&socket_, &QSslSocket::errorOccurred, this, [this](QAbstractSocket::SocketError) {
         if (stopped_)
             return;
+        // An address heard on the network that didn't work: back to the saved one.
+        if (credentials_.host != savedHost_ || credentials_.port != savedPort_) {
+            credentials_.host = savedHost_;
+            credentials_.port = savedPort_;
+        }
         // Every third try, look for it on the network (its address may have changed).
         if (++failures_ % 3 == 0)
             finder_.search();
@@ -66,9 +78,8 @@ ReplicaClient::ReplicaClient(QString databasePath, Credentials credentials, QObj
         if (s.role != u"main" || s.id != credentials_.serverId || s.host == credentials_.host
             || socket_.state() != QAbstractSocket::UnconnectedState)
             return;
-        credentials_.host = s.host;
+        credentials_.host = s.host;   // saved once it knows the store's key
         credentials_.port = s.port;
-        emit credentialsChanged(credentials_);
         connectNow();
     });
     retry_.setSingleShot(true);

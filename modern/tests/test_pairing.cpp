@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTest>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -249,4 +250,63 @@ TEST_CASE("Discovery: servers answer who they are; a terminal finds a moved serv
     REQUIRE_FALSE(moved.isEmpty());
     CHECK(moved.last()[0].value<net::Credentials>().port == store.server.port());
     CHECK(remote.credentials().port == store.server.port());
+}
+
+TEST_CASE("Security: a made-up answer on the network doesn't unpair a terminal", "[pairing][discovery][security]")
+{
+    Store store, other;   // `other`: someone else's server, at the address the made-up answer gives
+    const auto [ok, creds, error] = store.pair(store.startPairing(), u"Patio Tablet"_s);
+    REQUIRE(ok);
+    // Says it's this store, sends terminals to a server that doesn't know them.
+    net::DiscoveryResponder liar(
+        [&] { return std::pair{QString::fromStdString(store.shared.settings.serverId), u"Store"_s}; },
+        other.server.port());
+    REQUIRE(liar.listen(0));
+    net::Credentials stale = creds;
+    stale.port = quint16(store.server.port() == 65535 ? 65534 : store.server.port() + 1);   // nothing there
+    net::RemoteSession remote(u"Patio Tablet"_s);
+    remote.setDiscoveryPort(liar.port());
+    remote.setCredentials(stale);
+    QSignalSpy moved(&remote, &net::RemoteSession::credentialsChanged);
+    QSignalSpy rejected(&remote, &net::RemoteSession::rejected);
+    remote.connectTo(stale.host, stale.port);
+    CHECK_FALSE(remote.waitForWelcome(15000));
+    CHECK(rejected.isEmpty());
+    CHECK_FALSE(remote.isRejected());
+    CHECK(moved.isEmpty());   // nothing saved: the paired address stays
+}
+
+TEST_CASE("Security: only the store's own main or standby can prove who it is when asked", "[pairing][discovery][security]")
+{
+    const QByteArray key = net::newDeviceKey();
+    const auto answering = [](std::function<QByteArray()> k) {
+        auto r = std::make_unique<net::DiscoveryResponder>([] { return std::pair{u"store-1"_s, u"Store"_s}; }, 7719);
+        r->setTerm(9);
+        if (k)
+            r->setKey(std::move(k));
+        REQUIRE(r->listen(0));
+        return r;
+    };
+    const auto ask = [](net::DiscoveryResponder &r, std::function<QByteArray()> k) {
+        net::ServerFinder finder;
+        if (k)
+            finder.setKey(std::move(k));
+        bool proven = false;
+        int answers = 0;
+        QObject::connect(&finder, &net::ServerFinder::found, [&](const net::FoundServer &s) {
+            ++answers;
+            proven = proven || s.proven;
+        });
+        finder.search(r.port());
+        for (int i = 0; i < 100 && answers < 2; ++i)
+            QTest::qWait(20);
+        REQUIRE(answers > 0);
+        return proven;
+    };
+    auto own = answering([key] { return key; });
+    CHECK(ask(*own, [key] { return key; }));
+    CHECK_FALSE(ask(*own, [] { return net::newDeviceKey(); }));   // another store's key
+    CHECK_FALSE(ask(*own, {}));                                   // asked without a key: nothing to prove
+    auto stranger = answering({});                                // anyone on the network, "main, term 9"
+    CHECK_FALSE(ask(*stranger, [key] { return key; }));
 }

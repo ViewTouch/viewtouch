@@ -209,7 +209,7 @@ constexpr int kTookOver = 66;
 constexpr int kBecomeStandby = 67;
 bool gServeHeadless = false;
 // The store's main server answering for `storeId` on the network, if any.
-std::optional<vt::net::FoundServer> findMainServer(const QString &storeId, int waitMs, quint16 port);
+std::optional<vt::net::FoundServer> findMainServer(const QString &storeId, const QByteArray &key, int waitMs, quint16 port);
 // Seconds without word from the main server before the standby takes over.
 constexpr int kTakeOverSeconds = 20;
 // Exit status of a factory reset from the Manager page: main wipes the
@@ -1248,7 +1248,8 @@ int runStore(const Args &cli, const Options &o)
         };
         // Is the store already being served (by the standby that took over
         // while this computer was away)? Then this one becomes the standby.
-        if (const auto other = findMainServer(QString::fromStdString(shared->settings.serverId), 1500,
+        const auto standbyKey = [shared] { return QByteArray::fromBase64(QByteArray::fromStdString(shared->settings.replicaKey)); };
+        if (const auto other = findMainServer(QString::fromStdString(shared->settings.serverId), standbyKey(), 1500,
                                                cli.isSet(o.port) ? quint16(cli.value(o.port).toUInt()) : vt::net::DefaultPort)) {
             qWarning().noquote() << "The store is already served by" << other->host
                                  << "- this computer becomes its standby.";
@@ -1293,14 +1294,18 @@ int runStore(const Args &cli, const Options &o)
             qWarning().noquote() << "Terminals can't find this server by themselves (UDP port" << server->port()
                                  << "):" << discovery->errorString();
         discovery->setTerm(shared->settings.serverTerm);
+        discovery->setKey(standbyKey);   // its standby (and it) can prove they're the store's
         // A standby that took over while this server was cut off (a broken
         // cable) serves a newer term: the newest main serves, this one steps down.
         auto *watch = new QTimer(server.get());
         auto *newer = new vt::net::ServerFinder(server.get());
+        newer->setKey(standbyKey);
         QObject::connect(newer, &vt::net::ServerFinder::found, server.get(),
                          [stepDown, shared](const vt::net::FoundServer &f) {
+            // (Signed with the store's standby key: anyone on the network can
+            // say "main, term 99", and the store would be down.)
             if (f.id != QString::fromStdString(shared->settings.serverId) || f.role != u"main"
-                || f.term <= shared->settings.serverTerm)
+                || f.term <= shared->settings.serverTerm || !f.proven)
                 return;
             qWarning().noquote() << "The standby at" << f.host << "took over this store;"
                                  << "this computer steps down and becomes its standby.";
@@ -1506,15 +1511,16 @@ int runStore(const Args &cli, const Options &o)
 // --- the standby server --------------------------------------------------------------------
 
 // The store's main server answering for `storeId` on the network, if any.
-std::optional<vt::net::FoundServer> findMainServer(const QString &storeId, int waitMs, quint16 port)
+std::optional<vt::net::FoundServer> findMainServer(const QString &storeId, const QByteArray &key, int waitMs, quint16 port)
 {
-    if (storeId.isEmpty())
+    if (storeId.isEmpty() || key.isEmpty())   // no standby ever: nothing could have taken over
         return std::nullopt;
     vt::net::ServerFinder finder;
+    finder.setKey([key] { return key; });
     std::optional<vt::net::FoundServer> found;
     QEventLoop loop;
     QObject::connect(&finder, &vt::net::ServerFinder::found, &loop, [&](const vt::net::FoundServer &s) {
-        if (s.id == storeId && s.role == u"main") {
+        if (s.id == storeId && s.role == u"main" && s.proven) {
             found = s;
             loop.quit();
         }
@@ -1604,6 +1610,7 @@ int runStandby(const Args &cli, const Options &o)
     vt::net::DiscoveryResponder discovery(
         [&creds] { return std::pair{creds->serverId, creds->serverName}; }, listener.port());
     discovery.setRole(u"standby"_s);
+    discovery.setKey([&creds] { return creds->replicaKey; });
     if (!discovery.listen(port))
         qWarning().noquote() << "Screens can't find this standby by themselves:" << discovery.errorString();
     bool tookOver = false;
