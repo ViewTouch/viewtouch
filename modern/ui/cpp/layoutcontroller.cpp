@@ -1028,7 +1028,7 @@ QString LayoutController::menuPreview(const QVariantMap &options, int width)
     const QImage img = ::menuPreview(menuToPrint(*pos_, options), std::clamp(width, 100, 2000));
     // A new name each time, so the screen shows the new one.
     static int serial = 0;
-    const QString dir = QDir::temp().filePath(u"viewtouch-menu-preview"_s);
+    const QString dir = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath(u"viewtouch-menu-preview"_s);
     QDir().mkpath(dir);
     const QString mine = u"page-%1-"_s.arg(QCoreApplication::applicationPid());
     for (const QString &old : QDir(dir).entryList({mine + u"*.png"_s}, QDir::Files))
@@ -1371,7 +1371,7 @@ QString LayoutController::emojiPicture(const QString &emoji)
         p.setFont(f);
         p.drawText(img.rect(), Qt::AlignCenter, emoji);
     }
-    const QString dir = QDir::temp().filePath(u"viewtouch-pictures"_s);
+    const QString dir = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath(u"viewtouch-pictures"_s);
     QDir().mkpath(dir);
     const QString path = QDir(dir).filePath(name);
     if (!img.save(path, "PNG"))

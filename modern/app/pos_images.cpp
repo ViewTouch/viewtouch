@@ -71,7 +71,7 @@ QString PosShared::imageFile(const QString &ref)
     if (it == images.end())
         return {};
     // Named by content: a picture replaced under the same name is a new file.
-    const QString dir = imageCacheDir.isEmpty() ? QDir::temp().filePath(u"vtm-store-images"_s) : imageCacheDir;
+    const QString dir = imageCacheDir.isEmpty() ? QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath(u"vtm-store-images"_s) : imageCacheDir;
     QDir().mkpath(dir);
     const QString path = QDir(dir).filePath(contentHash(it->second) + u'.' + QFileInfo(name).suffix().toLower());
     if (!QFileInfo::exists(path)) {

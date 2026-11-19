@@ -580,7 +580,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (const QString key = record.value(u"stripeSecretKey"_s).toString().trimmed(); !key.isEmpty()) {
             if (key.compare(u"none"_s, Qt::CaseInsensitive) == 0)
                 s_->settings.stripeSecretKey.clear();
-            else if (!key.startsWith(u"sk_"_s) && !key.startsWith(u"rk_"_s))
+            else if (static const QRegularExpression stripeKey(u"^(sk|rk)_[A-Za-z0-9_]{8,250}$"_s);
+                     !stripeKey.match(key).hasMatch())   // (it goes in a header: letters, digits and "_" only)
                 return fail(tr("A Stripe secret key starts with sk_ (or rk_ for a restricted key)."));
             else
                 s_->settings.stripeSecretKey = ss(key);

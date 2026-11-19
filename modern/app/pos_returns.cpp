@@ -134,7 +134,11 @@ bool PosService::startReturn(qint64 checkId, const QString &code)
     returnSale_ = std::move(sale);
     // The receipt's own barcode (its code matches): a cashier may take it back.
     const std::string expected = receiptCode(s_->settings.receiptKey, checkId);
-    returnVerified_ = !code.isEmpty() && !expected.empty() && ss(code.toUpper()) == expected;
+    returnVerified_ = !code.isEmpty() && !expected.empty() && sameHash(ss(code.toUpper()), expected);
+    // A code that doesn't match: someone may be trying codes (30 bits): it
+    // counts like a wrong PIN, and waits the same.
+    if (!code.isEmpty() && !returnVerified_)
+        noteWrongPin();
     returnWanted_ = 0;
     emit sessionChanged();
     return true;

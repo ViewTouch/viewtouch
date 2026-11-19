@@ -266,3 +266,15 @@ TEST_CASE("Security: pictures are pictures: no web addresses, no other files fro
     CHECK_FALSE(pos.storeImage(real).isEmpty());
     CHECK(pos.storeImage(u"/etc/hostname"_s).isEmpty());   // not the store's picture at all
 }
+
+TEST_CASE("Security: a Stripe key is a key (nothing that could add to what's sent to Stripe)", "[security][owner]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QVariantMap store = pos.adminRecords(u"store"_s).value(0).toMap();
+    store[u"stripeSecretKey"_s] = u"sk_test_abc\r\nX-Evil: 1"_s;
+    CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
+    store[u"stripeSecretKey"_s] = u"sk_test_51Habc123DEF"_s;
+    CHECK(pos.adminSave(u"store"_s, 0, store));
+    CHECK(pos.shared()->settings.stripeSecretKey == "sk_test_51Habc123DEF");
+}

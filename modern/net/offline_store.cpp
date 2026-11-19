@@ -6,6 +6,7 @@
 #include "storage/async_writer.hh"
 
 #include <QDir>
+#include <QStandardPaths>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QLoggingCategory>
@@ -41,7 +42,7 @@ OfflineStore::OfflineStore(QString terminalName, QString journal, QObject *paren
     : QObject(parent)
     , terminal_(std::move(terminalName))
     , sink_(std::make_unique<Sink>(this))
-    , printouts_(journal.isEmpty() ? QDir::temp().filePath(u"viewtouch-printouts"_s)
+    , printouts_(journal.isEmpty() ? QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath(u"viewtouch-printouts"_s)
                                    : QFileInfo(journal).absoluteDir().filePath(u"printouts"_s))
 {
     if (journal.isEmpty())
