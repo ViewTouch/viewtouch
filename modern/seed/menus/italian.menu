@@ -1,0 +1,51 @@
+pack Italian Trattoria | food | 0 | Antipasti, pasta with your choice of shape and sauce, risotto, secondi, dolci and wine.
+category Antipasti | #8a5a2b | | kitchen | cold
+category Pasta | #b83232 | lunch, dinner | kitchen | line
+category Risotto | #a86a12 | dinner | kitchen | line
+category Secondi | #2b62b0 | dinner | kitchen | grill
+category Contorni | #1f8a4c | | kitchen | line
+category Dolci | #8a3a8a | | kitchen | cold
+category Wine | #6a1f3a | | bar | | alcohol
+category Bevande | #1f6f73 | | bar |
+group Pasta Shape | 1 1 | Spaghetti, Penne, Rigatoni, Fettuccine, Linguine, Gluten-free penne + 2.00
+group Sauce | 1 1 | Marinara, Bolognese + 3.00, Alfredo + 2.00, Pesto + 2.00, Arrabbiata, Vodka + 2.00, Aglio e olio
+group Add Protein | 0 1 ask | Chicken + 5.00, Shrimp + 7.00, Meatballs + 5.00, Italian Sausage + 5.00
+group Cheese | 0 1 ask | Parmigiano, Pecorino, Extra parmigiano + 1.00, No cheese
+group Wine Pour | 1 1 | Glass (6 oz), Glass (9 oz) + 4.00, Bottle + 26.00
+group Cooked | 1 1 | Rare, Medium Rare, Medium, Medium Well, Well Done
+item Antipasti | Bruschetta | 9.00 | | tomato, basil, garlic
+item Antipasti | Burrata | 14.00 | | tomato, basil, olive oil
+item Antipasti | Calamari Fritti | 13.00 | | marinara, lemon
+item Antipasti | Meatballs al Forno | 11.00 | Cheese | marinara, ricotta
+item Antipasti | Caprese | 11.00 | | mozzarella, tomato, basil
+item Antipasti | Caesar Salad | 10.00 | Add Protein | romaine, parmesan, croutons
+item Pasta | Pasta Your Way | 15.00 | Pasta Shape, Sauce, Add Protein, Cheese |
+item Pasta | Spaghetti Carbonara | 18.00 | Cheese | guanciale, egg, pecorino
+item Pasta | Fettuccine Alfredo | 17.00 | Add Protein | cream, parmesan
+item Pasta | Lasagna Bolognese | 19.00 | | beef ragù, béchamel, mozzarella
+item Pasta | Cacio e Pepe | 16.00 | | pecorino, black pepper
+item Pasta | Linguine alle Vongole | 22.00 | | clams, white wine, garlic
+item Pasta | Gnocchi al Pomodoro | 16.00 | Cheese | tomato, basil
+item Pasta | Ravioli di Ricotta | 17.00 | Sauce | ricotta, spinach
+item Risotto | Risotto ai Funghi | 21.00 | | porcini, parmesan
+item Risotto | Risotto ai Frutti di Mare | 26.00 | | shrimp, mussels, clams
+item Secondi | Chicken Parmigiana | 22.00 | Pasta Shape | marinara, mozzarella
+item Secondi | Veal Marsala | 28.00 | | mushrooms, marsala
+item Secondi | Branzino | 29.00 | | lemon, capers
+item Secondi | Bistecca | 38.00 | Cooked | rosemary, olive oil
+item Secondi | Eggplant Parmigiana | 19.00 | | marinara, mozzarella
+item Contorni | Roasted Potatoes | 6.00 | |
+item Contorni | Broccolini | 7.00 | | garlic, chili
+item Contorni | Garlic Bread | 5.00 | |
+item Dolci | Tiramisu | 9.00 | |
+item Dolci | Panna Cotta | 8.00 | | berries
+item Dolci | Cannoli | 7.00 | |
+item Dolci | Gelato | 6.00 | |
+item Wine | Chianti | 11.00 | Wine Pour |
+item Wine | Pinot Grigio | 10.00 | Wine Pour |
+item Wine | Montepulciano | 12.00 | Wine Pour |
+item Wine | Prosecco | 11.00 | Wine Pour |
+item Bevande | San Pellegrino | 4.00 | |
+item Bevande | Espresso | 3.50 | |
+item Bevande | Cappuccino | 4.75 | |
+item Bevande | Italian Soda | 4.00 | |

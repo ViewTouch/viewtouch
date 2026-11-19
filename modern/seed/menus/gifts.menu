@@ -1,0 +1,32 @@
+pack Gift Shop | retail | 11 | Mugs, candles in scents, cards, local goods, jewelry and gift wrap.
+category Home & Kitchen | #2b62b0 | | | | merchandise
+category Candles & Bath | #8a3a8a | | | | merchandise
+category Cards & Paper | #a86a12 | | | | merchandise
+category Jewelry | #b83232 | | | | merchandise
+category Local Goods | #1f8a4c | | | | food
+category Gift Wrap | #1f6f73 | | | | merchandise
+item Home & Kitchen | Ceramic Mug | 16.00 | | | variants: Design=City Skyline,Wildflowers,Coffee First | sku: MUG | cost: 5.00 | stock: 8
+item Home & Kitchen | Travel Tumbler | 28.00 | | | variants: Color=Black,Sage,Blush | sku: TMB | cost: 9.00 | stock: 6
+item Home & Kitchen | Tea Towel | 14.00 | | | variants: Design=Lemons,Map,Stripes | sku: TTW | cost: 4.00 | stock: 8
+item Home & Kitchen | Coaster Set | 18.00 | | | | sku: CST | cost: 5.50 | stock: 12
+item Home & Kitchen | Cutting Board | 38.00 | | | | sku: CTB | cost: 13.00 | stock: 5
+item Home & Kitchen | Picture Frame 5x7 | 22.00 | | | variants: Color=Gold,Black,Natural Wood | sku: FRM | cost: 7.00 | stock: 6
+item Candles & Bath | Soy Candle 8 oz | 24.00 | | | variants: Scent=Lavender,Cedar,Vanilla Bean,Sea Salt,Fig | sku: CND | cost: 7.00 | stock: 6
+item Candles & Bath | Votive Candle | 6.00 | | | variants: Scent=Lavender,Vanilla Bean | sku: VTV | cost: 1.50 | stock: 20
+item Candles & Bath | Bath Bomb | 8.00 | | | variants: Scent=Eucalyptus,Rose,Citrus | sku: BTB | cost: 2.00 | stock: 15
+item Candles & Bath | Hand Cream | 14.00 | | | | sku: HCR | cost: 4.00 | stock: 12
+item Candles & Bath | Reed Diffuser | 32.00 | | | | sku: RDF | cost: 10.00 | stock: 6
+item Cards & Paper | Greeting Card | 5.50 | | | variants: Occasion=Birthday,Thank You,Sympathy,Wedding,Blank | sku: CRD | cost: 1.50 | stock: 20
+item Cards & Paper | Notebook | 16.00 | | | | sku: NTB | cost: 4.50 | stock: 15
+item Cards & Paper | Postcard | 2.00 | | | | sku: PST | cost: 0.40 | stock: 80
+item Cards & Paper | Sticker | 4.00 | | | | sku: STK | cost: 0.80 | stock: 60
+item Cards & Paper | Puzzle 500 pc | 24.00 | | | | sku: PZL | cost: 9.00 | stock: 5
+item Jewelry | Beaded Bracelet | 18.00 | | | | sku: BRC | cost: 4.00 | stock: 12
+item Jewelry | Pendant Necklace | 42.00 | | | variants: Metal=Gold,Silver | sku: NCK | cost: 12.00 | stock: 5
+item Jewelry | Stud Earrings | 28.00 | | | variants: Metal=Gold,Silver | sku: EAR | cost: 7.00 | stock: 6
+item Local Goods | Local Honey 12 oz | 14.00 | | | | sku: HNY | cost: 7.00 | stock: 10 | tax: food
+item Local Goods | Hot Sauce | 11.00 | | | | sku: HSC | cost: 5.00 | stock: 10 | tax: food
+item Local Goods | Chocolate Bar | 6.00 | | | | sku: CHO | cost: 2.50 | stock: 24 | tax: food
+item Local Goods | Coffee Beans 12 oz | 17.00 | | | | sku: BNS | cost: 8.00 | stock: 10 | tax: food
+item Gift Wrap | Gift Wrap | 3.00 | | | | sku: WRP | cost: 0.50 | stock: 100
+item Gift Wrap | Gift Bag | 4.00 | | | variants: Size=Small,Large | plus: Large 2.00 | sku: GBG | cost: 1.00 | stock: 20

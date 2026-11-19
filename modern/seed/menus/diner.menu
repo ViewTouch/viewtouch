@@ -1,0 +1,40 @@
+pack Breakfast Diner | food | 0 | Eggs any style, pancakes and waffles, omelets, burgers and melts, bottomless coffee.
+category Eggs & Breakfast | #a86a12 | breakfast, lunch | kitchen | grill
+category Griddle | #8a5a2b | breakfast, lunch | kitchen | grill
+category Omelets | #b83232 | breakfast, lunch | kitchen | grill
+category Lunch | #2b62b0 | lunch, dinner | kitchen | grill
+category Sides | #1f8a4c | | kitchen | grill
+category Drinks | #1f6f73 | | bar |
+group Eggs | 1 1 | Scrambled, Over easy, Over medium, Over hard, Sunny side up, Poached, Egg whites + 1.00
+group Toast | 1 1 | White, Wheat, Rye, Sourdough, English muffin, Biscuit + 1.00
+group Breakfast Meat | 1 1 | Bacon, Sausage links, Sausage patty, Ham, Turkey sausage, No meat
+group Potatoes | 1 1 | Hash browns, Home fries, Grits, Fruit cup + 1.00
+group Pancake Add | 0 0 ask | Blueberries + 1.50, Chocolate chips + 1.50, Bananas + 1.00, Whipped cream + 0.75, Pecans + 1.50
+group Omelet Fillings | 0 0 ask | Cheddar + 0.75, Swiss + 0.75, Ham + 1.50, Bacon + 1.50, Spinach + 0.75, Mushrooms + 0.75, Onions + 0.50, Peppers + 0.50, Tomato + 0.50
+group Side | 1 1 | Fries, Onion rings + 1.50, Side salad, Cup of soup + 1.50
+item Eggs & Breakfast | Two Eggs Any Style | 10.00 | Eggs, Toast, Breakfast Meat, Potatoes |
+item Eggs & Breakfast | Country Breakfast | 14.00 | Eggs, Toast, Breakfast Meat, Potatoes | biscuits and gravy
+item Eggs & Breakfast | Steak and Eggs | 19.00 | Eggs, Toast, Potatoes |
+item Eggs & Breakfast | Eggs Benedict | 14.50 | Potatoes | ham, hollandaise
+item Eggs & Breakfast | Biscuits and Gravy | 9.00 | |
+item Eggs & Breakfast | Breakfast Burrito | 11.00 | Breakfast Meat | eggs, potatoes, cheese, salsa
+item Griddle | Buttermilk Pancakes (3) | 9.00 | Pancake Add |
+item Griddle | Belgian Waffle | 10.00 | Pancake Add |
+item Griddle | French Toast | 10.00 | Pancake Add |
+item Griddle | Chicken and Waffles | 15.00 | | maple syrup, hot honey
+item Omelets | Build Your Omelet | 10.00 | Omelet Fillings, Toast, Potatoes |
+item Omelets | Denver Omelet | 12.50 | Toast, Potatoes | ham, peppers, onions, cheddar
+item Omelets | Western Veggie Omelet | 12.00 | Toast, Potatoes | spinach, mushrooms, tomato, swiss
+item Lunch | Patty Melt | 13.00 | Side | swiss, grilled onions, rye
+item Lunch | Club Sandwich | 13.50 | Side | turkey, bacon, lettuce, tomato
+item Lunch | Diner Burger | 13.00 | Side | lettuce, tomato, onion
+item Lunch | Grilled Cheese & Tomato Soup | 10.50 | |
+item Lunch | Chicken Fried Steak | 16.00 | Side | country gravy
+item Sides | Bacon (4) | 4.50 | |
+item Sides | Hash Browns | 3.50 | |
+item Sides | Side of Toast | 2.50 | Toast |
+item Sides | Fresh Fruit | 4.00 | |
+item Drinks | Bottomless Coffee | 3.00 | |
+item Drinks | Orange Juice | 4.00 | |
+item Drinks | Milkshake | 6.50 | |
+item Drinks | Hot Chocolate | 3.50 | |

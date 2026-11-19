@@ -1,0 +1,38 @@
+pack Steakhouse | food | 0 | Steaks by the cut and temperature, toppings, chops and seafood, sides to share, wine.
+category Starters | #a86a12 | dinner | kitchen | line
+category Steaks | #b83232 | dinner | kitchen | grill
+category Chops & Seafood | #8a5a2b | dinner | kitchen | grill
+category Sides to Share | #1f8a4c | dinner | kitchen | line
+category Desserts | #8a3a8a | dinner | kitchen |
+category Wine & Cocktails | #6a1f3a | | bar | | alcohol
+group Temperature | 1 1 | Blue, Rare, Medium Rare, Medium, Medium Well, Well Done
+group Steak Topping | 0 0 ask | Béarnaise + 3.00, Peppercorn sauce + 3.00, Blue cheese crust + 4.00, Oscar style + 12.00, Garlic butter + 2.00, Grilled shrimp + 9.00
+group Steak Side | 1 1 | Baked potato, Mashed potatoes, Fries, Creamed spinach, Asparagus
+group Salad Dressing | 1 1 ask | Blue cheese, Ranch, Balsamic, Caesar
+group Wine Pour | 1 1 | Glass, Bottle + 40.00
+item Starters | Shrimp Cocktail | 18.00 | |
+item Starters | Wedge Salad | 12.00 | Salad Dressing | bacon, tomato, blue cheese
+item Starters | French Onion Soup | 10.00 | |
+item Starters | Steak Tartare | 17.00 | |
+item Steaks | Filet Mignon 8 oz | 48.00 | Temperature, Steak Topping, Steak Side |
+item Steaks | Ribeye 16 oz | 54.00 | Temperature, Steak Topping, Steak Side |
+item Steaks | New York Strip 14 oz | 46.00 | Temperature, Steak Topping, Steak Side |
+item Steaks | Porterhouse 24 oz | 72.00 | Temperature, Steak Topping, Steak Side |
+item Steaks | Tomahawk 36 oz | 110.00 | Temperature, Steak Topping |
+item Chops & Seafood | Lamb Chops | 42.00 | Temperature, Steak Side |
+item Chops & Seafood | Pork Chop | 32.00 | Steak Side |
+item Chops & Seafood | Salmon | 34.00 | Steak Side |
+item Chops & Seafood | Lobster Tail | 52.00 | | drawn butter
+item Sides to Share | Mac and Cheese | 12.00 | |
+item Sides to Share | Creamed Spinach | 11.00 | |
+item Sides to Share | Truffle Fries | 12.00 | |
+item Sides to Share | Grilled Asparagus | 12.00 | |
+item Sides to Share | Loaded Baked Potato | 11.00 | |
+item Desserts | Cheesecake | 12.00 | |
+item Desserts | Chocolate Cake | 13.00 | |
+item Desserts | Crème Brûlée | 11.00 | |
+item Wine & Cocktails | Cabernet Sauvignon | 16.00 | Wine Pour |
+item Wine & Cocktails | Malbec | 14.00 | Wine Pour |
+item Wine & Cocktails | Chardonnay | 14.00 | Wine Pour |
+item Wine & Cocktails | Old Fashioned | 15.00 | |
+item Wine & Cocktails | Martini | 15.00 | |

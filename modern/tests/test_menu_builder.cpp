@@ -737,7 +737,11 @@ TEST_CASE("Starter menus: added alongside, ready to order", "[menubuilder][templ
     PosService pos(test::seedPosData(true), nullptr);
     REQUIRE(pos.loginWithPin(u"1234"_s));
     const QVariantList templates = pos.menuTemplates();
-    REQUIRE(templates.size() == 4);
+    // A restaurant's: food only (sushi, pizza, Italian, Mexican...), never a shop's goods.
+    REQUIRE(templates.size() >= 19);
+    for (const QVariant &t : templates)
+        CHECK(t.toMap()[u"kind"_s] == u"food"_s);
+    CHECK_FALSE(pos.applyMenuTemplate(u"hardware"_s));
     const int before = int(pos.menuItems().size());
     for (const QVariant &t : templates) {
         INFO(t.toMap()[u"id"_s].toString().toStdString());
@@ -791,14 +795,14 @@ TEST_CASE("Ready to go: the starter menu is; mistakes are caught", "[menubuilder
     menu[1].modifierGroups.push_back("gone");
     menu[2].name = menu[3].name;
     pos.shared()->settings.modifierGroups.push_back({"empty", "Salsa", 1, 1, {}, false, false});
-    REQUIRE(pos.saveCategory({{u"name"_s, u"Desserts"_s}}));
+    REQUIRE(pos.saveCategory({{u"name"_s, u"Late Night"_s}}));
     const QStringList found = problems(false);
     INFO(found.join(u"\n"_s).toStdString());
     CHECK(found.filter(u"pizza-oven"_s).size() == 1);
     CHECK(found.filter(u"choice group that's gone"_s).size() == 1);
     CHECK(found.filter(u"There are two"_s).size() == 1);
     CHECK(found.filter(u"Salsa has no options"_s).size() == 1);
-    CHECK(found.filter(u"Desserts has no items yet"_s).size() == 1);
+    CHECK(found.filter(u"Late Night has no items yet"_s).size() == 1);
     CHECK(problems(true).size() == 3);   // an empty category is a note; the kitchen prints pizza-oven's
     CHECK(problems(true).filter(u"pizza-oven"_s).isEmpty());
 
@@ -915,7 +919,7 @@ TEST_CASE("Menu Builder: undo, a change at a time; not over a change made elsewh
     CHECK_FALSE(pos.undoMenuChange());                  // nothing more
 
     // Changed elsewhere since (Manager -> Menu): not undone over it.
-    REQUIRE(pos.saveCategory({{u"name"_s, u"Desserts"_s}}));
+    REQUIRE(pos.saveCategory({{u"name"_s, u"Late Night"_s}}));
     pos.shared()->menu.front().price = vt::Money::fromCents(1);   // as another editor would
     CHECK_FALSE(pos.undoMenuChange());
     CHECK(pos.menuUndoText().isEmpty());

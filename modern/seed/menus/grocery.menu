@@ -1,0 +1,43 @@
+pack Grocery & Market | retail | 13 | Produce sold by weight on the scale, dairy, bakery, deli, pantry staples and household goods.
+category Produce | #1f8a4c | | | | food
+category Dairy & Eggs | #2b62b0 | | | | food
+category Bakery | #a86a12 | | | | food
+category Deli | #b83232 | | | | food
+category Pantry | #8a5a2b | | | | food
+category Frozen | #1f6f73 | | | | food
+category Household | #8a3a8a | | | | merchandise
+item Produce | Bananas | 0.69 | | | weight: lb | sku: BAN
+item Produce | Apples | 1.99 | | | weight: lb | sku: APL
+item Produce | Tomatoes | 2.49 | | | weight: lb | sku: TOM
+item Produce | Onions | 1.29 | | | weight: lb | sku: ONI
+item Produce | Potatoes | 0.99 | | | weight: lb | sku: POT
+item Produce | Grapes | 3.49 | | | weight: lb | sku: GRP
+item Produce | Avocado | 1.50 | | | | sku: AVO | cost: 0.70 | stock: 30
+item Produce | Lettuce | 2.29 | | | | sku: LET | cost: 1.00 | stock: 15
+item Produce | Strawberries 1 lb | 4.99 | | | | sku: STR | cost: 2.50 | stock: 12
+item Dairy & Eggs | Milk Gallon | 4.29 | | | variants: Kind=Whole,2%,Skim | sku: MLK | cost: 2.40 | stock: 10
+item Dairy & Eggs | Eggs Dozen | 3.99 | | | | sku: EGG | cost: 2.20 | stock: 20
+item Dairy & Eggs | Butter | 4.79 | | | | sku: BTR | cost: 2.60 | stock: 12
+item Dairy & Eggs | Cheddar Block | 5.49 | | | | sku: CHD | cost: 2.90 | stock: 10
+item Dairy & Eggs | Greek Yogurt | 1.69 | | | | sku: YGT | cost: 0.80 | stock: 24
+item Bakery | Sourdough Loaf | 6.50 | | | | sku: SRD | cost: 2.00 | stock: 8
+item Bakery | Baguette | 3.50 | | | | sku: BAG | cost: 1.00 | stock: 10
+item Bakery | Croissant | 2.75 | | | | sku: CRS | cost: 0.80 | stock: 12
+item Bakery | Cookies 6 pk | 5.99 | | | | sku: CKS | cost: 2.00 | stock: 8
+item Deli | Sliced Turkey | 11.99 | | | weight: lb | sku: TRK
+item Deli | Sliced Ham | 9.99 | | | weight: lb | sku: HAM
+item Deli | Swiss Cheese | 10.99 | | | weight: lb | sku: SWS
+item Deli | Potato Salad | 5.99 | | | weight: lb | sku: PSL
+item Deli | Rotisserie Chicken | 8.99 | | | | sku: RCH | cost: 4.50 | stock: 6
+item Pantry | Pasta 1 lb | 1.89 | | | | sku: PST | cost: 0.80 | stock: 24
+item Pantry | Pasta Sauce | 3.99 | | | | sku: PSC | cost: 1.80 | stock: 18
+item Pantry | Rice 2 lb | 3.49 | | | | sku: RCE | cost: 1.60 | stock: 15
+item Pantry | Cereal | 4.99 | | | variants: Kind=Oat Rings,Corn Flakes,Granola | sku: CER | cost: 2.40 | stock: 8
+item Pantry | Peanut Butter | 4.29 | | | | sku: PBT | cost: 2.10 | stock: 12
+item Pantry | Olive Oil | 9.99 | | | | sku: OLV | cost: 5.50 | stock: 8
+item Frozen | Frozen Pizza | 6.99 | | | | sku: FPZ | cost: 3.20 | stock: 10
+item Frozen | Ice Cream Pint | 5.49 | | | variants: Flavor=Vanilla,Chocolate,Strawberry | sku: ICP | cost: 2.60 | stock: 6
+item Frozen | Frozen Vegetables | 2.99 | | | | sku: FVG | cost: 1.20 | stock: 15
+item Household | Dish Soap | 3.49 | | | | sku: DSH | cost: 1.50 | stock: 12
+item Household | Trash Bags | 8.99 | | | | sku: TRB | cost: 4.00 | stock: 10
+item Household | Reusable Bag | 1.99 | | | | sku: RBG | cost: 0.60 | stock: 50

@@ -181,6 +181,7 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"setupStore"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString(),
                                           a.size() > 2 ? a.value(2).toString() : QString())); }},
+        {u"startWithStarter"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startWithStarter(a.value(0).toString())); }},
         {u"setupLogo"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupLogo(a.value(0).toString(), a.value(1).toBool())); }},
         {u"setupTaxArea"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setupTaxArea(a.value(0).toString())); }},
@@ -274,7 +275,12 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"customerTip"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.customerTip(a.value(0).toString(), a.value(1).toLongLong())); }},
         {u"backupNow"_s, [](PosService &p, const QVariantList &) { return QVariant(p.backupNow()); }},
-        {u"factoryReset"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.factoryReset(a.value(0).toString(), a.value(1).toBool())); }},
+        {u"factoryReset"_s, [](PosService &p, const QVariantList &a) {
+            // (A screen from before 0.22: true for an empty store.)
+            const QVariant as = a.value(1);
+            return QVariant(p.factoryReset(a.value(0).toString(), as.typeId() == QMetaType::Bool ? (as.toBool() ? u"empty"_s : QString())
+                                                                                                    : as.toString()));
+        }},
         {u"findCustomers"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.findCustomers(a.value(0).toString())); }},
         {u"selectCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.selectCustomer(a.value(0).toString())); }},
         {u"useCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.useCustomer(a.value(0).toString())); }},

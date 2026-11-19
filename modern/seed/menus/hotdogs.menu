@@ -1,0 +1,24 @@
+pack Hot Dogs & Fries | food | 0 | A street cart's or truck's: dogs and sausages your way, loaded fries, lemonade.
+category Dogs & Sausages | #b83232 | | kitchen | grill
+category Loaded Fries | #a86a12 | | kitchen | fryer
+category Sides | #8a5a2b | | kitchen | fryer
+category Drinks | #1f6f73 | | bar |
+group Bun | 1 1 | Classic bun, Pretzel bun + 1.00, Poppy seed bun, No bun (bowl)
+group Toppings | 0 0 ask | Mustard, Ketchup, Relish, Onions, Sauerkraut, Jalapeños, Chili + 1.50, Cheese + 1.00, Bacon + 1.50
+group Fries Size | 1 1 | Regular, Large + 2.00
+group Sauce | 1 1 ask | Cheese sauce, Garlic aioli, Chipotle mayo, Ranch
+item Dogs & Sausages | All-Beef Hot Dog | 5.50 | Bun, Toppings |
+item Dogs & Sausages | Chicago Dog | 7.50 | Bun | mustard, relish, onion, tomato, pickle, sport peppers, celery salt
+item Dogs & Sausages | Chili Cheese Dog | 7.50 | Bun | chili, cheese, onions
+item Dogs & Sausages | Bratwurst | 8.00 | Bun, Toppings | sauerkraut, mustard
+item Dogs & Sausages | Italian Sausage | 8.00 | Bun, Toppings | peppers, onions
+item Dogs & Sausages | Veggie Dog | 6.50 | Bun, Toppings |
+item Loaded Fries | Chili Cheese Fries | 8.50 | Fries Size | chili, cheese, onions
+item Loaded Fries | Garlic Parmesan Fries | 7.50 | Fries Size, Sauce |
+item Loaded Fries | Bacon Ranch Fries | 8.50 | Fries Size |
+item Sides | Fries | 4.00 | Fries Size, Sauce |
+item Sides | Onion Rings | 5.00 | Sauce |
+item Sides | Corn Dog | 4.50 | |
+item Drinks | Fresh Lemonade | 4.00 | |
+item Drinks | Soda | 2.50 | |
+item Drinks | Bottled Water | 2.00 | |

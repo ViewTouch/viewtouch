@@ -23,7 +23,7 @@
       "note": "Buns and bread every morning before 8."
     }
   ],
-  "storeName": "ViewTouch Caf\u00e9",
+  "storeName": "ViewTouch Café",
   "closeWhenPaid": true,
   "currencySymbol": "$",
   "openingChecklist": [
@@ -200,7 +200,11 @@
     "discounts": "4900 Discounts and comps",
     "staffMeals": "6150 Staff meals",
     "rounding": "4950 Cash rounding",
-    "giftCardsSold": "2400 Gift card liability", "refunds": "4910 Refunds", "paidIn": "4960 Paid ins", "paidOut": "6000 Paid outs", "overShort": "6900 Cash over and short",
+    "giftCardsSold": "2400 Gift card liability",
+    "refunds": "4910 Refunds",
+    "paidIn": "4960 Paid ins",
+    "paidOut": "6000 Paid outs",
+    "overShort": "6900 Cash over and short",
     "tender:cash": "1000 Cash on hand",
     "tender:credit": "1100 Card clearing",
     "tender:gift": "2400 Gift card liability",
@@ -229,6 +233,17 @@
         "breakfast"
       ],
       "printer": "kitchen"
+    },
+    {
+      "id": "starters",
+      "name": "Starters",
+      "color": "#b83232",
+      "periods": [
+        "lunch",
+        "dinner"
+      ],
+      "printer": "kitchen",
+      "station": "fryer"
     },
     {
       "id": "burgers",
@@ -271,6 +286,14 @@
         "dinner"
       ],
       "printer": "kitchen"
+    },
+    {
+      "id": "desserts",
+      "name": "Desserts",
+      "color": "#8a3a8a",
+      "periods": [],
+      "printer": "kitchen",
+      "station": "cold"
     },
     {
       "id": "drinks",
@@ -574,7 +597,7 @@
           "kitchenName": "AVO"
         },
         {
-          "name": "Jalape\u00f1os",
+          "name": "Jalapeños",
           "price": 0.75,
           "kitchenName": "JAL"
         }
@@ -766,7 +789,7 @@
           "price": 0
         },
         {
-          "name": "Ros\u00e9",
+          "name": "Rosé",
           "price": 0
         }
       ]
@@ -821,6 +844,151 @@
         {
           "name": "Bacon",
           "price": 1.5
+        }
+      ]
+    },
+    {
+      "id": "wing-sauce",
+      "name": "Wing Sauce",
+      "min": 1,
+      "max": 1,
+      "askHow": true,
+      "options": [
+        {
+          "name": "Buffalo",
+          "price": 0
+        },
+        {
+          "name": "BBQ",
+          "price": 0
+        },
+        {
+          "name": "Honey Garlic",
+          "price": 0
+        },
+        {
+          "name": "Lemon Pepper",
+          "price": 0
+        },
+        {
+          "name": "Nashville Hot",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "wing-dip",
+      "name": "Dip",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Ranch",
+          "price": 0
+        },
+        {
+          "name": "Blue Cheese",
+          "price": 0
+        },
+        {
+          "name": "Honey Mustard",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "cup-or-bowl",
+      "name": "Cup or Bowl",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Cup",
+          "price": 0
+        },
+        {
+          "name": "Bowl",
+          "price": 2.5
+        }
+      ]
+    },
+    {
+      "id": "dessert-topping",
+      "name": "Topping",
+      "min": 0,
+      "max": 1,
+      "options": [
+        {
+          "name": "Strawberry",
+          "price": 0.75
+        },
+        {
+          "name": "Chocolate",
+          "price": 0.75
+        },
+        {
+          "name": "Caramel",
+          "price": 0.75
+        }
+      ]
+    },
+    {
+      "id": "a-la-mode",
+      "name": "À la Mode",
+      "min": 0,
+      "max": 1,
+      "options": [
+        {
+          "name": "Vanilla Ice Cream",
+          "price": 1.5
+        }
+      ]
+    },
+    {
+      "id": "shake-flavor",
+      "name": "Flavor",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Vanilla",
+          "price": 0
+        },
+        {
+          "name": "Chocolate",
+          "price": 0
+        },
+        {
+          "name": "Strawberry",
+          "price": 0
+        },
+        {
+          "name": "Cookies and Cream",
+          "price": 0
+        }
+      ]
+    },
+    {
+      "id": "bottled-beer",
+      "name": "Beer",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "name": "Lager",
+          "price": 0
+        },
+        {
+          "name": "IPA",
+          "price": 0
+        },
+        {
+          "name": "Light",
+          "price": 0
+        },
+        {
+          "name": "Mexican Lager",
+          "price": 0
         }
       ]
     }

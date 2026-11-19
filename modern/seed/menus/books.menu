@@ -1,0 +1,31 @@
+pack Bookstore | retail | 15 | Books by genre with ISBN barcodes, kids' books, journals, bookmarks and reading lights.
+category Fiction | #2b62b0 | | | | merchandise
+category Nonfiction | #8a5a2b | | | | merchandise
+category Mystery & Thriller | #b83232 | | | | merchandise
+category Kids & Young Adult | #1f8a4c | | | | merchandise
+category Cookbooks | #a86a12 | | | | merchandise
+category Stationery & Gifts | #8a3a8a | | | | merchandise
+item Fiction | The Lighthouse Keeper | 18.99 | | | isbn | sku: FIC-001 | cost: 9.50 | stock: 4
+item Fiction | Winter in Lisbon | 17.99 | | | isbn | sku: FIC-002 | cost: 9.00 | stock: 3
+item Fiction | The Orchard Letters | 16.99 | | | isbn | sku: FIC-003 | cost: 8.50 | stock: 5
+item Fiction | Paper Kingdoms | 27.00 | | | isbn | sku: FIC-004 | cost: 13.50 | stock: 2
+item Fiction | Short Stories of the Sea | 15.99 | | | isbn | sku: FIC-005 | cost: 8.00 | stock: 3
+item Nonfiction | A Short History of Bread | 24.00 | | | isbn | sku: NF-001 | cost: 12.00 | stock: 3
+item Nonfiction | Small Habits, Big Days | 19.99 | | | isbn | sku: NF-002 | cost: 10.00 | stock: 4
+item Nonfiction | The Bird Watcher's Year | 22.00 | | | isbn | sku: NF-003 | cost: 11.00 | stock: 2
+item Nonfiction | Local Trails Guide | 21.95 | | | isbn | sku: NF-004 | cost: 11.00 | stock: 6
+item Mystery & Thriller | The Fourth Key | 16.99 | | | isbn | sku: MYS-001 | cost: 8.50 | stock: 5
+item Mystery & Thriller | Night Train to Oslo | 17.99 | | | isbn | sku: MYS-002 | cost: 9.00 | stock: 4
+item Mystery & Thriller | Cold Harbor | 15.99 | | | isbn | sku: MYS-003 | cost: 8.00 | stock: 3
+item Kids & Young Adult | The Very Sleepy Fox | 9.99 | | | isbn | sku: KID-001 | cost: 5.00 | stock: 6
+item Kids & Young Adult | Dragons of Pine Hollow | 12.99 | | | isbn | sku: KID-002 | cost: 6.50 | stock: 5
+item Kids & Young Adult | Space Camp Summer | 14.99 | | | isbn | sku: YA-001 | cost: 7.50 | stock: 4
+item Kids & Young Adult | Board Book: Colors | 7.99 | | | isbn | sku: KID-003 | cost: 4.00 | stock: 8
+item Cookbooks | Weeknight Suppers | 29.99 | | | isbn | sku: CK-001 | cost: 15.00 | stock: 3
+item Cookbooks | The Bread Bible | 35.00 | | | isbn | sku: CK-002 | cost: 17.50 | stock: 2
+item Cookbooks | Plants on the Plate | 27.50 | | | isbn | sku: CK-003 | cost: 13.75 | stock: 2
+item Stationery & Gifts | Bookmark | 3.99 | | | variants: Design=Leather,Botanical,Cats | sku: BKM | cost: 0.90 | stock: 20
+item Stationery & Gifts | Reading Light | 14.99 | | | | sku: RLT | cost: 5.00 | stock: 8
+item Stationery & Gifts | Lined Journal | 18.00 | | | variants: Color=Black,Forest,Rust | sku: JRN | cost: 5.50 | stock: 6
+item Stationery & Gifts | Book Tote | 20.00 | | | | sku: BTT | cost: 6.00 | stock: 10
+item Stationery & Gifts | Literary Candle | 22.00 | | | variants: Scent=Old Library,Rainy Day | sku: LCN | cost: 7.00 | stock: 5

@@ -40,6 +40,9 @@ Rectangle {
     property string alcoholTax: ""
     property string zip: ""
     property string serviceMode: "restaurant"
+    // A sample to start over with ("restaurant:sushi"; "": none), and those for how it serves.
+    property string sample: ""
+    readonly property var samples: g.pos ? ((g.pos.starterSets().find(k => k.kind === g.serviceMode) ?? {}).packs ?? []) : []
     property string chosenLook: ""
     property var addedItems: []
     Component.onCompleted: {
@@ -210,9 +213,71 @@ Rectangle {
                                 font.pixelSize: Ui.px(17)
                                 text: modelData[1] + "\n" + modelData[2]
                                 highlighted: g.serviceMode === modelData[0]
-                                onClicked: g.serviceMode = modelData[0]
+                                onClicked: { g.serviceMode = modelData[0]; g.sample = "" }
                             }
                         }
+                    }
+                    // A new store can start over as that kind's sample: a sushi
+                    // bar's menu, a taco truck's, a hardware store's goods (on
+                    // the store's computer; ViewTouch restarts with it).
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: g.info.canStartOver === true && g.samples.length > 0
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        text: g.serviceMode === "retail" ? qsTr("Start with a sample of what you sell? (optional)")
+                                                         : qsTr("Start with a sample menu? (optional)")
+                        color: "white"
+                        font.pixelSize: Ui.px(18)
+                        font.bold: true
+                        Layout.topMargin: 10
+                    }
+                    Flow {
+                        objectName: "setupSamples"
+                        visible: g.info.canStartOver === true && g.samples.length > 0
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: g.info.canStartOver === true ? g.samples : []
+                            delegate: PosButton {
+                                required property var modelData
+                                objectName: "setupSample-" + (modelData.id || "cafe-grill")
+                                implicitHeight: 52
+                                font.pixelSize: Ui.px(15)
+                                text: modelData.name
+                                highlighted: g.sample === modelData.set
+                                onClicked: g.sample = g.sample === modelData.set ? "" : modelData.set
+                            }
+                        }
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: g.sample !== ""
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Ui.muted
+                        font.pixelSize: Ui.px(15)
+                        text: (g.samples.find(p => p.set === g.sample) ?? {}).description ?? ""
+                    }
+                    PosButton {
+                        objectName: "setupStartOver"
+                        visible: g.sample !== ""
+                        Layout.fillWidth: true
+                        implicitHeight: 60
+                        font.pixelSize: Ui.px(17)
+                        text: qsTr("Start Over With This Sample")
+                        palette.button: "#2b62b0"
+                        palette.buttonText: "white"
+                        onClicked: g.pos.startWithStarter(g.sample)
+                    }
+                    Label {
+                        textFormat: Text.PlainText
+                        visible: g.sample !== ""
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Ui.muted
+                        font.pixelSize: Ui.px(14)
+                        text: qsTr("ViewTouch backs up, then restarts with its menu, sample staff and settings; the guide goes on from there.")
                     }
                     Item { Layout.fillHeight: true }
                 }

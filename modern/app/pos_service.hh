@@ -451,9 +451,10 @@ public:
     // computer can't encrypt (the app sets it; see storage/sealed.hh).
     std::function<std::pair<QByteArray, QByteArray>(const QString &password)> backupKeyFor;
     // Factory reset from the Manager page: main backs up, closes, deletes the
-    // database and starts again (`empty`: with an empty store). False: not
-    // possible here.
-    std::function<bool(bool empty)> requestFactoryReset;
+    // database and starts again with `startAs`: "" (the restaurant's starter
+    // set), "empty", or a starter set ("foodTruck:taqueria", "retail:books").
+    // False: not possible here.
+    std::function<bool(const QString &startAs)> requestFactoryReset;
     // A legacy ViewTouch store's menu and sales (the app sets these; see
     // legacy/legacy_apply.hh): its dat folder read and worked out, on any
     // thread, with a copy of the settings; then, here, what that found
@@ -1021,6 +1022,11 @@ public:
     // The setup guide (managers): what's set so far, and each step.
     QVariantMap setupInfo() const override;
     bool setupStore(const QString &name, const QString &receiptLines, const QString &serviceMode = QString());
+    // A new store (nothing sold, the guide not finished): start over as
+    // another starter set ("foodTruck:taqueria", "retail:books"), after a
+    // backup; ViewTouch restarts with it. A manager's (Factory reset is the
+    // maintainer's: it erases a store that has sold).
+    bool startWithStarter(const QString &set);
     bool setupLogo(const QString &ref, bool onReceipts);
     bool setupTaxes(double foodPercent, double alcoholPercent);
     // The store's ZIP code: its state and the rates there (the next step can change them).
@@ -1230,9 +1236,10 @@ public:
     bool addStoreImage(const QString &fileName, const QString &base64);
     bool removeStoreImage(const QString &ref);
     // Everything back to a fresh install, after a backup (managers; `confirm`
-    // must be "RESET"). ViewTouch restarts with the starter set, or `empty`
-    // (emptyStarter: no menu, tables or sample staff but one manager).
-    bool factoryReset(const QString &confirm, bool empty = false);
+    // must be "RESET"). ViewTouch restarts with `startAs`: the restaurant's
+    // starter set (""), "empty" (emptyStarter: no menu, tables or sample staff
+    // but one manager), or another kind and menu ("retail:hardware").
+    bool factoryReset(const QString &confirm, const QString &startAs = {});
 
     // --- customers, gift cards, house accounts (pos_customers.cpp) ---------------
     // Search by phone digits or name ("" = the most recent).

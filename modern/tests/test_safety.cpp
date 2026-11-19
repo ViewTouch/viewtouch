@@ -588,24 +588,31 @@ TEST_CASE("Factory reset from the Manager page: the maintainer, typed RESET, bac
     int asked = 0;
     bool backupWorks = true;
     REQUIRE(pos.loginWithPin(u"1234"_s));
-    pos.shared()->requestFactoryReset = [&](bool) { ++asked; return backupWorks; };
+    pos.shared()->requestFactoryReset = [&](const QString &) { ++asked; return backupWorks; };
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // the owner: not theirs
     CHECK(asked == 0);
     pos.shared()->requestFactoryReset = nullptr;
     pos.logout();
     REQUIRE(test::loginMaintainer(pos));
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // not on the machine with the data
-    pos.shared()->requestFactoryReset = [&](bool) { ++asked; return backupWorks; };
+    pos.shared()->requestFactoryReset = [&](const QString &) { ++asked; return backupWorks; };
     CHECK_FALSE(pos.factoryReset(u"reset please"_s));
     backupWorks = false;
     CHECK_FALSE(pos.factoryReset(u"RESET"_s));                     // the backup failed: nothing happens
     backupWorks = true;
     REQUIRE(pos.factoryReset(u" RESET "_s));
     CHECK(asked == 2);
-    bool wantedEmpty = false;
-    pos.shared()->requestFactoryReset = [&](bool empty) { ++asked; wantedEmpty = empty; return true; };
-    REQUIRE(pos.factoryReset(u"RESET"_s, true));
-    CHECK(wantedEmpty);
+    QString wanted;
+    pos.shared()->requestFactoryReset = [&](const QString &as) { ++asked; wanted = as; return true; };
+    REQUIRE(pos.factoryReset(u"RESET"_s, u"empty"_s));
+    CHECK(wanted == u"empty"_s);
+    // Another kind of store, with its menu: a bookstore.
+    REQUIRE(pos.factoryReset(u"RESET"_s, u"retail:books"_s));
+    CHECK(wanted == u"retail:books"_s);
+    // A shop's goods on a restaurant, or a menu there's none of: refused.
+    CHECK_FALSE(pos.factoryReset(u"RESET"_s, u"restaurant:books"_s));
+    CHECK_FALSE(pos.factoryReset(u"RESET"_s, u"retail:spaceships"_s));
+    CHECK(wanted == u"retail:books"_s);
     asked = 2;
     pos.logout();
     REQUIRE(pos.loginWithPin(u"1111"_s));

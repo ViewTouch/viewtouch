@@ -693,5 +693,235 @@
         "qty": 0.5
       }
     ]
+  },
+  {
+    "id": "chicken-wings",
+    "name": "Chicken Wings",
+    "price": 12.5,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "501",
+    "modifierGroups": [
+      "wing-sauce",
+      "wing-dip"
+    ],
+    "station": "fryer",
+    "kitchenColor": "red"
+  },
+  {
+    "id": "mozzarella-sticks",
+    "name": "Mozzarella Sticks",
+    "price": 8.5,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "502",
+    "station": "fryer"
+  },
+  {
+    "id": "nachos-supreme",
+    "name": "Nachos Supreme",
+    "price": 11.0,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "503",
+    "modifierGroups": [
+      "salad-protein"
+    ],
+    "station": "fryer"
+  },
+  {
+    "id": "spinach-dip",
+    "name": "Spinach Artichoke Dip",
+    "price": 9.5,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "504"
+  },
+  {
+    "id": "onion-ring-tower",
+    "name": "Onion Ring Tower",
+    "price": 8.0,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "505",
+    "modifierGroups": [
+      "wing-dip"
+    ],
+    "station": "fryer"
+  },
+  {
+    "id": "chefs-soup",
+    "name": "Chef's Soup",
+    "price": 5.5,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "506",
+    "modifierGroups": [
+      "cup-or-bowl"
+    ]
+  },
+  {
+    "id": "chili",
+    "name": "Chili",
+    "price": 6.5,
+    "family": "starters",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "507",
+    "modifierGroups": [
+      "cup-or-bowl"
+    ]
+  },
+  {
+    "id": "chicken-tenders",
+    "name": "Chicken Tenders",
+    "price": 11.5,
+    "family": "plates",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "601",
+    "modifierGroups": [
+      "wing-sauce",
+      "side"
+    ],
+    "station": "fryer"
+  },
+  {
+    "id": "fish-and-chips",
+    "name": "Fish & Chips",
+    "price": 15.0,
+    "family": "plates",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "602",
+    "station": "fryer"
+  },
+  {
+    "id": "grilled-salmon",
+    "name": "Grilled Salmon",
+    "price": 19.5,
+    "family": "plates",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "603",
+    "modifierGroups": [
+      "side"
+    ],
+    "station": "grill"
+  },
+  {
+    "id": "kids-tenders",
+    "name": "Kids Chicken Tenders",
+    "price": 7.5,
+    "family": "plates",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "604",
+    "modifierGroups": [
+      "kids-side",
+      "kids-drink"
+    ],
+    "station": "fryer"
+  },
+  {
+    "id": "cheesecake",
+    "name": "New York Cheesecake",
+    "price": 7.5,
+    "family": "desserts",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "701",
+    "modifierGroups": [
+      "dessert-topping"
+    ],
+    "station": "cold"
+  },
+  {
+    "id": "brownie-sundae",
+    "name": "Brownie Sundae",
+    "price": 8.0,
+    "family": "desserts",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "702",
+    "station": "cold"
+  },
+  {
+    "id": "apple-pie",
+    "name": "Apple Pie",
+    "price": 6.5,
+    "family": "desserts",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "703",
+    "modifierGroups": [
+      "a-la-mode"
+    ],
+    "station": "cold"
+  },
+  {
+    "id": "lava-cake",
+    "name": "Chocolate Lava Cake",
+    "price": 8.5,
+    "family": "desserts",
+    "taxClass": "food",
+    "printer": "kitchen",
+    "number": "704",
+    "modifierGroups": [
+      "a-la-mode"
+    ],
+    "station": "cold"
+  },
+  {
+    "id": "milkshake",
+    "name": "Milkshake",
+    "price": 6.5,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "309",
+    "modifierGroups": [
+      "shake-flavor"
+    ]
+  },
+  {
+    "id": "iced-tea",
+    "name": "Iced Tea",
+    "price": 2.95,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "310",
+    "modifierGroups": [
+      "drink-size"
+    ]
+  },
+  {
+    "id": "hot-chocolate",
+    "name": "Hot Chocolate",
+    "price": 3.5,
+    "family": "drinks",
+    "taxClass": "food",
+    "printer": "bar",
+    "number": "311"
+  },
+  {
+    "id": "bottled-beer",
+    "name": "Bottled Beer",
+    "price": 5.5,
+    "family": "drinks",
+    "taxClass": "alcohol",
+    "printer": "bar",
+    "number": "312",
+    "modifierGroups": [
+      "bottled-beer"
+    ],
+    "noStaffDiscount": true
   }
 ]

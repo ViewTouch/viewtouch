@@ -1,0 +1,30 @@
+pack Florist | retail | 22 | Bouquets and arrangements by size, single stems, plants, vases, add-ons and delivery.
+category Bouquets | #b83232 | | | | merchandise
+category Arrangements | #8a3a8a | | | | merchandise
+category Stems | #a86a12 | | | | merchandise
+category Plants | #1f8a4c | | | | merchandise
+category Vases & Add-Ons | #2b62b0 | | | | merchandise
+category Delivery | #1f6f73 | | | | none
+item Bouquets | Mixed Seasonal Bouquet | 35.00 | | | variants: Size=Standard,Deluxe,Premium | plus: Deluxe 15.00, Premium 30.00 | sku: MSB | cost: 12.00 | stock: 4
+item Bouquets | Dozen Roses | 65.00 | | | variants: Color=Red,Pink,White,Yellow,Mixed | sku: RSD | cost: 24.00 | stock: 3
+item Bouquets | Tulip Bunch | 28.00 | | | variants: Color=Pink,Yellow,Purple,White | sku: TLP | cost: 9.00 | stock: 4
+item Bouquets | Sunflower Bunch | 24.00 | | | | sku: SNF | cost: 8.00 | stock: 6
+item Bouquets | Wildflower Wrap | 22.00 | | | | sku: WFW | cost: 7.00 | stock: 6
+item Arrangements | Centerpiece | 75.00 | | | variants: Size=Small,Medium,Large | plus: Medium 25.00, Large 50.00 | sku: CTR | cost: 26.00 | stock: 2
+item Arrangements | Sympathy Arrangement | 95.00 | | | | sku: SYM | cost: 34.00 | stock: 2
+item Arrangements | Corsage | 30.00 | | | variants: Style=Wrist,Pin-On | sku: CRS | cost: 9.00 | stock: 4
+item Arrangements | Boutonniere | 15.00 | | | | sku: BTN | cost: 4.00 | stock: 6
+item Stems | Single Rose | 6.00 | | | variants: Color=Red,Pink,White,Yellow | sku: SRS | cost: 1.80 | stock: 12
+item Stems | Single Lily | 7.00 | | | | sku: SLL | cost: 2.20 | stock: 10
+item Stems | Eucalyptus Bundle | 12.00 | | | | sku: EUC | cost: 3.50 | stock: 8
+item Plants | Orchid | 45.00 | | | variants: Color=White,Purple,Pink | sku: ORC | cost: 18.00 | stock: 2
+item Plants | Succulent | 9.00 | | | | sku: SUC | cost: 2.50 | stock: 15
+item Plants | Pothos (6 in pot) | 22.00 | | | | sku: PTH | cost: 7.00 | stock: 6
+item Plants | Peace Lily | 32.00 | | | | sku: PCL | cost: 11.00 | stock: 4
+item Vases & Add-Ons | Glass Vase | 15.00 | | | variants: Size=Bud,Medium,Tall | plus: Medium 7.00, Tall 15.00 | sku: VAS | cost: 4.00 | stock: 4
+item Vases & Add-Ons | Balloon | 6.00 | | | variants: Message=Happy Birthday,Get Well,Congratulations,I Love You | sku: BLN | cost: 1.50 | stock: 10
+item Vases & Add-Ons | Chocolates | 18.00 | | | | sku: CHC | cost: 7.00 | stock: 8 | tax: food
+item Vases & Add-Ons | Teddy Bear | 22.00 | | | | sku: TDB | cost: 7.00 | stock: 5
+item Vases & Add-Ons | Card Message | 0.00 | | | | sku: CRD
+item Delivery | Local Delivery | 12.00 | | | | sku: DLV
+item Delivery | Same-Day Rush | 20.00 | | | | sku: RSH

@@ -1,0 +1,42 @@
+pack Indian | food | 0 | Curries, tandoor, biryani and breads; protein, spice and naan.
+category Starters | #a86a12 | | kitchen | fryer
+category Tandoor | #b83232 | | kitchen | tandoor
+category Curries | #8a5a2b | | kitchen | line
+category Vegetarian | #1f8a4c | | kitchen | line
+category Biryani & Rice | #2b62b0 | | kitchen | line
+category Breads | #8a3a8a | | kitchen | tandoor
+category Drinks & Desserts | #1f6f73 | | bar |
+group Protein | 1 1 | Chicken, Lamb + 3.00, Shrimp + 3.00, Paneer, Vegetables, Goat + 4.00
+group Spice | 1 1 ask | Mild, Medium, Hot, Indian hot
+group Rice | 1 1 | Basmati rice, Jeera rice + 1.00, Brown rice + 1.00, No rice
+group Naan | 0 1 ask | Plain naan + 3.00, Garlic naan + 3.50, Butter naan + 3.50
+group Raita | 0 1 | Raita + 2.00
+item Starters | Samosas (2) | 6.00 | | tamarind and mint chutney
+item Starters | Onion Bhaji | 6.50 | |
+item Starters | Pakora | 7.00 | Protein |
+item Starters | Chaat | 7.50 | | yogurt, chutney, sev
+item Tandoor | Tandoori Chicken | 17.00 | Spice, Raita |
+item Tandoor | Chicken Tikka | 17.00 | Spice, Raita |
+item Tandoor | Seekh Kebab | 18.00 | Spice, Raita | lamb
+item Tandoor | Tandoori Shrimp | 21.00 | Spice |
+item Curries | Butter Chicken | 17.00 | Spice, Rice, Naan |
+item Curries | Tikka Masala | 17.00 | Protein, Spice, Rice, Naan |
+item Curries | Vindaloo | 17.00 | Protein, Spice, Rice, Naan | potato
+item Curries | Korma | 17.00 | Protein, Spice, Rice, Naan | cashew cream
+item Curries | Saag | 16.00 | Protein, Spice, Rice, Naan | spinach
+item Curries | Rogan Josh | 19.00 | Spice, Rice, Naan | lamb
+item Vegetarian | Chana Masala | 14.00 | Spice, Rice, Naan | chickpeas
+item Vegetarian | Dal Makhani | 13.50 | Spice, Rice, Naan | black lentils
+item Vegetarian | Aloo Gobi | 13.50 | Spice, Rice, Naan | potato, cauliflower
+item Vegetarian | Malai Kofta | 15.00 | Spice, Rice, Naan |
+item Biryani & Rice | Biryani | 17.00 | Protein, Spice, Raita |
+item Biryani & Rice | Vegetable Pulao | 12.00 | |
+item Breads | Naan | 3.00 | |
+item Breads | Garlic Naan | 3.50 | |
+item Breads | Cheese Naan | 4.50 | |
+item Breads | Roti | 3.00 | |
+item Breads | Paratha | 4.00 | |
+item Drinks & Desserts | Mango Lassi | 5.00 | |
+item Drinks & Desserts | Masala Chai | 3.50 | |
+item Drinks & Desserts | Gulab Jamun | 5.50 | |
+item Drinks & Desserts | Kheer | 5.50 | |

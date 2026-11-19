@@ -1,0 +1,40 @@
+pack Pizza | food | 0 | Pizzas by size and crust, half-and-half toppings, wings, calzones, salads and drinks.
+category Pizza | #b83232 | | kitchen | oven
+category Specialty Pizza | #a86a12 | | kitchen | oven
+category Calzones & Pasta | #8a5a2b | | kitchen | oven
+category Wings & Sides | #2b62b0 | | kitchen | fryer
+category Salads | #1f8a4c | | kitchen | cold
+category Desserts | #8a3a8a | | kitchen |
+category Drinks | #1f6f73 | | bar |
+group Size | 1 1 | 10" Small, 12" Medium + 3.00, 16" Large + 6.00, 18" X-Large + 8.00
+group Crust | 1 1 | Hand-Tossed, Thin, Deep Dish + 2.00, Stuffed Crust + 3.00, Gluten-Free + 3.00
+group Toppings | 0 0 ask | Pepperoni + 1.50, Sausage + 1.50, Bacon + 1.50, Ham + 1.50, Chicken + 2.00, Mushrooms + 1.00, Onions + 1.00, Peppers + 1.00, Olives + 1.00, Jalapeños + 1.00, Pineapple + 1.00, Spinach + 1.00, Extra Cheese + 1.50
+group Half | 0 1 ask | Whole pizza, Left half, Right half
+group Sauce | 1 1 | Red sauce, White garlic, BBQ, Pesto + 1.00, Buffalo
+group Dressing | 1 1 ask | Ranch, Italian, Caesar, Balsamic, Blue Cheese
+group Wing Sauce | 1 1 ask | Buffalo, BBQ, Garlic Parmesan, Hot Honey
+item Pizza | Cheese Pizza | 11.00 | Size, Crust, Sauce, Toppings, Half | sauce, mozzarella
+item Pizza | Pepperoni Pizza | 13.00 | Size, Crust, Toppings, Half | sauce, mozzarella, pepperoni
+item Pizza | Build Your Own | 11.00 | Size, Crust, Sauce, Toppings, Half | mozzarella
+item Specialty Pizza | Margherita | 13.50 | Size, Crust | sauce, fresh mozzarella, basil
+item Specialty Pizza | Supreme | 16.00 | Size, Crust, Toppings | sauce, mozzarella, pepperoni, sausage, peppers, onions, olives
+item Specialty Pizza | Meat Lovers | 16.50 | Size, Crust | pepperoni, sausage, bacon, ham
+item Specialty Pizza | BBQ Chicken | 15.50 | Size, Crust | BBQ sauce, chicken, red onion, cilantro
+item Specialty Pizza | Hawaiian | 14.50 | Size, Crust | ham, pineapple
+item Specialty Pizza | Veggie Garden | 14.50 | Size, Crust | mushrooms, peppers, onions, olives, spinach
+item Specialty Pizza | White Pizza | 14.00 | Size, Crust | ricotta, mozzarella, garlic
+item Calzones & Pasta | Calzone | 12.00 | Toppings | ricotta, mozzarella
+item Calzones & Pasta | Stromboli | 12.50 | | pepperoni, ham, mozzarella
+item Calzones & Pasta | Baked Ziti | 12.00 | | ricotta, marinara
+item Wings & Sides | Wings (10) | 13.00 | Wing Sauce | ranch
+item Wings & Sides | Garlic Knots (6) | 5.00 | | marinara
+item Wings & Sides | Breadsticks | 6.00 | | marinara
+item Wings & Sides | Mozzarella Sticks | 7.50 | | marinara
+item Salads | Garden Salad | 7.50 | Dressing | lettuce, tomato, cucumber, onion
+item Salads | Caesar Salad | 8.50 | Dressing | romaine, parmesan, croutons
+item Salads | Antipasto Salad | 10.50 | Dressing | salami, provolone, olives, peppers
+item Desserts | Cannoli | 4.50 | |
+item Desserts | Chocolate Chip Cookie | 3.00 | |
+item Drinks | Fountain Drink | 2.75 | |
+item Drinks | Pitcher of Soda | 6.50 | |
+item Drinks | Bottled Water | 2.00 | |

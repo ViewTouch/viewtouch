@@ -1,0 +1,38 @@
+pack Seafood | food | 0 | Raw bar, fried and grilled fish, shellfish by the pound, chowder; how it's cooked and two sides.
+category Raw Bar | #2b62b0 | | kitchen | cold
+category Starters | #a86a12 | | kitchen | fryer
+category Fish | #1f6f73 | | kitchen | grill
+category Shellfish | #b83232 | | kitchen | line
+category Baskets & Sandwiches | #8a5a2b | | kitchen | fryer
+category Sides | #1f8a4c | | kitchen | line
+category Drinks | #6a1f3a | | bar |
+group Cooked | 1 1 | Grilled, Blackened, Fried, Broiled
+group Two Sides | 2 2 ask | Fries, Coleslaw, Rice pilaf, Hush puppies, Corn on the cob, Side salad, Steamed vegetables
+group Oysters | 1 1 | Half dozen, Dozen + 16.00
+group Boil Spice | 1 1 ask | Cajun, Lemon pepper, Garlic butter, The works (all three)
+group Spice Level | 1 1 ask | Mild, Medium, Hot
+item Raw Bar | Oysters | 18.00 | Oysters | mignonette, cocktail sauce, lemon
+item Raw Bar | Shrimp Cocktail | 14.00 | | cocktail sauce
+item Raw Bar | Tuna Poke | 16.00 | |
+item Starters | New England Clam Chowder | 7.00 | |
+item Starters | Calamari | 13.00 | | marinara
+item Starters | Crab Cakes (2) | 17.00 | | remoulade
+item Starters | Steamed Mussels | 15.00 | | white wine, garlic, bread
+item Fish | Salmon | 25.00 | Cooked, Two Sides |
+item Fish | Mahi Mahi | 24.00 | Cooked, Two Sides |
+item Fish | Fish of the Day | 27.00 | Cooked, Two Sides |
+item Fish | Catfish | 19.00 | Cooked, Two Sides |
+item Shellfish | Snow Crab (1 lb) | 34.00 | Boil Spice, Spice Level | corn, potatoes
+item Shellfish | Shrimp Boil (1 lb) | 22.00 | Boil Spice, Spice Level | corn, potatoes, sausage
+item Shellfish | Lobster Tail | 38.00 | Two Sides | drawn butter
+item Shellfish | Crawfish (2 lb) | 24.00 | Boil Spice, Spice Level |
+item Baskets & Sandwiches | Fish and Chips | 17.00 | | tartar sauce, coleslaw
+item Baskets & Sandwiches | Shrimp Basket | 18.00 | | cocktail sauce, fries
+item Baskets & Sandwiches | Lobster Roll | 29.00 | | fries
+item Baskets & Sandwiches | Fish Tacos (3) | 15.00 | Cooked |
+item Sides | Hush Puppies | 5.00 | |
+item Sides | Corn on the Cob | 3.50 | |
+item Sides | Rice Pilaf | 4.00 | |
+item Drinks | House White Wine | 10.00 | | | tax: alcohol
+item Drinks | Draft Beer | 7.00 | | | tax: alcohol
+item Drinks | Iced Tea | 3.00 | |

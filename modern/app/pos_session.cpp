@@ -1,9 +1,11 @@
 #include "app/pos_session.hh"
 
+#include <QCoreApplication>
 #include <QSet>
 #include <QTimer>
 
 #include "app/i18n.hh"
+#include "app/pos_starter.hh"
 
 #include <QHash>
 
@@ -204,6 +206,35 @@ QVariantList PosSession::splitTargets() const
                                {u"total"_s, c.value(u"total"_s)}, {u"count"_s, c.value(u"lineCount"_s)}});
     }
     out.append(QVariantMap{{u"id"_s, qint64(0)}, {u"label"_s, tr("New check")}, {u"total"_s, QString()}, {u"count"_s, 0}});
+    return out;
+}
+
+QVariantList PosSession::starterSets() const
+{
+    const auto tr = [](const QString &text) { return QCoreApplication::translate("PosService", text.toUtf8().constData()); };
+    const struct { const char *kind, *name, *description, *food; } kinds[] = {
+        {"restaurant", QT_TR_NOOP("Restaurant"), QT_TR_NOOP("Tables, a bar, takeout and delivery."), "food"},
+        {"foodTruck", QT_TR_NOOP("Food truck"), QT_TR_NOOP("Orders at the window, called by number; prep counts and a menu board."), "food"},
+        {"retail", QT_TR_NOOP("Shop"), QT_TR_NOOP("Items scanned by barcode, sizes and colors, returns and exchanges."), "retail"},
+    };
+    QVariantList out;
+    for (const auto &k : kinds) {
+        const QString kind = QString::fromLatin1(k.kind);
+        const QString first = defaultPack(kind);
+        QVariantList packs;
+        if (first.isEmpty())   // a restaurant's own: the sample café and grill
+            packs.append(QVariantMap{{u"set"_s, kind}, {u"id"_s, QString()}, {u"name"_s, tr(QStringLiteral(QT_TR_NOOP("Café & Grill")))},
+                                     {u"description"_s, tr(QStringLiteral(QT_TR_NOOP("The sample menu: burgers, salads, breakfast, drinks and dessert.")))}});
+        for (int pass = 0; pass < 2; ++pass)   // the kind's own menu first
+            for (const StarterPack &p : starterPacks()) {
+                if (p.kind != QLatin1String(k.food) || (pass == 0) != (p.id == first))
+                    continue;
+                packs.append(QVariantMap{{u"set"_s, kind + u':' + p.id}, {u"id"_s, p.id}, {u"name"_s, tr(p.name)},
+                                         {u"description"_s, tr(p.description)}, {u"items"_s, p.items}});
+            }
+        out.append(QVariantMap{{u"kind"_s, kind}, {u"name"_s, tr(QString::fromLatin1(k.name))},
+                               {u"description"_s, tr(QString::fromLatin1(k.description))}, {u"packs"_s, packs}});
+    }
     return out;
 }
 

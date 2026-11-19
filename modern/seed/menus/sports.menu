@@ -1,0 +1,29 @@
+pack Sporting Goods | retail | 20 | Running shoes by size, balls, rackets, fitness gear, camping and team apparel.
+category Footwear | #b83232 | | | | merchandise
+category Balls & Rackets | #a86a12 | | | | merchandise
+category Fitness | #2b62b0 | | | | merchandise
+category Camping & Outdoor | #1f8a4c | | | | merchandise
+category Apparel | #8a3a8a | | | | merchandise
+category Nutrition | #8a5a2b | | | | food
+item Footwear | Running Shoes | 119.99 | | | variants: Size=7,8,9,10,11,12; Width=Regular,Wide | sku: RUN | cost: 58.00 | stock: 2
+item Footwear | Trail Shoes | 129.99 | | | variants: Size=7,8,9,10,11,12 | sku: TRL | cost: 64.00 | stock: 2
+item Footwear | Athletic Socks 3 pk | 16.99 | | | variants: Size=S,M,L | sku: ASK | cost: 4.50 | stock: 8
+item Balls & Rackets | Basketball | 29.99 | | | variants: Size=Youth 27.5,Men's 29.5 | sku: BKB | cost: 12.00 | stock: 4
+item Balls & Rackets | Soccer Ball | 24.99 | | | variants: Size=3,4,5 | sku: SCB | cost: 9.00 | stock: 4
+item Balls & Rackets | Tennis Racket | 89.99 | | | | sku: TRK | cost: 40.00 | stock: 3
+item Balls & Rackets | Tennis Balls 3 pk | 5.99 | | | | sku: TNB | cost: 2.20 | stock: 24
+item Balls & Rackets | Pickleball Paddle Set | 59.99 | | | | sku: PKB | cost: 24.00 | stock: 4
+item Fitness | Yoga Mat | 34.99 | | | variants: Color=Purple,Black,Teal | sku: YGM | cost: 12.00 | stock: 4
+item Fitness | Dumbbell (each) | 2.00 | | | variants: Weight=5 lb,10 lb,15 lb,20 lb,25 lb | plus: 10 lb 8.00, 15 lb 18.00, 20 lb 28.00, 25 lb 38.00 | sku: DMB | cost: 1.00 | stock: 4
+item Fitness | Resistance Bands | 19.99 | | | | sku: RSB | cost: 6.00 | stock: 8
+item Fitness | Jump Rope | 12.99 | | | | sku: JRP | cost: 3.50 | stock: 10
+item Fitness | Water Bottle 32 oz | 24.99 | | | variants: Color=Black,Blue,Green | sku: WBT | cost: 8.00 | stock: 6
+item Camping & Outdoor | 2-Person Tent | 149.99 | | | | sku: TNT | cost: 75.00 | stock: 2
+item Camping & Outdoor | Sleeping Bag | 79.99 | | | | sku: SLB | cost: 36.00 | stock: 3
+item Camping & Outdoor | Headlamp | 24.99 | | | | sku: HLP | cost: 9.00 | stock: 6
+item Camping & Outdoor | Camp Chair | 39.99 | | | | sku: CCR | cost: 16.00 | stock: 4
+item Apparel | Performance Tee | 29.99 | | | variants: Size=S,M,L,XL; Color=Black,Royal,Gray | sku: PTE | cost: 9.00 | stock: 3
+item Apparel | Running Shorts | 34.99 | | | variants: Size=S,M,L,XL | sku: RSH | cost: 11.00 | stock: 3
+item Apparel | Team Jersey | 79.99 | | | variants: Size=S,M,L,XL,XXL | sku: JRS | cost: 32.00 | stock: 2
+item Nutrition | Protein Bar | 2.99 | | | variants: Flavor=Chocolate,Peanut Butter,Cookie Dough | sku: PRB | cost: 1.20 | stock: 24
+item Nutrition | Electrolyte Mix | 19.99 | | | | sku: ELM | cost: 8.00 | stock: 8

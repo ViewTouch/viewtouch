@@ -1,0 +1,30 @@
+pack Electronics Accessories | retail | 18 | Cables by length and plug, chargers, cases by phone model, audio, storage and protection plans.
+category Cables & Chargers | #2b62b0 | | | | merchandise
+category Phone Cases | #8a3a8a | | | | merchandise
+category Audio | #b83232 | | | | merchandise
+category Storage & Power | #a86a12 | | | | merchandise
+category Computer | #1f6f73 | | | | merchandise
+category Services | #1f8a4c | | | | none
+item Cables & Chargers | Charging Cable | 14.99 | | | variants: Plug=USB-C to USB-C,USB-C to Lightning,USB-A to USB-C; Length=3 ft,6 ft,10 ft | plus: 6 ft 3.00, 10 ft 6.00 | sku: CBL | cost: 3.50 | stock: 6
+item Cables & Chargers | Wall Charger 20W | 19.99 | | | | sku: WC20 | cost: 6.00 | stock: 12
+item Cables & Chargers | Wall Charger 65W | 39.99 | | | | sku: WC65 | cost: 14.00 | stock: 6
+item Cables & Chargers | Car Charger | 17.99 | | | | sku: CCH | cost: 5.00 | stock: 8
+item Cables & Chargers | Wireless Charging Pad | 29.99 | | | | sku: WCP | cost: 10.00 | stock: 6
+item Cables & Chargers | HDMI Cable | 12.99 | | | variants: Length=3 ft,6 ft,15 ft | plus: 6 ft 3.00, 15 ft 9.00 | sku: HDMI | cost: 3.00 | stock: 6
+item Phone Cases | Clear Case | 24.99 | | | variants: Model=iPhone 15,iPhone 16,Galaxy S24,Galaxy S25,Pixel 9 | sku: CLR | cost: 5.00 | stock: 4
+item Phone Cases | Rugged Case | 34.99 | | | variants: Model=iPhone 15,iPhone 16,Galaxy S24,Galaxy S25 | sku: RGD | cost: 9.00 | stock: 3
+item Phone Cases | Wallet Case | 29.99 | | | variants: Model=iPhone 15,iPhone 16,Galaxy S24; Color=Black,Brown | sku: WLT | cost: 7.00 | stock: 2
+item Phone Cases | Screen Protector | 19.99 | | | variants: Model=iPhone 15,iPhone 16,Galaxy S24,Galaxy S25,Pixel 9 | sku: SCR | cost: 2.00 | stock: 6
+item Audio | Wireless Earbuds | 79.99 | | | variants: Color=Black,White | sku: EBD | cost: 38.00 | stock: 4
+item Audio | Over-Ear Headphones | 129.99 | | | | sku: HPH | cost: 66.00 | stock: 3
+item Audio | Bluetooth Speaker | 59.99 | | | variants: Color=Black,Blue,Red | sku: SPK | cost: 27.00 | stock: 3
+item Audio | Wired Earbuds | 14.99 | | | | sku: WEB | cost: 4.00 | stock: 10
+item Storage & Power | Power Bank 10000 mAh | 34.99 | | | | sku: PBK | cost: 13.00 | stock: 8
+item Storage & Power | USB Flash Drive | 12.99 | | | variants: Capacity=32 GB,64 GB,128 GB | plus: 64 GB 5.00, 128 GB 12.00 | sku: USB | cost: 4.00 | stock: 6
+item Storage & Power | microSD Card | 16.99 | | | variants: Capacity=64 GB,128 GB,256 GB | plus: 128 GB 8.00, 256 GB 20.00 | sku: MSD | cost: 6.00 | stock: 6
+item Computer | Wireless Mouse | 24.99 | | | | sku: MOU | cost: 9.00 | stock: 8
+item Computer | Bluetooth Keyboard | 44.99 | | | | sku: KBD | cost: 18.00 | stock: 5
+item Computer | Laptop Sleeve | 29.99 | | | variants: Size=13 in,15 in | plus: 15 in 5.00 | sku: SLV | cost: 9.00 | stock: 4
+item Computer | USB-C Hub | 39.99 | | | | sku: HUB | cost: 15.00 | stock: 6
+item Services | Protection Plan (1 yr) | 19.99 | | | | sku: PP1
+item Services | Screen Protector Install | 5.00 | | | | sku: INS

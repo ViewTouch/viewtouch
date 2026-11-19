@@ -21,6 +21,7 @@
 #include "print/ticket_printer.hh"
 #include "storage/async_writer.hh"
 #include "app/pos_demo.hh"
+#include "app/pos_starter.hh"
 #include "storage/backup.hh"
 #include "storage/sealed.hh"
 #include "storage/layout_store.hh"
@@ -800,26 +801,41 @@ int runStore(const Args &cli, const Options &o)
     if (!havePosStore)
         qWarning().noquote() << "Sales will not be saved; cannot open database:" << posError;
 
-    auto readSeed = [](const QString &name) {
-        QFile f(u":/seed/pos/"_s + name);
-        return f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()) : QJsonDocument();
+    // The starter set (made only when a store begins with it): a restaurant's,
+    // or the kind and menu --starter or a factory reset chose (a taco
+    // truck's, a bookstore's), or emptied.
+    const auto starterSet = [&] {
+        QString why;
+        const QString marked = markedStarter(cli, o);
+        if (const auto set = vt::app::parseStarterSet(marked, &why); set) {
+            if (auto data = vt::app::starterData(*set, &why))
+                return std::move(*data);
+        }
+        qWarning().noquote() << "Starter set" << marked << "didn't load (" + why + "): the restaurant's instead.";
+        return *vt::app::starterData({});
     };
-    vt::app::PosData seedData;
-    seedData.settings = vt::app::settingsFromJson(readSeed(u"settings.json"_s).object());
-    seedData.menu = vt::app::menuFromJson(readSeed(u"menu.json"_s).array());
-    seedData.employees = vt::app::employeesFromJson(readSeed(u"employees.json"_s).array());
-    seedData.ingredients = vt::app::ingredientsFromJson(readSeed(u"ingredients.json"_s).array());
-    if (startEmpty)
-        vt::app::emptyStarter(seedData);
+    std::optional<vt::app::PosData> seedData;
+    const auto seed = [&]() -> vt::app::PosData & {
+        if (!seedData) {
+            seedData = starterSet();
+            if (startEmpty)
+                vt::app::emptyStarter(*seedData);
+        }
+        return *seedData;
+    };
 
     std::optional<vt::app::PosData> posData;
     if (havePosStore) {
         if (!posStore.started() || cli.isSet(o.resetMenu)) {
             QString error;
-            if (!posStore.seed(seedData.settings, seedData.menu, seedData.employees, &error, seedData.ingredients))
+            vt::app::PosData &d = seed();
+            if (!posStore.seed(d.settings, d.menu, d.employees, &error, d.ingredients)) {
                 qWarning().noquote() << "Could not store starter menu:" << error;
-            else if (startEmpty)
-                QFile::remove(startEmptyMarker(cli, o));
+            } else {
+                QFile::remove(starterMarker(cli, o));
+                if (startEmpty)
+                    QFile::remove(startEmptyMarker(cli, o));
+            }
         }
         QStringList posErrors;
         posData = posStore.load(&posErrors);
@@ -827,7 +843,7 @@ int runStore(const Args &cli, const Options &o)
             qWarning().noquote() << "pos:" << e;
     }
     if (!posData)
-        posData = seedData;
+        posData = seed();
     if (cli.isSet(o.stress) && (!posData->closedToday.empty() || !posData->pastDays.empty() || !posData->openChecks.empty())) {
         qCritical().noquote() << "This store has sales: a stress test runs only on a new folder (leave out --data-dir).";
         return 1;
@@ -1161,13 +1177,20 @@ int runStore(const Args &cli, const Options &o)
     // Factory reset from the Manager page: back up now, then leave; main
     // deletes the database once it is closed and starts again.
     if (havePosStore) {
-        shared->requestFactoryReset = [&cli, &o, &writer](bool empty) {
+        shared->requestFactoryReset = [&cli, &o, &writer](const QString &startAs) {
+            const bool empty = startAs == u"empty";
             if (writer)
                 writer->flush();
             QString error;
             const QString target = backupBeforeReset(cli, o, &error);
             if (target.isEmpty()) {
                 qWarning().noquote() << "Factory reset: the backup failed:" << error;
+                return false;
+            }
+            // A taco truck's or a bookstore's starter set: the next start begins with it.
+            QFile::remove(starterMarker(cli, o));
+            if (!empty && !startAs.isEmpty() && !markStarter(cli, o, startAs)) {
+                qWarning().noquote() << "Factory reset: couldn't mark which starter set to begin with; nothing was reset.";
                 return false;
             }
             if (!empty)
@@ -1726,7 +1749,7 @@ int main(int argc, char *argv[])
     cli.addHelpOption();
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
-        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.demoData, o.legacyPages, o.legacyOut, o.importLegacy, o.dryRun, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
+        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.empty, o.starter, o.demoData, o.legacyPages, o.legacyOut, o.importLegacy, o.dryRun, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.snapshot, o.restore, o.pairingCode, o.maintainerPin, o.exportDir,
         o.stress, o.stressMinutes, o.stressSpeed, o.stressServers, o.stressHours, o.stressLoad, o.stressExit};
     cli.addOptions(all);

@@ -1,0 +1,36 @@
+pack Pub & Bar | food | 0 | Drafts by size, cocktails with your choice of spirit, shots, and bar food to go with them.
+category Draft Beer | #a86a12 | | bar | | alcohol
+category Cocktails | #8a3a8a | | bar | | alcohol
+category Spirits | #6a1f3a | | bar | | alcohol
+category Bar Food | #b83232 | | kitchen | fryer
+category Non-Alcoholic | #1f6f73 | | bar |
+group Pour | 1 1 | Pint, Tall (23 oz) + 3.00, Pitcher + 12.00
+group Spirit | 1 1 | Well, Call + 2.00, Premium + 4.00, Top shelf + 7.00
+group How Served | 1 1 | Neat, On the rocks, Up, Shot
+group Mixer | 0 1 ask | Soda, Tonic, Coke, Sprite, Ginger beer, Cranberry, Orange juice
+group Wing Sauce | 1 1 ask | Buffalo, BBQ, Garlic Parmesan, Dry rub
+item Draft Beer | House Lager | 6.00 | Pour |
+item Draft Beer | IPA | 7.00 | Pour |
+item Draft Beer | Stout | 7.00 | Pour |
+item Draft Beer | Wheat Beer | 7.00 | Pour |
+item Draft Beer | Cider | 7.00 | Pour |
+item Cocktails | Margarita | 11.00 | Spirit | lime, triple sec, salt rim
+item Cocktails | Old Fashioned | 12.00 | Spirit | bitters, orange
+item Cocktails | Moscow Mule | 11.00 | Spirit | ginger beer, lime
+item Cocktails | Mojito | 11.00 | Spirit | mint, lime, soda
+item Cocktails | Long Island Iced Tea | 13.00 | Spirit |
+item Cocktails | Bloody Mary | 11.00 | Spirit | celery, olives
+item Spirits | Vodka | 8.00 | Spirit, How Served, Mixer |
+item Spirits | Whiskey | 9.00 | Spirit, How Served, Mixer |
+item Spirits | Tequila | 9.00 | Spirit, How Served, Mixer |
+item Spirits | Rum | 8.00 | Spirit, How Served, Mixer |
+item Spirits | Gin | 8.00 | Spirit, How Served, Mixer |
+item Bar Food | Wings (10) | 14.00 | Wing Sauce | celery, ranch
+item Bar Food | Pub Burger | 14.00 | | fries
+item Bar Food | Soft Pretzel | 9.00 | | beer cheese
+item Bar Food | Nachos | 12.00 | |
+item Bar Food | Fish and Chips | 16.00 | |
+item Bar Food | Sliders (3) | 12.00 | |
+item Non-Alcoholic | Soda | 3.00 | |
+item Non-Alcoholic | Mocktail | 7.00 | |
+item Non-Alcoholic | Non-Alcoholic Beer | 6.00 | |

@@ -1,0 +1,36 @@
+pack Hardware Store | retail | 14 | Fasteners by size, tools, paint by color and size, plumbing, electrical, garden.
+category Fasteners | #8a5a2b | | | | merchandise
+category Hand Tools | #b83232 | | | | merchandise
+category Power Tools | #a86a12 | | | | merchandise
+category Paint & Supplies | #2b62b0 | | | | merchandise
+category Plumbing & Electrical | #1f6f73 | | | | merchandise
+category Lawn & Garden | #1f8a4c | | | | merchandise
+item Fasteners | Wood Screws (box) | 6.99 | | | variants: Size=#6 x 1 in,#8 x 1-1/4 in,#8 x 2 in,#10 x 3 in | sku: WSC | cost: 2.50 | stock: 12
+item Fasteners | Drywall Screws (lb) | 8.49 | | | variants: Length=1-1/4 in,1-5/8 in,2 in | sku: DSC | cost: 3.20 | stock: 10
+item Fasteners | Hex Bolt | 0.45 | | | variants: Size=1/4 x 1 in,1/4 x 2 in,3/8 x 2 in,1/2 x 3 in | sku: HXB | cost: 0.10 | stock: 80
+item Fasteners | Nails (lb) | 4.99 | | | variants: Size=4d,8d,16d | sku: NLS | cost: 1.80 | stock: 15
+item Fasteners | Wall Anchors | 5.49 | | | | sku: ANC | cost: 1.70 | stock: 20
+item Hand Tools | Claw Hammer 16 oz | 19.99 | | | | sku: HMR | cost: 8.00 | stock: 8
+item Hand Tools | Screwdriver Set | 24.99 | | | | sku: SDS | cost: 9.50 | stock: 6
+item Hand Tools | Tape Measure 25 ft | 14.99 | | | | sku: TMS | cost: 5.50 | stock: 10
+item Hand Tools | Adjustable Wrench | 16.99 | | | variants: Size=8 in,10 in,12 in | plus: 10 in 3.00, 12 in 6.00 | sku: ADW | cost: 6.50 | stock: 5
+item Hand Tools | Utility Knife | 9.99 | | | | sku: UKN | cost: 3.50 | stock: 12
+item Hand Tools | Level 24 in | 22.99 | | | | sku: LVL | cost: 9.00 | stock: 5
+item Power Tools | Cordless Drill | 99.00 | | | | sku: DRL | cost: 58.00 | stock: 3
+item Power Tools | Circular Saw | 129.00 | | | | sku: CSW | cost: 76.00 | stock: 2
+item Power Tools | Drill Bit Set | 29.99 | | | | sku: DBS | cost: 11.00 | stock: 6
+item Power Tools | Battery Pack | 59.00 | | | | sku: BPK | cost: 32.00 | stock: 4
+item Paint & Supplies | Interior Paint | 34.99 | | | variants: Size=Quart,Gallon; Color=Bright White,Agreeable Gray,Navy,Sage | plus: Gallon 20.00 | sku: PNT | cost: 14.00 | stock: 3
+item Paint & Supplies | Paint Roller Kit | 14.99 | | | | sku: RLR | cost: 5.50 | stock: 8
+item Paint & Supplies | Paint Brush | 7.99 | | | variants: Width=1 in,2 in,3 in | plus: 2 in 2.00, 3 in 4.00 | sku: BRS | cost: 2.50 | stock: 10
+item Paint & Supplies | Painter's Tape | 6.49 | | | | sku: PTP | cost: 2.20 | stock: 15
+item Paint & Supplies | Drop Cloth | 9.99 | | | | sku: DCL | cost: 3.50 | stock: 8
+item Plumbing & Electrical | PVC Pipe 10 ft | 7.99 | | | variants: Diameter=1/2 in,3/4 in,1 in | plus: 3/4 in 2.00, 1 in 4.00 | sku: PVC | cost: 3.00 | stock: 10
+item Plumbing & Electrical | Plumber's Tape | 2.49 | | | | sku: PLT | cost: 0.70 | stock: 20
+item Plumbing & Electrical | Extension Cord 25 ft | 19.99 | | | | sku: EXT | cost: 7.50 | stock: 8
+item Plumbing & Electrical | LED Bulb 4 pk | 11.99 | | | variants: Light=Soft White,Daylight | sku: LED | cost: 4.50 | stock: 12
+item Plumbing & Electrical | Outlet Cover | 1.99 | | | | sku: OCV | cost: 0.40 | stock: 30
+item Lawn & Garden | Garden Hose 50 ft | 34.99 | | | | sku: HSE | cost: 14.00 | stock: 5
+item Lawn & Garden | Potting Soil | 9.99 | | | | sku: SOL | cost: 4.00 | stock: 12
+item Lawn & Garden | Work Gloves | 12.99 | | | variants: Size=M,L,XL | sku: GLV | cost: 4.50 | stock: 8
+item Lawn & Garden | Pruning Shears | 18.99 | | | | sku: PRN | cost: 7.00 | stock: 6

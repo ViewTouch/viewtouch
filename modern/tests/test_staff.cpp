@@ -666,7 +666,7 @@ TEST_CASE("Setup guide: name, receipt, taxes, items, your own manager, sample st
     pos.logout();
     REQUIRE(pos.loginWithPin(u"1234"_s));
     CHECK_FALSE(pos.setupInfo()[u"done"_s].toBool());
-    CHECK(pos.setupInfo()[u"samples"_s].toInt() == 6);
+    CHECK(pos.setupInfo()[u"samples"_s].toInt() == 9);   // the sample staff, all nine
 
     REQUIRE(pos.setupStore(u"Taco Loco"_s, u"123 Main St\n555-0100"_s));
     CHECK(pos.shared()->settings.storeName == "Taco Loco");

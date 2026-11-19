@@ -1,0 +1,30 @@
+pack Pet Supply | retail | 16 | Food by bag size, treats, toys, leashes and collars in sizes and colors, litter and grooming.
+category Dog Food | #8a5a2b | | | | merchandise
+category Cat Food | #a86a12 | | | | merchandise
+category Treats | #b83232 | | | | merchandise
+category Toys | #8a3a8a | | | | merchandise
+category Collars & Leashes | #2b62b0 | | | | merchandise
+category Litter & Grooming | #1f6f73 | | | | merchandise
+item Dog Food | Chicken & Rice Dog Food | 24.99 | | | variants: Bag=5 lb,15 lb,30 lb | plus: 15 lb 22.00, 30 lb 42.00 | sku: DFC | cost: 13.00 | stock: 4
+item Dog Food | Grain-Free Salmon Dog Food | 32.99 | | | variants: Bag=4 lb,12 lb,24 lb | plus: 12 lb 26.00, 24 lb 48.00 | sku: DFS | cost: 18.00 | stock: 3
+item Dog Food | Puppy Formula | 26.99 | | | variants: Bag=5 lb,15 lb | plus: 15 lb 24.00 | sku: DFP | cost: 14.00 | stock: 3
+item Dog Food | Wet Dog Food Can | 2.49 | | | variants: Flavor=Beef,Chicken,Lamb | sku: DWC | cost: 1.10 | stock: 24
+item Cat Food | Indoor Cat Food | 19.99 | | | variants: Bag=3 lb,7 lb,16 lb | plus: 7 lb 12.00, 16 lb 26.00 | sku: CFI | cost: 10.00 | stock: 4
+item Cat Food | Wet Cat Food Can | 1.79 | | | variants: Flavor=Tuna,Chicken,Salmon | sku: CWC | cost: 0.80 | stock: 36
+item Treats | Dental Chews | 12.99 | | | variants: Size=Small,Medium,Large | sku: DCH | cost: 6.00 | stock: 8
+item Treats | Training Treats | 7.99 | | | | sku: TTR | cost: 3.50 | stock: 12
+item Treats | Bully Stick | 4.99 | | | | sku: BLS | cost: 2.00 | stock: 20
+item Treats | Catnip | 5.99 | | | | sku: CNP | cost: 2.20 | stock: 10
+item Toys | Tennis Balls 3 pk | 6.99 | | | | sku: TNB | cost: 2.50 | stock: 12
+item Toys | Rope Toy | 9.99 | | | variants: Size=Small,Large | plus: Large 4.00 | sku: RPT | cost: 3.50 | stock: 8
+item Toys | Squeaky Plush | 11.99 | | | variants: Shape=Duck,Fox,Hedgehog | sku: SQP | cost: 4.00 | stock: 6
+item Toys | Feather Wand | 7.99 | | | | sku: FTW | cost: 2.80 | stock: 10
+item Toys | Puzzle Feeder | 19.99 | | | | sku: PZF | cost: 8.00 | stock: 4
+item Collars & Leashes | Nylon Collar | 14.99 | | | variants: Size=S,M,L; Color=Red,Blue,Black,Pink | sku: COL | cost: 4.50 | stock: 2
+item Collars & Leashes | Leash 6 ft | 19.99 | | | variants: Color=Red,Blue,Black | sku: LSH | cost: 6.00 | stock: 4
+item Collars & Leashes | Harness | 29.99 | | | variants: Size=XS,S,M,L,XL | sku: HRN | cost: 10.00 | stock: 3
+item Collars & Leashes | ID Tag (engraved) | 12.99 | | | | sku: IDT | cost: 3.00 | stock: 30
+item Litter & Grooming | Clumping Litter 20 lb | 16.99 | | | | sku: LTR | cost: 8.00 | stock: 8
+item Litter & Grooming | Pet Shampoo | 11.99 | | | | sku: SHP | cost: 4.50 | stock: 8
+item Litter & Grooming | Slicker Brush | 13.99 | | | | sku: BRH | cost: 5.00 | stock: 6
+item Litter & Grooming | Waste Bags 120 ct | 9.99 | | | | sku: WBG | cost: 3.50 | stock: 15

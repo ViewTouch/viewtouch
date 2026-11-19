@@ -53,5 +53,29 @@
     "language": "es",
     "sample": true,
     "payRate": 7.25
+  },
+  {
+    "id": "ava",
+    "name": "Ava",
+    "role": "host",
+    "pin": "2468",
+    "sample": true,
+    "payRate": 13.0
+  },
+  {
+    "id": "theo",
+    "name": "Theo",
+    "role": "bartender",
+    "pin": "1357",
+    "sample": true,
+    "payRate": 9.5
+  },
+  {
+    "id": "priya",
+    "name": "Priya",
+    "role": "server",
+    "pin": "7531",
+    "sample": true,
+    "payRate": 7.25
   }
 ]

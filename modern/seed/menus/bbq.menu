@@ -1,0 +1,34 @@
+pack BBQ Smokehouse | food | 0 | Smoked meats by the plate or the pound, sandwiches and sides; choose two sides and a sauce.
+category Plates | #b83232 | | kitchen | pit
+category By the Pound | #8a5a2b | | kitchen | pit
+category Sandwiches | #a86a12 | | kitchen | pit
+category Sides | #1f8a4c | | kitchen | line
+category Desserts | #8a3a8a | | kitchen |
+category Drinks | #1f6f73 | | bar |
+group Two Sides | 2 2 ask | Mac and cheese, Coleslaw, Baked beans, Potato salad, Collard greens, Cornbread, Fries
+group Sauce | 1 1 ask | Original, Spicy, Carolina mustard, Alabama white, No sauce
+group Meat | 1 2 | Brisket, Pulled pork, Smoked turkey, Sausage, Burnt ends + 2.00
+group Bread | 0 1 | Texas toast, Cornbread, White bread
+item Plates | Brisket Plate | 21.00 | Two Sides, Sauce, Bread |
+item Plates | Pulled Pork Plate | 17.00 | Two Sides, Sauce, Bread |
+item Plates | Half Rack Ribs | 22.00 | Two Sides, Sauce, Bread |
+item Plates | Full Rack Ribs | 34.00 | Two Sides, Sauce, Bread |
+item Plates | Two Meat Plate | 24.00 | Meat, Two Sides, Sauce, Bread |
+item Plates | Smoked Half Chicken | 17.00 | Two Sides, Sauce, Bread |
+item By the Pound | Brisket (lb) | 28.00 | Sauce |
+item By the Pound | Pulled Pork (lb) | 18.00 | Sauce |
+item By the Pound | Burnt Ends (lb) | 30.00 | Sauce |
+item By the Pound | Sausage Link | 6.00 | |
+item Sandwiches | Brisket Sandwich | 14.00 | Sauce | pickles, onion
+item Sandwiches | Pulled Pork Sandwich | 12.00 | Sauce | coleslaw
+item Sandwiches | Chopped Chicken Sandwich | 12.00 | Sauce |
+item Sides | Mac and Cheese | 5.00 | |
+item Sides | Coleslaw | 4.00 | |
+item Sides | Baked Beans | 4.00 | |
+item Sides | Collard Greens | 4.50 | |
+item Sides | Cornbread | 3.00 | | honey butter
+item Desserts | Banana Pudding | 6.00 | |
+item Desserts | Peach Cobbler | 7.00 | |
+item Drinks | Sweet Tea | 3.00 | |
+item Drinks | Lemonade | 3.50 | |
+item Drinks | Craft Beer | 7.00 | | | tax: alcohol

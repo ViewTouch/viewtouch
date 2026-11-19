@@ -1,0 +1,31 @@
+pack Toys & Games | retail | 21 | Toys by age, board games, puzzles, crafts, plush and outdoor play.
+category Ages 0-3 | #1f8a4c | | | | merchandise
+category Ages 4-7 | #a86a12 | | | | merchandise
+category Ages 8+ | #2b62b0 | | | | merchandise
+category Board Games & Puzzles | #8a3a8a | | | | merchandise
+category Arts & Crafts | #b83232 | | | | merchandise
+category Outdoor Play | #1f6f73 | | | | merchandise
+item Ages 0-3 | Stacking Rings | 14.99 | | | | sku: STK | cost: 5.00 | stock: 6
+item Ages 0-3 | Soft Blocks | 19.99 | | | | sku: SBK | cost: 7.00 | stock: 5
+item Ages 0-3 | Plush Bunny | 18.99 | | | variants: Color=Gray,Pink,Cream | sku: PBN | cost: 6.00 | stock: 4
+item Ages 0-3 | Shape Sorter | 16.99 | | | | sku: SHS | cost: 6.00 | stock: 5
+item Ages 4-7 | Wooden Train Set | 49.99 | | | | sku: WTR | cost: 21.00 | stock: 3
+item Ages 4-7 | Dress-Up Costume | 29.99 | | | variants: Character=Astronaut,Dragon,Firefighter; Size=4-5,6-7 | sku: CST | cost: 10.00 | stock: 2
+item Ages 4-7 | Magnetic Tiles 60 pc | 59.99 | | | | sku: MGT | cost: 26.00 | stock: 3
+item Ages 4-7 | Toy Car Set | 14.99 | | | | sku: TCS | cost: 5.00 | stock: 6
+item Ages 8+ | Building Set | 39.99 | | | variants: Theme=Castle,Space,City | sku: BLD | cost: 17.00 | stock: 3
+item Ages 8+ | Remote Control Car | 54.99 | | | | sku: RCC | cost: 24.00 | stock: 3
+item Ages 8+ | Science Kit | 29.99 | | | variants: Kit=Volcano,Crystals,Circuits | sku: SCK | cost: 11.00 | stock: 3
+item Ages 8+ | Rubik's Style Cube | 12.99 | | | | sku: CUB | cost: 4.00 | stock: 8
+item Board Games & Puzzles | Family Board Game | 29.99 | | | variants: Game=Strategy,Trivia,Party | sku: BGM | cost: 13.00 | stock: 3
+item Board Games & Puzzles | Card Game | 12.99 | | | | sku: CGM | cost: 5.00 | stock: 8
+item Board Games & Puzzles | Jigsaw Puzzle | 19.99 | | | variants: Pieces=300,500,1000 | plus: 1000 5.00 | sku: JGS | cost: 7.00 | stock: 3
+item Board Games & Puzzles | Chess Set | 34.99 | | | | sku: CHS | cost: 14.00 | stock: 3
+item Arts & Crafts | Crayons 64 ct | 6.99 | | | | sku: CRY | cost: 2.20 | stock: 12
+item Arts & Crafts | Modeling Dough 4 pk | 8.99 | | | | sku: MDD | cost: 3.00 | stock: 10
+item Arts & Crafts | Bead Kit | 17.99 | | | | sku: BDK | cost: 6.00 | stock: 5
+item Arts & Crafts | Watercolor Set | 14.99 | | | | sku: WCS | cost: 5.00 | stock: 6
+item Outdoor Play | Bubble Wand | 4.99 | | | | sku: BBW | cost: 1.20 | stock: 20
+item Outdoor Play | Sidewalk Chalk | 5.99 | | | | sku: SWC | cost: 1.80 | stock: 15
+item Outdoor Play | Kite | 19.99 | | | variants: Design=Dragon,Rainbow,Octopus | sku: KTE | cost: 6.00 | stock: 4
+item Outdoor Play | Kids Scooter | 69.99 | | | variants: Color=Blue,Pink,Green | sku: SCT | cost: 30.00 | stock: 2

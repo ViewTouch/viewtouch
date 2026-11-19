@@ -2,6 +2,7 @@
 // menu items and staff, a step at a time (SetupGuide.qml).
 
 #include "app/i18n.hh"
+#include "app/pos_starter.hh"
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 #include "app/tax_areas.hh"
@@ -51,7 +52,7 @@ QVariantMap PosService::setupInfo() const
         left += !done && need;
     };
     const QString name = qs(s_->settings.storeName).trimmed();
-    row("name", !name.isEmpty() && name != u"ViewTouch" && name != u"ViewTouch Café", true, tr("Your store's name"),
+    row("name", !name.isEmpty() && name != u"ViewTouch" && name != u"ViewTouch Café" && name != u"ViewTouch Tacos" && name != u"ViewTouch Shop", true, tr("Your store's name"),
         tr("On every receipt and the login screen."), u"store"_s);
     row("taxes", s_->settings.tax.foodPpm > 0 || !s_->settings.storeZip.empty(), true, tr("Sales tax"),
         s_->settings.tax.foodPpm > 0 ? tr("Food %1%").arg(pct(s_->settings.tax.foodPpm))
@@ -100,7 +101,11 @@ QVariantMap PosService::setupInfo() const
                   {u"last"_s, last > 0 ? i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(last), u"ddd MMM d, h:mm AP"_s)
                                        : QString()}};
     }
-    return {{u"printers"_s, printers}, {u"backup"_s, backup}, {u"ready"_s, ready}, {u"left"_s, left},
+    // A new store, nothing sold yet: it can start over as a taco truck's
+    // or a bookstore's sample (startWithStarter), on the store's computer.
+    const bool unsold = s_->closedToday.empty() && s_->pastDays.empty() && s_->open.empty();
+    const bool canStartOver = unsold && !s_->settings.setupDone && bool(s_->requestFactoryReset);
+    return {{u"canStartOver"_s, canStartOver}, {u"printers"_s, printers}, {u"backup"_s, backup}, {u"ready"_s, ready}, {u"left"_s, left},
             {u"done"_s, s_->settings.setupDone}, {u"storeName"_s, qs(s_->settings.storeName)},
             {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"logo"_s, qs(s_->settings.displayLogo)},
             {u"receiptLogo"_s, s_->settings.receiptLogo}, {u"foodTax"_s, pct(s_->settings.tax.foodPpm)},
@@ -130,6 +135,25 @@ bool PosService::setupStore(const QString &name, const QString &receiptLines, co
     if (!serviceMode.isEmpty())   // "restaurant", "foodTruck" or "retail"
         changes.insert(u"serviceMode"_s, serviceMode);
     return adminSave(u"store"_s, 0, withChanges(store, changes));
+}
+
+bool PosService::startWithStarter(const QString &set)
+{
+    if (!require(perm::Manager, tr("Setting up the store")))
+        return false;
+    if (s_->settings.setupDone)
+        return fail(tr("The store is set up: Factory reset (its maintainer's) starts it over."));
+    if (!s_->closedToday.empty() || !s_->pastDays.empty() || !s_->open.empty())
+        return fail(tr("This store has sales already: Factory reset (its maintainer's) starts it over."));
+    QString why;
+    if (!parseStarterSet(set, &why))
+        return fail(why);
+    if (!s_->requestFactoryReset)
+        return fail(tr("A store starts over on the computer that keeps the data."));
+    if (!s_->requestFactoryReset(set))
+        return fail(tr("The backup failed, so nothing was changed."));
+    emit notice(tr("Starting over with the sample menu..."));
+    return true;
 }
 
 bool PosService::setupLogo(const QString &ref, bool onReceipts)

@@ -4,6 +4,7 @@
 // devices, a factory reset, a backup on demand, and this screen's settings.
 
 #include "app/pos_admin_shared.hh"
+#include "app/pos_starter.hh"
 
 #include <QPointer>
 #include <QThreadPool>
@@ -52,15 +53,18 @@ QString PosShared::startPairing(bool standby)
     return pairing->code;
 }
 
-bool PosService::factoryReset(const QString &confirm, bool empty)
+bool PosService::factoryReset(const QString &confirm, const QString &startAs)
 {
     if (!require(perm::Maintain, tr("Factory reset")))
         return false;
     if (confirm.trimmed() != u"RESET")
         return fail(tr("Type RESET to confirm."));
+    QString why;
+    if (startAs != u"empty" && !startAs.isEmpty() && !parseStarterSet(startAs, &why))
+        return fail(tr("There's no starter set like that: %1").arg(why));
     if (!s_->requestFactoryReset)
         return fail(tr("A factory reset is done on the computer that keeps the data."));
-    if (!s_->requestFactoryReset(empty))
+    if (!s_->requestFactoryReset(startAs))
         return fail(tr("The backup failed, so nothing was reset."));
     emit notice(tr("Backed up. Resetting and restarting..."));
     return true;

@@ -1,0 +1,31 @@
+pack Beauty & Cosmetics | retail | 19 | Makeup in shades, skincare and hair care in sizes, fragrance, nails and tools.
+category Makeup | #b83232 | | | | merchandise
+category Skincare | #1f8a4c | | | | merchandise
+category Hair Care | #8a5a2b | | | | merchandise
+category Fragrance | #8a3a8a | | | | merchandise
+category Nails | #a86a12 | | | | merchandise
+category Tools & Travel | #2b62b0 | | | | merchandise
+item Makeup | Foundation | 38.00 | | | variants: Shade=Porcelain,Ivory,Sand,Honey,Caramel,Espresso | sku: FND | cost: 12.00 | stock: 3
+item Makeup | Concealer | 26.00 | | | variants: Shade=Light,Medium,Tan,Deep | sku: CNC | cost: 8.00 | stock: 4
+item Makeup | Lipstick | 22.00 | | | variants: Shade=Nude,Rose,Classic Red,Berry,Coral | sku: LIP | cost: 6.00 | stock: 4
+item Makeup | Mascara | 24.00 | | | variants: Color=Black,Brown | sku: MSC | cost: 7.00 | stock: 6
+item Makeup | Eyeshadow Palette | 42.00 | | | variants: Palette=Neutrals,Sunset,Smoky | sku: EYP | cost: 14.00 | stock: 3
+item Makeup | Blush | 24.00 | | | variants: Shade=Peach,Pink,Berry | sku: BLS | cost: 7.00 | stock: 4
+item Skincare | Gentle Cleanser | 18.00 | | | variants: Size=Travel 2 oz,Full 8 oz | plus: Full 8 oz 10.00 | sku: CLN | cost: 5.00 | stock: 6
+item Skincare | Daily Moisturizer SPF 30 | 32.00 | | | | sku: MST | cost: 10.00 | stock: 8
+item Skincare | Vitamin C Serum | 44.00 | | | | sku: SRM | cost: 14.00 | stock: 5
+item Skincare | Sheet Mask | 5.00 | | | variants: Kind=Hydrating,Brightening,Calming | sku: SMK | cost: 1.20 | stock: 20
+item Skincare | Lip Balm | 8.00 | | | | sku: LBM | cost: 2.00 | stock: 15
+item Hair Care | Shampoo | 24.00 | | | variants: Size=10 oz,33 oz | plus: 33 oz 26.00 | sku: SHM | cost: 7.00 | stock: 5
+item Hair Care | Conditioner | 24.00 | | | variants: Size=10 oz,33 oz | plus: 33 oz 26.00 | sku: CND | cost: 7.00 | stock: 5
+item Hair Care | Dry Shampoo | 18.00 | | | | sku: DSP | cost: 5.50 | stock: 8
+item Hair Care | Hair Oil | 28.00 | | | | sku: HOL | cost: 9.00 | stock: 6
+item Fragrance | Eau de Parfum | 68.00 | | | variants: Size=30 ml,50 ml,100 ml | plus: 50 ml 30.00, 100 ml 62.00 | sku: EDP | cost: 24.00 | stock: 3
+item Fragrance | Body Mist | 18.00 | | | variants: Scent=Vanilla,Citrus,Floral | sku: BMS | cost: 5.00 | stock: 6
+item Fragrance | Rollerball | 24.00 | | | | sku: RLB | cost: 7.00 | stock: 8
+item Nails | Nail Polish | 12.00 | | | variants: Color=Ballet Pink,Red,Navy,Nude,Glitter | sku: NPL | cost: 3.00 | stock: 5
+item Nails | Top Coat | 12.00 | | | | sku: TPC | cost: 3.00 | stock: 8
+item Nails | Nail File Set | 8.00 | | | | sku: NFS | cost: 2.00 | stock: 10
+item Tools & Travel | Makeup Brush Set | 36.00 | | | | sku: BRS | cost: 11.00 | stock: 4
+item Tools & Travel | Makeup Sponge | 12.00 | | | | sku: SPG | cost: 3.00 | stock: 10
+item Tools & Travel | Travel Bottle Set | 14.00 | | | | sku: TBS | cost: 4.00 | stock: 8

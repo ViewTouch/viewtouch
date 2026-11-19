@@ -1,0 +1,54 @@
+pack Sushi & Japanese | food | 0 | Nigiri and sashimi, classic and specialty rolls, ramen, bento, sides and sake.
+category Nigiri & Sashimi | #b83232 | | kitchen | sushi
+category Classic Rolls | #a86a12 | | kitchen | sushi
+category Specialty Rolls | #8a3a8a | | kitchen | sushi
+category Ramen & Noodles | #8a5a2b | | kitchen | line
+category Bento & Rice | #2b62b0 | lunch, dinner | kitchen | line
+category Starters | #1f8a4c | | kitchen | line
+category Drinks | #1f6f73 | | bar |
+category Sake & Beer | #6a1f3a | | bar | | alcohol
+group Nigiri or Sashimi | 1 1 | Nigiri (2 pc), Sashimi (3 pc) + 1.50
+group Roll Wrap | 1 1 | Seaweed, Soy paper + 1.00, Cucumber wrap + 1.00
+group Rice | 1 1 | White rice, Brown rice + 1.00, No rice (naruto) + 2.00
+group Make It | 0 0 ask | Spicy, Tempura crunch + 1.00, Extra eel sauce, Extra spicy mayo, Masago + 1.50, Avocado on top + 2.00
+group Broth | 1 1 | Tonkotsu, Shoyu, Miso, Spicy Miso + 1.00, Vegetable
+group Ramen Toppings | 0 0 ask | Soft egg + 2.00, Extra chashu + 4.00, Corn + 1.00, Bamboo shoots + 1.00, Nori + 1.00, Extra noodles + 3.00
+group Bento Protein | 1 1 | Chicken Teriyaki, Salmon Teriyaki + 4.00, Beef Bulgogi + 3.00, Tofu, Shrimp Tempura + 3.00
+group Sake Size | 1 1 | Small carafe, Large carafe + 9.00
+item Nigiri & Sashimi | Salmon (Sake) | 7.00 | Nigiri or Sashimi |
+item Nigiri & Sashimi | Tuna (Maguro) | 8.00 | Nigiri or Sashimi |
+item Nigiri & Sashimi | Yellowtail (Hamachi) | 8.00 | Nigiri or Sashimi |
+item Nigiri & Sashimi | Eel (Unagi) | 8.50 | Nigiri or Sashimi |
+item Nigiri & Sashimi | Shrimp (Ebi) | 6.00 | Nigiri or Sashimi |
+item Nigiri & Sashimi | Chef's Sashimi Platter | 32.00 | |
+item Classic Rolls | California Roll | 8.00 | Roll Wrap, Rice, Make It | crab, avocado, cucumber
+item Classic Rolls | Spicy Tuna Roll | 9.00 | Roll Wrap, Rice, Make It | tuna, spicy mayo, cucumber
+item Classic Rolls | Salmon Avocado Roll | 9.00 | Roll Wrap, Rice, Make It | salmon, avocado
+item Classic Rolls | Philadelphia Roll | 9.50 | Roll Wrap, Rice, Make It | salmon, cream cheese, cucumber
+item Classic Rolls | Shrimp Tempura Roll | 10.50 | Roll Wrap, Rice, Make It | shrimp tempura, avocado, eel sauce
+item Classic Rolls | Cucumber Roll | 6.00 | Roll Wrap, Rice |
+item Specialty Rolls | Dragon Roll | 16.00 | Rice, Make It | eel, avocado, shrimp tempura
+item Specialty Rolls | Rainbow Roll | 16.00 | Rice, Make It | crab, tuna, salmon, yellowtail, avocado
+item Specialty Rolls | Volcano Roll | 15.00 | Rice, Make It | baked scallop, spicy mayo
+item Specialty Rolls | Spider Roll | 14.00 | Rice, Make It | soft-shell crab, cucumber, avocado
+item Specialty Rolls | Caterpillar Roll | 14.00 | Rice, Make It | eel, cucumber, avocado
+item Ramen & Noodles | Ramen | 15.00 | Broth, Ramen Toppings | chashu, egg, scallions, nori
+item Ramen & Noodles | Chicken Ramen | 14.50 | Broth, Ramen Toppings | chicken, scallions
+item Ramen & Noodles | Veggie Ramen | 13.50 | Broth, Ramen Toppings | tofu, corn, mushrooms
+item Ramen & Noodles | Yaki Udon | 14.00 | Bento Protein | cabbage, onion
+item Bento & Rice | Bento Box | 17.00 | Bento Protein | rice, salad, gyoza, California roll
+item Bento & Rice | Chicken Katsu Don | 14.00 | | egg, onion, rice
+item Bento & Rice | Poke Bowl | 16.00 | Rice, Make It | tuna, salmon, edamame, cucumber
+item Starters | Edamame | 5.50 | | sea salt
+item Starters | Miso Soup | 3.50 | | tofu, wakame, scallions
+item Starters | Gyoza (6) | 7.50 | | ponzu
+item Starters | Seaweed Salad | 6.00 | |
+item Starters | Agedashi Tofu | 7.00 | |
+item Starters | Shrimp Tempura | 10.00 | |
+item Drinks | Green Tea | 2.50 | |
+item Drinks | Ramune | 4.00 | |
+item Drinks | Calpico | 4.00 | |
+item Sake & Beer | House Sake (hot or cold) | 9.00 | Sake Size |
+item Sake & Beer | Junmai Ginjo | 14.00 | Sake Size |
+item Sake & Beer | Sapporo | 6.00 | |
+item Sake & Beer | Asahi | 6.00 | |

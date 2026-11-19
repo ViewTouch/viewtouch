@@ -1,0 +1,40 @@
+pack Café | food | 0 | Espresso drinks, tea, pastries and breakfast; sizes, milks, extra shots.
+category Coffee | #8a5a2b | | bar |
+category Tea | #1f8a4c | | bar |
+category Cold Drinks | #2b62b0 | | bar |
+category Pastries | #a86a12 | | kitchen |
+category Breakfast | #b83232 | breakfast, lunch | kitchen |
+category Lunch | #6a4ab0 | lunch, dinner | kitchen |
+group Size | 1 1 | Small, Medium + 0.50, Large + 1.00
+group Milk | 0 1 ask | Whole, 2%, Oat + 0.75, Almond + 0.75, Soy + 0.50, Skim
+group Extras | 0 0 ask | Extra Shot + 1.00, Vanilla + 0.75, Caramel + 0.75, Hazelnut + 0.75, Whipped Cream + 0.50
+group Hot or Iced | 1 1 | Hot, Iced
+group Bread | 1 1 | Sourdough, Wheat, Croissant + 1.00, Bagel
+group Warmed | 0 1 | Warmed
+item Coffee | Drip Coffee | 2.75 | Size |
+item Coffee | Espresso | 3.00 | Extras |
+item Coffee | Latte | 4.75 | Size, Hot or Iced, Milk, Extras |
+item Coffee | Cappuccino | 4.50 | Size, Milk, Extras |
+item Coffee | Americano | 3.50 | Size, Hot or Iced |
+item Coffee | Mocha | 5.25 | Size, Hot or Iced, Milk, Extras |
+item Coffee | Flat White | 4.75 | Milk, Extras |
+item Coffee | Cold Brew | 4.50 | Size, Extras |
+item Tea | Chai Latte | 4.75 | Size, Hot or Iced, Milk |
+item Tea | Matcha Latte | 5.25 | Size, Hot or Iced, Milk |
+item Tea | Hot Tea | 3.00 | Size |
+item Cold Drinks | Lemonade | 3.50 | Size |
+item Cold Drinks | Fruit Smoothie | 6.50 | Size | banana, strawberry, yogurt
+item Cold Drinks | Hot Chocolate | 3.75 | Size, Milk |
+item Pastries | Croissant | 3.75 | Warmed |
+item Pastries | Chocolate Croissant | 4.25 | Warmed |
+item Pastries | Blueberry Muffin | 3.50 | Warmed |
+item Pastries | Cinnamon Roll | 4.25 | Warmed |
+item Pastries | Scone | 3.75 | Warmed |
+item Pastries | Banana Bread | 3.50 | Warmed |
+item Breakfast | Breakfast Sandwich | 7.50 | Bread | egg, cheese, bacon
+item Breakfast | Avocado Toast | 8.50 | Bread | avocado, chili flakes
+item Breakfast | Yogurt Parfait | 6.00 | | yogurt, granola, berries
+item Breakfast | Oatmeal | 5.00 | | brown sugar, raisins
+item Lunch | Turkey Pesto Panini | 10.50 | Bread | turkey, mozzarella, pesto
+item Lunch | Caprese Sandwich | 9.50 | Bread | mozzarella, tomato, basil
+item Lunch | Soup of the Day | 5.50 | |

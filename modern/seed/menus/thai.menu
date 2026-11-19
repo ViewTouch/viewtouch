@@ -1,0 +1,38 @@
+pack Thai | food | 0 | Curries, noodles, stir-fries and salads; choose the protein and how spicy, 1 to 5.
+category Starters | #a86a12 | | kitchen | fryer
+category Soups & Salads | #1f8a4c | | kitchen | line
+category Curries | #b83232 | | kitchen | line
+category Noodles | #8a5a2b | | kitchen | wok
+category Stir-Fries & Rice | #2b62b0 | | kitchen | wok
+category Desserts | #8a3a8a | | kitchen |
+category Drinks | #1f6f73 | | bar |
+group Protein | 1 1 | Chicken, Pork, Tofu, Vegetables, Beef + 2.00, Shrimp + 3.00, Duck + 5.00
+group Spice | 1 1 ask | 1 Mild, 2, 3 Medium, 4, 5 Thai hot
+group Rice | 1 1 | Jasmine rice, Brown rice + 1.00, Sticky rice + 1.50, No rice
+group Extras | 0 0 ask | Fried egg + 2.00, Extra peanuts + 1.00, Crispy shallots + 1.00, Extra vegetables + 2.00
+item Starters | Spring Rolls | 6.50 | | sweet chili sauce
+item Starters | Chicken Satay | 9.00 | | peanut sauce, cucumber relish
+item Starters | Fresh Rolls | 7.00 | | shrimp, rice noodles, herbs
+item Starters | Curry Puffs | 7.50 | |
+item Soups & Salads | Tom Yum | 7.00 | Protein, Spice | lemongrass, mushrooms
+item Soups & Salads | Tom Kha | 7.50 | Protein, Spice | coconut, galangal
+item Soups & Salads | Papaya Salad | 9.00 | Spice | green papaya, peanuts, lime
+item Soups & Salads | Larb | 12.00 | Protein, Spice | herbs, toasted rice
+item Curries | Green Curry | 15.00 | Protein, Spice, Rice | bamboo, basil, eggplant
+item Curries | Red Curry | 15.00 | Protein, Spice, Rice | bamboo, basil, peppers
+item Curries | Panang Curry | 15.50 | Protein, Spice, Rice | kaffir lime, peppers
+item Curries | Massaman Curry | 16.00 | Protein, Spice, Rice | potato, peanuts, onion
+item Curries | Yellow Curry | 15.00 | Protein, Spice, Rice | potato, carrot
+item Noodles | Pad Thai | 14.50 | Protein, Spice, Extras | rice noodles, egg, peanuts, bean sprouts
+item Noodles | Pad See Ew | 14.50 | Protein, Spice, Extras | wide noodles, broccoli, egg
+item Noodles | Drunken Noodles | 15.00 | Protein, Spice, Extras | basil, chili, peppers
+item Noodles | Khao Soi | 16.00 | Protein, Spice | egg noodles, coconut curry
+item Stir-Fries & Rice | Pad Kra Pao | 14.50 | Protein, Spice, Rice, Extras | holy basil, chili
+item Stir-Fries & Rice | Cashew Stir-Fry | 15.00 | Protein, Spice, Rice | cashews, onion, peppers
+item Stir-Fries & Rice | Thai Fried Rice | 13.50 | Protein, Spice, Extras | egg, onion, tomato
+item Stir-Fries & Rice | Pineapple Fried Rice | 15.00 | Protein, Spice | pineapple, cashews, raisins
+item Desserts | Mango Sticky Rice | 8.00 | |
+item Desserts | Coconut Ice Cream | 5.00 | |
+item Drinks | Thai Iced Tea | 4.50 | |
+item Drinks | Thai Iced Coffee | 4.50 | |
+item Drinks | Coconut Water | 4.00 | |

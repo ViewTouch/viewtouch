@@ -1,0 +1,42 @@
+pack Convenience Store | retail | 12 | Snacks, drinks, coffee, grab-and-go, household basics; age-checked beer and wine.
+category Snacks | #a86a12 | | | | food
+category Candy | #8a3a8a | | | | food
+category Drinks | #2b62b0 | | | | food
+category Coffee & Hot | #8a5a2b | | | | food
+category Grab & Go | #1f8a4c | | | | food
+category Household | #1f6f73 | | | | merchandise
+category Beer & Wine | #6a1f3a | | | | alcohol
+category Health & Travel | #b83232 | | | | merchandise
+item Snacks | Potato Chips | 2.49 | | | variants: Flavor=Classic,BBQ,Sour Cream & Onion,Salt & Vinegar | sku: CHP | cost: 1.10 | stock: 24
+item Snacks | Tortilla Chips | 3.29 | | | | sku: TCH | cost: 1.40 | stock: 18
+item Snacks | Beef Jerky | 7.99 | | | variants: Flavor=Original,Teriyaki,Peppered | sku: JRK | cost: 3.80 | stock: 12
+item Snacks | Trail Mix | 4.49 | | | | sku: TRL | cost: 2.00 | stock: 15
+item Snacks | Peanuts | 1.99 | | | | sku: PNT | cost: 0.80 | stock: 20
+item Candy | Chocolate Bar | 1.99 | | | variants: Kind=Milk,Dark,Peanut,Caramel | sku: CBR | cost: 0.85 | stock: 30
+item Candy | Gummy Bears | 2.29 | | | | sku: GMY | cost: 0.95 | stock: 24
+item Candy | Gum | 1.49 | | | variants: Flavor=Spearmint,Peppermint,Bubble | sku: GUM | cost: 0.55 | stock: 36
+item Candy | Mints | 2.49 | | | | sku: MNT | cost: 1.00 | stock: 24
+item Drinks | Bottled Water 20 oz | 1.79 | | | | sku: WTR | cost: 0.40 | stock: 48
+item Drinks | Soda 20 oz | 2.29 | | | variants: Kind=Cola,Diet Cola,Lemon-Lime,Root Beer,Orange | sku: SDA | cost: 0.90 | stock: 24
+item Drinks | Energy Drink | 3.49 | | | variants: Kind=Original,Sugar Free | sku: NRG | cost: 1.60 | stock: 24
+item Drinks | Sports Drink | 2.49 | | | variants: Flavor=Lemon-Lime,Fruit Punch,Blue | sku: SPD | cost: 1.00 | stock: 24
+item Drinks | Iced Tea Bottle | 2.49 | | | | sku: ITB | cost: 1.00 | stock: 24
+item Drinks | Milk Pint | 1.99 | | | | sku: MLK | cost: 0.90 | stock: 12
+item Coffee & Hot | Hot Coffee | 1.99 | | | variants: Size=12 oz,16 oz,20 oz | plus: 16 oz 0.50, 20 oz 1.00 | sku: COF
+item Coffee & Hot | Cappuccino | 2.49 | | | | sku: CAP
+item Coffee & Hot | Hot Dog | 2.29 | | | | sku: HDG
+item Coffee & Hot | Breakfast Sandwich | 3.99 | | | | sku: BSW
+item Grab & Go | Sandwich | 5.99 | | | variants: Kind=Turkey,Ham & Cheese,Veggie | sku: SNW | cost: 2.80 | stock: 6
+item Grab & Go | Fruit Cup | 3.49 | | | | sku: FRC | cost: 1.50 | stock: 8
+item Grab & Go | Yogurt | 1.79 | | | | sku: YGT | cost: 0.80 | stock: 12
+item Household | Paper Towels | 3.99 | | | | sku: PTW | cost: 1.80 | stock: 12
+item Household | Toilet Paper 4 pk | 5.49 | | | | sku: TPR | cost: 2.60 | stock: 12
+item Household | Batteries AA 4 pk | 6.99 | | | | sku: BAT | cost: 3.00 | stock: 12
+item Household | Phone Charger | 14.99 | | | | sku: PCH | cost: 5.00 | stock: 6
+item Beer & Wine | Six-Pack Beer | 10.99 | | | variants: Kind=Lager,IPA,Light | sku: BR6 | cost: 6.50 | stock: 10
+item Beer & Wine | Tall Can Beer | 2.99 | | | | sku: BRT | cost: 1.40 | stock: 24
+item Beer & Wine | Bottle of Wine | 11.99 | | | variants: Kind=Red,White,Rosé | sku: WNE | cost: 6.00 | stock: 6
+item Health & Travel | Pain Reliever | 6.99 | | | | sku: PRL | cost: 2.50 | stock: 10
+item Health & Travel | Lip Balm | 2.99 | | | | sku: LPB | cost: 1.00 | stock: 15
+item Health & Travel | Sunscreen | 9.99 | | | | sku: SNS | cost: 4.00 | stock: 8
+item Health & Travel | Ice Bag | 2.99 | | | | sku: ICE | cost: 0.60 | stock: 20

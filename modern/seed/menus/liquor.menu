@@ -1,0 +1,32 @@
+pack Wine & Liquor | retail | 17 | Wine, spirits and beer by bottle size and case, mixers and accessories; age-checked.
+category Red Wine | #6a1f3a | | | | alcohol
+category White & Rosé | #a86a12 | | | | alcohol
+category Spirits | #8a5a2b | | | | alcohol
+category Beer & Cider | #2b62b0 | | | | alcohol
+category Mixers | #1f8a4c | | | | food
+category Accessories | #1f6f73 | | | | merchandise
+item Red Wine | Cabernet Sauvignon | 18.99 | | | variants: Size=750 ml,1.5 L,Case of 12 | plus: 1.5 L 14.00, Case of 12 186.00 | sku: CAB | cost: 10.00 | stock: 6
+item Red Wine | Pinot Noir | 21.99 | | | variants: Size=750 ml,Case of 12 | plus: Case of 12 215.00 | sku: PNR | cost: 12.00 | stock: 6
+item Red Wine | Malbec | 14.99 | | | | sku: MLB | cost: 8.00 | stock: 10
+item Red Wine | Red Blend | 12.99 | | | | sku: RBL | cost: 6.50 | stock: 12
+item White & Rosé | Chardonnay | 15.99 | | | variants: Size=750 ml,1.5 L | plus: 1.5 L 11.00 | sku: CHR | cost: 8.50 | stock: 8
+item White & Rosé | Sauvignon Blanc | 13.99 | | | | sku: SVB | cost: 7.00 | stock: 10
+item White & Rosé | Rosé | 14.99 | | | | sku: ROS | cost: 7.50 | stock: 10
+item White & Rosé | Prosecco | 15.99 | | | | sku: PRS | cost: 8.00 | stock: 10
+item Spirits | Vodka | 19.99 | | | variants: Size=375 ml,750 ml,1.75 L | plus: 750 ml 9.00, 1.75 L 22.00 | sku: VDK | cost: 10.00 | stock: 6
+item Spirits | Bourbon | 29.99 | | | variants: Size=750 ml,1.75 L | plus: 1.75 L 24.00 | sku: BRB | cost: 17.00 | stock: 5
+item Spirits | Tequila Blanco | 27.99 | | | variants: Size=750 ml,1.75 L | plus: 1.75 L 22.00 | sku: TQB | cost: 15.00 | stock: 5
+item Spirits | London Dry Gin | 24.99 | | | | sku: GIN | cost: 13.00 | stock: 6
+item Spirits | Spiced Rum | 21.99 | | | | sku: RUM | cost: 11.00 | stock: 6
+item Spirits | Single Malt Scotch | 54.99 | | | | sku: SCT | cost: 33.00 | stock: 3
+item Beer & Cider | Craft IPA 6 pk | 12.99 | | | | sku: IPA | cost: 7.50 | stock: 10
+item Beer & Cider | Lager 12 pk | 16.99 | | | | sku: LGR | cost: 10.00 | stock: 10
+item Beer & Cider | Hard Cider 6 pk | 11.99 | | | | sku: CDR | cost: 7.00 | stock: 8
+item Beer & Cider | Hard Seltzer 12 pk | 19.99 | | | variants: Flavor=Black Cherry,Lime,Variety | sku: HSL | cost: 12.00 | stock: 6
+item Mixers | Tonic Water 4 pk | 5.99 | | | | sku: TON | cost: 2.50 | stock: 12
+item Mixers | Ginger Beer 4 pk | 6.99 | | | | sku: GNB | cost: 3.00 | stock: 12
+item Mixers | Margarita Mix | 7.99 | | | | sku: MGM | cost: 3.20 | stock: 8
+item Mixers | Bitters | 9.99 | | | | sku: BTS | cost: 4.50 | stock: 6
+item Accessories | Corkscrew | 12.99 | | | | sku: CRK | cost: 4.00 | stock: 8
+item Accessories | Wine Gift Bag | 2.99 | | | | sku: WGB | cost: 0.70 | stock: 30
+item Accessories | Ice 10 lb | 3.99 | | | | sku: ICE | cost: 1.00 | stock: 20

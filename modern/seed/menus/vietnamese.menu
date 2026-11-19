@@ -1,0 +1,28 @@
+pack Vietnamese | food | 0 | Pho, bánh mì, vermicelli and rice plates; size, cut and extras.
+category Pho | #b83232 | | kitchen | line
+category Bánh Mì | #a86a12 | | kitchen | line
+category Vermicelli & Rice | #2b62b0 | | kitchen | grill
+category Starters | #1f8a4c | | kitchen | cold
+category Drinks | #1f6f73 | | bar |
+group Pho Size | 1 1 | Small, Regular + 1.50, Large + 3.00
+group Pho Cut | 1 3 | Rare steak, Brisket, Meatballs, Tendon, Tripe, Chicken
+group Pho Extras | 0 0 ask | Extra noodles + 2.00, Extra meat + 4.00, Side of broth + 3.00, Egg yolk + 1.00
+group Bánh Mì Filling | 1 1 | Grilled pork, Lemongrass chicken, Cold cuts, Meatball, Tofu
+group Spice | 1 1 ask | No jalapeño, Regular, Extra jalapeño
+item Pho | Pho Tai | 14.00 | Pho Size, Pho Extras | rare steak, herbs, bean sprouts, lime
+item Pho | Pho Dac Biet | 16.00 | Pho Size, Pho Extras | everything
+item Pho | Build Your Pho | 14.00 | Pho Size, Pho Cut, Pho Extras |
+item Pho | Pho Ga | 13.50 | Pho Size, Pho Extras | chicken
+item Pho | Vegetable Pho | 12.50 | Pho Size, Pho Extras | tofu, vegetables
+item Bánh Mì | Bánh Mì | 9.00 | Bánh Mì Filling, Spice | pickled carrot, daikon, cilantro, pâté, mayo
+item Bánh Mì | Bánh Mì Combo | 13.00 | Bánh Mì Filling, Spice | with spring rolls and a drink
+item Vermicelli & Rice | Bún Bowl | 14.00 | Bánh Mì Filling | vermicelli, herbs, peanuts, fish sauce
+item Vermicelli & Rice | Cơm Tấm | 15.00 | Bánh Mì Filling | broken rice, egg, pickles
+item Vermicelli & Rice | Shaking Beef | 19.00 | | rice, watercress, lime pepper
+item Starters | Fresh Spring Rolls (2) | 6.50 | | shrimp, peanut sauce
+item Starters | Fried Egg Rolls (3) | 7.00 | | fish sauce
+item Starters | Chicken Wings | 11.00 | | fish sauce glaze
+item Drinks | Vietnamese Iced Coffee | 5.00 | |
+item Drinks | Lemongrass Iced Tea | 4.00 | |
+item Drinks | Fresh Coconut | 6.00 | |
+item Drinks | Boba Milk Tea | 6.00 | |

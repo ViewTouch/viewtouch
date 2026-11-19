@@ -1861,9 +1861,9 @@ TEST_CASE("UI: Menu Builder: every item in a list, found by barcode, prices move
     };
     tap(u"builderListView"_s);
     REQUIRE(by(u"builderList"_s));
-    // Every category's items, not only the one picked.
-    CHECK(by(u"builderListRow-classic-burger"_s));
-    CHECK(by(u"builderListRow-cobb"_s));
+    // Every category's items, not only the one picked (A to Z: a burger and a salad in view).
+    CHECK(by(u"builderListRow-bacon-burger"_s));
+    CHECK(by(u"builderListRow-caesar"_s));
 
     // Found by part of its barcode.
     QQuickItem *search = by(u"builderSearch"_s);
@@ -4467,8 +4467,8 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
 {
     Screen s;
     int asked = 0;
-    bool wantedEmpty = false;
-    s.pos.shared()->requestFactoryReset = [&](bool empty) { ++asked; wantedEmpty = empty; return true; };
+    QString wanted = u"?"_s;
+    s.pos.shared()->requestFactoryReset = [&](const QString &as) { ++asked; wanted = as; return true; };
     REQUIRE(test::loginMaintainer(s.pos));
     REQUIRE(s.c.jumpTo(u"manager"_s));
     QTest::qWait(30);
@@ -4486,7 +4486,7 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
     s.shot("17-factory-reset");
     s.tapItem(button);
     CHECK(asked == 1);
-    CHECK_FALSE(wantedEmpty);
+    CHECK(wanted.isEmpty());   // the restaurant's starter set
     // An empty store instead.
     s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"resetEmpty"_s));
     QTest::qWait(30);
@@ -4494,7 +4494,7 @@ TEST_CASE("UI: Manager -> Factory Reset asks for RESET before it does anything",
     s.shot("17-factory-reset-empty");
     s.tapItem(button);
     CHECK(asked == 2);
-    CHECK(wantedEmpty);
+    CHECK(wanted == u"empty"_s);
 }
 
 TEST_CASE("UI: the expo screen - kitchen names, what's made, ready in blue", "[flow][ui][expo]")
@@ -9044,7 +9044,7 @@ TEST_CASE("Flow: a menu exported at one store, imported at another", "[flow][men
     for (const std::string &g : taco->modifierGroups)
         if (const core::ModifierGroup *mg = b.pos.shared()->settings.modifierGroup(g))
             groupNames << QString::fromStdString(mg->name);
-    CHECK(groupNames.size() == 3);
+    CHECK(groupNames.size() == 4);   // Salsa, Tortilla, Extras, and what's on it
     CHECK(groupNames.contains(u"Salsa"_s));
     CHECK(groupNames.contains(u"Tortilla"_s));
     const core::ModifierGroup *onIt = b.pos.shared()->settings.modifierGroup("on-" + taco->id);
@@ -9213,12 +9213,12 @@ TEST_CASE("Flow: an item taken off the menu takes its hand-placed buttons; a cat
     CHECK_FALSE(s.c.activeLayout().page(u"items-burgers"_s)->zone(u"item-"_s + melt));
     CHECK(s.c.activeLayout().page(u"items-burgers"_s)->zone(u"item-1"_s));   // the others stay
 
-    REQUIRE(s.pos.saveCategory({{u"name"_s, u"Desserts"_s}}));
+    REQUIRE(s.pos.saveCategory({{u"name"_s, u"Late Night"_s}}));
     core::TerminalConfig t;
     t.name = s.pos.terminalName().toStdString();
-    t.startCategory = "desserts";
+    t.startCategory = "late-night";
     s.pos.shared()->settings.terminals.push_back(t);
-    REQUIRE(s.pos.deleteCategory(u"desserts"_s));
+    REQUIRE(s.pos.deleteCategory(u"late-night"_s));
     CHECK(s.pos.shared()->settings.terminals.back().startCategory.empty());
 }
 

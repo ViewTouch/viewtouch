@@ -657,6 +657,7 @@ public:
     }
     Q_INVOKABLE void removeSection(const QString &name) { invoke(QStringLiteral("removeSection"), {name}); }
     // The setup guide's steps.
+    Q_INVOKABLE void startWithStarter(const QString &set) { invoke(QStringLiteral("startWithStarter"), {set}); }
     Q_INVOKABLE void setupStore(const QString &name, const QString &lines, const QString &serviceMode = QString())
     {
         invoke(QStringLiteral("setupStore"), {name, lines, serviceMode});
@@ -691,7 +692,11 @@ public:
     Q_INVOKABLE void kioskRemove(qint64 lineId) { invoke(QStringLiteral("kioskRemove"), {lineId}); }
     Q_INVOKABLE void kioskFinish(const QVariantMap &guest) { invoke(QStringLiteral("kioskFinish"), {guest}); }
     Q_INVOKABLE void kioskCancel() { invoke(QStringLiteral("kioskCancel")); }
-    Q_INVOKABLE void factoryReset(const QString &confirm, bool empty = false) { invoke(QStringLiteral("factoryReset"), {confirm, empty}); }
+    Q_INVOKABLE void factoryReset(const QString &confirm, const QString &startAs = {}) { invoke(QStringLiteral("factoryReset"), {confirm, startAs}); }
+    // The kinds of store a factory reset or the setup guide can start with,
+    // each with its starter menus (the default first):
+    // [{kind, name, description, packs: [{set, id, name, description, items}]}].
+    Q_INVOKABLE QVariantList starterSets() const;
     Q_INVOKABLE void findCustomers(const QString &query) { invoke(QStringLiteral("findCustomers"), {query}); }
     Q_INVOKABLE void selectCustomer(const QString &id) { invoke(QStringLiteral("selectCustomer"), {id}); }
     Q_INVOKABLE void useCustomer(const QString &id = {}) { invoke(QStringLiteral("useCustomer"), {id}); }

@@ -1,0 +1,35 @@
+pack Mediterranean & Greek | food | 0 | Gyros, platters, mezze and salads; protein, base and sauce.
+category Mezze | #1f8a4c | | kitchen | cold
+category Pitas & Wraps | #a86a12 | | kitchen | grill
+category Plates | #b83232 | | kitchen | grill
+category Bowls & Salads | #2b62b0 | | kitchen | cold
+category Sides & Sweets | #8a3a8a | | kitchen |
+category Drinks | #1f6f73 | | bar |
+group Protein | 1 1 | Gyro (beef and lamb), Chicken shawarma, Falafel, Steak kebab + 3.00, Salmon + 4.00
+group Base | 1 1 | Rice, Greens, Half and half, Couscous
+group Sauce | 1 2 ask | Tzatziki, Tahini, Garlic sauce, Hot sauce, Hummus
+group Extras | 0 0 ask | Feta + 1.50, Extra hummus + 1.50, Olives + 1.00, Pickled turnips + 0.75
+item Mezze | Hummus & Pita | 7.50 | | olive oil, paprika
+item Mezze | Baba Ghanoush | 8.00 | |
+item Mezze | Dolmades (6) | 7.50 | |
+item Mezze | Spanakopita | 8.00 | |
+item Mezze | Falafel (6) | 7.00 | Sauce |
+item Mezze | Mezze Platter | 16.00 | | hummus, baba ghanoush, tabbouleh, falafel, pita
+item Pitas & Wraps | Gyro Pita | 11.00 | Sauce, Extras | tomato, onion, lettuce
+item Pitas & Wraps | Chicken Shawarma Wrap | 11.50 | Sauce, Extras | pickles, garlic sauce, fries
+item Pitas & Wraps | Falafel Wrap | 10.00 | Sauce, Extras | tomato, cucumber, parsley
+item Plates | Gyro Platter | 16.50 | Base, Sauce, Extras | salad, pita
+item Plates | Chicken Souvlaki Plate | 17.00 | Base, Sauce, Extras | salad, pita
+item Plates | Lamb Chops | 26.00 | Base | lemon potatoes
+item Plates | Mixed Grill | 24.00 | Base, Sauce |
+item Bowls & Salads | Build a Bowl | 14.00 | Protein, Base, Sauce, Extras |
+item Bowls & Salads | Greek Salad | 11.00 | Protein, Extras | feta, olives, cucumber, tomato
+item Bowls & Salads | Fattoush | 10.00 | Protein | pita chips, sumac
+item Bowls & Salads | Tabbouleh | 8.00 | |
+item Sides & Sweets | Lemon Potatoes | 5.00 | |
+item Sides & Sweets | Fries with Feta | 6.00 | |
+item Sides & Sweets | Baklava | 5.00 | |
+item Sides & Sweets | Loukoumades | 6.50 | | honey, cinnamon
+item Drinks | Mint Lemonade | 4.50 | |
+item Drinks | Ayran | 3.50 | |
+item Drinks | Greek Coffee | 3.50 | |

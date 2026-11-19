@@ -488,7 +488,8 @@ QVariantList PosService::menuProblems() const
         for (const std::string &g : m.modifierGroups)
             if (!s_->settings.modifierGroup(g))
                 problem(tr("%1 asks for a choice group that's gone.").arg(name), id);
-        if (!m.printer.empty() && !s_->settings.printer(m.printer) && !s_->settings.printers.empty())
+        // (A shop sends nothing to a kitchen: no ticket goes astray.)
+        if (!m.printer.empty() && !s_->settings.printer(m.printer) && !s_->settings.printers.empty() && serviceMode() != u"retail")
             unrouted[qs(m.printer)] << name;
         if (unrouted.contains(qs(m.printer)) && !firstOf.contains(qs(m.printer)))
             firstOf.insert(qs(m.printer), id);

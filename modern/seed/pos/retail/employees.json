@@ -1,0 +1,34 @@
+[
+  {
+    "id": "manager",
+    "name": "Morgan (Owner)",
+    "role": "manager",
+    "pin": "1234",
+    "sample": true,
+    "payRate": 24.0
+  },
+  {
+    "id": "casey",
+    "name": "Casey",
+    "role": "cashier",
+    "pin": "2222",
+    "sample": true,
+    "payRate": 16.0
+  },
+  {
+    "id": "jordan",
+    "name": "Jordan",
+    "role": "cashier",
+    "pin": "3333",
+    "sample": true,
+    "payRate": 16.0
+  },
+  {
+    "id": "avery",
+    "name": "Avery",
+    "role": "cashier",
+    "pin": "4444",
+    "sample": true,
+    "payRate": 15.0
+  }
+]

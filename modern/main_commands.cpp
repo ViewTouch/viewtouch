@@ -7,6 +7,7 @@
 #include "app/legacy/legacy_pages.hh"
 #include "app/pos_demo.hh"
 #include "app/pos_json.hh"
+#include "app/pos_starter.hh"
 #include "storage/async_writer.hh"
 #include "storage/backup.hh"
 #include "storage/layout_store.hh"
@@ -50,6 +51,27 @@ bool markStartEmpty(const Args &cli, const Options &o)
     QDir().mkpath(dataDirOf(cli, o));
     QFile f(startEmptyMarker(cli, o));
     return f.open(QIODevice::WriteOnly) && f.write("Factory reset: start with an empty store.\n") > 0;
+}
+
+QString starterMarker(const Args &cli, const Options &o)
+{
+    return QDir(dataDirOf(cli, o)).filePath(u"start-as"_s);
+}
+
+bool markStarter(const Args &cli, const Options &o, const QString &set)
+{
+    QDir().mkpath(dataDirOf(cli, o));
+    QFile f(starterMarker(cli, o));
+    return f.open(QIODevice::WriteOnly) && f.write(set.toUtf8() + '\n') > 0;
+}
+
+// The set the next start begins with: --starter, else what a factory reset left.
+QString markedStarter(const Args &cli, const Options &o)
+{
+    if (cli.isSet(o.starter))
+        return cli.value(o.starter);
+    QFile f(starterMarker(cli, o));
+    return f.open(QIODevice::ReadOnly) ? QString::fromUtf8(f.readAll()).trimmed() : QString();
 }
 
 // Delete the database (and printouts): the next start is a fresh install.
@@ -226,7 +248,18 @@ int runFactoryReset(const Args &cli, const Options &o)
         }
         qInfo().noquote() << "Backed up to" << target;
     }
+    // Which starter set the next start begins with (checked before anything is deleted).
+    QString starterError;
+    if (cli.isSet(o.starter) && !vt::app::parseStarterSet(cli.value(o.starter), &starterError)) {
+        qCritical().noquote() << starterError;
+        return 1;
+    }
     wipeStore(cli, o);
+    QFile::remove(starterMarker(cli, o));
+    if (cli.isSet(o.starter) && !cli.isSet(o.empty) && !markStarter(cli, o, cli.value(o.starter))) {
+        qCritical().noquote() << "Reset, but couldn't mark which starter set to begin with: the next start has the restaurant's.";
+        return 1;
+    }
     if (cli.isSet(o.empty)) {
         if (!markStartEmpty(cli, o)) {
             qCritical().noquote() << "Reset, but couldn't mark it to start empty: the next start has the starter set.";
@@ -236,7 +269,9 @@ int runFactoryReset(const Args &cli, const Options &o)
         return 0;
     }
     QFile::remove(startEmptyMarker(cli, o));
-    qInfo().noquote() << "Factory reset done. The next start begins with the starter pages, menu, staff and settings.";
+    qInfo().noquote() << (cli.isSet(o.starter)
+                              ? u"Factory reset done. The next start begins with the %1 starter set."_s.arg(cli.value(o.starter))
+                              : u"Factory reset done. The next start begins with the starter pages, menu, staff and settings."_s);
     return 0;
 }
 
@@ -258,18 +293,15 @@ int runDemoData(const Args &cli, const Options &o)
     }
     vt::storage::LayoutStore pages(dbPath);   // so backups and checks see a whole store
     pages.open();
-    auto readSeed = [](const QString &name) {
-        QFile f(u":/seed/pos/"_s + name);
-        return f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()) : QJsonDocument();
-    };
     if (!store.started() || cli.isSet(o.resetMenu)) {
-        if (!store.seed(vt::app::settingsFromJson(readSeed(u"settings.json"_s).object()),
-                        vt::app::menuFromJson(readSeed(u"menu.json"_s).array()),
-                        vt::app::employeesFromJson(readSeed(u"employees.json"_s).array()), &error,
-                        vt::app::ingredientsFromJson(readSeed(u"ingredients.json"_s).array()))) {
+        // The starter set: --starter, or the one a factory reset chose (a restaurant's by default).
+        const auto set = vt::app::parseStarterSet(markedStarter(cli, o), &error);
+        const auto seed = set ? vt::app::starterData(*set, &error) : std::nullopt;
+        if (!seed || !store.seed(seed->settings, seed->menu, seed->employees, &error, seed->ingredients)) {
             qCritical().noquote() << "Could not store the starter menu:" << error;
             return 1;
         }
+        QFile::remove(starterMarker(cli, o));
     }
     auto data = store.load();
     if (!data) {
@@ -425,17 +457,12 @@ int runImportLegacy(const Args &cli, const Options &o)
     }
     vt::storage::LayoutStore pages(dbPath);
     pages.open();
-    auto readSeed = [](const QString &name) {
-        QFile f(u":/seed/pos/"_s + name);
-        return f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()) : QJsonDocument();
-    };
-    if (!store.started()
-        && !store.seed(vt::app::settingsFromJson(readSeed(u"settings.json"_s).object()),
-                       vt::app::menuFromJson(readSeed(u"menu.json"_s).array()),
-                       vt::app::employeesFromJson(readSeed(u"employees.json"_s).array()), &error,
-                       vt::app::ingredientsFromJson(readSeed(u"ingredients.json"_s).array()))) {
-        qCritical().noquote() << "Could not start the store:" << error;
-        return 1;
+    if (!store.started()) {
+        const auto seed = vt::app::starterData({}, &error);   // a restaurant's: the legacy store's menu goes on it
+        if (!seed || !store.seed(seed->settings, seed->menu, seed->employees, &error, seed->ingredients)) {
+            qCritical().noquote() << "Could not start the store:" << error;
+            return 1;
+        }
     }
     auto data = store.load();
     if (!data) {

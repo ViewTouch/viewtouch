@@ -1,0 +1,33 @@
+pack Korean BBQ & Bowls | food | 0 | Bibimbap, bulgogi, fried chicken, stews and banchan; spice level, rice, add an egg.
+category Starters | #a86a12 | | kitchen | fryer
+category BBQ Plates | #b83232 | | kitchen | grill
+category Rice & Bowls | #2b62b0 | | kitchen | line
+category Stews & Noodles | #8a5a2b | | kitchen | line
+category Korean Fried Chicken | #8a3a8a | | kitchen | fryer
+category Drinks | #1f6f73 | | bar |
+group Protein | 1 1 | Bulgogi beef, Spicy pork, Chicken, Tofu, Short rib + 5.00
+group Spice | 1 1 ask | Not spicy, Mild, Medium, Spicy
+group Rice | 1 1 | White rice, Purple rice + 1.00, Fried rice + 2.00
+group Add | 0 0 ask | Fried egg + 1.50, Extra kimchi + 1.00, Cheese + 1.50, Extra banchan + 3.00
+group Chicken Sauce | 1 1 ask | Soy garlic, Yangnyeom sweet and spicy, Honey butter, Half and half
+item Starters | Mandu (6) | 8.00 | | dumplings, dipping sauce
+item Starters | Kimchi Pancake | 11.00 | |
+item Starters | Tteokbokki | 10.00 | Spice, Add | rice cakes, fish cake
+item Starters | Japchae | 12.00 | Protein | glass noodles, vegetables
+item BBQ Plates | Bulgogi Plate | 19.00 | Rice, Add | lettuce wraps, banchan
+item BBQ Plates | Galbi Plate | 26.00 | Rice, Add | short ribs, banchan
+item BBQ Plates | Spicy Pork Plate | 18.00 | Spice, Rice, Add | banchan
+item Rice & Bowls | Bibimbap | 15.00 | Protein, Spice, Add | vegetables, gochujang, egg
+item Rice & Bowls | Dolsot Bibimbap | 17.00 | Protein, Spice, Add | stone pot, crispy rice
+item Rice & Bowls | Kimchi Fried Rice | 13.00 | Protein, Add | fried egg
+item Stews & Noodles | Kimchi Jjigae | 14.00 | Spice, Rice | pork, tofu
+item Stews & Noodles | Soondubu | 14.50 | Protein, Spice, Rice | soft tofu
+item Stews & Noodles | Naengmyeon | 14.00 | Spice | cold noodles
+item Stews & Noodles | Ramyun | 11.00 | Spice, Add |
+item Korean Fried Chicken | Fried Chicken (half) | 16.00 | Chicken Sauce | pickled radish
+item Korean Fried Chicken | Fried Chicken (whole) | 28.00 | Chicken Sauce | pickled radish
+item Korean Fried Chicken | Wings (10) | 15.00 | Chicken Sauce |
+item Drinks | Barley Tea | 2.50 | |
+item Drinks | Korean Soda | 3.50 | |
+item Drinks | Soju | 12.00 | | | tax: alcohol
+item Drinks | Korean Beer | 6.00 | | | tax: alcohol

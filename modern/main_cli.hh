@@ -62,6 +62,10 @@ struct Options {
     QCommandLineOption empty{u"empty"_s,
         u"With --factory-reset: the next start begins with an empty store (no menu, tables, sample staff, "
          "printers or tax rates; one sample manager to run the setup guide)."_s};
+    QCommandLineOption starter{u"starter"_s,
+        u"The starter set a new store begins with (with --factory-reset, --reset-menu or --demo-data): restaurant, "
+         "foodTruck or retail, and a menu after a colon: restaurant:sushi, restaurant:pizza, foodTruck:taqueria, "
+         "retail:hardware, retail:books... (Menu Builder -> Start from a Template lists them)."_s, u"kind[:menu]"_s};
     QCommandLineOption legacyPages{u"legacy-pages"_s,
                                    u"Make the Legacy style's pages from the legacy ViewTouch's own files in <dir> "
                                    "(vt_data, zone_db.dat, tables.dat) into --legacy-out (default seed/legacy)."_s,
@@ -210,6 +214,11 @@ QString backupDirOf(const Args &cli, const Options &o);
 // to an empty store, the backup before it, and the store deleted.
 QString startEmptyMarker(const Args &cli, const Options &o);
 bool markStartEmpty(const Args &cli, const Options &o);
+// Left by a factory reset to another starter set (a taco truck's, a
+// bookstore's): "kind:menu"; read (and used up) by the next start.
+QString starterMarker(const Args &cli, const Options &o);
+bool markStarter(const Args &cli, const Options &o, const QString &set);
+QString markedStarter(const Args &cli, const Options &o);
 QString backupBeforeReset(const Args &cli, const Options &o, QString *error);
 void wipeStore(const Args &cli, const Options &o);
 

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "vendors": [
+    {
+      "id": "valley-foods",
+      "name": "Valley Foods",
+      "phone": "555-0140",
+      "account": "VT-2210",
+      "note": "Meat, cheese, eggs, dry goods. Delivers Tue and Fri; order by noon the day before."
+    },
+    {
+      "id": "green-farms",
+      "name": "Green Farms Produce",
+      "phone": "555-0172",
+      "account": "GF-881",
+      "note": "Produce, daily except Sunday."
+    },
+    {
+      "id": "city-bakery",
+      "name": "City Bakery",
+      "phone": "555-0119",
+      "account": "",
+      "note": "Buns and bread every morning before 8."
+    }
+  ],
+  "storeName": "ViewTouch Shop",
+  "closeWhenPaid": true,
+  "currencySymbol": "$",
+  "openingChecklist": [
+    "Count the starting cash",
+    "Turn on the lights and the music",
+    "Face the shelves and fill the gaps",
+    "Check the returns bin",
+    "Unlock the front door"
+  ],
+  "closingChecklist": [
+    "Count the drawer",
+    "Restock what sold today",
+    "Tidy the fitting rooms and the floor",
+    "Take out the trash",
+    "Lock the doors and set the alarm"
+  ],
+  "autoLogoutMinutes": 3,
+  "phoneLockSeconds": 30,
+  "screensUpdate": true,
+  "style": "modern",
+  "tableLongMinutes": 90,
+  "loyalty": {
+    "enabled": true,
+    "pointsPerDollar": 1,
+    "rewards": [
+      {
+        "points": 50,
+        "value": 5.0
+      },
+      {
+        "points": 120,
+        "value": 15.0
+      },
+      {
+        "points": 250,
+        "value": 35.0
+      }
+    ]
+  },
+  "promotions": [],
+  "display": {
+    "logo": "",
+    "accent": "#2b62b0",
+    "slides": [
+      "New arrivals every Friday",
+      "Gift cards in any amount, for any occasion",
+      "Join our rewards: 1 point for every dollar, $5 off at 50 points",
+      "Returns within 30 days with your receipt"
+    ]
+  },
+  "tax": {
+    "food": 8.25,
+    "alcohol": 10.0,
+    "merchandise": 8.25,
+    "room": 0,
+    "taxTakeoutFood": true
+  },
+  "tenders": [
+    {
+      "id": "cash",
+      "name": "Cash",
+      "kind": "cash"
+    },
+    {
+      "id": "credit",
+      "name": "Credit Card",
+      "kind": "card"
+    },
+    {
+      "id": "gift",
+      "name": "Gift Card",
+      "kind": "giftcard"
+    },
+    {
+      "id": "house",
+      "name": "House Account",
+      "kind": "house"
+    },
+    {
+      "id": "discount",
+      "name": "10% Discount",
+      "kind": "discount",
+      "percent": 10
+    },
+    {
+      "id": "employee",
+      "name": "Employee Discount",
+      "kind": "discount",
+      "percent": 20
+    }
+  ],
+  "printers": [
+    {
+      "id": "receipt",
+      "name": "Receipt",
+      "type": "file",
+      "path": "receipt.txt",
+      "width": 42,
+      "cutter": true,
+      "drawerKick": true
+    }
+  ],
+  "receiptHeader": "ViewTouch Shop\n100 Main Street",
+  "gratuity": {
+    "percent": 18,
+    "minGuests": 6
+  },
+  "terminals": [],
+  "cashMode": "terminalDrawer",
+  "accounts": {
+    "sales": "4000 Food sales",
+    "sales:drinks": "4100 Beverage sales",
+    "sales:events": "4300 Event sales",
+    "tax": "2200 Sales tax payable",
+    "gratuity": "2310 Gratuity payable",
+    "tips": "2300 Tips payable",
+    "discounts": "4900 Discounts and comps",
+    "staffMeals": "6150 Staff meals",
+    "rounding": "4950 Cash rounding",
+    "giftCardsSold": "2400 Gift card liability",
+    "refunds": "4910 Refunds",
+    "paidIn": "4960 Paid ins",
+    "paidOut": "6000 Paid outs",
+    "overShort": "6900 Cash over and short",
+    "tender:cash": "1000 Cash on hand",
+    "tender:credit": "1100 Card clearing",
+    "tender:gift": "2400 Gift card liability",
+    "tender:house": "1200 House accounts receivable"
+  },
+  "stations": [],
+  "menuCategories": [],
+  "modifierGroups": [],
+  "mealPeriods": [
+    {
+      "id": "breakfast",
+      "name": "Breakfast",
+      "start": "04:00"
+    },
+    {
+      "id": "lunch",
+      "name": "Lunch",
+      "start": "11:00"
+    },
+    {
+      "id": "dinner",
+      "name": "Dinner",
+      "start": "16:00"
+    }
+  ],
+  "receiptFooter": "Returns within 30 days with this receipt.",
+  "serviceMode": "retail",
+  "returnDays": 30,
+  "cashierReturns": false
+}

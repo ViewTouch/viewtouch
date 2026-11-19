@@ -1,0 +1,27 @@
+pack Ice Cream & Desserts | food | 0 | Scoops in a cone or cup, toppings, sundaes, shakes, floats and baked treats.
+category Scoops | #8a3a8a | | kitchen |
+category Sundaes | #b83232 | | kitchen |
+category Shakes & Floats | #2b62b0 | | kitchen |
+category Treats | #a86a12 | | kitchen |
+category Drinks | #1f6f73 | | bar |
+group Scoops | 1 1 | One scoop, Two scoops + 2.00, Three scoops + 3.50
+group Flavors | 1 3 ask | Vanilla, Chocolate, Strawberry, Mint chip, Cookies and cream, Rocky road, Salted caramel, Mango sorbet
+group Served In | 1 1 | Cup, Sugar cone, Waffle cone + 1.00, Dipped waffle cone + 1.50
+group Toppings | 0 0 ask | Sprinkles + 0.50, Hot fudge + 1.00, Caramel + 1.00, Whipped cream + 0.50, Nuts + 0.75, Cherry + 0.25, Brownie bits + 1.00
+group Shake Size | 1 1 | Regular, Large + 2.00
+item Scoops | Ice Cream | 4.50 | Scoops, Flavors, Served In, Toppings |
+item Scoops | Soft Serve | 3.75 | Served In, Toppings |
+item Scoops | Frozen Yogurt | 4.75 | Flavors, Toppings |
+item Scoops | Kids Scoop | 3.00 | Flavors, Served In |
+item Sundaes | Hot Fudge Sundae | 7.50 | Flavors, Toppings | hot fudge, whipped cream, cherry
+item Sundaes | Banana Split | 9.50 | Toppings | three scoops, banana, strawberry, pineapple
+item Sundaes | Brownie Sundae | 8.50 | Flavors, Toppings | warm brownie
+item Shakes & Floats | Milkshake | 6.50 | Shake Size, Flavors, Toppings |
+item Shakes & Floats | Root Beer Float | 5.50 | |
+item Shakes & Floats | Affogato | 6.00 | Flavors |
+item Treats | Ice Cream Sandwich | 5.00 | |
+item Treats | Waffle Cone Bowl | 2.00 | |
+item Treats | Cookie | 2.50 | |
+item Treats | Brownie | 3.50 | |
+item Drinks | Bottled Water | 2.00 | |
+item Drinks | Coffee | 2.75 | |

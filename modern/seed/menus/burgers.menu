@@ -1,0 +1,34 @@
+pack Burgers & Bar | food | 0 | Burgers, wings, fries and beer; how it's cooked, sides, sauces.
+category Burgers | #a86a12 | | kitchen | grill
+category Wings & Starters | #b83232 | | kitchen | fryer
+category Sides | #8a5a2b | | kitchen | fryer
+category Shakes | #8a3a8a | | bar |
+category Beer | #1f6f73 | | bar | | alcohol
+group How it's cooked | 1 1 | Rare, Medium Rare, Medium, Medium Well, Well Done
+group Side | 1 1 | Fries, Tots, Onion Rings + 1.50, Side Salad, Sweet Potato Fries + 1.00
+group Wing Sauce | 1 1 ask | Buffalo, BBQ, Honey Garlic, Lemon Pepper, Nashville Hot, Mango Habanero
+group Add | 0 0 ask | Bacon + 2.00, Cheese + 1.00, Fried Egg + 1.50, Avocado + 1.50, Jalapeños + 0.75
+group Bun | 1 1 | Brioche, Pretzel + 1.00, Lettuce wrap, Gluten-free + 2.00
+group Dip | 1 1 ask | Ranch, Blue Cheese, Honey Mustard, Chipotle Mayo
+item Burgers | Classic Burger | 12.00 | How it's cooked, Bun, Side, Add | lettuce, tomato, onion, pickles, mayo
+item Burgers | Cheeseburger | 13.00 | How it's cooked, Bun, Side, Add | cheese, lettuce, tomato, onion, pickles
+item Burgers | Bacon BBQ Burger | 14.50 | How it's cooked, Bun, Side, Add | bacon, cheddar, onion rings, BBQ sauce
+item Burgers | Mushroom Swiss Burger | 14.00 | How it's cooked, Bun, Side, Add | mushrooms, swiss
+item Burgers | Double Smash Burger | 15.50 | Bun, Side, Add | two patties, american cheese, special sauce
+item Burgers | Crispy Chicken Sandwich | 13.00 | Bun, Side, Add | pickles, slaw, spicy mayo
+item Burgers | Veggie Burger | 12.00 | Bun, Side, Add | lettuce, tomato, onion
+item Wings & Starters | Wings (8) | 13.00 | Wing Sauce, Dip | celery
+item Wings & Starters | Boneless Wings (10) | 12.00 | Wing Sauce, Dip |
+item Wings & Starters | Loaded Nachos | 11.00 | Add | cheese, jalapeños, sour cream, salsa
+item Wings & Starters | Mozzarella Sticks | 8.50 | | marinara
+item Wings & Starters | Fried Pickles | 7.50 | Dip |
+item Sides | Fries | 4.00 | |
+item Sides | Onion Rings | 5.50 | |
+item Sides | Tater Tots | 4.50 | |
+item Sides | Loaded Fries | 7.50 | | cheese, bacon, green onion
+item Shakes | Chocolate Shake | 6.50 | |
+item Shakes | Vanilla Shake | 6.50 | |
+item Shakes | Strawberry Shake | 6.50 | |
+item Beer | Draft Pint | 6.00 | |
+item Beer | Bottled Beer | 5.00 | |
+item Beer | Pitcher | 18.00 | |

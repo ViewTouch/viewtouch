@@ -9,7 +9,8 @@
   python3 tools/i18n.py add-all new.json    every language at once ({"English": [es, fr, pt, zh], ...})
 
 Phrases come from qsTr("...") in QML, tr("...") / translate("main", "...") in
-C++, and the button and label text of the starter pages (seed/pages).
+C++, the button and label text of the starter pages (seed/pages), and the
+starter menus' names and descriptions (seed/menus).
 """
 import json
 import pathlib
@@ -79,6 +80,18 @@ def page_phrases():
     return out
 
 
+def menu_phrases():
+    """The starter menus' names and descriptions (seed/menus/*.menu: its
+    first line, "pack Name | kind | number | description")."""
+    out = []
+    for path in sorted((ROOT / "seed/menus").glob("*.menu")):
+        head = path.read_text().split("\n", 1)[0]
+        if head.startswith("pack "):
+            cells = [c.strip() for c in head[5:].split("|")]
+            out += [c for c in (cells[0], cells[3] if len(cells) > 3 else "") if c]
+    return out
+
+
 def report_phrases():
     """Reports are written in English (core/report.cpp, and the reports
     PosService builds); the screen shows each title, column and cell that is
@@ -99,7 +112,7 @@ def report_phrases():
 
 def phrases():
     seen, out = set(), []
-    for p in source_phrases() + page_phrases() + report_phrases():
+    for p in source_phrases() + page_phrases() + menu_phrases() + report_phrases():
         if p.strip() and p not in seen and re.search(r"[A-Za-z]", p):
             seen.add(p)
             out.append(p)

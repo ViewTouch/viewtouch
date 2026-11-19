@@ -1,0 +1,44 @@
+pack Chinese | food | 0 | Combination plates, wok dishes, noodles, dim sum and soups; rice, protein and spice.
+category Appetizers | #a86a12 | | kitchen | fryer
+category Soups | #8a5a2b | | kitchen | line
+category Wok | #b83232 | | kitchen | wok
+category Noodles & Rice | #2b62b0 | | kitchen | wok
+category Combination Plates | #8a3a8a | lunch | kitchen | wok
+category Dim Sum | #1f8a4c | | kitchen | line
+category Drinks | #1f6f73 | | bar |
+group Rice | 1 1 | Steamed rice, Fried rice + 1.50, Brown rice + 1.00, Lo mein instead + 2.00
+group Protein | 1 1 | Chicken, Beef + 2.00, Shrimp + 3.00, Pork, Tofu, Vegetable
+group Spice | 1 1 ask | Mild, Medium, Hot, Extra hot
+group Combo Side | 1 1 | Egg roll, Spring roll, Crab rangoon (2), Hot and sour soup
+group Sauce | 0 1 ask | Sauce on the side, Extra sauce, No MSG
+item Appetizers | Egg Rolls (2) | 4.50 | |
+item Appetizers | Crab Rangoon (6) | 7.00 | |
+item Appetizers | Potstickers (6) | 7.50 | |
+item Appetizers | Spare Ribs | 11.00 | |
+item Appetizers | Scallion Pancake | 6.50 | |
+item Soups | Hot and Sour Soup | 5.00 | Spice |
+item Soups | Wonton Soup | 5.50 | |
+item Soups | Egg Drop Soup | 4.50 | |
+item Wok | General Tso's Chicken | 15.00 | Rice, Spice, Sauce |
+item Wok | Orange Chicken | 14.50 | Rice, Spice, Sauce |
+item Wok | Kung Pao | 14.50 | Protein, Rice, Spice, Sauce | peanuts, peppers
+item Wok | Beef and Broccoli | 16.00 | Rice, Sauce |
+item Wok | Sweet and Sour | 14.00 | Protein, Rice, Sauce |
+item Wok | Mongolian Beef | 16.50 | Rice, Spice, Sauce | scallions, onions
+item Wok | Ma Po Tofu | 13.00 | Rice, Spice | tofu, pork
+item Wok | Szechuan Green Beans | 12.00 | Rice, Spice |
+item Wok | Honey Walnut Shrimp | 18.00 | Rice |
+item Noodles & Rice | Lo Mein | 12.50 | Protein, Sauce |
+item Noodles & Rice | Chow Mein | 12.50 | Protein, Sauce |
+item Noodles & Rice | Fried Rice | 11.50 | Protein |
+item Noodles & Rice | Dan Dan Noodles | 13.00 | Spice |
+item Noodles & Rice | Chow Fun | 14.00 | Protein |
+item Combination Plates | Lunch Combo | 11.50 | Protein, Rice, Combo Side, Spice |
+item Combination Plates | Two-Item Combo | 13.50 | Rice, Combo Side |
+item Dim Sum | Har Gow (4) | 7.00 | |
+item Dim Sum | Siu Mai (4) | 6.50 | |
+item Dim Sum | BBQ Pork Buns (3) | 6.50 | |
+item Dim Sum | Xiao Long Bao (6) | 9.00 | |
+item Drinks | Jasmine Tea (pot) | 3.00 | |
+item Drinks | Thai Iced Tea | 4.50 | |
+item Drinks | Soda | 2.50 | |

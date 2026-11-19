@@ -1,0 +1,43 @@
+pack Taqueria | food | 0 | Tacos, burritos, quesadillas, bowls and aguas frescas; tortillas, salsas, proteins and extras. A taco truck's.
+category Tacos | #b83232 | | kitchen | grill
+category Burritos & Bowls | #a86a12 | | kitchen | grill
+category Quesadillas & Tortas | #8a5a2b | | kitchen | grill
+category Sides | #2b62b0 | | kitchen | line
+category Sweets | #8a3a8a | | kitchen | line
+category Drinks | #1f6f73 | | bar |
+group Salsa | 1 1 ask | Roja, Verde, Pico de gallo, Habanero + 0.50, No salsa
+group Tortilla | 1 1 | Corn, Flour, Lettuce wrap
+group Meat | 1 1 | Carne Asada, Al Pastor, Pollo, Carnitas, Birria + 1.50, Veggie
+group Extras | 0 0 ask | Guacamole + 1.50, Cheese + 0.75, Sour Cream + 0.75, Grilled Onions + 0.50, Jalapeños + 0.50
+group Beans | 1 1 | Black beans, Pinto beans, Refried, No beans
+group Size | 1 1 | Small, Medium + 0.75, Large + 1.50
+item Tacos | Carne Asada Taco | 3.50 | Salsa, Tortilla, Extras | onion, cilantro
+item Tacos | Al Pastor Taco | 3.25 | Salsa, Tortilla, Extras | onion, cilantro, pineapple
+item Tacos | Pollo Taco | 3.00 | Salsa, Tortilla, Extras | onion, cilantro
+item Tacos | Carnitas Taco | 3.25 | Salsa, Tortilla, Extras | onion, cilantro
+item Tacos | Birria Taco | 4.25 | Salsa, Tortilla | onion, cilantro, consomé
+item Tacos | Fish Taco | 4.00 | Salsa, Tortilla | cabbage, crema, lime
+item Tacos | Veggie Taco | 3.00 | Salsa, Tortilla, Extras | peppers, onion, cilantro
+item Tacos | Taco Plate (3) | 10.50 | Meat, Salsa, Tortilla, Beans | rice, onion, cilantro
+item Burritos & Bowls | Burrito | 11.00 | Meat, Salsa, Beans, Extras | rice, beans, cheese, sour cream
+item Burritos & Bowls | Breakfast Burrito | 9.50 | Meat, Salsa | eggs, potatoes, cheese
+item Burritos & Bowls | California Burrito | 12.50 | Salsa | carne asada, fries, cheese, sour cream
+item Burritos & Bowls | Burrito Bowl | 11.50 | Meat, Salsa, Beans, Extras | rice, lettuce, cheese, pico
+item Burritos & Bowls | Birria Ramen | 13.00 | | birria, noodles, consomé
+item Quesadillas & Tortas | Quesadilla | 9.00 | Meat, Tortilla, Extras | cheese
+item Quesadillas & Tortas | Quesabirria (3) | 13.50 | | birria, cheese, consomé
+item Quesadillas & Tortas | Torta | 10.00 | Meat | beans, lettuce, tomato, avocado, mayo
+item Quesadillas & Tortas | Gringa | 10.50 | | al pastor, cheese, pineapple, flour tortilla
+item Sides | Chips & Salsa | 3.50 | Salsa |
+item Sides | Guacamole & Chips | 6.00 | |
+item Sides | Rice & Beans | 4.00 | Beans |
+item Sides | Elote | 4.50 | | mayo, cotija, chile, lime
+item Sides | Nachos | 9.50 | Meat, Extras | cheese, beans, jalapeños, crema
+item Sweets | Churros | 4.50 | | cinnamon sugar, chocolate sauce
+item Sweets | Flan | 4.00 | |
+item Drinks | Horchata | 3.00 | Size |
+item Drinks | Agua de Jamaica | 3.00 | Size |
+item Drinks | Agua de Tamarindo | 3.00 | Size |
+item Drinks | Mexican Coke | 3.50 | |
+item Drinks | Jarritos | 3.00 | |
+item Drinks | Bottled Water | 2.00 | |
