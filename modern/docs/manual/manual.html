@@ -77,6 +77,14 @@
 <li><b>Kitchen:</b> a chime for a new order and another when one turns late; voided items stay <b>crossed out</b> until seen, a second send says <b>ADDED to T5</b>; touch one item for <b>Made</b> or <b>Sold Out (86)</b>; the next course on hold shows under the ticket (chapter 2).</li>
 <li><b>Hosts:</b> <b>server sections</b> drawn on the floor; <b>Seat at T7</b>, the best table for the party, in one touch; wait quotes from the tables that fit the party; and <b>Tables to Clean</b> for bussers (chapter 8).</li>
 </ul>
+<p>Safer:</p>
+<ul>
+<li><b>Managers' PINs stay on the store's computer.</b> A screen working offline lets the staff log in, not managers or the owner: a lost tablet can't give their PINs away (chapter 18, Working offline).</li>
+<li><b>The owner's settings are the owner's:</b> a manager can't change the Stripe key, taxes or backups by any way round, or the owner's (or another manager's) PIN. Setup isn't finished while the sample manager (PIN 1234) can still log in.</li>
+<li><b>Card payments are checked with Stripe:</b> one a screen records that Stripe doesn't have, or for less, shows as a card alert for a manager and in Loss Watch. A refund sent again after a lost connection is refunded once.</li>
+<li><b>Pictures are pictures:</b> the logo, slides and menu pictures come from the store's pictures (or a picture file on its computer), never a web address.</li>
+<li>A made-up answer on the store's network can't stop the store's computer or unpair the screens.</li>
+</ul>
 
 <!-- ======================================================================= -->
 <h1>What's new in 0.21</h1>
@@ -369,7 +377,7 @@
 <td><img src="shots/m149-phone-setup-guide.jpg" width="140" height="311"><br><small>On a phone</small></td>
 <td><img src="shots/m149-phone-setup-colors.jpg" width="140" height="311"><br><small>Your colors</small></td>
 </tr></table>
-<div class="tip">The demo's staff (Morgan 1234, Sam 1111…) have PINs printed in this manual. Add yourself as a manager with your own PIN, then touch <b>Turn Off the Sample Staff</b>. If you're logged in as Morgan, Morgan goes off when you touch Finish; then log in with your own PIN.</div>
+<div class="tip">The demo's staff (Morgan 1234, Sam 1111…) have PINs printed in this manual. Add yourself as a manager with your own PIN, then touch <b>Turn Off the Sample Staff</b>. If you're logged in as Morgan, Morgan goes off when you touch Finish; then log in with your own PIN. Finish waits until you have: anyone could log in with 1234.</div>
 
 <!-- ======================================================================= -->
 <h1>2. Logging in, clocking in and out</h1>
@@ -1616,7 +1624,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <div class="tip">To put one on any page: edit mode → <b>+ Panel → Menu (self-filling)</b>, and set its <i>Family</i> (or leave it empty for all), <i>Columns</i> and <i>Show photos</i>.</div>
 
 <h2>Your logo and pictures</h2>
-<p>Make the screens yours. In <b>Manager → Store Settings → Store logo</b> (or the setup guide's logo step), touch <b>Add Picture…</b>: the pictures on the computer show as thumbnails, newest first, from its Pictures, Documents, Downloads and Desktop folders. Touch yours. On a computer only for ViewTouch, copy pictures into the administrator's Pictures or Documents folder, or put them on a USB stick and touch <b>USB Stick</b>; <b>Browse…</b> opens any other folder. On a phone or tablet, Android's photo picker opens instead. It shows on the login page and the screen saver (and on the customer display and kiosk). Turn on <b>Print the logo on receipts</b> to print it at the top of every receipt.</p>
+<p>Make the screens yours. In <b>Manager → Store Settings → Store logo</b> (or the setup guide's logo step), touch <b>Add Picture…</b>: the pictures on the computer show as thumbnails, newest first, from its Pictures, Documents, Downloads and Desktop folders. Touch yours. On a computer only for ViewTouch, copy pictures into the administrator's Pictures or Documents folder, or put them on a USB stick and touch <b>USB Stick</b>; <b>Browse…</b> opens any other folder. On a phone or tablet, Android's photo picker opens instead. It shows on the login page and the screen saver (and on the customer display and kiosk). Turn on <b>Print the logo on receipts</b> to print it at the top of every receipt. A logo, a slide or a menu item's picture is always one of the store's pictures (or a picture file on the store's computer), never a web address: the screens and kiosks never fetch pictures from the internet.</p>
 <table cellpadding="4"><tr>
 <td><img src="shots/m88-login-logo.jpg" width="270" height="152"><br><small>The login page</small></td>
 <td><img src="shots/m90-screen-saver-logo.jpg" width="270" height="152"><br><small>The screen saver</small></td>
@@ -1833,6 +1841,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p>Without a standby (or before it takes over), a screen that can't reach the store's computer can keep selling by itself: a dead network switch, a Wi-Fi dropout that lasts, or the store's computer restarting in the middle of service.</p>
 <ul>
 <li>The bar at the top says <i>No connection. Reconnecting…</i> with a <b>Work Offline</b> button. Touch it, and log in again with your PIN.</li>
+<li><b>Managers and the owner can't log in offline</b>, nor approve a void or a discount there: their PINs never leave the store's computer, so a lost or stolen tablet can't give them away. What needs a manager waits for the store's computer.</li>
 <li>Offline, the screen takes <b>new checks</b>: tables, takeout and quick orders, with their choices, seats and notes. <b>Send</b> prints the kitchen tickets on the kitchen's printers if the screen can still reach them. Checks are paid in <b>cash</b> (and discounts), and closed.</li>
 <li>Tables already going at the store stay the store's: they show as taken, and can't be opened offline. Cards, gift cards, house accounts, customers, the time clock, drawers, reports and managing all wait for the store's computer. The screen says so if you touch one.</li>
 <li>When the store's computer answers again, the screen goes back to it as soon as nobody has a check open on it. The checks made offline go to the store by themselves. Closed ones are in the day's sales, with their cash in the drawer or the server's bank. Open ones are open checks at the store, ready to go on with. Each one is taken in once, even if the screen sends it twice.</li>
