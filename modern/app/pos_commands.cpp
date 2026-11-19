@@ -93,7 +93,12 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"selectTable"_s, [](PosService &p, const QVariantList &a) { return QVariant(int(p.selectTable(a.value(0).toString()))); }},
         {u"startCheck"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.startCheck(checkTypeFromString(ss(a.value(0).toString())))); }},
-        {u"openCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.openCheck(a.value(0).toLongLong())); }},
+        {u"openCheck"_s, [](PosService &p, const QVariantList &a) {
+             // A screen nobody is logged in to (but a kiosk, or a truck that
+             // sells without logins): no check of anyone's to open and hold.
+             if (!p.loggedIn() && !p.selfOrder() && !(p.counterMode() && p.shared()->settings.truckNoLogin))
+                 return QVariant(p.fail(PosService::tr("Log in first.")));
+             return QVariant(p.openCheck(a.value(0).toLongLong())); }},
         {u"openTab"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.openTab(a.value(0).toString())); }},
         {u"releaseCheck"_s, [](PosService &p, const QVariantList &) { p.releaseCheck(); return QVariant(true); }},
         {u"newTableCheck"_s, [](PosService &p, const QVariantList &) { return QVariant(p.newTableCheck()); }},

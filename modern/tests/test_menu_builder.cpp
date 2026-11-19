@@ -1585,3 +1585,32 @@ TEST_CASE("Menu import: prices that aren't amounts (NaN, infinity, 1e999) aren't
         }
     }
 }
+
+TEST_CASE("Security: a small spreadsheet saying \"cell ZZZ\" in every row is refused, not all the memory", "[menubuilder][xlsx][security]")
+{
+    const QByteArray book = "<?xml version=\"1.0\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+                            "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets>"
+                            "<sheet name=\"A\" sheetId=\"1\" r:id=\"rId1\"/><sheet name=\"B\" sheetId=\"2\" r:id=\"rId1\"/>"
+                            "</sheets></workbook>";
+    const QByteArray rels = "<?xml version=\"1.0\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                            "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" "
+                            "Target=\"worksheets/sheet1.xml\"/></Relationships>";
+    const auto sheet = [](int rows, const char *cell) {
+        QByteArray xml = "<worksheet><sheetData>";
+        for (int r = 1; r <= rows; ++r)
+            xml += "<row r=\"" + QByteArray::number(r) + "\"><c r=\"" + cell + "\"><v>1</v></c></row>";
+        return xml + "</sheetData></worksheet>";
+    };
+    const auto read = [&](const QByteArray &xml) {
+        return app::readXlsx(zipOf({{u"xl/workbook.xml"_s, book}, {u"xl/_rels/workbook.xml.rels"_s, rels},
+                                    {u"xl/worksheets/sheet1.xml"_s, xml}}));
+    };
+    CHECK_FALSE(read(sheet(10'000, "ZZZ1")));   // 180 million empty cells
+    CHECK_FALSE(read(sheet(3, "AMA1")));        // past 1,000 columns
+    CHECK_FALSE(read("<worksheet><sheetData><row r=\"1048576\"><c r=\"A1\"><v>1</v></c></row></sheetData></worksheet>"));
+    // An ordinary one, listed twice: read once.
+    const auto ok = read(sheet(50, "C1"));
+    REQUIRE(ok);
+    CHECK(ok->size() == 1);
+    CHECK(ok->first().rows.size() == 50);
+}

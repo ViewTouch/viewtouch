@@ -1739,6 +1739,9 @@ QVariantMap PosService::reportVariant(const Report &r) const
 
 QVariantMap PosService::report(const QString &id, qint64 dayId)
 {
+    // Sales, pay and tips: managers' (on this computer's own screen too).
+    if (!can(QString::fromLatin1(perm::Manager)))
+        return {{u"title"_s, tr("Reports are for managers.")}, {u"rows"_s, QVariantList()}};
     if (dayId == 0 || dayId == s_->day.id)
         return toVariant(buildReport(id));
     for (const PastDay &p : s_->pastDays) {

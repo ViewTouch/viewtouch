@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QHash>
+#include <QSet>
 #include <QXmlStreamReader>
 
 #include <array>
@@ -396,11 +397,14 @@ QString cellText(QStringView type, const QString &value, const QStringList &stri
     return value;   // str, inlineStr
 }
 
-std::optional<QList<QStringList>> sheetRows(const QByteArray &xml, const QStringList &strings)
+// `cells`: what the workbook's sheets have taken so far, the empty cells and
+// rows before one counted too (a few bytes saying "cell ZZZ1" in 10,000 rows
+// would otherwise be 180 million cells: all the memory there is).
+std::optional<QList<QStringList>> sheetRows(const QByteArray &xml, const QStringList &strings, qsizetype &cells)
 {
     constexpr qsizetype kMaxCells = 2'000'000;
+    constexpr int kMaxRows = 100'000, kMaxColumns = 1'000;
     QList<QStringList> rows;
-    qsizetype cells = 0;
     int col = 0;
     QString type, value;
     QXmlStreamReader x(xml);
@@ -410,13 +414,20 @@ std::optional<QList<QStringList>> sheetRows(const QByteArray &xml, const QString
             const QStringView n = x.name();
             if (n == u"row"_s) {
                 const int r = x.attributes().value(u"r"_s).toInt();
-                while (r > 0 && rows.size() < r - 1 && rows.size() < 1'048'576)
+                if (r > kMaxRows || rows.size() >= kMaxRows)
+                    return std::nullopt;
+                while (r > 0 && rows.size() < r - 1) {
+                    if (++cells > kMaxCells)
+                        return std::nullopt;
                     rows.append(QStringList());
+                }
                 rows.append(QStringList());
                 col = 0;
             } else if (n == u"c"_s) {
                 if (const int c = column(x.attributes().value(u"r"_s)); c >= 0)
                     col = c;
+                if (col >= kMaxColumns)
+                    return std::nullopt;
                 type = x.attributes().value(u"t"_s).toString();
                 value.clear();
             } else if (n == u"v"_s) {
@@ -426,7 +437,8 @@ std::optional<QList<QStringList>> sheetRows(const QByteArray &xml, const QString
             }
         } else if (x.isEndElement() && x.name() == u"c"_s && !rows.isEmpty()) {
             QStringList &row = rows.last();
-            if (++cells > kMaxCells)
+            cells += std::max<qsizetype>(1, col + 1 - row.size());
+            if (cells > kMaxCells)
                 return std::nullopt;
             while (row.size() < col)
                 row.append(QString());
@@ -479,6 +491,8 @@ std::optional<QList<Sheet>> readXlsx(const QByteArray &file, QString *error)
         strings = sharedStrings(byName.value(dir + u"/sharedStrings.xml"_s));
 
     QList<Sheet> sheets;
+    qsizetype cells = 0;
+    QSet<QString> read;   // each sheet once (a workbook can list one many times)
     QXmlStreamReader x(byName.value(workbook));
     while (!x.atEnd()) {
         if (x.readNext() != QXmlStreamReader::StartElement || x.name() != u"sheet"_s)
@@ -489,9 +503,10 @@ std::optional<QList<Sheet>> readXlsx(const QByteArray &file, QString *error)
                 if (a.name() == u"id"_s)
                     id = a.value().toString();
         const QString path = rels.value(id);
-        if (!byName.contains(path))
+        if (!byName.contains(path) || read.contains(path))
             continue;   // a chart sheet, or one that's missing
-        const auto rows = sheetRows(byName.value(path), strings);
+        read.insert(path);
+        const auto rows = sheetRows(byName.value(path), strings, cells);
         if (!rows) {
             say(error, tr("The file is damaged (or isn't a spreadsheet)."));
             return std::nullopt;

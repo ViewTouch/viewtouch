@@ -16,7 +16,10 @@ namespace {
 
 QString tr(const char *s) { return QCoreApplication::translate("vt::legacy", s); }
 
-constexpr qint64 kLimit = qint64(512) << 20;   // no legacy file is near this
+// No legacy file is near these: a file that unpacks past them is something
+// else (a few hundred kilobytes of gzip can unpack to gigabytes).
+constexpr qint64 kLimit = qint64(128) << 20;
+constexpr qsizetype kMaxWords = 8'000'000;
 
 // Legacy's own digits (data_file.cc new_decode_table): -1 for any other byte.
 const std::array<int, 256> &digits()
@@ -72,6 +75,11 @@ std::optional<Tokens> Tokens::open(const QString &path, QString *error)
             *error = tr("%1 can't be read (%2).").arg(QFileInfo(path).fileName(), f.errorString());
         return std::nullopt;
     }
+    if (f.size() > kLimit) {
+        if (error)
+            *error = tr("%1 is damaged (it doesn't unpack).").arg(QFileInfo(path).fileName());
+        return std::nullopt;
+    }
     return fromBytes(f.readAll(), QFileInfo(path).fileName(), error);
 }
 
@@ -95,6 +103,11 @@ std::optional<Tokens> Tokens::fromBytes(const QByteArray &bytes, const QString &
             ++i;
         if (i > start)
             t.words_.append(QByteArray(p + start, i - start));
+        if (t.words_.size() > kMaxWords) {
+            if (error)
+                *error = tr("%1 is damaged (it doesn't unpack).").arg(name);
+            return std::nullopt;
+        }
     }
     bool ok = false;
     if (t.words_.size() >= 3 && t.words_[0] == "vtpos")

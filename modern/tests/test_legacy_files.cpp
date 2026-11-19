@@ -196,3 +196,14 @@ TEST_CASE("Legacy pages: the Legacy style's pages are legacy's own, converted", 
     }
     CHECK(set.missing.size() == 966);
 }
+
+TEST_CASE("Security: an old store's file that unpacks to gigabytes is refused", "[legacy][security]")
+{
+    // "A " 32 million times (gzip'd, a few hundred kilobytes).
+    QByteArray words(64 << 20, ' ');
+    for (qsizetype i = 0; i < words.size(); i += 2)
+        words[i] = 'A';
+    QString error;
+    CHECK_FALSE(legacy::Tokens::fromBytes("vtpos 0 1 " + words, u"x"_s, &error));
+    CHECK_FALSE(error.isEmpty());
+}

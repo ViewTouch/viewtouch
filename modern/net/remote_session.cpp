@@ -957,7 +957,11 @@ void RemoteSession::sendOfflineChecks()
     if (!welcomed_ || offlineMode_ || uploading_ || !offline_ || offline_->pendingCount() == 0)
         return;
     uploading_ = true;
-    send({{u"t"_s, u"offlineChecks"_s}, {u"checks"_s, offline_->pending()}});
+    // The store takes 500 at a time: the rest go when those are answered.
+    QJsonArray pending = offline_->pending();
+    while (pending.size() > 500)
+        pending.removeLast();
+    send({{u"t"_s, u"offlineChecks"_s}, {u"checks"_s, pending}});
 }
 
 void RemoteSession::tookOfflineChecks(const QJsonArray &results)
@@ -979,6 +983,9 @@ void RemoteSession::tookOfflineChecks(const QJsonArray &results)
         emit notice(tr("Back online: the store's computer has the %n check(s) made offline.", "", taken));
     if (!problems.isEmpty())
         emit notice(tr("Not taken in yet: %1").arg(problems.join(u"; "_s)));
+    // More than one send's worth: the next ones.
+    if (taken > 0 && offline_ && offline_->pending().size() > 0 && results.size() >= 500)
+        sendOfflineChecks();
 }
 
 } // namespace vt::net

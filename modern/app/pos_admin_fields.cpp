@@ -44,6 +44,8 @@ const char *PosService::fieldPermission(const QString &panel, const QString &pat
 
 QVariantList PosService::adminFields(const QString &panel)
 {
+    if (!can(QString::fromLatin1(perm::Manager)))
+        return {};
     QVariantList out = adminFieldsAll(panel);
     for (QVariant &f : out) {
         QVariantMap m = f.toMap();

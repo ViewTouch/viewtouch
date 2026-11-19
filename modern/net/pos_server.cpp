@@ -633,6 +633,11 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
         return;
     }
     if (type == u"offlineChecks") {
+        // (Kiosks and boards never sell offline: nothing of theirs to take in.)
+        const core::TerminalConfig *paired = shared_->settings.pairedTerminal(c->terminalId.toStdString());
+        const std::string screen = paired ? paired->screen : std::string();
+        if (screen == "selfOrder" || screen == "timeClock" || screen == "nowServing" || screen == "menuBoard")
+            return;
         takeOfflineChecks(c, m.value(u"checks").toArray());
         return;
     }
@@ -645,8 +650,19 @@ void PosServer::handle(Connection *c, const QJsonObject &m)
             return;
         }
         QVariant result;
-        c->session->invoke(m.value(u"m").toString(), m.value(u"a").toArray().toVariantList(),
-                           [&result](const QVariant &r) { result = r; });
+        const QString method = m.value(u"m").toString();
+        // A self-order kiosk, a time clock, a board: a screen anyone walks up
+        // to, nobody logged in. What isn't theirs to do, it can't ask (the
+        // kitchen's sold out, messages to every screen, a check to open).
+        static const QSet<QString> notOnKiosks{u"kitchenSoldOut"_s, u"sendMessage"_s, u"openCheck"_s,
+                                               u"adminSave"_s, u"adminDelete"_s, u"offlineChecks"_s};
+        const core::TerminalConfig *paired = shared_->settings.pairedTerminal(c->terminalId.toStdString());
+        const std::string screen = paired ? paired->screen : std::string();
+        if ((screen == "selfOrder" || screen == "timeClock" || screen == "nowServing" || screen == "menuBoard")
+            && notOnKiosks.contains(method))
+            result = false;
+        else
+            c->session->invoke(method, m.value(u"a").toArray().toVariantList(), [&result](const QVariant &r) { result = r; });
         if (id > 0 && !c->resumeToken.isEmpty()) {
             c->answered.insert(id, QJsonValue::fromVariant(result));
             c->answeredOrder.append(id);
@@ -716,7 +732,10 @@ void PosServer::takeOfflineChecks(Connection *c, const QJsonArray &checks)
 {
     QJsonArray results;
     int taken = 0;
-    for (const QJsonValue &v : checks) {
+    // A screen's offline checks come a few at a time; the rest on the next send.
+    constexpr qsizetype kMaxAtOnce = 500;
+    for (qsizetype i = 0; i < std::min(checks.size(), kMaxAtOnce); ++i) {
+        const QJsonValue v = checks.at(i);
         const QJsonObject item = v.toObject();
         const QVariantMap r = c->session->takeOfflineCheck(item.value(u"check").toObject());
         QJsonObject result = QJsonObject::fromVariantMap(r);
@@ -823,6 +842,15 @@ void PosServer::pair(Connection *c, const QJsonObject &m)
     const QString id = QString::fromStdString(it->id);
     shared_->pairing.reset();   // one device per code
     pairingKeys_.clear();
+    // A new standby: a new store key for it. The one before (replaced, or
+    // gone with an old computer) can't copy the store any more.
+    if (asStandby) {
+        shared_->settings.replicaKey = newDeviceKey().toBase64().toStdString();
+        for (auto &other : connections_)
+            if (other.get() != c && other->standby)   // (after this: aborting removes it from the list)
+                QMetaObject::invokeMethod(other->socket, [s = QPointer<QSslSocket>(other->socket)] { if (s) s->abort(); },
+                                          Qt::QueuedConnection);
+    }
     shared_->saveSettings();
 
     QJsonObject paired{{u"t"_s, u"paired"_s}, {u"id"_s, id}, {u"key"_s, QString::fromLatin1(key.toBase64())},

@@ -157,6 +157,12 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
     const Employee *server = s_->employee(c.serverId);
     if (!server)
         return {{u"error"_s, tr("%1 isn't on the staff here.").arg(qs(c.serverName))}};
+    // Managers can't log in on a screen working alone (their PINs aren't
+    // there): a check of theirs from one wasn't made by them. Taken in (it
+    // may be real money), and Loss Watch sees it.
+    const bool notThem = server->role == "manager" || server->role == "owner" || server->role == "admin";
+    if (notThem)
+        s_->noteProblem("offlineManager", c.label, server->name);
     if (c.status != CheckStatus::Open && c.status != CheckStatus::Closed)
         return {{u"skipped"_s, true}};   // a practice check, or one thrown away: nothing to keep
     // Only what a screen can take offline.
@@ -187,6 +193,8 @@ QVariantMap PosService::takeOfflineCheck(const QJsonObject &record)
         noteEvent(c, tr("Taxed at the store's rates (the screen had others)"), "offline");
     if (unpaid)
         noteEvent(c, tr("Came in closed but not paid in full: open again, to settle"), "offline");
+    if (notThem)
+        noteEvent(c, tr("Under %1, a manager, who can't log in on a screen working alone: check it").arg(qs(server->name)), "offline");
     // What went to the kitchen used up its stock here too.
     std::vector<OrderLine> sent;
     for (const OrderLine &l : c.lines)

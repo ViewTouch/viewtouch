@@ -30,6 +30,10 @@ QVariantList PosService::mealPeriods() const
 
 QVariantList PosService::adminRecords(const QString &panel)
 {
+    // Pay rates, settings, customers: managers' (on this computer's own
+    // screen too, not only on the others').
+    if (!can(QString::fromLatin1(perm::Manager)))
+        return {};
     QVariantList out;
     auto add = [&](QVariantMap r, const QString &title, const QString &detail) {
         r.insert(u"_title"_s, title);
@@ -324,6 +328,8 @@ QVariantList PosService::adminRecords(const QString &panel)
 
 QVariantMap PosService::adminNewRecord(const QString &panel)
 {
+    if (!can(QString::fromLatin1(perm::Manager)))
+        return {};
     if (panel == u"menu")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"price"_s, 0.0}, {u"family"_s, QString()},
                 {u"taxClass"_s, u"food"_s}, {u"printer"_s, u"kitchen"_s}, {u"station"_s, QString()}, {u"byWeight"_s, false}, {u"weightUnit"_s, u"lb"_s}, {u"substitute"_s, false}, {u"substitutePrice"_s, 0.0}, {u"ticketCapacity"_s, 0}, {u"eventAt"_s, QString()}, {u"modifier"_s, false}, {u"available"_s, true},

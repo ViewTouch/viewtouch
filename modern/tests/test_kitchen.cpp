@@ -78,7 +78,7 @@ TEST_CASE("Kitchen times: average, longest and late tickets by station", "[kitch
     PosService pos(test::seedPosData(), nullptr);
     qint64 clock = todayAt(12);
     pos.shared()->setClock([&] { return clock; });
-    REQUIRE(pos.loginWithPin(u"1111"_s));
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // reports are a manager's
     CHECK(cellsOf(pos.report(u"kitchen"_s), u"No orders have gone to the kitchen yet."_s).size() == 1);
 
     const auto order = [&](const QString &table, const char *item) {
