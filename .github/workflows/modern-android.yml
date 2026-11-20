@@ -94,7 +94,14 @@ jobs:
             -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
             -DQT_ANDROID_SIGN_APK=ON \
             -DVTM_BUILD_TESTS=OFF
-          cmake --build build-android --target apk
+          # Gradle fetches its plugins from Maven Central and Google; a passing
+          # outage there ("Could not find ...jsr305:3.0.2") fails the build.
+          # Once more after a pause before giving up.
+          cmake --build build-android --target apk || {
+            echo "::warning::The APK build failed (a download?); trying once more in 60 s."
+            sleep 60
+            cmake --build build-android --target apk
+          }
           # Every Qt QML module the screens import is in this Qt (a missing
           # one, and the app closed as it opened the store's pages).
           for module in $(sed -n 's/.*RELATIVEPATH;\([^;]*\);TYPE;module.*/\1/p' build-android/.qt/qml_imports/*_build.cmake | sort -u); do
