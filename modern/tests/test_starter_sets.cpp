@@ -243,7 +243,9 @@ TEST_CASE("Demo history fits the kind of store: a taco truck's window, a shop's 
         REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
         // Nothing of the café's (its burgers, sodas): the sushi bar's own.
         QSet<std::string> cafe;
-        for (const core::MenuItem &m : app::starterData({})->menu)
+        const auto cafeSet = app::starterData({});   // (kept: a loop over a temporary's member reads freed memory)
+        REQUIRE(cafeSet);
+        for (const core::MenuItem &m : cafeSet->menu)
             cafe.insert(m.id);
         int lines = 0;
         for (const auto &[id, c] : shared.open)
