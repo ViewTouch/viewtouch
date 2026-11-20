@@ -5,6 +5,9 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // Maven Central's copy on Google's servers: a runner Maven Central
+        // turns away ("Could not find" for what's there) still gets it.
+        maven { url 'https://maven-central.storage-download.googleapis.com/maven2/' }
     }
 
     dependencies {
@@ -16,6 +19,7 @@ buildscript {
 repositories {
     google()
     mavenCentral()
+    maven { url 'https://maven-central.storage-download.googleapis.com/maven2/' }
 }
 
 apply plugin: qtGradlePluginType

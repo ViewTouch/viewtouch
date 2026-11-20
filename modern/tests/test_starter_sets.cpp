@@ -193,7 +193,8 @@ TEST_CASE("Starter sets: the kinds of store and their menus, for Factory reset a
 
 TEST_CASE("Demo history fits the kind of store: a taco truck's window, a shop's counter, a sushi bar's menu", "[starter][demo]")
 {
-    const std::int64_t now = QDateTime(QDate(2026, 11, 19), QTime(18, 30)).toMSecsSinceEpoch();
+    // Now: what's posted for tonight (the 86) is still up when the test looks.
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
 
     SECTION("a taco truck: orders by number at the window, prep counts, no tables")
     {
