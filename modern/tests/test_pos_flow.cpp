@@ -3,6 +3,7 @@
 #include <catch2/generators/catch_generators.hpp>
 #include "print/printer_finder.hh"
 #include <QFileInfo>
+#include <QQmlDebuggingEnabler>
 #include <QJsonArray>
 #include <QTimer>
 #include <QTcpSocket>
@@ -12255,4 +12256,34 @@ TEST_CASE("After Send: a table's check goes back to the tables; takeout and the 
     CHECK_FALSE(s.pos.hasCheck());   // put away: it waits on Orders
     CHECK(s.c.pageId() == page);
     CHECK(s.c.pageId() != u"tables"_s);
+}
+
+// How long each page takes to come up (hidden: "[.pagetime]"): the stress
+// test's tour, a busy store. On a register, a long one is a pause to the touch.
+TEST_CASE("UI: time to switch pages", "[.pagetime]")
+{
+    // VTM_QML_PROFILE=port: Qt's QML profiler attaches (qmlprofiler --attach localhost -p port).
+    if (const int port = qEnvironmentVariableIntValue("VTM_QML_PROFILE"); port > 0) {
+        QQmlDebuggingEnabler::enableDebugging(true);
+        QQmlDebuggingEnabler::startTcpDebugServer(port, QQmlDebuggingEnabler::WaitForClient);
+    }
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QTest::qWait(200);
+    const QStringList pages = {u"tables"_s, u"seating"_s, u"kitchen"_s, u"expo"_s, u"dashboard"_s, u"deliveries"_s, u"manager"_s};
+    for (int round = 0; round < 3; ++round)
+        for (const QString &p : pages) {
+            QElapsedTimer t;
+            t.start();
+            REQUIRE(s.c.jumpTo(p));
+            const qint64 jump = t.elapsed();
+            QCoreApplication::processEvents();
+            const qint64 events = t.elapsed();
+            s.window->grabWindow();   // drawn
+            if (round == 2)
+                WARN(p.toStdString() + ": " + std::to_string(jump) + " ms to build, " + std::to_string(events) + " with events, "
+                     + std::to_string(t.elapsed()) + " drawn; " + std::to_string(s.c.property("zones").value<QAbstractItemModel *>()
+                                                                                       ? s.c.property("zones").value<QAbstractItemModel *>()->rowCount() : -1)
+                     + " zones");
+        }
 }

@@ -20,6 +20,12 @@ Item {
     readonly property real shadow: style.shadow ?? 0
     readonly property real radius: shape === "rounded" ? (style.radius || Math.min(width, height) * 0.2)
                                                         : (style.radius ?? 0)
+    // A rectangle or rounded one: Qt's own path (no outline worked out point
+    // by point: 114,000 points a tour of a store's screens, before).
+    readonly property bool boxy: shape !== "circle" && shape !== "diamond" && shape !== "hexagon" && shape !== "octagon"
+    readonly property bool round: shape === "circle"   // (an ellipse: Qt's own arc)
+    readonly property bool polygon: !boxy && !round
+    function corner(r, w, h) { return Math.max(0, Math.min(r, w / 2, h / 2)) }
     readonly property color light: Qt.lighter(fill, 1.6)
     readonly property color dark: Qt.darker(fill, 2.0)
 
@@ -93,39 +99,81 @@ Item {
         source: root.texture ? "qrc:/textures/" + root.texture + ".xpm" : ""
     }
 
-    ShaderEffectSource {
+    Loader {
         id: textureSource
+        active: root.textured && !root.softwareRenderer
         visible: false
-        width: root.width
-        height: root.height
-        sourceItem: root.textured && !root.softwareRenderer ? textureImage : null
-        hideSource: true
+        sourceComponent: ShaderEffectSource {
+            visible: false
+            width: root.width
+            height: root.height
+            sourceItem: textureImage
+            hideSource: true
+        }
     }
 
     // A rectangle's or rounded rectangle's shadow, soft: Qt 6.9's
     // RectangularShadow, one quick pass on the GPU. Other shapes, and
     // computers drawing without a GPU, keep the hard one below.
     readonly property bool softShadow: shadow > 0 && (shape === "rect" || shape === "rounded") && !softwareRenderer
-    RectangularShadow {
-        id: soft
-        visible: root.softShadow
+    Loader {
+        active: root.softShadow
         anchors.fill: parent
-        radius: root.radius
-        offset: Qt.vector2d(root.shadow * 0.5, root.shadow)
-        blur: root.shadow * 2.5
-        color: Qt.rgba(0, 0, 0, 0.45)
-        ShadowOwner { shadow: soft }   // (Qt's own leaks its effect: see shadowowner.hh)
+        sourceComponent: RectangularShadow {
+            id: soft
+            radius: root.radius
+            offset: Qt.vector2d(root.shadow * 0.5, root.shadow)
+            blur: root.shadow * 2.5
+            color: Qt.rgba(0, 0, 0, 0.45)
+            ShadowOwner { shadow: soft }   // (Qt's own leaks its effect: see shadowowner.hh)
+        }
     }
 
-    Shape {
+    // A plain or rounded rectangle, flat or with a border, no texture: two
+    // Rectangles (the Modern look's every key and table). A floor plan's
+    // sixty zones each made a three-path Shape before: a quarter second on a
+    // CM5 every time a server came back to the tables.
+    readonly property bool plain: (shape === "rect" || shape === "rounded") && !bevel && texture === ""
+    Rectangle {
+        visible: root.plain && root.shadow > 0 && !root.softShadow
+        x: root.shadow
+        y: root.shadow
+        width: root.width
+        height: root.height
+        radius: Math.max(0, Math.min(root.radius, width / 2, height / 2))
+        color: Qt.rgba(0, 0, 0, 0.35)
+    }
+    Rectangle {
+        visible: root.plain
         anchors.fill: parent
+        radius: Math.max(0, Math.min(root.radius, width / 2, height / 2))
+        color: root.fill
+        border.width: root.frame === "border" ? root.frameWidth : 0
+        border.color: root.style.borderColor ?? root.dark
+    }
+
+    Loader {
+        active: !root.plain
+        anchors.fill: parent
+        sourceComponent: Shape {
         preferredRendererType: Shape.CurveRenderer
 
         // Drop shadow (hard)
         ShapePath {
             strokeWidth: -1
             fillColor: root.shadow > 0 && !root.softShadow ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
-            PathPolyline { path: root.outline(root.shadow, root.shadow, root.width, root.height, root.radius) }
+            PathRectangle {
+                x: root.shadow; y: root.shadow
+                width: root.boxy ? root.width : 0; height: root.boxy ? root.height : 0
+                radius: root.corner(root.radius, root.width, root.height)
+            }
+            PathAngleArc {
+                moveToStart: true
+                centerX: root.shadow + root.width / 2; centerY: root.shadow + root.height / 2
+                radiusX: root.round ? root.width / 2 : 0; radiusY: root.round ? root.height / 2 : 0
+                startAngle: 0; sweepAngle: 360
+            }
+            PathPolyline { path: !root.polygon || root.shadow <= 0 ? [] : root.outline(root.shadow, root.shadow, root.width, root.height, root.radius) }
         }
 
         // Frame: bevel gradient, solid border, or nothing
@@ -133,20 +181,45 @@ Item {
             strokeWidth: -1
             fillColor: root.frame === "border" ? (root.style.borderColor ?? root.dark) : "transparent"
             fillGradient: root.bevel ? bevelGradient : null
-            PathPolyline { path: root.frameWidth > 0 ? root.outline(0, 0, root.width, root.height, root.radius) : [] }
+            PathRectangle {
+                width: root.boxy && root.frameWidth > 0 ? root.width : 0; height: root.boxy && root.frameWidth > 0 ? root.height : 0
+                radius: root.corner(root.radius, root.width, root.height)
+            }
+            PathAngleArc {
+                moveToStart: true
+                centerX: root.width / 2; centerY: root.height / 2
+                radiusX: root.round && root.frameWidth > 0 ? root.width / 2 : 0
+                radiusY: root.round && root.frameWidth > 0 ? root.height / 2 : 0
+                startAngle: 0; sweepAngle: 360
+            }
+            PathPolyline { path: root.polygon && root.frameWidth > 0 ? root.outline(0, 0, root.width, root.height, root.radius) : [] }
         }
 
         // Face
         ShapePath {
             strokeWidth: -1
             fillColor: root.fill
-            fillItem: root.textured && !root.softwareRenderer ? textureSource : null
+            fillItem: root.textured && !root.softwareRenderer ? textureSource.item : null
+            PathRectangle {
+                x: root.frameWidth; y: root.frameWidth
+                width: root.boxy ? root.width - 2 * root.frameWidth : 0
+                height: root.boxy ? root.height - 2 * root.frameWidth : 0
+                radius: root.corner(root.radius - root.frameWidth, root.width - 2 * root.frameWidth, root.height - 2 * root.frameWidth)
+            }
+            PathAngleArc {
+                moveToStart: true
+                centerX: root.width / 2; centerY: root.height / 2
+                radiusX: root.round ? root.width / 2 - root.frameWidth : 0
+                radiusY: root.round ? root.height / 2 - root.frameWidth : 0
+                startAngle: 0; sweepAngle: 360
+            }
             PathPolyline {
-                path: root.outline(root.frameWidth, root.frameWidth,
-                                   root.width - 2 * root.frameWidth, root.height - 2 * root.frameWidth,
-                                   root.radius - root.frameWidth)
+                path: !root.polygon ? [] : root.outline(root.frameWidth, root.frameWidth,
+                                                    root.width - 2 * root.frameWidth, root.height - 2 * root.frameWidth,
+                                                    root.radius - root.frameWidth)
             }
         }
+    }
     }
 
     LinearGradient {

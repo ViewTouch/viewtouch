@@ -281,15 +281,21 @@ Item {
     // A logo zone with no logo set: nothing to show (the editor still shows it).
     readonly property bool emptyLogo: imagePath === "logo:" && pictureUrl === "" && kind === "image"
 
-    Image {
+    // (What's rarely shown is made only when it is: a floor plan's sixty
+    // tables came up in a quarter second on a CM5, most of it parts unseen.)
+    Loader {
         id: picture
-        visible: zone.pictureUrl !== ""
-        source: zone.pictureUrl
+        // (Its store: or logo: address made a real one first, by the store.)
+        active: zone.pictureUrl !== "" && (!!zone.pos || /^(qrc|file|https?):/.test(zone.imagePath))
+        visible: active
         anchors.fill: parent
         anchors.margins: (zone.st.frameWidth ?? 3) + 6
         anchors.bottomMargin: caption.visible ? parent.height * 0.3 : anchors.margins
-        fillMode: Image.PreserveAspectFit
-        asynchronous: true
+        sourceComponent: Image {
+            source: zone.pictureUrl
+            fillMode: Image.PreserveAspectFit
+            asynchronous: true
+        }
     }
 
     Text {
@@ -320,12 +326,17 @@ Item {
     }
 
     // Running low: "5 left", so the server can warn the guest.
-    Rectangle {
-        objectName: "stockLeft"
-        visible: zone.stockLeft > 0 && !zone.soldOut
+    Loader {
+        active: zone.stockLeft > 0 && !zone.soldOut
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 6
+        sourceComponent: stockBadge
+    }
+    Component {
+        id: stockBadge
+    Rectangle {
+        objectName: "stockLeft"
         width: leftText.implicitWidth + 14
         height: leftText.implicitHeight + 6
         radius: height / 2
@@ -343,11 +354,17 @@ Item {
             font.bold: true
         }
     }
+    }
 
     // 86'd: the item can't be ordered right now.
-    Rectangle {
-        visible: zone.soldOut
+    Loader {
+        active: zone.soldOut
         anchors.fill: parent
+        sourceComponent: soldOutBanner
+    }
+    Component {
+        id: soldOutBanner
+    Rectangle {
         radius: zone.st.radius ?? 14
         color: "#a0000000"
         Rectangle {
@@ -368,6 +385,7 @@ Item {
                 font.bold: true
             }
         }
+    }
     }
 
     // The window's own palette, for what the zone's style leaves unset.
@@ -394,9 +412,10 @@ Item {
     }
 
     // Placeholder for widgets not built yet.
-    Shape {
-        visible: zone.isWidget && !zone.hasWidget
+    Loader {
+        active: zone.isWidget && !zone.hasWidget
         anchors.fill: parent
+        sourceComponent: Shape {
         ShapePath {
             strokeColor: "#80ffffff"
             strokeWidth: 2
@@ -410,14 +429,17 @@ Item {
             PathLine { x: 4; y: 4 }
         }
     }
+    }
 
-    Text {
-        textFormat: Text.PlainText
-        visible: zone.armed
-        text: qsTr("tap again")
+    Loader {
+        active: zone.armed
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 6 }
-        color: caption.color
-        font.pixelSize: Ui.px(16)
+        sourceComponent: Text {
+            textFormat: Text.PlainText
+            text: qsTr("tap again")
+            color: caption.color
+            font.pixelSize: Ui.px(16)
+        }
     }
 
     TapHandler {
