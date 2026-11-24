@@ -17,6 +17,7 @@
 #include <QTimer>
 
 #include <QObject>
+#include <QPointer>
 #include <QString>
 #include <QVariantList>
 #include <QVariantMap>
@@ -32,6 +33,8 @@
 #include <vector>
 
 namespace vt::app {
+
+class MenuReader;
 
 // "11.50", "$11.50", "11,50" (with `symbol`, the currency's): a price in
 // cents; -1 if it isn't one.
@@ -604,6 +607,9 @@ public:
     QVariantMap vtai() const override;
     // A menu typed or pasted (or a supplier's price list): items, sizes, choices.
     bool vtaiMenuFromText(const QString &text);
+    // A menu's PDF or photo (its bytes, base64: from a phone too), read on this
+    // computer (app/menu_reader.hh), then as above.
+    bool vtaiMenuFromFile(const QString &base64);
     // What VT Ai is doing for this screen, given up; its result, put away.
     bool vtaiCancel();
     bool vtaiClear();
@@ -1435,6 +1441,9 @@ private:
     int scheduleWeek_ = 0;
     QVariantMap vtai_;
     int vtaiRequest_ = 0;
+    QPointer<MenuReader> vtaiReader_;
+    bool vtaiReady();   // a manager's, VT Ai there and free (else said why)
+    bool vtaiStartMenu(const QString &text);
     void vtaiMenuPart(const QStringList &parts, int at, QList<QJsonObject> answers, int request, QString lastCategory);
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;

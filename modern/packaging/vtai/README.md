@@ -14,5 +14,12 @@ a manager looks and confirms. Nothing it reads or writes leaves the store.
   a USB stick (with its .sig); `vtmodern-device ai on|off` starts or stops it.
 - Text in photos and scanned PDFs is read with Tesseract; PDFs with Poppler.
 
+The model: Qwen3-4B-Instruct-2507, 4-bit (Q4_K_M, 2.5 GB; Apache 2.0). On
+ViewTouch's menu benchmark (tools/vtai_bench.py, tests/vtai-bench) it read
+all 64 items and prices of the 10 menus right; on the AIO-CM5-156 that took
+about 55 seconds a menu (2.7 words a second), the register working as usual.
+The 3B models tried (Llama 3.2 3B, SmolLM3 3B) were quicker but got a
+third to a half of the items wrong. Any GGUF model can be put in its place.
+
 The model's license comes with it (/var/lib/viewtouch-ai/MODEL-LICENSE).
 llama.cpp is MIT-licensed (/usr/share/doc/vtmodern-ai/llama.cpp-LICENSE).

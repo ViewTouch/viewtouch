@@ -56,7 +56,8 @@ Dialog {
                   ? importDialog.read.error
                   : importDialog.read.menuFile
                     ? qsTr("%1's menu, with its choices. Items already on this menu are left as they are.").arg(importDialog.read.from || "?")
-                    : (importDialog.read.from ? qsTr("From %1's menu export.").arg(importDialog.read.from) + " " : "")
+                    : (importDialog.read.from === "VT Ai" ? qsTr("Read by VT Ai: check each name and price before importing.") + " "
+                       : importDialog.read.from ? qsTr("From %1's menu export.").arg(importDialog.read.from) + " " : "")
                       + (importDialog.items.some(i => !i.category) ? ""
                          : qsTr("Into: %1.").arg(importDialog.categoriesIn.join(", ")))
                       + ((importDialog.read.groups ?? []).length > 0

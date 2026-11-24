@@ -1773,6 +1773,7 @@ TEST_CASE("UI: Menu Builder: VT Ai reads a pasted menu into the import preview",
     REQUIRE(by(u"builderVtAi"_s));
     s.shot("89-builder-tools-vtai");
     tap(u"builderVtAi"_s);
+    REQUIRE(by(u"vtaiFile"_s));   // a photo or PDF, too
     QQuickItem *text = by(u"vtaiMenuText"_s);
     REQUIRE(text);
     text->setProperty("text", u"TACOS\nBirria 4.25 (salsa roja or verde)\nTripa 3.75"_s);

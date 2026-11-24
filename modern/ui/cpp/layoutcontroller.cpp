@@ -1294,6 +1294,19 @@ void LayoutController::setMenuCategory(const QString &id)
     emit menuCategoryChanged();
 }
 
+QVariantMap LayoutController::readFileForVtAi(const QUrl &file) const
+{
+    QFile f(file.isLocalFile() ? file.toLocalFile() : file.toString());
+    if (f.size() > 20 * 1024 * 1024)
+        return {{u"error"_s, tr("That file is over 20 MB: a smaller photo, or the PDF's menu pages alone.")}};
+    if (!f.open(QIODevice::ReadOnly))
+        return {{u"error"_s, tr("Can't open it: %1").arg(f.errorString())}};
+    const QByteArray bytes = f.read(20 * 1024 * 1024 + 1);
+    if (bytes.size() > 20 * 1024 * 1024)
+        return {{u"error"_s, tr("That file is over 20 MB: a smaller photo, or the PDF's menu pages alone.")}};
+    return {{u"data"_s, QString::fromLatin1(bytes.toBase64())}};
+}
+
 QVariantMap LayoutController::readMenuFile(const QUrl &file) const
 {
     QFile f(file.isLocalFile() ? file.toLocalFile() : file.toString());

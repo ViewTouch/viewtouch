@@ -5,6 +5,7 @@
 // it reads or writes leaves the store.
 
 #include "app/menu_import.hh"
+#include "app/menu_reader.hh"
 #include "app/pos_service.hh"
 
 #include <QFile>
@@ -77,7 +78,7 @@ QVariantMap PosService::vtai() const
     return out;
 }
 
-bool PosService::vtaiMenuFromText(const QString &text)
+bool PosService::vtaiReady()
 {
     if (!require(perm::Manager, tr("VT Ai")))
         return false;
@@ -87,9 +88,21 @@ bool PosService::vtaiMenuFromText(const QString &text)
         return fail(tr("VT Ai is still working on the last one."));
     if (menuSpec().isEmpty())
         return fail(tr("VT Ai's instructions are missing from this ViewTouch."));
-    const QString menu = text.trimmed();
-    if (menu.isEmpty())
+    return true;
+}
+
+bool PosService::vtaiMenuFromText(const QString &text)
+{
+    if (!vtaiReady())
+        return false;
+    if (text.trimmed().isEmpty())
         return fail(tr("Type or paste the menu first."));
+    return vtaiStartMenu(text);
+}
+
+bool PosService::vtaiStartMenu(const QString &text)
+{
+    const QString menu = text.trimmed();
     if (menu.size() > 30'000)
         return fail(tr("That's more than VT Ai reads at once: 30,000 letters (about 10 pages). Paste it in parts."));
     const QStringList parts = menuParts(menu);
@@ -98,6 +111,52 @@ bool PosService::vtaiMenuFromText(const QString &text)
              {u"progress"_s, tr("Reading the menu…")}};
     emit sessionChanged();
     vtaiMenuPart(parts, 0, {}, request, {});
+    return true;
+}
+
+bool PosService::vtaiMenuFromFile(const QString &base64)
+{
+    if (!vtaiReady())
+        return false;
+    // (Base64 is a third longer than the file.)
+    if (base64.size() > MenuReader::MostBytes / 3 * 4 + 8)
+        return fail(tr("That file is over 20 MB: a smaller photo, or the PDF's menu pages alone."));
+    const QByteArray data = QByteArray::fromBase64(base64.toLatin1());
+    if (data.isEmpty())
+        return fail(tr("That file is empty."));
+    const int request = ++vtaiRequest_;
+    vtai_ = {{u"task"_s, u"menu"_s}, {u"busy"_s, true}, {u"progress"_s, tr("Reading the file…")}};
+    emit sessionChanged();
+    auto *reader = new MenuReader(data, this);
+    vtaiReader_ = reader;
+    QPointer<PosService> self(this);
+    reader->start(
+        [self, request](const QString &said) {
+            if (!self || request != self->vtaiRequest_)
+                return;
+            self->vtai_.insert(u"progress"_s, said);
+            emit self->sessionChanged();
+        },
+        [self, request, reader](const QString &text, const QString &error) {
+            reader->deleteLater();
+            if (!self || request != self->vtaiRequest_)
+                return;
+            QString why = error;
+            if (why.isEmpty() && text.simplified().size() < 3)
+                why = tr("No words could be read in it: a sharper photo, flat, straight on and in good light, reads better.");
+            if (!why.isEmpty()) {
+                self->vtai_ = {{u"task"_s, u"menu"_s}, {u"busy"_s, false}, {u"error"_s, why}};
+                emit self->sessionChanged();
+                return;
+            }
+            // Its words, read as a pasted menu would be (the busy flag let go first).
+            self->vtai_.insert(u"busy"_s, false);
+            if (!self->vtaiStartMenu(text)) {
+                self->vtai_ = {{u"task"_s, u"menu"_s}, {u"busy"_s, false},
+                               {u"error"_s, tr("That's more than VT Ai reads at once: 30,000 letters (about 10 pages). Paste it in parts.")}};
+                emit self->sessionChanged();
+            }
+        });
     return true;
 }
 
@@ -166,6 +225,10 @@ bool PosService::vtaiCancel()
     if (!vtai_.value(u"busy"_s).toBool())
         return true;
     ++vtaiRequest_;
+    if (vtaiReader_) {
+        vtaiReader_->cancel();
+        vtaiReader_->deleteLater();
+    }
     if (s_->vtaiCancel)
         s_->vtaiCancel();
     vtai_.clear();

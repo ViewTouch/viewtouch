@@ -245,6 +245,9 @@ public:
     // A spreadsheet saved as CSV, on this device: {items: [{row, name, price,
     // category, description, onIt}], problems, columns, error}.
     Q_INVOKABLE QVariantMap readMenuFile(const QUrl &file) const;
+    // A menu's PDF or photo for VT Ai (read on the store's computer, so a
+    // phone's too): {data: base64} or {error}. Up to 20 MB.
+    Q_INVOKABLE QVariantMap readFileForVtAi(const QUrl &file) const;
     // The whole menu as a file (Exports, or the folder set for them), for
     // Import... at another store.
     Q_INVOKABLE void exportMenu();

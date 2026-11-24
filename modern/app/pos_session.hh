@@ -413,6 +413,7 @@ public:
     virtual QVariantMap legacyImport() const = 0;
     virtual QVariantMap vtai() const = 0;
     Q_INVOKABLE void vtaiMenuFromText(const QString &text) { invoke(QStringLiteral("vtaiMenuFromText"), {text}); }
+    Q_INVOKABLE void vtaiMenuFromFile(const QString &base64) { invoke(QStringLiteral("vtaiMenuFromFile"), {base64}); }
     Q_INVOKABLE void vtaiCancel() { invoke(QStringLiteral("vtaiCancel")); }
     Q_INVOKABLE void vtaiClear() { invoke(QStringLiteral("vtaiClear")); }
     virtual QVariantMap printerSearch() const = 0;

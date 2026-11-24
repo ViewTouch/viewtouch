@@ -1,12 +1,15 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "app/menu_import.hh"
+#include "app/menu_reader.hh"
 #include "app/pos_service.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QTemporaryDir>
+#include <QTest>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -220,4 +223,131 @@ TEST_CASE("VT Ai: its lines read into items, sizes and choices", "[vtai]")
     CHECK(read.items[0].groups == QStringList({u"Toppings"_s, u"Crust"_s}));
     CHECK(read.items[3].sizes.isEmpty());          // one size: just the price
     CHECK(read.groups[1].min == 1);                // a crust: one required
+}
+
+namespace {
+
+// Stand-ins for pdftotext, pdftoppm and tesseract (VTM_VTAI_TOOLS).
+struct FakeTools {
+    QTemporaryDir dir;
+    QByteArray oldTools = qgetenv("VTM_VTAI_TOOLS");
+    explicit FakeTools(bool scanned)
+    {
+        const auto script = [&](const QString &name, const QByteArray &body) {
+            QFile f(dir.filePath(name));
+            REQUIRE(f.open(QIODevice::WriteOnly));
+            f.write("#!/bin/sh\n" + body);
+            f.close();
+            f.setPermissions(f.permissions() | QFileDevice::ExeOwner);
+        };
+        script(u"pdftotext"_s, scanned ? QByteArray("printf ' \\f'\n") : QByteArray("printf 'TACOS\\nCarne Asada 3.50\\nAl Pastor 3.25\\nBirria 4.25\\n'\n"));
+        // Its last argument: where the pages go ("…/page" -> page-1.png, page-2.png).
+        script(u"pdftoppm"_s, "for a; do out=$a; done\nprintf x > \"$out-1.png\"; printf x > \"$out-2.png\"\n");
+        script(u"tesseract"_s, "case \"$1\" in *page-1*) echo 'TACOS'; echo 'Carne Asada 3.50';; *page-2*) echo 'DRINKS'; echo 'Horchata 2.50';;"
+                               " *) echo 'BURGERS'; echo 'Cheeseburger 12';; esac\n");
+        qputenv("VTM_VTAI_TOOLS", dir.path().toLocal8Bit());
+    }
+    ~FakeTools() { qputenv("VTM_VTAI_TOOLS", oldTools); }
+};
+
+QString readFile(const QByteArray &data, QString *error = nullptr, QStringList *said = nullptr)
+{
+    app::MenuReader reader(data);
+    bool done = false;
+    QString text;
+    reader.start([&](const QString &s) { if (said) *said << s; },
+                 [&](const QString &t, const QString &e) { text = t; if (error) *error = e; done = true; });
+    for (int i = 0; i < 300 && !done; ++i)
+        QTest::qWait(10);
+    REQUIRE(done);
+    return text;
+}
+
+} // namespace
+
+TEST_CASE("VT Ai: a menu's PDF or photo read into words", "[vtai]")
+{
+    const QByteArray png = QByteArray("\x89PNG\r\n\x1a\n", 8) + QByteArray(64, 'x');
+    const QByteArray pdf = "%PDF-1.7\n" + QByteArray(64, 'x');
+    CHECK(app::MenuReader::kindOf(pdf) == u"pdf"_s);
+    CHECK(app::MenuReader::kindOf(png) == u"image"_s);
+    CHECK(app::MenuReader::kindOf(QByteArray("\xff\xd8\xff\xe0", 4)) == u"image"_s);
+    CHECK(app::MenuReader::kindOf("RIFF1234WEBPVP8 ") == u"image"_s);
+    CHECK(app::MenuReader::kindOf("hello") == QString());
+
+    QString error;
+    QStringList said;
+    {
+        FakeTools tools(false);
+        // A PDF made on a computer: its own words.
+        CHECK(readFile(pdf, &error).contains(u"Birria 4.25"_s));
+        CHECK(error.isEmpty());
+        // A photo: read by tesseract.
+        CHECK(readFile(png, &error, &said).contains(u"Cheeseburger 12"_s));
+        CHECK(said.contains(u"Reading the photo…"_s));
+        // Neither: said why, nothing run.
+        CHECK(readFile("just some words", &error).isEmpty());
+        CHECK(error.contains(u"isn't a PDF or a photo"_s));
+        // Too big.
+        readFile(pdf + QByteArray(app::MenuReader::MostBytes, 'x'), &error);
+        CHECK(error.contains(u"over 20 MB"_s));
+    }
+    {
+        FakeTools tools(true);
+        // A scan: its pages as pictures, each read, in order.
+        said.clear();
+        const QString text = readFile(pdf, &error, &said);
+        CHECK(error.isEmpty());
+        CHECK(text.indexOf(u"Carne Asada 3.50"_s) >= 0);
+        CHECK(text.indexOf(u"Horchata 2.50"_s) > text.indexOf(u"Carne Asada"_s));
+        CHECK(said.contains(u"Reading page 2 of 2…"_s));
+    }
+    {
+        // Not on this computer: said which, and where it comes from.
+        const QByteArray oldPath = qgetenv("PATH");
+        QTemporaryDir empty;
+        qputenv("VTM_VTAI_TOOLS", empty.path().toLocal8Bit());
+        qputenv("PATH", empty.path().toLocal8Bit());
+        readFile(png, &error);
+        qputenv("PATH", oldPath);
+        qunsetenv("VTM_VTAI_TOOLS");
+        CHECK(error.contains(u"tesseract isn't on this computer"_s));
+    }
+}
+
+TEST_CASE("VT Ai: a photo of a menu from a phone, read on the store's computer", "[vtai]")
+{
+    FakeTools tools(false);
+    app::PosService pos(test::seedPosData(), nullptr);
+    QString told;
+    pos.shared()->vtaiRunning = true;
+    pos.shared()->vtaiCall = [&](const QJsonObject &request, std::function<void(const QJsonObject &, const QString &)> done) {
+        told = request[u"messages"_s].toArray().last().toObject()[u"content"_s].toString();
+        done(replyWith(u"C Burgers\nI Cheeseburger | 12\n"_s), {});
+    };
+    const QString photo = QString::fromLatin1((QByteArray("\xff\xd8\xff\xe0", 4) + QByteArray(64, 'x')).toBase64());
+    // A manager's only.
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK_FALSE(pos.vtaiMenuFromFile(photo));
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const int before = pos.menuItems().size();
+    REQUIRE(pos.vtaiMenuFromFile(photo));
+    CHECK(pos.vtai()[u"busy"_s].toBool());
+    for (int i = 0; i < 300 && pos.vtai()[u"busy"_s].toBool(); ++i)
+        QTest::qWait(10);
+    CHECK(told.contains(u"Cheeseburger 12"_s));
+    const QVariantList items = pos.vtai()[u"result"_s].toMap()[u"items"_s].toList();
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].toMap()[u"name"_s] == u"Cheeseburger"_s);
+    CHECK(pos.menuItems().size() == before);
+
+    // Not a menu's file: said, nothing asked.
+    pos.vtaiClear();
+    told.clear();
+    REQUIRE(pos.vtaiMenuFromFile(QString::fromLatin1(QByteArray("plain words").toBase64())));
+    for (int i = 0; i < 300 && pos.vtai()[u"busy"_s].toBool(); ++i)
+        QTest::qWait(10);
+    CHECK(pos.vtai()[u"error"_s].toString().contains(u"isn't a PDF or a photo"_s));
+    CHECK(told.isEmpty());
 }

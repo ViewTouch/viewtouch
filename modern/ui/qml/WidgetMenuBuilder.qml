@@ -2418,7 +2418,7 @@ Item {
                 // VT Ai's, only while it's running here (and for a manager).
                 model: (w.pos && w.pos.vtai && w.pos.vtai.available
                         ? [{ id: "builderVtAi", name: qsTr("Describe Your Menu (VT Ai)…"),
-                             text: qsTr("Type or paste a menu as it's written: VT Ai, on this computer, makes its items, sizes and choices for you to check") }]
+                             text: qsTr("Type or paste a menu, or add a photo or PDF of it: VT Ai, on this computer, makes its items, sizes and choices for you to check") }]
                         : []).concat([
                     { id: "builderImport", name: qsTr("Bring a Menu In…"),
                       text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's") },

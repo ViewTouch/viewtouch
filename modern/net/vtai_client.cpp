@@ -33,7 +33,7 @@ void VtAiClient::checkNow()
             const QJsonArray data = QJsonDocument::fromJson(reply->readAll()).object().value(u"data").toArray();
             up = true;
             model = data.isEmpty() ? QString() : data.first().toObject().value(u"id").toString();
-            // "/var/lib/viewtouch-ai/vtai-smollm3-3b.gguf": its name alone
+            // "/var/lib/viewtouch-ai/vtai-qwen3-4b.gguf": its name alone
             model = model.section(u'/', -1).remove(u".gguf"_s);
         }
         if (up != running_ || model != model_) {
