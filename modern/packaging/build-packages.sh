@@ -73,6 +73,20 @@ build_here() {
         mv "$f" "$dist/$(basename "${f%.*}")-b${number:-0}.${f##*.}"
     done
     rm -rf "$dist/.cpack-$$"
+    # VT Ai's package beside it (vtmodern-ai: the local AI's engine, pinned
+    # llama.cpp), the same version. VTM_NO_VTAI=1: without it.
+    if [ "${VTM_NO_VTAI:-}" != 1 ]; then
+        version=$(sed -n 's/^project(ViewTouchModern VERSION \([0-9.]*\).*/\1/p' "$modern/CMakeLists.txt")
+        cmake -S "$here/vtai" -B "$build-vtai" -G Ninja -DCMAKE_BUILD_TYPE=Release \
+              -DVTAI_VERSION="$version.${number:-0}"
+        cmake --build "$build-vtai"
+        (cd "$build-vtai" && cpack -G "$generator" -B "$dist/.cpack-vtai-$$")
+        for f in "$dist/.cpack-vtai-$$"/*.deb "$dist/.cpack-vtai-$$"/*.rpm; do
+            [ -e "$f" ] || continue
+            mv "$f" "$dist/$(basename "${f%.*}")-b${number:-0}.${f##*.}"
+        done
+        rm -rf "$dist/.cpack-vtai-$$"
+    fi
     ls -l "$dist"
 }
 

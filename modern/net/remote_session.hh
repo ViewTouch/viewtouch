@@ -199,6 +199,7 @@ public:
     QVariantMap checkSearch() const override { return v(u"checkSearch").toMap(); }
     QVariantMap returnSale() const override { return v(u"returnSale").toMap(); }
     QVariantMap legacyImport() const override { return v(u"legacyImport").toMap(); }
+    QVariantMap vtai() const override { return v(u"vtai").toMap(); }
     QVariantMap printerSearch() const override { return v(u"printerSearch").toMap(); }
     // Where pictures from the server are kept on this device (tests set it).
     void setImageCache(const QString &dir) { imageCache_ = dir; }

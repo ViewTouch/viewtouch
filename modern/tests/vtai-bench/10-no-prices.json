@@ -1,0 +1,6 @@
+{"items": [
+ {"name": "Two Eggs Any Style", "price": 10, "category": "Breakfast"},
+ {"name": "Pancakes", "price": 9, "category": "Breakfast"},
+ {"name": "French Toast", "price": null, "category": "Breakfast"},
+ {"name": "Omelet of the Day", "price": null, "category": "Breakfast"},
+ {"name": "Bacon", "price": 4.50, "category": "Breakfast"}]}

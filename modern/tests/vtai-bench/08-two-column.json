@@ -1,0 +1,9 @@
+{"items": [
+ {"name": "Edamame", "price": 5.50, "category": "Starters"},
+ {"name": "Gyoza (6)", "price": 7.50, "category": "Starters"},
+ {"name": "Miso Soup", "price": 3.50, "category": "Starters"},
+ {"name": "Seaweed Salad", "price": 6.00, "category": "Starters"},
+ {"name": "Chicken Teriyaki", "price": 16.00, "category": "Mains"},
+ {"name": "Salmon Teriyaki", "price": 21.00, "category": "Mains"},
+ {"name": "Beef Bulgogi Bowl", "price": 18.00, "category": "Mains"},
+ {"name": "Tofu Stir-Fry", "price": 14.50, "category": "Mains"}]}

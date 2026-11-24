@@ -2353,6 +2353,11 @@ Item {
         id: importDialog
         menu: w
     }
+    MenuBuilderVtAi {
+        id: vtaiDialog
+        menu: w
+        importDialog: importDialog
+    }
     MenuBuilderCheck {
         id: checkDialog
         menu: w
@@ -2410,7 +2415,11 @@ Item {
             spacing: 6
             Label { textFormat: Text.PlainText; text: qsTr("More tools"); font.pixelSize: Ui.px(20); font.bold: true }
             Repeater {
-                model: [
+                // VT Ai's, only while it's running here (and for a manager).
+                model: (w.pos && w.pos.vtai && w.pos.vtai.available
+                        ? [{ id: "builderVtAi", name: qsTr("Describe Your Menu (VT Ai)…"),
+                             text: qsTr("Type or paste a menu as it's written: VT Ai, on this computer, makes its items, sizes and choices for you to check") }]
+                        : []).concat([
                     { id: "builderImport", name: qsTr("Bring a Menu In…"),
                       text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's") },
                     { id: "builderTemplates", name: qsTr("Starter Menu…"),
@@ -2420,7 +2429,7 @@ Item {
                     { id: "builderExportFile", name: qsTr("Save the Menu for Another ViewTouch"),
                       text: qsTr("The whole menu as a file, for Bring a Menu In… at another store") },
                     { id: "builderExportSheet", name: qsTr("Save the Menu as a Spreadsheet"),
-                      text: qsTr("Every item and price in a .csv file, for Excel") }]
+                      text: qsTr("Every item and price in a .csv file, for Excel") }])
                 delegate: ColumnLayout {
                     id: toolRow
                     required property var modelData
@@ -2433,7 +2442,8 @@ Item {
                         onClicked: {
                             const id = toolRow.modelData.id, b = w
                             toolsDialog.close()
-                            if (id === "builderImport") importFile.open()
+                            if (id === "builderVtAi") vtaiDialog.open()
+                            else if (id === "builderImport") importFile.open()
                             else if (id === "builderTemplates") templateDialog.open()
                             else if (id === "builderPrintMenu") b.leave(() => printDialog.open())
                             else if (id === "builderExportFile") b.zone.controller.exportMenu()
@@ -2451,7 +2461,7 @@ Item {
                     }
                 }
             }
-            TouchButton { Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: toolsDialog.close() }
+            TouchButton { objectName: "builderToolsClose"; Layout.alignment: Qt.AlignRight; Layout.preferredWidth: 140; text: qsTr("Close"); onClicked: toolsDialog.close() }
         }
     }
     MenuBuilderPrices {

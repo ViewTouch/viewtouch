@@ -7,6 +7,7 @@
 #include "layoutcontroller.hh"
 #include "app/i18n.hh"
 #include "net/stripe_api.hh"
+#include "net/vtai_client.hh"
 #include "net/discovery.hh"
 #include "net/layout_hub.hh"
 #include "net/build_info.hh"
@@ -1077,6 +1078,19 @@ int runStore(const Args &cli, const Options &o)
                                    std::function<void(const QJsonObject &, const QString &)> done) {
         stripe.call(method, path, form, std::move(done));
     };
+
+    // VT Ai: the small AI on this computer (the vtmodern-ai package's
+    // service, 127.0.0.1:7720), when it's installed and running.
+    vt::net::VtAiClient vtai;
+    shared->vtaiCall = [&vtai](const QJsonObject &request, std::function<void(const QJsonObject &, const QString &)> done) {
+        vtai.chat(request, std::move(done));
+    };
+    shared->vtaiCancel = [&vtai] { vtai.cancel(); };
+    QObject::connect(&vtai, &vt::net::VtAiClient::statusChanged, shared, [&vtai, shared] {
+        shared->vtaiRunning = vtai.running();
+        shared->vtaiModel = vtai.model();
+        emit shared->vtaiChanged();
+    });
 
     // Texts to guests ("your table is ready") go to the store's texting
     // service: a JSON POST of {to, message}, never blocking the screen.

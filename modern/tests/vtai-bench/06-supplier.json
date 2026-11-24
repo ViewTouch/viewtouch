@@ -1,0 +1,5 @@
+{"items": [
+ {"name": "Crew Neck Tee", "price": 24.00, "sizes": [{"name": "Black, M", "price": 24}, {"name": "Black, L", "price": 24}, {"name": "White, M", "price": 24}]},
+ {"name": "Pullover Hoodie", "price": 64.00},
+ {"name": "Baseball Cap", "price": 28.00},
+ {"name": "Crew Socks 3pk", "price": 18.00}]}

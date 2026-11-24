@@ -256,6 +256,7 @@ void PosService::connectShared()
         emit openChecksChanged();
     });
     connect(s_, &PosShared::menuChanged, this, &PosSession::menuChanged);
+    connect(s_, &PosShared::vtaiChanged, this, &PosSession::sessionChanged);
     connect(s_, &PosShared::customersChanged, this, &PosSession::checkChanged);
     connect(s_, &PosShared::staffChanged, this, [this] {
         if (!userId_.empty() && !user()) {   // deactivated or removed elsewhere

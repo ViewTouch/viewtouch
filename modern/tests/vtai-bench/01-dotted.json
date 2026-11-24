@@ -1,0 +1,10 @@
+{"items": [
+ {"name": "Carne Asada Taco", "price": 3.50, "category": "Tacos"},
+ {"name": "Al Pastor Taco", "price": 3.25, "category": "Tacos"},
+ {"name": "Pollo Taco", "price": 3.00, "category": "Tacos"},
+ {"name": "Fish Taco", "price": 4.00, "category": "Tacos"},
+ {"name": "Bean & Cheese Burrito", "price": 8.00, "category": "Burritos"},
+ {"name": "Carne Asada Burrito", "price": 11.50, "category": "Burritos"},
+ {"name": "California Burrito", "price": 12.50, "category": "Burritos"},
+ {"name": "Horchata", "price": 3.00, "category": "Drinks"},
+ {"name": "Mexican Coke", "price": 3.50, "category": "Drinks"}]}

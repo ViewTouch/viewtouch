@@ -164,6 +164,7 @@ class PosSession : public QObject {
     // Bringing a store over from legacy ViewTouch: {folder, preview, busy,
     // done, error} (legacyPreview, legacyBring).
     Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
+    Q_PROPERTY(QVariantMap vtai READ vtai NOTIFY sessionChanged)
     // Looking for printers on the store's network (findPrinters): {busy,
     // done, found: [{host, port, answered, printer}]} (printer: the name of
     // the store's printer at that address, if one is).
@@ -410,6 +411,10 @@ public:
     virtual QVariantMap checkSearch() const = 0;
     virtual QVariantMap returnSale() const = 0;
     virtual QVariantMap legacyImport() const = 0;
+    virtual QVariantMap vtai() const = 0;
+    Q_INVOKABLE void vtaiMenuFromText(const QString &text) { invoke(QStringLiteral("vtaiMenuFromText"), {text}); }
+    Q_INVOKABLE void vtaiCancel() { invoke(QStringLiteral("vtaiCancel")); }
+    Q_INVOKABLE void vtaiClear() { invoke(QStringLiteral("vtaiClear")); }
     virtual QVariantMap printerSearch() const = 0;
     virtual QVariantMap networkInfo() const = 0;
     virtual QVariantList printerAlerts() const = 0;

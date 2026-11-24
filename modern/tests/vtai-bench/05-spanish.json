@@ -1,0 +1,9 @@
+{"items": [
+ {"name": "Quesadilla de queso", "price": 7, "category": "Antojitos"},
+ {"name": "Sopes (2)", "price": 8.50, "category": "Antojitos"},
+ {"name": "Elote preparado", "price": 4.50, "category": "Antojitos"},
+ {"name": "Enchiladas verdes", "price": 13, "category": "Platillos"},
+ {"name": "Mole poblano", "price": 15, "category": "Platillos"},
+ {"name": "Chiles rellenos", "price": 14, "category": "Platillos"},
+ {"name": "Agua de jamaica", "price": 3, "category": "Bebidas"},
+ {"name": "Café de olla", "price": 2.50, "category": "Bebidas"}]}

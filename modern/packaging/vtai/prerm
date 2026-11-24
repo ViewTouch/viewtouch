@@ -1,0 +1,12 @@
+#!/bin/sh
+# Before removal (DEB: "remove"; RPM: 0): stopped. Its model stays in
+# /var/lib/viewtouch-ai until removed by hand (2 GB to download again).
+set -e
+case "$1" in
+remove|0)
+    if [ -d /run/systemd/system ]; then
+        systemctl disable --now vtmodern-ai.service >/dev/null 2>&1 || true
+    fi
+    ;;
+esac
+exit 0

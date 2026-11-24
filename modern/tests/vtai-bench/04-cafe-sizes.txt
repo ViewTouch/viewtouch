@@ -1,0 +1,9 @@
+COFFEE            12oz   16oz   20oz
+Drip Coffee       2.50   2.95   3.25
+Latte             4.25   4.75   5.25
+Cappuccino        4.25   4.75   5.25
+Mocha             4.75   5.25   5.75
+Milk: oat or almond +.75   Extra shot +1.00   Syrups (vanilla, caramel, hazelnut) +.60
+
+BAKERY
+Croissant 3.75 | Blueberry Muffin 3.50 | Cinnamon Roll 4.25

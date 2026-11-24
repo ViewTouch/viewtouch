@@ -1,0 +1,9 @@
+Pizza
+Cheese  10" 11  /  14" 15  /  18" 19
+Pepperoni  10" 13  /  14" 17  /  18" 21
+Margherita  10" 13.50 / 14" 17.50
+Toppings: mushrooms, onions, peppers, olives +1.50 each; extra cheese +2
+
+Salads
+Caesar 9
+Garden 8

@@ -19,6 +19,10 @@
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
 #   vtmodern-device brightness PERCENT                  the screen's backlight, 5 to 100
 #   vtmodern-device logs-usb                            the last week of ViewTouch's logs onto a USB stick
+#   vtmodern-device ai on|off|status                   VT Ai (the vtmodern-ai package): started, stopped, or how it is
+#                                                       (last line: RUNNING model | STOPPED model | NOMODEL | NOTINSTALLED)
+#   vtmodern-device ai-model                            download the model the release page names (signed), then start it
+#   vtmodern-device ai-model-usb                        the model from a USB stick (vtai-*.gguf with its .sig)
 #   vtmodern-device reboot | poweroff
 set -eu
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
@@ -457,6 +461,99 @@ ssh)
     on) systemctl enable --now ssh && echo "Remote help is on." ;;
     off) systemctl disable --now ssh && echo "Remote help is off." ;;
     *) die "on or off" ;;
+    esac
+    ;;
+ai|ai-model|ai-model-usb)
+    # VT Ai: the vtmodern-ai package's service and its model (a GGUF file,
+    # signed like an update: a model isn't run unless ViewTouch signed it).
+    [ -x /usr/libexec/vtmodern-ai/llama-server ] || { [ "$action" = ai ] && [ "${1:-}" = status ] && { echo NOTINSTALLED; exit 0; }; die "VT Ai isn't installed (sudo apt install vtmodern-ai)."; }
+    aidir=/var/lib/viewtouch-ai
+    install -d -o viewtouch-ai -g viewtouch-ai -m 750 "$aidir" 2>/dev/null || install -d -m 750 "$aidir"
+    put_model() {   # FILE NAME: checked, then in place of the one there (never half a file)
+        cp "$1" "$aidir/model.gguf.part"
+        chown viewtouch-ai:viewtouch-ai "$aidir/model.gguf.part" 2>/dev/null || true
+        chmod 640 "$aidir/model.gguf.part"
+        mv -f "$aidir/model.gguf.part" "$aidir/model.gguf"
+        printf '%s\n' "$2" > "$aidir/model-name"
+        systemctl enable vtmodern-ai >/dev/null 2>&1 || true
+        systemctl restart vtmodern-ai
+        echo "VT Ai has its model ($2) and is starting."
+    }
+    model_name() { cat "$aidir/model-name" 2>/dev/null || echo model; }
+    case "$action:${1:-}" in
+    ai:on)
+        [ -s "$aidir/model.gguf" ] || die "VT Ai has no model yet: Get the Model first."
+        systemctl enable --now vtmodern-ai
+        echo "VT Ai is on."
+        ;;
+    ai:off)
+        systemctl disable --now vtmodern-ai
+        echo "VT Ai is off."
+        ;;
+    ai:status)
+        if [ ! -s "$aidir/model.gguf" ]; then echo NOMODEL
+        elif systemctl is-active -q vtmodern-ai; then echo "RUNNING $(model_name)"
+        else echo "STOPPED $(model_name)"; fi
+        ;;
+    ai-model:*)
+        url=$(conf_value url)
+        [ -n "$url" ] || die "There's no release page to download from (/etc/viewtouch/updates.conf)."
+        case "$url" in https://*) url=${url%/} ;; *) die "The release page must start with https:// ($url)." ;; esac
+        work=/var/tmp/vtmodern-ai-download   # (on the disk: a model is bigger than memory's /run)
+        rm -rf "$work"
+        install -d -m 700 "$work"
+        fetch() {
+            curl -fsSL --retry 2 --max-time 3600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 from $url."
+            curl -fsSL --retry 2 --max-time 60 -o "$work/$1.sig" "$url/$1.sig" || die "$1 has no signature online: not used."
+            signed_by_trusted "$work/$1" "$work/$1.sig" || die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
+        }
+        fetch latest.json
+        name=$(sed -n 's/.*"vtai-model" *: *"\([^"]*\)".*/\1/p' "$work/latest.json" | head -1)
+        [ -n "$name" ] || die "The release page names no VT Ai model yet."
+        printf '%s' "$name" | grep -Eq '^vtai-[A-Za-z0-9._-]+\.gguf$' || die "latest.json: a strange model name."
+        free=$(df -Pk "$aidir" | awk 'NR==2{print $4}')
+        [ "${free:-0}" -gt 6000000 ] || die "Not enough room on this computer for VT Ai's model (6 GB free needed)."
+        echo "Downloading $name (about 2 GB)..."
+        fetch "$name"
+        license=$(sed -n 's/.*"vtai-model-license" *: *"\([^"]*\)".*/\1/p' "$work/latest.json" | head -1)
+        if [ -n "$license" ] && printf '%s' "$license" | grep -Eq '^vtai-[A-Za-z0-9._-]+\.txt$' && (fetch "$license"); then
+            install -m 644 "$work/$license" "$aidir/MODEL-LICENSE"
+        fi
+        put_model "$work/$name" "${name%.gguf}"
+        rm -rf "$work"
+        ;;
+    ai-model-usb:*)
+        mnt=/run/vtmodern-usb-ai
+        mkdir -p "$mnt"
+        found=
+        for dev in $(lsblk -rpno NAME,TRAN,TYPE | awk '$2=="usb"{print $1}'); do
+            for part in $(lsblk -rpno NAME,TYPE "$dev" | awk '$2=="part"{print $1}') "$dev"; do
+                mount -o ro "$part" "$mnt" 2>/dev/null || continue
+                f=
+                for g in "$mnt"/vtai-*.gguf "$mnt"/*/vtai-*.gguf; do   # the newest
+                    [ -f "$g" ] || continue
+                    if [ -z "$f" ] || [ "$g" -nt "$f" ]; then f=$g; fi
+                done
+                if [ -n "$f" ] && [ -s "$f.sig" ]; then
+                    if signed_by_trusted "$f" "$f.sig"; then
+                        name=$(basename "$f")
+                        cp "$f" "$aidir/usb-model.part"
+                        [ -s "$(dirname "$f")/vtai-LICENSE.txt" ] && install -m 644 "$(dirname "$f")/vtai-LICENSE.txt" "$aidir/MODEL-LICENSE"
+                        found=$name
+                    else
+                        umount "$mnt"
+                        die "$(basename "$f") isn't signed by ViewTouch (or was changed): not used."
+                    fi
+                fi
+                umount "$mnt"
+                [ -n "$found" ] && break 2
+            done
+        done
+        [ -n "$found" ] || die "No VT Ai model (vtai-....gguf with its .sig) on a USB stick."
+        put_model "$aidir/usb-model.part" "${found%.gguf}"
+        rm -f "$aidir/usb-model.part"
+        ;;
+    *) die "ai on|off|status, ai-model or ai-model-usb" ;;
     esac
     ;;
 brightness)

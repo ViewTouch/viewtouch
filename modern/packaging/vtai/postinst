@@ -1,0 +1,13 @@
+#!/bin/sh
+# After install or upgrade: its account, and an upgrade restarts it if it
+# was running (a fresh install starts nothing: it has no model yet).
+set -e
+if command -v systemd-sysusers >/dev/null 2>&1; then
+    systemd-sysusers vtmodern-ai.conf || true
+fi
+install -d -o viewtouch-ai -g viewtouch-ai -m 750 /var/lib/viewtouch-ai 2>/dev/null || true
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload || true
+    systemctl try-restart vtmodern-ai.service || true
+fi
+exit 0

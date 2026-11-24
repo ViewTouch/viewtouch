@@ -1,0 +1,11 @@
+{"items": [
+ {"name": "House Lager", "price": 6, "category": "Drafts", "sizes": [{"name": "Pint", "price": 6}, {"name": "Pitcher", "price": 18}]},
+ {"name": "IPA", "price": 7, "category": "Drafts", "sizes": [{"name": "Pint", "price": 7}, {"name": "Pitcher", "price": 21}]},
+ {"name": "Stout", "price": 7, "category": "Drafts", "sizes": [{"name": "Pint", "price": 7}, {"name": "Pitcher", "price": 21}]},
+ {"name": "Margarita", "price": 12, "category": "Cocktails"},
+ {"name": "Old Fashioned", "price": 12, "category": "Cocktails"},
+ {"name": "Moscow Mule", "price": 12, "category": "Cocktails"},
+ {"name": "Mojito", "price": 12, "category": "Cocktails"},
+ {"name": "Cabernet", "price": 11, "category": "Wine"},
+ {"name": "Pinot Grigio", "price": 10, "category": "Wine"},
+ {"name": "Prosecco", "price": 11, "category": "Wine"}]}

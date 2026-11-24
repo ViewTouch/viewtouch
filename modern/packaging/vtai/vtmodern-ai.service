@@ -1,0 +1,46 @@
+# VT Ai: the small AI on the store's computer (llama.cpp's server, with the
+# model /var/lib/viewtouch-ai/model.gguf), for ViewTouch only: it listens on
+# this computer alone (127.0.0.1:7720), and the point of sale always comes
+# first: three of the four cores at most, the lowest priority, its own memory
+# limit. Turned on and off from Store Settings -> VT Ai
+# (vtmodern-device ai on|off). Without a model it waits (never starts).
+[Unit]
+Description=VT Ai (ViewTouch's local AI)
+Documentation=file:///usr/share/doc/vtmodern-ai/README.md
+After=network.target
+ConditionPathExists=/var/lib/viewtouch-ai/model.gguf
+
+[Service]
+Type=simple
+User=viewtouch-ai
+Group=viewtouch-ai
+StateDirectory=viewtouch-ai
+StateDirectoryMode=0750
+ExecStart=/usr/libexec/vtmodern-ai/llama-server --model /var/lib/viewtouch-ai/model.gguf --alias vtai \
+    --host 127.0.0.1 --port 7720 --threads 3 --ctx-size 8192 --jinja --no-webui
+Nice=15
+CPUWeight=20
+CPUQuota=250%
+IOSchedulingClass=idle
+MemoryHigh=3500M
+MemoryMax=4500M
+Restart=on-failure
+RestartSec=10
+# Nothing but its model and the local port.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressAllow=localhost
+IPAddressDeny=any
+LockPersonality=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

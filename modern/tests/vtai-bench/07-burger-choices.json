@@ -1,0 +1,10 @@
+{"items": [
+ {"name": "Classic Burger", "price": 12, "category": "Burgers", "groups": ["Side", "Temperature", "Add"]},
+ {"name": "Bacon Cheeseburger", "price": 14.50, "category": "Burgers", "groups": ["Side", "Temperature", "Add"]},
+ {"name": "Mushroom Swiss", "price": 14, "category": "Burgers", "groups": ["Side", "Temperature", "Add"]},
+ {"name": "Veggie Burger", "price": 12.50, "category": "Burgers", "groups": ["Side", "Add"]},
+ {"name": "Wings (10)", "price": 13, "category": "Wings", "groups": ["Sauce"]}],
+ "groups": [{"name": "Side", "options": [{"name": "Fries", "price": 0}, {"name": "Onion Rings", "price": 1.50}, {"name": "Side Salad", "price": 0}]},
+            {"name": "Temperature", "options": [{"name": "Rare", "price": 0}, {"name": "Medium Rare", "price": 0}, {"name": "Medium", "price": 0}, {"name": "Medium Well", "price": 0}, {"name": "Well Done", "price": 0}]},
+            {"name": "Add", "options": [{"name": "Avocado", "price": 1.50}, {"name": "Fried Egg", "price": 1.50}, {"name": "Jalapeños", "price": 0.75}]},
+            {"name": "Sauce", "options": [{"name": "Buffalo", "price": 0}, {"name": "BBQ", "price": 0}, {"name": "Garlic Parmesan", "price": 0}, {"name": "Lemon Pepper", "price": 0}]}]}

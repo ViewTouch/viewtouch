@@ -1,0 +1,14 @@
+TACOS
+Carne Asada Taco .............. 3.50
+Al Pastor Taco ................ 3.25
+Pollo Taco .................... 3.00
+Fish Taco ..................... 4.00
+
+BURRITOS
+Bean & Cheese Burrito ......... 8.00
+Carne Asada Burrito .......... 11.50
+California Burrito ........... 12.50
+
+DRINKS
+Horchata ...................... 3.00
+Mexican Coke .................. 3.50

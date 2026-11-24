@@ -634,4 +634,214 @@ MenuImport readToastMenu(const QJsonDocument &doc)
     return out;
 }
 
+// --- VT Ai ------------------------------------------------------------------------------
+
+namespace {
+
+// Spacing tidied, and no longer than `most` (a model can ramble).
+QString tidy(const QString &text, int most)
+{
+    QString t = text.simplified();
+    if (t.size() > most)
+        t = t.left(most).trimmed();
+    return t;
+}
+
+// A price it can be: a number, 0 to 99,999.99, to the cent; -1: none.
+double priceOf(const QJsonValue &v)
+{
+    if (!v.isDouble())
+        return -1;
+    const double p = v.toDouble();
+    if (!std::isfinite(p) || p < 0 || p >= 100000)
+        return -1;
+    return std::round(p * 100) / 100;
+}
+
+// One required (a temperature, a sauce, a side, a size, a milk, a dressing),
+// else any number (toppings, extras, add-ons).
+bool pickOne(const QString &group)
+{
+    static const QRegularExpression one(
+        uR"(\b(temp|temperature|cooked|doneness|side|sauce|size|milk|dressing|bread|tortilla|crust|broth|protein|meat|choice|style|base|rice|flavor|spice)s?\b)"_s,
+        QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression many(uR"(\b(add|extra|topping|option|modifier)s?\b)"_s, QRegularExpression::CaseInsensitiveOption);
+    return one.match(group).hasMatch() && !many.match(group).hasMatch();
+}
+
+} // namespace
+
+MenuImport readVtAiMenu(const QList<QJsonObject> &answers)
+{
+    const auto tr = [](const char *text) { return QCoreApplication::translate("MenuImport", text); };
+    MenuImport out;
+    out.from = u"VT Ai"_s;
+    QHash<QString, int> itemAt;    // lower-case name -> its index
+    QHash<QString, int> groupAt;
+    int row = 0;
+    for (const QJsonObject &answer : answers) {
+        // The groups first: the items say which they ask for.
+        for (const QJsonValue &gv : answer.value(u"groups").toArray()) {
+            const QJsonObject g = gv.toObject();
+            ImportedGroup group;
+            group.name = tidy(g.value(u"name").toString(), 40);
+            if (group.name.isEmpty())
+                continue;
+            QSet<QString> seen;
+            for (const QJsonValue &ov : g.value(u"options").toArray()) {
+                const QJsonObject o = ov.toObject();
+                const QString name = tidy(o.value(u"name").toString(), 40);
+                const double price = priceOf(o.value(u"price"));
+                if (name.isEmpty() || seen.contains(name.toLower()) || group.options.size() >= 30)
+                    continue;
+                seen.insert(name.toLower());
+                group.options.append({name, std::max(0.0, price)});
+            }
+            if (group.options.isEmpty())
+                continue;
+            group.min = pickOne(group.name) ? 1 : 0;
+            group.max = pickOne(group.name) ? 1 : 0;
+            if (const auto it = groupAt.constFind(group.name.toLower()); it != groupAt.cend()) {
+                // The same group from another part of the menu: its options added.
+                ImportedGroup &was = out.groups[*it];
+                for (const ImportedPrice &o : std::as_const(group.options))
+                    if (std::ranges::none_of(was.options, [&](const ImportedPrice &x) { return x.name.compare(o.name, Qt::CaseInsensitive) == 0; }))
+                        was.options.append(o);
+                continue;
+            }
+            groupAt.insert(group.name.toLower(), int(out.groups.size()));
+            out.groups.append(group);
+        }
+        for (const QJsonValue &iv : answer.value(u"items").toArray()) {
+            const QJsonObject i = iv.toObject();
+            ImportedItem item;
+            item.row = ++row;
+            item.name = tidy(i.value(u"name").toString(), 60);
+            if (item.name.isEmpty())
+                continue;
+            item.category = tidy(i.value(u"category").toString(), 40);
+            item.description = tidy(i.value(u"description").toString(), 300);
+            for (const QJsonValue &sv : i.value(u"sizes").toArray()) {
+                const QJsonObject sz = sv.toObject();
+                const QString name = tidy(sz.value(u"name").toString(), 30);
+                const double price = priceOf(sz.value(u"price"));
+                if (!name.isEmpty() && price >= 0 && item.sizes.size() < 12
+                    && std::ranges::none_of(item.sizes, [&](const ImportedPrice &x) { return x.name.compare(name, Qt::CaseInsensitive) == 0; }))
+                    item.sizes.append({name, price});
+            }
+            if (item.sizes.size() < 2)   // one size is the item's price
+                item.sizes.clear();
+            double price = priceOf(i.value(u"price"));
+            if (!item.sizes.isEmpty())
+                price = std::ranges::min(item.sizes, {}, &ImportedPrice::price).price;
+            if (price < 0) {
+                price = 0;
+                out.problems << tr("No price for %1: type it in the preview, or after.").arg(item.name);
+            }
+            item.price = price;
+            for (const QJsonValue &gv : i.value(u"groups").toArray()) {
+                const auto it = groupAt.constFind(tidy(gv.toString(), 40).toLower());
+                if (it != groupAt.cend() && !item.groups.contains(out.groups[*it].name))
+                    item.groups << out.groups[*it].name;   // (one it named but didn't give: left out)
+            }
+            if (const auto it = itemAt.constFind(item.name.toLower()); it != itemAt.cend()) {
+                out.problems << tr("%1 was there twice: once kept.").arg(item.name);
+                continue;
+            }
+            itemAt.insert(item.name.toLower(), int(out.items.size()));
+            out.items.append(item);
+        }
+    }
+    if (out.items.isEmpty())
+        out.problems << tr("VT Ai found no items in it.");
+    return out;
+}
+
+QJsonObject parseVtAiLines(const QString &text)
+{
+    // "3.50", "$3.50", "12" -> a number; "?" or nonsense -> null.
+    const auto money = [](QString t) -> QJsonValue {
+        t = t.trimmed();
+        if (t.startsWith(u'$'))
+            t.remove(0, 1);
+        bool ok = false;
+        const double v = t.toDouble(&ok);
+        return ok ? QJsonValue(v) : QJsonValue(QJsonValue::Null);
+    };
+    // "10\"=11; 14\"=15" -> [{name, price}]
+    const auto pairs = [&](const QString &cell) {
+        QJsonArray out;
+        for (const QString &part : cell.split(u';', Qt::SkipEmptyParts)) {
+            const qsizetype eq = part.lastIndexOf(u'=');
+            if (eq <= 0)
+                continue;
+            const QJsonValue price = money(part.mid(eq + 1));
+            const QString name = part.left(eq).trimmed();
+            if (!name.isEmpty() && price.isDouble())
+                out.append(QJsonObject{{u"name"_s, name}, {u"price"_s, price}});
+        }
+        return out;
+    };
+    QJsonArray items, groups;
+    QString category;
+    for (const QString &raw : text.split(u'\n')) {
+        const QString line = raw.trimmed();
+        if (line.size() < 3 || line[1] != u' ')
+            continue;
+        const QChar kind = line[0];
+        const QString rest = line.mid(2).trimmed();
+        const QStringList cells = rest.split(u'|');
+        const auto cell = [&](qsizetype i) { return i < cells.size() ? cells[i].trimmed() : QString(); };
+        if (kind == u'C') {
+            category = rest;
+        } else if (kind == u'I' && !cell(0).isEmpty()) {
+            QJsonArray names;
+            for (const QString &g : cell(3).split(u';', Qt::SkipEmptyParts))
+                if (!g.trimmed().isEmpty())
+                    names.append(g.trimmed());
+            items.append(QJsonObject{{u"name"_s, cell(0)}, {u"price"_s, money(cell(1))}, {u"category"_s, category},
+                                     {u"sizes"_s, pairs(cell(2))}, {u"groups"_s, names}});
+        } else if (kind == u'G' && !cell(0).isEmpty()) {
+            QJsonArray options;
+            for (const QString &part : cell(1).split(u';', Qt::SkipEmptyParts)) {
+                const qsizetype eq = part.lastIndexOf(u'=');
+                const QString name = (eq > 0 ? part.left(eq) : part).trimmed();
+                const QJsonValue price = eq > 0 ? money(part.mid(eq + 1)) : QJsonValue(0);
+                if (!name.isEmpty())
+                    options.append(QJsonObject{{u"name"_s, name}, {u"price"_s, price.isDouble() ? price : QJsonValue(0)}});
+            }
+            groups.append(QJsonObject{{u"name"_s, cell(0)}, {u"options"_s, options}});
+        }
+    }
+    return {{u"items"_s, items}, {u"groups"_s, groups}};
+}
+
+QVariantMap importRowsOf(const MenuImport &read)
+{
+    QVariantList items;
+    for (const ImportedItem &i : read.items) {
+        QVariantMap row{{u"row"_s, i.row}, {u"name"_s, i.name}, {u"price"_s, i.price}, {u"category"_s, i.category},
+                        {u"description"_s, i.description}, {u"onIt"_s, i.onIt}, {u"barcodes"_s, i.barcode}};
+        if (!i.groups.isEmpty())
+            row.insert(u"groups"_s, i.groups);
+        if (!i.sizes.isEmpty()) {
+            QVariantList sizes;
+            for (const ImportedPrice &s : i.sizes)
+                sizes.append(QVariantMap{{u"name"_s, s.name}, {u"price"_s, s.price}});
+            row.insert(u"sizes"_s, sizes);
+        }
+        items.append(row);
+    }
+    QVariantList groups;
+    for (const ImportedGroup &g : read.groups) {
+        QVariantList options;
+        for (const ImportedPrice &o : g.options)
+            options.append(QVariantMap{{u"name"_s, o.name}, {u"price"_s, QString::number(o.price, 'f', 2)}});
+        groups.append(QVariantMap{{u"name"_s, g.name}, {u"min"_s, g.min}, {u"max"_s, g.max}, {u"options"_s, options}});
+    }
+    return {{u"items"_s, items}, {u"groups"_s, groups}, {u"problems"_s, read.problems}, {u"columns"_s, QStringList()},
+            {u"photos"_s, 0}, {u"from"_s, read.from}};
+}
+
 } // namespace vt::app
+

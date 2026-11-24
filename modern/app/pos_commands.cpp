@@ -181,6 +181,9 @@ const QHash<QString, PosService::Command> &PosService::commandTable()
         {u"setupStore"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupStore(a.value(0).toString(), a.value(1).toString(),
                                           a.size() > 2 ? a.value(2).toString() : QString())); }},
+        {u"vtaiMenuFromText"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.vtaiMenuFromText(a.value(0).toString())); }},
+        {u"vtaiCancel"_s, [](PosService &p, const QVariantList &) { return QVariant(p.vtaiCancel()); }},
+        {u"vtaiClear"_s, [](PosService &p, const QVariantList &) { return QVariant(p.vtaiClear()); }},
         {u"startWithStarter"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startWithStarter(a.value(0).toString())); }},
         {u"setupLogo"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.setupLogo(a.value(0).toString(), a.value(1).toBool())); }},

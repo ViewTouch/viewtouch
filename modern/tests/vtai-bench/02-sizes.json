@@ -1,0 +1,7 @@
+{"items": [
+ {"name": "Cheese Pizza", "price": 11, "category": "Pizza", "sizes": [{"name": "10\"", "price": 11}, {"name": "14\"", "price": 15}, {"name": "18\"", "price": 19}], "groups": ["Toppings"]},
+ {"name": "Pepperoni Pizza", "price": 13, "category": "Pizza", "sizes": [{"name": "10\"", "price": 13}, {"name": "14\"", "price": 17}, {"name": "18\"", "price": 21}], "groups": ["Toppings"]},
+ {"name": "Margherita", "price": 13.50, "category": "Pizza", "sizes": [{"name": "10\"", "price": 13.50}, {"name": "14\"", "price": 17.50}], "groups": ["Toppings"]},
+ {"name": "Caesar Salad", "price": 9, "category": "Salads"},
+ {"name": "Garden Salad", "price": 8, "category": "Salads"}],
+ "groups": [{"name": "Toppings", "options": [{"name": "Mushrooms", "price": 1.50}, {"name": "Onions", "price": 1.50}, {"name": "Peppers", "price": 1.50}, {"name": "Olives", "price": 1.50}, {"name": "Extra Cheese", "price": 2}]}]}

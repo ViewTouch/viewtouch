@@ -2,6 +2,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include "print/printer_finder.hh"
+#include <QJsonArray>
+#include <QTimer>
 #include <QTcpSocket>
 #include <QTcpServer>
 
@@ -1734,6 +1736,60 @@ TEST_CASE("UI: Menu Builder: a printed menu, as a PDF", "[flow][ui][printmenu]")
     REQUIRE(pdf.open(QIODevice::ReadOnly));
     CHECK(pdf.read(5) == "%PDF-");
     CHECK(pdf.size() > 2000);
+}
+
+TEST_CASE("UI: Menu Builder: VT Ai reads a pasted menu into the import preview", "[flow][ui][vtai]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        INFO(name.toStdString());
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(60);
+    };
+    // Not running: More Tools has no VT Ai.
+    tap(u"builderTools"_s);
+    CHECK_FALSE(by(u"builderVtAi"_s));
+    tap(u"builderToolsClose"_s);
+    QString said;
+    s.pos.shared()->vtaiCall = [&](const QJsonObject &request, std::function<void(const QJsonObject &, const QString &)> done) {
+        said = request[u"messages"_s].toArray().last().toObject()[u"content"_s].toString();
+        QTimer::singleShot(50, [done] {
+            done(QJsonObject{{u"choices"_s, QJsonArray{QJsonObject{{u"message"_s, QJsonObject{{u"content"_s,
+                 u"C Tacos\nI Birria Taco | 4.25 |  | Salsa\nI Tripa Taco | 3.75\nG Salsa | Roja=0; Verde=0\n"_s}}}}}}}, {});
+        });
+    };
+    s.pos.shared()->vtaiRunning = true;
+    emit s.pos.shared()->vtaiChanged();
+    QTest::qWait(60);
+    const int before = s.pos.menuItems().size();
+    tap(u"builderTools"_s);   // now it's there
+    REQUIRE(by(u"builderVtAi"_s));
+    s.shot("89-builder-tools-vtai");
+    tap(u"builderVtAi"_s);
+    QQuickItem *text = by(u"vtaiMenuText"_s);
+    REQUIRE(text);
+    text->setProperty("text", u"TACOS\nBirria 4.25 (salsa roja or verde)\nTripa 3.75"_s);
+    s.shot("90-vtai-menu");
+    tap(u"vtaiRead"_s);
+    // The preview: the builder's (a Popup, not among the window's items).
+    QObject *preview = nullptr;
+    for (QQuickItem *at = by(u"builderTools"_s); at && !preview; at = at->parentItem())
+        preview = at->findChild<QObject *>(u"builderImportDialog"_s, Qt::FindDirectChildrenOnly);
+    REQUIRE(preview);
+    for (int i = 0; i < 100 && !preview->property("visible").toBool(); ++i)
+        QTest::qWait(30);
+    CHECK(preview->property("visible").toBool());
+    CHECK(said.contains(u"Birria 4.25"_s));
+    CHECK(preview->property("read").toMap()[u"items"_s].toList().size() == 2);
+    CHECK(s.pos.menuItems().size() == before);   // nothing added until the manager says
+    s.shot("91-vtai-preview");
 }
 
 TEST_CASE("UI: Menu Builder: an import ticked into categories, a few at a time", "[flow][ui][import]")

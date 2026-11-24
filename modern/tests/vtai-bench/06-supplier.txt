@@ -1,0 +1,8 @@
+VALLEY WHOLESALE - RETAIL PRICE LIST (effective 11/1)
+SKU      DESCRIPTION                     PACK    RETAIL
+TS-100   Crew Neck Tee, Black, M         1 ea    24.00
+TS-101   Crew Neck Tee, Black, L         1 ea    24.00
+TS-102   Crew Neck Tee, White, M         1 ea    24.00
+HD-200   Pullover Hoodie, Gray, L        1 ea    64.00
+CP-300   Baseball Cap, Navy              1 ea    28.00
+SK-400   Crew Socks 3pk                  1 ea    18.00

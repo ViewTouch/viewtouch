@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QVariantMap>
 #include <QList>
 #include <QString>
 #include <QStringList>
@@ -69,5 +71,21 @@ MenuImport readMenuSheets(const QList<Sheet> &sheets);
 // modifier groups.
 bool isToastMenu(const QJsonDocument &doc);
 MenuImport readToastMenu(const QJsonDocument &doc);
+
+// VT Ai's answers (seed/vtai/menu.json's shape: {items: [{name, price,
+// category, description, sizes, groups}], groups: [{name, options}]}), one
+// a part of the menu, as an import: checked (names and prices that make
+// sense, no item twice, groups that are there), cleaned (lengths, spacing),
+// and what it couldn't be sure of in problems ("No price for French Toast").
+MenuImport readVtAiMenu(const QList<QJsonObject> &answers);
+
+// VT Ai's answer in its line format (seed/vtai/menu-lines.json: "C Tacos",
+// "I Carne Asada Taco | 3.50 | sizes | groups", "G Salsa | Roja=0; Verde=0",
+// "END"), as the shape above. Lines it can't read are left out.
+QJsonObject parseVtAiLines(const QString &text);
+
+// An import as Menu Builder's preview takes it ({items, groups, problems,
+// from}, each item {row, name, price, category, description, sizes, groups}).
+QVariantMap importRowsOf(const MenuImport &read);
 
 } // namespace vt::app

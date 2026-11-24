@@ -454,6 +454,13 @@ public:
     // database and starts again with `startAs`: "" (the restaurant's starter
     // set), "empty", or a starter set ("foodTruck:taqueria", "retail:books").
     // False: not possible here.
+    // VT Ai (net/vtai_client.hh): a question to the small AI on the store's
+    // computer, answered once (its reply, or why not); vtaiCancel gives up the
+    // one being answered. vtaiRunning / vtaiModel: is it there (vtaiChanged).
+    std::function<void(const QJsonObject &request, std::function<void(const QJsonObject &reply, const QString &error)> done)> vtaiCall;
+    std::function<void()> vtaiCancel;
+    bool vtaiRunning = false;
+    QString vtaiModel;
     std::function<bool(const QString &startAs)> requestFactoryReset;
     // A legacy ViewTouch store's menu and sales (the app sets these; see
     // legacy/legacy_apply.hh): its dat folder read and worked out, on any
@@ -497,6 +504,7 @@ signals:
     void customersChanged();   // customers, gift cards, house accounts
     void networkChanged();     // a screen or the standby came or went; a printer worked or failed
     void orderReady(const QString &said);   // a food truck's order is made: "#27 Maria is ready: buzz pager 12"
+    void vtaiChanged();        // VT Ai came or went (vtaiRunning, vtaiModel)
 
 private:
     std::function<std::int64_t()> now_;
@@ -588,6 +596,17 @@ public:
     bool setRestock(qint64 lineId, bool restock);
     bool refundReturn(const QString &how);
     QVariantMap legacyImport() const override { return legacy_; }
+    // --- VT Ai (pos_vtai.cpp): the small AI on the store's computer ---------------
+    // What it's doing for this screen: {available, model, task, busy, progress,
+    // error, result}. A menu's result is an import, as Menu Builder's preview
+    // takes it (importMenuRows does the rest). Managers only; it proposes,
+    // a manager confirms.
+    QVariantMap vtai() const override;
+    // A menu typed or pasted (or a supplier's price list): items, sizes, choices.
+    bool vtaiMenuFromText(const QString &text);
+    // What VT Ai is doing for this screen, given up; its result, put away.
+    bool vtaiCancel();
+    bool vtaiClear();
     QVariantMap printerSearch() const override { return printerSearch_; }
     bool findPrinters();
     bool printWhoAmI(const QString &host);
@@ -1414,6 +1433,9 @@ private:
     double shortRest(const core::Shift &s) const;
     QString scheduleChangeNote(const core::Shift &s, bool added);
     int scheduleWeek_ = 0;
+    QVariantMap vtai_;
+    int vtaiRequest_ = 0;
+    void vtaiMenuPart(const QStringList &parts, int at, QList<QJsonObject> answers, int request, QString lastCategory);
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;
     core::Report forecast_;   // the forecast last shown (Print)

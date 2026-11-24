@@ -3,11 +3,16 @@
 # updates (Home screen -> Updates -> Check for a New ViewTouch):
 #
 #   packaging/publish.sh [--apk-arm64 FILE] [--apk-armv7 FILE] [--beta-hours N] [--spread-hours N] [--dry-run]
+#                        [--vtai-model FILE --vtai-model-url URL [--vtai-model-license FILE]]
 #   packaging/publish.sh --rollout pause|resume|now [--dry-run]
 #
 # Takes the newest Debian 13 package for each architecture in modern/dist
 # (built and signed by build-packages.sh), the Ubuntu 26.04 and Fedora 44
-# ones there (for new installs), and the tablet apps if given;
+# ones there (for new installs), the tablet apps if given, VT Ai's package
+# (vtmodern-ai) for Debian 13, and VT Ai's model if given: FILE (vtai-NAME.gguf)
+# is signed here and its signature published, but the model itself is
+# downloaded by the stores from URL (a release page holds files up to 2 GB;
+# a pinned Hugging Face file, the same bytes: the signature says so);
 # signs the apps and latest.json (what's newest, and its files) with the key
 # on this computer; uploads them all, each with its .sig and .sha256.
 #
@@ -25,6 +30,9 @@ key=${VTM_SIGNING_KEY:-$HOME/.config/viewtouch/signing/update-signing-key.pem}
 pub=${VTM_SIGNING_PUB:-$here/update-signing-key.pub.pem}
 apk64=
 apk32=
+vtai_model=
+vtai_url=
+vtai_license=
 dry=no
 beta=24
 spread=72
@@ -33,6 +41,9 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --apk-arm64) apk64=$2; shift ;;
         --apk-armv7) apk32=$2; shift ;;
+        --vtai-model) vtai_model=$2; shift ;;
+        --vtai-model-url) vtai_url=$2; shift ;;
+        --vtai-model-license) vtai_license=$2; shift ;;
         --beta-hours) beta=$2; shift ;;
         --spread-hours) spread=$2; shift ;;
         --rollout) rollout=$2; shift ;;
@@ -118,7 +129,7 @@ done
 # Ubuntu and Fedora too, for installing (install-viewtouch.sh): store
 # computers update from the Debian 13 ones only.
 for spec in "ubuntu26.04-arm64:vtmodern_*~ubuntu26.04_arm64*.deb" "ubuntu26.04-amd64:vtmodern_*~ubuntu26.04_amd64*.deb" \
-            "fedora44-aarch64:vtmodern-*.fc44.aarch64*.rpm" "fedora44-x86_64:vtmodern-*.fc44.x86_64*.rpm"; do
+            "fedora44-aarch64:vtmodern-[0-9]*.fc44.aarch64*.rpm" "fedora44-x86_64:vtmodern-[0-9]*.fc44.x86_64*.rpm"; do
     what=${spec%%:*}; pattern=${spec#*:}
     # shellcheck disable=SC2086
     file=$(ls -t "$dist"/$pattern 2>/dev/null | head -1 || true)
@@ -151,6 +162,46 @@ for pair in "arm64-v8a:$apk64:ViewTouch-android-arm64.apk" "armeabi-v7a:$apk32:V
     echo "Tablet app ($abi): $(basename "$file") as $name"
 done
 
+# VT Ai: its package (Debian 13: store computers), and its model.
+vtai=
+for arch in arm64 amd64; do
+    deb=$(ls -t "$dist"/vtmodern-ai_*~debian13_"$arch"*.deb 2>/dev/null | head -1 || true)
+    [ -n "$deb" ] || continue
+    name=vtmodern-ai-debian13-$arch.deb
+    cp "$deb" "$out/$name"
+    sign "$out/$name"
+    vtai="$vtai${vtai:+,
+}    \"vtai-debian13-$arch\": \"$name\""
+    echo "VT Ai ($arch): $(basename "$deb") as $name"
+done
+if [ -n "$vtai_model" ]; then
+    mname=$(basename "$vtai_model")
+    printf '%s' "$mname" | grep -Eq '^vtai-[A-Za-z0-9._-]+\.gguf$' || { echo "Name the model vtai-NAME.gguf ($mname)." >&2; exit 1; }
+    case "$vtai_url" in https://*) ;; *) echo "--vtai-model-url: where stores download it (https://...)" >&2; exit 1 ;; esac
+    # Signed here; the 2 GB file itself isn't uploaded (only its .sig).
+    openssl pkeyutl -sign -inkey "$key" -rawin -in "$vtai_model" -out "$out/$mname.sig"
+    openssl pkeyutl -verify -pubin -inkey "$pub" -rawin -in "$vtai_model" -sigfile "$out/$mname.sig" >/dev/null
+    vtai="$vtai${vtai:+,
+}    \"vtai-model\": \"$mname\",
+    \"vtai-model-url\": \"$vtai_url\""
+    if [ -n "$vtai_license" ]; then
+        lname=vtai-${mname%.gguf}-LICENSE.txt
+        cp "$vtai_license" "$out/$lname"
+        sign "$out/$lname"
+        vtai="$vtai,
+    \"vtai-model-license\": \"$lname\""
+    fi
+    echo "VT Ai model: $mname (stores download it from $vtai_url)"
+elif [ -n "$vtai" ]; then
+    # The model published before stays named (latest.json is written anew).
+    prev=$(gh release download "$release" --pattern latest.json --output - 2>/dev/null || true)
+    for k in vtai-model vtai-model-url vtai-model-license; do
+        v=$(printf '%s' "$prev" | sed -n "s/.*\"$k\" *: *\"\([^\"]*\)\".*/\1/p" | head -1)
+        [ -n "$v" ] && vtai="$vtai,
+    \"$k\": \"$v\""
+    done
+fi
+
 cat > "$out/latest.json" <<JSON
 {
   "version": "$version",
@@ -160,6 +211,9 @@ $packages
   },
   "apps": {
 $apps
+  },
+  "vtai": {
+$vtai
   },
   "rollout": {
     "betaHours": $beta,
