@@ -4,6 +4,7 @@
 #include <QLocale>
 #include <QString>
 #include <QStringList>
+#include <QVariantMap>
 
 #include <functional>
 
@@ -68,6 +69,10 @@ public:
 private:
     std::function<QString()> previous_;
 };
+
+// The store's own words for its menu (language -> {English name: word}),
+// over the built-in phrases. True when they changed (screens retranslate).
+bool setStoreWords(const QVariantMap &byLanguage);
 
 // `english` in `code`, or empty if there is no translation.
 QString lookup(const QString &code, const QString &english, int n = -1);

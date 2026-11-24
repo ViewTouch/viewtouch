@@ -234,8 +234,29 @@ QString pseudo(const QString &english)
     return u"["_s + out + QString((letters * 2 + 4) / 5, u'~') + u"]"_s;
 }
 
+namespace {
+QVariantMap &storeWords()
+{
+    static QVariantMap words;
+    return words;
+}
+} // namespace
+
+bool setStoreWords(const QVariantMap &byLanguage)
+{
+    if (storeWords() == byLanguage)
+        return false;
+    storeWords() = byLanguage;
+    return true;
+}
+
 QString lookup(const QString &code, const QString &english, int n)
 {
+    if (const auto w = storeWords().constFind(code); w != storeWords().cend()) {
+        const QString word = w->toMap().value(english).toString();
+        if (!word.isEmpty())
+            return word;
+    }
     if (code == PseudoLanguage) {
         const QString plural = lookup(u"en"_s, english, n);
         return pseudo(plural.isEmpty() ? english : plural);

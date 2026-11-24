@@ -314,6 +314,10 @@ struct PosSettings {
     std::string language = "en";
     // The page each job starts on at login (job -> page id); none: the floor plan.
     std::map<std::string, std::string> startPages;
+    // The menu in the store's other languages (language -> English name ->
+    // the store's word: "es" -> "Fish Taco" -> "Taco de pescado"): items,
+    // categories and choices, on each person's screen in their language.
+    std::map<std::string, std::map<std::string, std::string>> menuWords;
     // What "Extra" adds to an item's or a modifier's price: a percent of it
     // and/or an amount (extra cheese: +50%, or +$0.75). 0 and 0: no charge.
     int extraPercent = 0;

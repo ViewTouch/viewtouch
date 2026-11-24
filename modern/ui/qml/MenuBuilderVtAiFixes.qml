@@ -21,8 +21,13 @@ Dialog {
     // Asks VT Ai, then shows what it proposes.
     function check() { task = "fix"; what = ""; off = {}; open(); menu.pos.vtaiFixMenu() }
     function describe(ids, kind) { task = "describe"; what = kind; off = {}; open(); menu.pos.vtaiDescribe(ids, kind) }
+    // The menu in another language: which one first.
+    property bool picking: false
+    function translate() { task = "translate"; what = ""; off = {}; picking = true; if (menu.pos) menu.pos.vtaiClear(); open() }
+    function translateInto(lang) { what = lang; picking = false; menu.pos.vtaiTranslate(lang) }
 
-    title: task === "fix" ? qsTr("Check the Menu (VT Ai)")
+    title: task === "translate" ? qsTr("Translate the Menu (VT Ai)")
+         : task === "fix" ? qsTr("Check the Menu (VT Ai)")
          : what === "kitchenName" ? qsTr("Kitchen Names (VT Ai)") : qsTr("Descriptions (VT Ai)")
     parent: Overlay.overlay
     anchors.centerIn: parent
@@ -30,7 +35,7 @@ Dialog {
     height: Math.min(parent.height - 32, 620)
     modal: true
     closePolicy: busy ? Popup.NoAutoClose : Popup.CloseOnEscape
-    onClosed: if (menu.pos && !busy && mine) menu.pos.vtaiClear()
+    onClosed: { picking = false; if (menu.pos && !busy && mine) menu.pos.vtaiClear() }
 
     ColumnLayout {
         anchors.fill: parent
@@ -41,13 +46,29 @@ Dialog {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: fixDialog.mine && fixDialog.vtai.error ? Ui.warn : palette.windowText
-            text: !fixDialog.mine ? ""
+            text: fixDialog.picking ? qsTr("Into which language? Each person's screen shows the menu in their own language; the kitchen's tickets and receipts in the store's.")
+                : !fixDialog.mine ? ""
                 : fixDialog.busy ? (fixDialog.vtai.progress || qsTr("Thinking…")) + " " + qsTr("This takes a minute or two; the register works as usual meanwhile.")
                 : fixDialog.vtai.error ? fixDialog.vtai.error
                 : fixDialog.fixes.length === 0 ? (fixDialog.vtai.answer ?? "")
                 : qsTr("Untick any you don't want, then use the rest. Undo takes them all back.")
         }
         BusyIndicator { visible: fixDialog.busy; running: visible; Layout.alignment: Qt.AlignHCenter }
+        Flow {
+            Layout.fillWidth: true
+            spacing: 8
+            visible: fixDialog.picking
+            Repeater {
+                model: [{ code: "es", name: "Español" }, { code: "fr", name: "Français" },
+                        { code: "pt", name: "Português" }, { code: "zh", name: "中文" }]
+                delegate: MenuTouchButton {
+                    required property var modelData
+                    objectName: "vtaiLang_" + modelData.code
+                    text: modelData.name
+                    onClicked: fixDialog.translateInto(modelData.code)
+                }
+            }
+        }
         ListView {
             id: list
             Layout.fillWidth: true
@@ -79,7 +100,8 @@ Dialog {
                         elide: Text.ElideRight
                         font.bold: true
                         font.pixelSize: Ui.px(16)
-                        text: row.modelData.field === "price" ? qsTr("%1: %2").arg(row.modelData.name).arg(row.modelData.shown)
+                        text: String(row.modelData.field).startsWith("word:") ? qsTr("%1 → %2").arg(row.modelData.name).arg(row.modelData.shown)
+                            : row.modelData.field === "price" ? qsTr("%1: %2").arg(row.modelData.name).arg(row.modelData.shown)
                             : row.modelData.field === "family" ? qsTr("%1 into %2").arg(row.modelData.name).arg(row.modelData.shown)
                             : row.modelData.name
                     }
@@ -89,7 +111,9 @@ Dialog {
                         wrapMode: Text.WordWrap
                         opacity: 0.8
                         font.pixelSize: Ui.px(14)
-                        text: row.modelData.field === "description" || row.modelData.field === "kitchenName"
+                        visible: text !== ""
+                        text: String(row.modelData.field).startsWith("word:") ? ""
+                            : row.modelData.field === "description" || row.modelData.field === "kitchenName"
                               ? row.modelData.shown : (row.modelData.why ?? "")
                     }
                 }

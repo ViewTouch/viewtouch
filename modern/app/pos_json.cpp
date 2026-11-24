@@ -1206,6 +1206,16 @@ QJsonObject toJson(const PosSettings &s)
                  o.insert(qs(job), qs(page));
              return o;
          }()},
+        {u"menuWords"_s, [&] {
+             QJsonObject o;
+             for (const auto &[lang, words] : s.menuWords) {
+                 QJsonObject w;
+                 for (const auto &[english, word] : words)
+                     w.insert(qs(english), qs(word));
+                 o.insert(qs(lang), w);
+             }
+             return o;
+         }()},
         {u"extraPercent"_s, s.extraPercent}, {u"extraCharge"_s, decimalFromCents(s.extraCharge.cents())},
         {u"royaltyBp"_s, qint64(s.royaltyBp)}, {u"adFundBp"_s, qint64(s.adFundBp)},
         {u"accounts"_s, [&] {
@@ -1515,6 +1525,15 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.screenSaverMinutes = std::clamp(o.value(u"screenSaverMinutes").toInt(10), 0, 240);
     s.replicaKey = ss(o.value(u"replicaKey").toString());
     s.language = ss(o.value(u"language").toString(u"en"_s));
+    {
+        const QJsonObject words = o.value(u"menuWords").toObject();
+        for (auto l = words.begin(); l != words.end(); ++l) {
+            const QJsonObject w = l.value().toObject();
+            for (auto it = w.begin(); it != w.end(); ++it)
+                if (!it.key().isEmpty() && !it.value().toString().trimmed().isEmpty())
+                    s.menuWords[ss(l.key())][ss(it.key())] = ss(it.value().toString().trimmed().left(80));
+        }
+    }
     const QJsonObject starts = o.value(u"startPages").toObject();
     for (auto it = starts.begin(); it != starts.end(); ++it)
         if (!it.value().toString().isEmpty())

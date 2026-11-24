@@ -78,6 +78,20 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastProblemId(data.lastProblemId)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
+    // The store's menu words, here too (kitchen tickets and receipts in the
+    // store's language; a server without a screen of its own).
+    const auto words = [this] {
+        QVariantMap out;
+        for (const auto &[lang, w] : settings.menuWords) {
+            QVariantMap m;
+            for (const auto &[english, word] : w)
+                m.insert(QString::fromStdString(english), QString::fromStdString(word));
+            out.insert(QString::fromStdString(lang), m);
+        }
+        return out;
+    };
+    i18n::setStoreWords(words());
+    connect(this, &PosShared::adminChanged, this, [words] { i18n::setStoreWords(words()); });
     // What goes to the kitchen and the expediter follows the menu and settings.
     for (auto signal : {&PosShared::adminChanged, &PosShared::menuChanged})
         connect(this, signal, this, [this] {

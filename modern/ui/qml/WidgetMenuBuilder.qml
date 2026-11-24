@@ -2424,7 +2424,9 @@ Item {
                         ? [{ id: "builderVtAi", name: qsTr("Describe Your Menu (VT Ai)…"),
                              text: qsTr("Type or paste a menu, or add a photo or PDF of it: VT Ai, on this computer, makes its items, sizes and choices for you to check") },
                            { id: "builderVtAiCheck", name: qsTr("Check the Menu with VT Ai…"),
-                             text: qsTr("Items with no price or no category: VT Ai proposes one for each, for you to tick") }]
+                             text: qsTr("Items with no price or no category: VT Ai proposes one for each, for you to tick") },
+                           { id: "builderVtAiTranslate", name: qsTr("Translate the Menu (VT Ai)…"),
+                             text: qsTr("Items, categories and choices in Spanish, French, Portuguese or Chinese, for staff who read the screens in their own language") }]
                           .concat(w.items.length > 0
                             ? [{ id: "builderVtAiDescribe", name: qsTr("Write Descriptions (VT Ai)…"),
                                  text: qsTr("A line about each item in this category, for the kiosk and online ordering") },
@@ -2456,6 +2458,7 @@ Item {
                             const firstItems = b.items.slice(0, 20).map(i => i.id)
                             if (id === "builderVtAi") vtaiDialog.open()
                             else if (id === "builderVtAiCheck") vtaiFixes.check()
+                            else if (id === "builderVtAiTranslate") vtaiFixes.translate()
                             else if (id === "builderVtAiDescribe") vtaiFixes.describe(firstItems, "description")
                             else if (id === "builderVtAiKitchen") vtaiFixes.describe(firstItems, "kitchenName")
                             else if (id === "builderImport") importFile.open()

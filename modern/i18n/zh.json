@@ -451,6 +451,9 @@
   "one": "还有 %n 单 ▸",
   "other": "还有 %n 单 ▸"
  },
+ "%n name(s) translated.": {
+  "other": "已翻译 %n 个名称。"
+ },
  "%n new (below)": {
   "one": "%n 个新问题（见下方）",
   "other": "%n 个新问题（见下方）"
@@ -1950,6 +1953,7 @@
  "Every item and price in a .csv file, for Excel": "所有菜品和价格存成 .csv 文件，可用 Excel 打开",
  "Every item has a price and a category, every choice it asks for is there, and its kitchen ticket goes to a printer that's set up.": "每个菜品都有价格和分类，它需要的每个选项都存在，厨房小票会送到已设置的打印机。",
  "Every kitchen screen shows it.": "所有厨房屏幕都会显示。",
+ "Every name on the menu has its word in that language already.": "菜单上的每个名称都已有该语言的译名。",
  "Every order is called by its number (#1, #2... from 1 each day). On: a name too, before Send or Pay.": "每个订单按号码叫号（#1、#2……每天从 1 开始）。开启：发送或付款前还需要姓名。",
  "Every screen can be rearranged: Manager -> Edit Pages. This guide stays on the Manager page as Setup Guide….": "每个屏幕都可以重新排列：经理 -> 编辑页面。此向导保留在经理页面，名为“设置向导…”。",
  "Every setting: delivery price, recipe, by weight, discounts…": "所有设置：外送价格、配方、称重、折扣…",
@@ -2334,6 +2338,7 @@
  "Install ViewTouch %1 Now": "立即安装 ViewTouch %1",
  "Install a new ViewTouch by itself at night (between 3 and 5 AM); ViewTouch starts again on it": "夜间（凌晨 3 点到 5 点）自动安装新版 ViewTouch，并用新版重新启动",
  "Into pool": "放入池中",
+ "Into which language? Each person's screen shows the menu in their own language; the kitchen's tickets and receipts in the store's.": "翻译成哪种语言？每个人的屏幕以其自己的语言显示菜单；厨房小票和收据使用商店的语言。",
  "Into: %1.": "导入到：%1。",
  "Into: %1. Rows without a category go in %2.": "导入到：%1。没有分类的行放到 %2。",
  "Inventory": "库存",
@@ -2373,6 +2378,7 @@
  "Items returned on #%1": "已在 #%1 退货",
  "Items scanned by barcode, sizes and colors, returns and exchanges.": "扫码商品、尺码和颜色、退换货。",
  "Items with no price or no category: VT Ai proposes one for each, for you to tick": "没有价格或分类的菜品：VT Ai 为每一项提出建议，供您勾选",
+ "Items, categories and choices in Spanish, French, Portuguese or Chinese, for staff who read the screens in their own language": "将菜品、分类和选项翻译成西班牙语、法语、葡萄牙语或中文，方便用自己语言看屏幕的员工",
  "Its backup password (from the store it came from)": "备份密码（来自原门店）",
  "Its button is on the order screen now. What next?": "它的按钮已经在点单屏幕上了。接下来呢？",
  "Its buttons on the order screen": "它在点单屏幕上的按钮",
@@ -4916,6 +4922,9 @@
  "Transferred from %1 to %2": "已从 %1 转给 %2",
  "Transferring checks": "转移账单",
  "Transfers": "转移",
+ "Translate the Menu (VT Ai)": "翻译菜单（VT Ai）",
+ "Translate the Menu (VT Ai)…": "翻译菜单（VT Ai）…",
+ "Translating the menu…": "正在翻译菜单…",
  "Tree nuts": "坚果",
  "Tuesday": "星期二",
  "Turn 15° ⟲": "旋转 15° ⟲",
@@ -5069,6 +5078,7 @@
  "VT Ai can't be changed from here.": "无法在此处更改 VT Ai。",
  "VT Ai can't change that.": "VT Ai 无法更改该项。",
  "VT Ai couldn't make a folder to read it in.": "VT Ai 无法创建用于读取的文件夹。",
+ "VT Ai couldn't translate those: try again.": "VT Ai 无法翻译这些：请再试一次。",
  "VT Ai couldn't write those: try fewer items.": "VT Ai 无法撰写：请减少菜品数量再试。",
  "VT Ai didn't answer: %1": "VT Ai 没有回应：%1",
  "VT Ai found no items in it.": "VT Ai 没有找到任何菜品。",
@@ -5083,6 +5093,7 @@
  "VT Ai isn't running on this computer (Store Settings → VT Ai).": "VT Ai 未在这台电脑上运行（商店设置 → VT Ai）。",
  "VT Ai named %1, which isn't in the menu's words: left out.": "VT Ai 列出了 %1，但菜单文字中没有：已略去。",
  "VT Ai needs its model (about 2.5 GB): Get the Model.": "VT Ai 需要模型（约 2.5 GB）：获取模型。",
+ "VT Ai translates the menu into Spanish, French, Portuguese or Chinese.": "VT Ai 可将菜单翻译成西班牙语、法语、葡萄牙语或中文。",
  "VT Ai writes descriptions or kitchen names.": "VT Ai 撰写描述或厨房名称。",
  "VT Ai's answer couldn't be read.": "无法读取 VT Ai 的回答。",
  "VT Ai's instructions are missing from this ViewTouch.": "此 ViewTouch 缺少 VT Ai 的指令。",

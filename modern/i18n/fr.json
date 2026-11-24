@@ -452,6 +452,10 @@
   "one": "%n de plus ▸",
   "other": "%n de plus ▸"
  },
+ "%n name(s) translated.": {
+  "one": "%n nom traduit.",
+  "other": "%n noms traduits."
+ },
  "%n new (below)": {
   "one": "%n nouveau (ci-dessous)",
   "other": "%n nouveaux (ci-dessous)"
@@ -1951,6 +1955,7 @@
  "Every item and price in a .csv file, for Excel": "Chaque article et prix dans un fichier .csv, pour Excel",
  "Every item has a price and a category, every choice it asks for is there, and its kitchen ticket goes to a printer that's set up.": "Chaque article a un prix et une catégorie, chaque choix demandé existe, et son ticket de cuisine va vers une imprimante configurée.",
  "Every kitchen screen shows it.": "Tous les écrans de cuisine l'affichent.",
+ "Every name on the menu has its word in that language already.": "Chaque nom du menu a déjà son mot dans cette langue.",
  "Every order is called by its number (#1, #2... from 1 each day). On: a name too, before Send or Pay.": "Chaque commande est appelée par son numéro (#1, #2... à partir de 1 chaque jour). Activé : un nom aussi, avant Envoyer ou Payer.",
  "Every screen can be rearranged: Manager -> Edit Pages. This guide stays on the Manager page as Setup Guide….": "Chaque écran peut être réarrangé : Gérant -> Modifier les pages. Ce guide reste sur la page Gérant sous Guide de configuration….",
  "Every setting: delivery price, recipe, by weight, discounts…": "Tous les réglages : prix en livraison, recette, au poids, remises…",
@@ -2335,6 +2340,7 @@
  "Install ViewTouch %1 Now": "Installer ViewTouch %1 maintenant",
  "Install a new ViewTouch by itself at night (between 3 and 5 AM); ViewTouch starts again on it": "Installer un nouveau ViewTouch tout seul la nuit (entre 3 h et 5 h) ; ViewTouch redémarre avec",
  "Into pool": "Dans le pool",
+ "Into which language? Each person's screen shows the menu in their own language; the kitchen's tickets and receipts in the store's.": "Dans quelle langue ? L'écran de chacun montre le menu dans sa langue ; les bons de cuisine et les reçus, dans celle du magasin.",
  "Into: %1.": "Dans : %1.",
  "Into: %1. Rows without a category go in %2.": "Dans : %1. Les lignes sans catégorie vont dans %2.",
  "Inventory": "Inventaire",
@@ -2374,6 +2380,7 @@
  "Items returned on #%1": "Articles retournés sur n° %1",
  "Items scanned by barcode, sizes and colors, returns and exchanges.": "Articles scannés par code-barres, tailles et couleurs, retours et échanges.",
  "Items with no price or no category: VT Ai proposes one for each, for you to tick": "Articles sans prix ou sans catégorie : VT Ai en propose un pour chacun, à cocher",
+ "Items, categories and choices in Spanish, French, Portuguese or Chinese, for staff who read the screens in their own language": "Articles, catégories et choix en espagnol, français, portugais ou chinois, pour l'équipe qui lit les écrans dans sa langue",
  "Its backup password (from the store it came from)": "Son mot de passe de sauvegarde (du magasin d'origine)",
  "Its button is on the order screen now. What next?": "Son bouton est maintenant sur l'écran de commande. Et ensuite ?",
  "Its buttons on the order screen": "Ses boutons sur l'écran de commande",
@@ -4923,6 +4930,9 @@
  "Transferred from %1 to %2": "Transférée de %1 à %2",
  "Transferring checks": "Transférer des additions",
  "Transfers": "Transferts",
+ "Translate the Menu (VT Ai)": "Traduire le menu (VT Ai)",
+ "Translate the Menu (VT Ai)…": "Traduire le menu (VT Ai)…",
+ "Translating the menu…": "Traduction du menu…",
  "Tree nuts": "Fruits à coque",
  "Tuesday": "Mardi",
  "Turn 15° ⟲": "Tourner de 15° ⟲",
@@ -5077,6 +5087,7 @@
  "VT Ai can't be changed from here.": "VT Ai ne peut pas être modifié d'ici.",
  "VT Ai can't change that.": "VT Ai ne peut pas changer cela.",
  "VT Ai couldn't make a folder to read it in.": "VT Ai n'a pas pu créer de dossier pour le lire.",
+ "VT Ai couldn't translate those: try again.": "VT Ai n'a pas pu les traduire : réessayez.",
  "VT Ai couldn't write those: try fewer items.": "VT Ai n'a pas pu les rédiger : essayez avec moins d'articles.",
  "VT Ai didn't answer: %1": "VT Ai n'a pas répondu : %1",
  "VT Ai found no items in it.": "VT Ai n'y a trouvé aucun article.",
@@ -5091,6 +5102,7 @@
  "VT Ai isn't running on this computer (Store Settings → VT Ai).": "VT Ai ne fonctionne pas sur cet ordinateur (Réglages du magasin → VT Ai).",
  "VT Ai named %1, which isn't in the menu's words: left out.": "VT Ai a nommé %1, qui n'est pas dans le texte du menu : laissé de côté.",
  "VT Ai needs its model (about 2.5 GB): Get the Model.": "VT Ai a besoin de son modèle (environ 2,5 Go) : Obtenir le modèle.",
+ "VT Ai translates the menu into Spanish, French, Portuguese or Chinese.": "VT Ai traduit le menu en espagnol, français, portugais ou chinois.",
  "VT Ai writes descriptions or kitchen names.": "VT Ai rédige des descriptions ou des noms en cuisine.",
  "VT Ai's answer couldn't be read.": "La réponse de VT Ai n'a pas pu être lue.",
  "VT Ai's instructions are missing from this ViewTouch.": "Les instructions de VT Ai manquent dans ce ViewTouch.",

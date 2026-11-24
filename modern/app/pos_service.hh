@@ -605,6 +605,7 @@ public:
     // takes it (importMenuRows does the rest). Managers only; it proposes,
     // a manager confirms.
     QVariantMap vtai() const override;
+    QVariantMap storeWords() const override;
     // A menu typed or pasted (or a supplier's price list): items, sizes, choices.
     bool vtaiMenuFromText(const QString &text);
     // A menu's PDF or photo (its bytes, base64: from a phone too), read on this
@@ -625,6 +626,11 @@ public:
     // The ones a manager ticked ([{item, field, value}]: price, family,
     // description or kitchenName), checked again: one Undo step.
     bool vtaiApply(const QVariantList &fixes);
+    // The menu's names (items, categories, choices) in `language` (es, fr,
+    // pt, zh), those it hasn't yet: {task: translate, fixes: [{item: the
+    // English name, field: "word:es", value}]}; vtaiApply keeps the ticked
+    // ones as the store's words (PosSettings::menuWords).
+    bool vtaiTranslate(const QString &language);
     // What VT Ai is doing for this screen, given up; its result, put away.
     bool vtaiCancel();
     bool vtaiClear();

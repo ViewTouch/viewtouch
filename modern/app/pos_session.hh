@@ -165,6 +165,8 @@ class PosSession : public QObject {
     // done, error} (legacyPreview, legacyBring).
     Q_PROPERTY(QVariantMap legacyImport READ legacyImport NOTIFY sessionChanged)
     Q_PROPERTY(QVariantMap vtai READ vtai NOTIFY sessionChanged)
+    // The store's own words for its menu in other languages (PosSettings::menuWords).
+    Q_PROPERTY(QVariantMap storeWords READ storeWords NOTIFY adminChanged)
     // Looking for printers on the store's network (findPrinters): {busy,
     // done, found: [{host, port, answered, printer}]} (printer: the name of
     // the store's printer at that address, if one is).
@@ -417,12 +419,14 @@ public:
     virtual QVariantMap returnSale() const = 0;
     virtual QVariantMap legacyImport() const = 0;
     virtual QVariantMap vtai() const = 0;
+    virtual QVariantMap storeWords() const = 0;
     Q_INVOKABLE void vtaiMenuFromText(const QString &text) { invoke(QStringLiteral("vtaiMenuFromText"), {text}); }
     Q_INVOKABLE void vtaiMenuFromFile(const QString &base64) { invoke(QStringLiteral("vtaiMenuFromFile"), {base64}); }
     Q_INVOKABLE void vtaiAsk(const QString &question) { invoke(QStringLiteral("vtaiAsk"), {question}); }
     Q_INVOKABLE void vtaiFixMenu() { invoke(QStringLiteral("vtaiFixMenu")); }
     Q_INVOKABLE void vtaiDescribe(const QStringList &itemIds, const QString &what) { invoke(QStringLiteral("vtaiDescribe"), {itemIds, what}); }
     Q_INVOKABLE void vtaiApply(const QVariantList &fixes) { invoke(QStringLiteral("vtaiApply"), QVariantList{QVariant(fixes)}); }
+    Q_INVOKABLE void vtaiTranslate(const QString &language) { invoke(QStringLiteral("vtaiTranslate"), {language}); }
     Q_INVOKABLE void vtaiCancel() { invoke(QStringLiteral("vtaiCancel")); }
     Q_INVOKABLE void vtaiClear() { invoke(QStringLiteral("vtaiClear")); }
     virtual QVariantMap printerSearch() const = 0;

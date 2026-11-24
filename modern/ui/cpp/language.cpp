@@ -21,6 +21,9 @@ void followLanguage(QQmlEngine *engine, LayoutController *controller)
         const QString lang = pos->language();
         const QString guest = pos->storeLanguage();
         bool changed = !lang.isEmpty() && i18n::setLanguage(lang);
+        // The store's words for its menu (VT Ai's translations, ticked by a manager).
+        if (i18n::setStoreWords(pos->storeWords()))
+            changed = true;
         if (!guest.isEmpty() && guest != i18n::guestLanguage()) {
             i18n::setGuestLanguage(guest);
             changed = true;

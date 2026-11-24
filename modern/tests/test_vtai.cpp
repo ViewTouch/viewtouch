@@ -2,6 +2,8 @@
 
 #include "app/menu_import.hh"
 #include "app/menu_reader.hh"
+#include "app/i18n.hh"
+#include "app/pos_json.hh"
 #include "app/pos_demo.hh"
 #include "app/pos_starter.hh"
 #include "net/vtai_client.hh"
@@ -16,6 +18,7 @@
 #include <QBuffer>
 #include <QElapsedTimer>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QFileInfo>
 #include <QTemporaryDir>
 #include <QTest>
@@ -911,4 +914,54 @@ TEST_CASE("VT Ai: common sales questions answered from the report at once, no AI
     ai.answers = {u"N"_s};
     ask(u"What will sell best next week?"_s);
     CHECK(ai.asked.size() == 1);
+}
+
+TEST_CASE("VT Ai: the menu translated, the ticked words on every screen in that language", "[vtai]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    FakeVtAi ai(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, QString()}, {u"name"_s, u"Smoked Brisket Plate"_s}, {u"price"_s, u"16"_s},
+                                  {u"family"_s, pos.menuCategories()[0].toMap()[u"id"_s]}}));
+    CHECK_FALSE(pos.vtaiTranslate(u"de"_s));   // only the store's languages
+    // (Its answer for the brisket, by the number it was given.)
+    pos.shared()->vtaiCall = [&](const QJsonObject &request, std::function<void(const QJsonObject &, const QString &)> done) {
+        ai.asked << request;
+        const QString list = request[u"messages"_s].toArray()[1].toObject()[u"content"_s].toString();
+        const QString n = QRegularExpression(u"(\\d+)\\. Smoked Brisket Plate"_s).match(list).captured(1);
+        const QString a = n.isEmpty() ? u"END"_s : u"T "_s + n + u" | Smoked Brisket Plate | Plato de brisket ahumado\nEND"_s;
+        QTimer::singleShot(0, [done, a] { done(replyWith(a), {}); });
+    };
+    REQUIRE(pos.vtaiTranslate(u"es"_s));
+    waitFor(pos);
+    // Asked only for names without a Spanish word already (the starter menu's have theirs).
+    const QString asked = ai.asked.last()[u"messages"_s].toArray()[1].toObject()[u"content"_s].toString();
+    CHECK(asked.contains(u"Smoked Brisket Plate"_s));
+    CHECK(ai.asked.last()[u"messages"_s].toArray()[0].toObject()[u"content"_s].toString().contains(u"Spanish"_s));
+    const QVariantList fixes = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(fixes.size() >= 1);
+    CHECK(fixes[0].toMap()[u"field"_s] == u"word:es"_s);
+    CHECK(fixes[0].toMap()[u"value"_s] == u"Plato de brisket ahumado"_s);
+    // Nothing until ticked; then the store's word, in its settings and on screens.
+    CHECK(i18n::lookup(u"es"_s, u"Smoked Brisket Plate"_s).isEmpty());
+    REQUIRE(pos.vtaiApply({fixes[0]}));
+    CHECK(pos.storeWords()[u"es"_s].toMap()[u"Smoked Brisket Plate"_s] == u"Plato de brisket ahumado"_s);
+    CHECK(i18n::lookup(u"es"_s, u"Smoked Brisket Plate"_s) == u"Plato de brisket ahumado"_s);
+    {
+        const i18n::Scope spanish(u"es"_s);
+        CHECK(QCoreApplication::translate("Data", "Smoked Brisket Plate") == u"Plato de brisket ahumado"_s);
+    }
+    // Kept with the store's settings.
+    const core::PosSettings again = app::settingsFromJson(app::toJson(pos.shared()->settings));
+    CHECK(again.menuWords.at("es").at("Smoked Brisket Plate") == "Plato de brisket ahumado");
+    // Asked again: nothing left to translate for that one.
+    const qsizetype before = ai.asked.size();
+    REQUIRE(pos.vtaiTranslate(u"es"_s));
+    waitFor(pos);
+    // (Nothing asked at all when every name has its word.)
+    if (ai.asked.size() > before)
+        CHECK_FALSE(ai.asked.last()[u"messages"_s].toArray()[1].toObject()[u"content"_s].toString().contains(u". Smoked Brisket Plate\n"_s));
+    // Not a word that's no language's.
+    CHECK_FALSE(pos.vtaiApply({QVariantMap{{u"item"_s, u"Water"_s}, {u"field"_s, u"word:xx"_s}, {u"value"_s, u"Wasser"_s}}}));
+    i18n::setStoreWords({});
 }
