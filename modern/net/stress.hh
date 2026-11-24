@@ -127,6 +127,7 @@ private:
     std::vector<int> lagWindow_;            // this minute's delays (ms)
     std::vector<int> lagAll_;
     int stalls100_ = 0, stalls250_ = 0, stalls1000_ = 0, worstLag_ = 0;
+    QList<QPair<double, int>> pauses_;   // each over 100 ms: when (s into the run), how long (ms)
     int frames_ = 0, fps_ = 0;
     struct Timing { int n = 0; qint64 total = 0, worst = 0; std::vector<int> us; };
     QHash<QString, Timing> local_, remote_;

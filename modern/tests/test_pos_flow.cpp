@@ -1860,7 +1860,7 @@ TEST_CASE("UI: Ask VT Ai from the Manager screen; its proposals for the menu tic
     answers = {u"R items week"_s, u"The Classic Burger sold best this week: 12 of them."_s};
     QQuickItem *q = by(u"vtaiQuestion"_s);
     REQUIRE(q);
-    q->setProperty("text", u"What sold best this week?"_s);
+    q->setProperty("text", u"Did the Classic Burger do well this week?"_s);   // (one for VT Ai itself)
     tap(u"vtaiAsk"_s);
     for (int i = 0; i < 200 && !by(u"vtaiAnswer"_s)->property("text").toString().contains(u"Classic Burger"_s); ++i)
         QTest::qWait(20);

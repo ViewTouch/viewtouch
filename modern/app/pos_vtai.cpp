@@ -6,6 +6,7 @@
 
 #include "app/menu_import.hh"
 #include "app/menu_reader.hh"
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 
@@ -20,6 +21,7 @@
 #include <QSet>
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
 using namespace Qt::StringLiterals;
@@ -346,6 +348,136 @@ qint64 centsOf(QString t)
     return ok && v > 0 && v < 100000 ? qRound64(v * 100) : -1;
 }
 
+// A question ViewTouch answers itself, from the report alone (no AI step:
+// about a second, and nothing asked of VT Ai): which report and days, or
+// none when it isn't one of these.
+struct Quick {
+    QString report, period;
+    bool least = false;   // the worst seller, the slowest hour
+};
+
+std::optional<Quick> quickQuestion(const QString &question)
+{
+    // Lower case, no accents: "¿Cuánto vendimos hoy?" -> "cuanto vendimos hoy".
+    QString q;
+    for (const QChar c : question.normalized(QString::NormalizationForm_D).toLower())
+        if (c.category() != QChar::Mark_NonSpacing)
+            q += c;
+    const auto has = [&](const char *pattern) {
+        return QRegularExpression(QString::fromLatin1(pattern)).match(q).hasMatch();
+    };
+    Quick out;
+    out.period = has("\\blast week\\b|semana pasada") ? u"lastWeek"_s
+               : has("\\bthis week\\b|esta semana|\\bweek\\b") ? u"week"_s
+               : has("\\blast month\\b|mes pasado") ? u"lastMonth"_s
+               : has("\\bthis month\\b|este mes|\\bmonth\\b") ? u"month"_s
+               : has("\\blast year\\b|ano pasado") ? u"lastYear"_s
+               : has("\\bthis year\\b|este ano|\\byear\\b") ? u"year"_s
+               : has("\\byesterday\\b|\\bayer\\b|last night|anoche") ? u"yesterday"_s
+               : u"today"_s;
+    // (Anything about the future, or a person's job, isn't a report's: VT Ai says so.)
+    if (has("\\b(will|next|tomorrow|manana|should|fire|hire|despedir)\\b"))
+        return std::nullopt;
+    out.least = has("\\b(worst|least|slowest|lowest|fewest|menos|peor)\\b");
+    if (has("\\b(hour|time of day|hora)\\b") && has("\\b(busiest|busy|slowest|best|most|mas|ocupad)"))
+        out.report = u"hourly"_s;
+    else if (has("\\b(who|quien)\\b") || has("\\b(server|cashier|mesero|cajero|employee|empleado)s?\\b"))
+        out.report = has("\\b(sold|sell|sales|vend|most|mas|best|top)") ? u"servers"_s : QString();
+    else if (has("\\b(category|categories|categoria)"))
+        out.report = u"categories"_s;
+    else if (has("\\b(best|top|most|worst|least|popular|mas|menos)\\b") && has("\\b(sold|sell|seller|selling|item|dish|plate|vend|platillo)"))
+        out.report = u"items"_s;
+    else if (has("\\bwhat sold\\b|best ?sellers?"))
+        out.report = u"items"_s;
+    else if (has("\\b(sales|revenue|how much|made|money|ventas|vendimos|vendido|cuanto|how (are|is|were|was) (we|it|business)|how we doing|hows business|how did we do)"))
+        out.report = u"sales"_s;
+    if (out.report.isEmpty())
+        return std::nullopt;
+    return out;
+}
+
+// The answer to a Quick question, from the report's rows ("" when the report
+// hasn't what it needs: VT Ai answers instead).
+QString quickAnswer(const Quick &k, const QVariantMap &report, const QString &label)
+{
+    const QString lang = i18n::current();
+    const auto is = [&](const QString &cell, const char *english) {
+        return cell == QString::fromLatin1(english) || cell == i18n::lookup(lang, QString::fromLatin1(english));
+    };
+    // A line's number: "$1,050.75" -> 1050.75, "34" -> 34.
+    const auto value = [](QString cell) {
+        cell.remove(QRegularExpression(u"[^0-9.\\-]"_s));
+        return cell.toDouble();
+    };
+    QList<QStringList> lines;
+    QStringList net, checks, guests;
+    for (const QVariant &v : report.value(u"rows"_s).toList()) {
+        const QVariantMap row = v.toMap();
+        const QStringList cells = row.value(u"cells"_s).toStringList();
+        if (cells.isEmpty())
+            continue;
+        if (row.value(u"kind"_s) == u"line"_s)
+            lines << cells;
+        if (cells.size() >= 2 && is(cells[0], "Net sales"))
+            net = cells;
+        if (cells.size() >= 2 && is(cells[0], "Checks"))
+            checks = cells;
+        if (cells.size() >= 2 && is(cells[0], "Guests"))
+            guests = cells;
+    }
+    // The line with the most (or least) of column `col`.
+    const auto pick = [&](int col) -> QStringList {
+        QStringList best;
+        for (const QStringList &l : lines) {
+            if (l.size() <= col || l[col].trimmed().isEmpty())
+                continue;
+            if (best.isEmpty() || (k.least ? value(l[col]) < value(best[col]) : value(l[col]) > value(best[col])))
+                best = l;
+        }
+        return best;
+    };
+    if (k.report == u"sales") {
+        if (net.isEmpty())
+            return {};
+        if (checks.size() >= 2 && guests.size() >= 2)
+            return PosService::tr("Net sales for %1: %2, from %3 checks and %4 guests.").arg(label, net.last(), checks[1], guests[1]);
+        return PosService::tr("Net sales for %1: %2.").arg(label, net.last());
+    }
+    if (k.report == u"items") {   // Item ; Qty ; Sales
+        const QStringList l = pick(1);
+        if (l.size() < 3)
+            return PosService::tr("No sales for %1.").arg(label);
+        return (k.least ? PosService::tr("The slowest seller for %1: %2, %3 sold (%4).")
+                        : PosService::tr("The best seller for %1: %2, %3 sold (%4)."))
+            .arg(label, l[0], l[1], l[2]);
+    }
+    if (k.report == u"hourly") {   // Hour ; Checks ; Guests ; Net sales
+        const QStringList l = pick(3);
+        if (l.size() < 4)
+            return PosService::tr("No sales for %1.").arg(label);
+        return (k.least ? PosService::tr("The slowest hour for %1: %2, with %3 checks and %4 in net sales.")
+                        : PosService::tr("The busiest hour for %1: %2, with %3 checks and %4 in net sales."))
+            .arg(label, l[0], l[1], l[3]);
+    }
+    if (k.report == u"servers") {   // Server ; Checks ; Guests ; Net sales
+        const QStringList l = pick(3);
+        if (l.size() < 4)
+            return PosService::tr("No sales for %1.").arg(label);
+        return (k.least ? PosService::tr("Who sold the least for %1: %2, %3 in net sales over %4 checks.")
+                        : PosService::tr("Who sold the most for %1: %2, %3 in net sales over %4 checks."))
+            .arg(label, l[0], l[3], l[1]);
+    }
+    if (k.report == u"categories") {   // Category ; Qty ; Sales ; Share
+        const QStringList l = pick(2);
+        if (l.size() < 4)
+            return PosService::tr("No sales for %1.").arg(label);
+        return (k.least ? PosService::tr("The smallest category for %1: %2, %3 (%4 of sales).")
+                        : PosService::tr("The biggest category for %1: %2, %3 (%4 of sales)."))
+            .arg(label, l[0], l[2], l[3]);
+    }
+    return {};
+}
+
 } // namespace
 
 // --- sales questions ------------------------------------------------------------
@@ -363,8 +495,42 @@ bool PosService::vtaiAsk(const QString &question)
     vtai_ = {{u"task"_s, u"ask"_s}, {u"busy"_s, true}, {u"question"_s, q}, {u"progress"_s, tr("Choosing the report…")}};
     emit sessionChanged();
 
-    // 1. Which report, which days (only these: the grammar says so).
     const QDate today = QDateTime::fromMSecsSinceEpoch(now()).date();
+    // A question ViewTouch knows: answered from the report itself, at once.
+    if (const std::optional<Quick> quick = quickQuestion(q)) {
+        QString day;
+        bool asked = false;
+        if (quick->period == u"today" || quick->period == u"yesterday") {
+            day = (quick->period == u"today" ? today : today.addDays(-1)).toString(u"yyyy-MM-dd"_s);
+            asked = requestRangeReport(quick->report, u"custom"_s, day, day);
+        } else {
+            asked = requestRangeReport(quick->report, quick->period);
+        }
+        if (asked) {
+            vtai_.insert(u"progress"_s, tr("Making the report…"));
+            emit sessionChanged();
+            rangeDoneFor_ = rangeRequest_;
+            const int request = vtaiRequest_;
+            QPointer<PosService> self(this);
+            rangeDone_ = [self, q, quick, request, day] {
+                if (!self || request != self->vtaiRequest_)
+                    return;
+                const QVariantMap made = self->rangeReport_;
+                const QVariantMap report = made.value(u"report"_s).toMap();
+                const QVariantMap shown{{u"id"_s, quick->report}, {u"label"_s, made.value(u"label"_s)},
+                                        {u"period"_s, made.value(u"period"_s)}, {u"from"_s, day}, {u"to"_s, day},
+                                        {u"title"_s, report.value(u"title"_s)}};
+                const QString answer = quickAnswer(*quick, report, made.value(u"label"_s).toString());
+                self->vtai_ = {{u"task"_s, u"ask"_s}, {u"busy"_s, false}, {u"question"_s, q}, {u"report"_s, shown},
+                               {u"quick"_s, true},
+                               {u"answer"_s, answer.isEmpty() ? tr("The report is ready: Open the Report.") : answer}};
+                emit self->sessionChanged();
+            };
+            return true;
+        }
+    }
+
+    // 1. Which report, which days (only these: the grammar says so).
     QString list, ids;
     for (const auto &[id, what] : askReports()) {
         list += u"- "_s + id + u": "_s + what + u'\n';

@@ -180,8 +180,10 @@ Item {
                     visible: w.mine && !w.busy && !!w.vtai.report && !!w.vtai.answer
                     opacity: 0.7
                     font.pixelSize: Ui.px(14)
-                    text: visible ? qsTr("From the %1 report, %2. VT Ai can be wrong: the report has the numbers.")
-                                    .arg(w.vtai.report.title ?? "").arg(w.vtai.report.label ?? "") : ""
+                    text: !visible ? ""
+                        : w.vtai.quick ? qsTr("From the %1 report, %2.").arg(w.vtai.report.title ?? "").arg(w.vtai.report.label ?? "")
+                        : qsTr("From the %1 report, %2. VT Ai can be wrong: the report has the numbers.")
+                              .arg(w.vtai.report.title ?? "").arg(w.vtai.report.label ?? "")
                 }
                 Item { Layout.fillHeight: true }
                 RowLayout {

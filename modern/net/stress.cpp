@@ -1084,7 +1084,11 @@ void StressRunner::sample()
     lagWindow_.push_back(lag);
     lagAll_.push_back(lag);
     worstLag_ = std::max(worstLag_, lag);
-    if (lag >= 100) ++stalls100_;
+    if (lag >= 100) {
+        ++stalls100_;
+        if (pauses_.size() < 60)
+            pauses_.append({t / 1000.0, lag});
+    }
     if (lag >= 250) ++stalls250_;
     if (lag >= 1000) ++stalls1000_;
 }
@@ -1510,6 +1514,12 @@ void StressRunner::finish()
     r += u"  delay: typical %1 ms, 1 in 100: %2 ms, worst %3 ms\n"_s.arg(percentile(lagAll_, 0.5))
              .arg(percentile(lagAll_, 0.99)).arg(worstLag_);
     r += u"  hiccups: %1 over 100 ms, %2 over 250 ms, %3 over a second\n"_s.arg(stalls100_).arg(stalls250_).arg(stalls1000_);
+    if (!pauses_.isEmpty()) {
+        r += u"  when:"_s;
+        for (const auto &[at, ms] : pauses_)
+            r += u" %1 s (%2 ms);"_s.arg(at, 0, 'f', 1).arg(ms);
+        r += u'\n';
+    }
     r += u"\nCommands\n"_s;
     r += u"  on this computer: %1, typical %2 ms, 1 in 20: %3 ms, worst %4 ms\n"_s.arg(local[u"n"_s].toInt())
              .arg(local[u"p50"_s].toDouble(), 0, 'f', 2).arg(local[u"p95"_s].toDouble(), 0, 'f', 2)

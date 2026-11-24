@@ -395,11 +395,12 @@ TEST_CASE("VT Ai: a sales question answered from a report it chose", "[vtai]")
     app::PosService pos(test::seedPosData(), nullptr);
     FakeVtAi ai(pos);
     REQUIRE(pos.loginWithPin(u"1234"_s));
-    ai.answers = {u"R items week"_s, u"Cheeseburgers sold best this week."_s};
-    REQUIRE(pos.vtaiAsk(u"What sold best this week?"_s));
+    // One ViewTouch doesn't know: VT Ai picks the report, then answers from it.
+    ai.answers = {u"R items week"_s, u"Cheeseburgers did well this week."_s};
+    REQUIRE(pos.vtaiAsk(u"Did the burgers do well this week?"_s));
     waitFor(pos);
     const QVariantMap v = pos.vtai();
-    CHECK(v[u"answer"_s] == u"Cheeseburgers sold best this week."_s);
+    CHECK(v[u"answer"_s] == u"Cheeseburgers did well this week."_s);
     CHECK(v[u"report"_s].toMap()[u"id"_s] == u"items"_s);
     CHECK(pos.rangeReport()[u"id"_s] == u"items"_s);   // the manager can open it
     REQUIRE(ai.asked.size() == 2);
@@ -834,4 +835,80 @@ TEST_CASE("VT Ai: orders hidden in a menu never reach it, and what it makes up i
     app::keepToSource(fine, u"SALADS\nCaesar 9\nJalapeno poppers 6,50"_s);
     CHECK(fine.items.size() == 2);
     CHECK(fine.items[1].price == 6.5);
+}
+
+// The reports' shapes, printed (hidden: "[.vtai-peek]").
+TEST_CASE("VT Ai peek: report shapes", "[.vtai-peek]")
+{
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    app::PosShared shared(*app::starterData({u"restaurant"_s, {}}), nullptr);
+    app::PosService pos(&shared, u"Peek"_s);
+    REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    for (const QString &id : {u"sales"_s, u"items"_s, u"hourly"_s, u"servers"_s, u"categories"_s}) {
+        const QVariantMap r = pos.report(id);
+        std::string out = id.toStdString() + ": " + r[u"title"_s].toString().toStdString() + " | cols: "
+                          + r[u"columns"_s].toStringList().join(u" ; "_s).toStdString();
+        int n = 0;
+        for (const QVariant &row : r[u"rows"_s].toList()) {
+            if (++n > 14) break;
+            out += "\n  [" + row.toMap()[u"kind"_s].toString().toStdString() + "] " + row.toMap()[u"cells"_s].toStringList().join(u" ; "_s).toStdString();
+        }
+        WARN(out);
+    }
+}
+
+TEST_CASE("VT Ai: common sales questions answered from the report at once, no AI step", "[vtai]")
+{
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    app::PosShared shared(*app::starterData({u"restaurant"_s, {}}), nullptr);
+    app::PosService pos(&shared, u"Quick"_s);
+    REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
+    FakeVtAi ai(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const auto ask = [&](const QString &q) {
+        REQUIRE(pos.vtaiAsk(q));
+        waitFor(pos);
+        return pos.vtai();
+    };
+    QVariantMap v = ask(u"What were today's sales?"_s);
+    CHECK(v[u"quick"_s].toBool());
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"sales"_s);
+    CHECK(v[u"answer"_s].toString().startsWith(u"Net sales for"_s));
+    CHECK(v[u"answer"_s].toString().contains(u"checks"_s));
+    v = ask(u"How are we doing?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"sales"_s);
+    v = ask(u"What sold best this week?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"items"_s);
+    CHECK(v[u"report"_s].toMap()[u"period"_s] == u"week"_s);
+    CHECK(v[u"answer"_s].toString().startsWith(u"The best seller"_s));
+    v = ask(u"What was our busiest hour today?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"hourly"_s);
+    CHECK(v[u"answer"_s].toString().startsWith(u"The busiest hour"_s));
+    v = ask(u"Who sold the most last week?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"servers"_s);
+    CHECK(v[u"report"_s].toMap()[u"period"_s] == u"lastWeek"_s);
+    v = ask(u"Which category sold the least this month?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"categories"_s);
+    CHECK(v[u"answer"_s].toString().startsWith(u"The smallest category"_s));
+    v = ask(u"¿Cuánto vendimos ayer?"_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"sales"_s);
+    CHECK(v[u"report"_s].toMap()[u"from"_s] == QDate::currentDate().addDays(-1).toString(u"yyyy-MM-dd"_s));
+    // None of those asked VT Ai anything.
+    CHECK(ai.asked.isEmpty());
+    // The best seller is the report's own: the most sold item.
+    v = ask(u"What sold best today?"_s);
+    const QVariantMap items = pos.rangeReport()[u"report"_s].toMap();
+    int most = -1;
+    QString name;
+    for (const QVariant &row : items[u"rows"_s].toList())
+        if (row.toMap()[u"kind"_s] == u"line"_s && row.toMap()[u"cells"_s].toStringList().value(1).toInt() > most) {
+            most = row.toMap()[u"cells"_s].toStringList().value(1).toInt();
+            name = row.toMap()[u"cells"_s].toStringList().value(0);
+        }
+    CHECK(v[u"answer"_s].toString().contains(name));
+    // The future, and people's jobs: VT Ai's to turn down, not a report's.
+    ai.answers = {u"N"_s};
+    ask(u"What will sell best next week?"_s);
+    CHECK(ai.asked.size() == 1);
 }
