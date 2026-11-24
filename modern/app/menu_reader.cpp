@@ -172,7 +172,7 @@ QImage MenuReader::straightened(const QImage &page, double *degrees)
         for (int x = 0; x < small.width(); ++x)
             sum += row[x];
     }
-    const int mean = small.width() * small.height() ? int(sum / (qint64(small.width()) * small.height())) : 128;
+    const int mean = !small.isNull() ? int(sum / (qint64(small.width()) * small.height())) : 128;
     const int dark = mean * 2 / 3;   // ink: well below the page's average
     std::vector<QPoint> ink;
     for (int y = 0; y < small.height(); ++y) {
@@ -186,7 +186,8 @@ QImage MenuReader::straightened(const QImage &page, double *degrees)
         const double cx = small.width() / 2.0, cy = small.height() / 2.0;
         const int rows = small.height() * 2;
         std::vector<int> count(size_t(rows), 0);
-        for (double a = -6; a <= 6.001; a += 0.25) {
+        for (int step = -24; step <= 24; ++step) {   // -6° to 6°, a quarter at a time
+            const double a = step * 0.25;
             const double t = a * M_PI / 180, s = std::sin(t), c = std::cos(t);
             std::fill(count.begin(), count.end(), 0);
             for (const QPoint &p : ink) {
