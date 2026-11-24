@@ -1,8 +1,18 @@
 #include "app/menu_reader.hh"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QPainter>
+#include <QPointer>
+#include <QRegularExpression>
 #include <QStandardPaths>
+#include <QThreadPool>
+#include <QTransform>
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
 
 using namespace Qt::StringLiterals;
 
@@ -93,6 +103,123 @@ void MenuReader::start(Progress progress, Done done)
         });
 }
 
+QImage MenuReader::straightened(const QImage &page, double *degrees)
+{
+    if (page.isNull())
+        return {};
+    QImage gray = page.convertToFormat(QImage::Format_Grayscale8);
+    // A phone's speckle (its sensor's, a JPEG's) smoothed a little, then the
+    // ink made black and the paper white: Tesseract reads columns of prices
+    // badly through either (2.50 2.95 3.25 read as "2200222695").
+    {
+        const int w = gray.width(), h = gray.height();
+        const int k[5] = {1, 4, 6, 4, 1};   // a Gaussian, about one pixel wide
+        QImage across(gray.size(), QImage::Format_Grayscale8);
+        for (int y = 0; y < h; ++y) {
+            const uchar *in = gray.constScanLine(y);
+            uchar *out = across.scanLine(y);
+            for (int x = 0; x < w; ++x) {
+                int sum = 0;
+                for (int i = -2; i <= 2; ++i)
+                    sum += k[i + 2] * in[std::clamp(x + i, 0, w - 1)];
+                out[x] = uchar(sum / 16);
+            }
+        }
+        for (int y = 0; y < h; ++y) {
+            uchar *out = gray.scanLine(y);
+            for (int x = 0; x < w; ++x) {
+                int sum = 0;
+                for (int i = -2; i <= 2; ++i)
+                    sum += k[i + 2] * across.constScanLine(std::clamp(y + i, 0, h - 1))[x];
+                out[x] = uchar(sum / 16);
+            }
+        }
+        // Stretched: the darkest 1% black, the lightest 1% white...
+        long long hist[256] = {};
+        for (int y = 0; y < h; ++y) {
+            const uchar *row = gray.constScanLine(y);
+            for (int x = 0; x < w; ++x)
+                ++hist[row[x]];
+        }
+        const long long total = qint64(w) * h, edge = total / 100;
+        int lo = 0, hi = 255;
+        for (long long n = 0; lo < 255 && (n += hist[lo]) <= edge;)
+            ++lo;
+        for (long long n = 0; hi > 0 && (n += hist[hi]) <= edge;)
+            --hi;
+        // ...and pushed further (the paper's gray white, the ink black): what
+        // made a photo's price columns read right on the store's computer.
+        const int span = hi - lo;
+        lo += span * 15 / 100;
+        hi -= span * 15 / 100;
+        if (hi > lo + 16) {
+            uchar map[256];
+            for (int v = 0; v < 256; ++v)
+                map[v] = uchar(std::clamp((v - lo) * 255 / (hi - lo), 0, 255));
+            for (int y = 0; y < h; ++y) {
+                uchar *row = gray.scanLine(y);
+                for (int x = 0; x < w; ++x)
+                    row[x] = map[row[x]];
+            }
+        }
+    }
+    // The tilt, on a small copy: the dark pixels' rows line up best (their
+    // counts per row vary most) when the text is level.
+    const QImage small = gray.width() > 1000 ? gray.scaledToWidth(1000, Qt::SmoothTransformation) : gray;
+    long long sum = 0;
+    for (int y = 0; y < small.height(); ++y) {
+        const uchar *row = small.constScanLine(y);
+        for (int x = 0; x < small.width(); ++x)
+            sum += row[x];
+    }
+    const int mean = small.width() * small.height() ? int(sum / (qint64(small.width()) * small.height())) : 128;
+    const int dark = mean * 2 / 3;   // ink: well below the page's average
+    std::vector<QPoint> ink;
+    for (int y = 0; y < small.height(); ++y) {
+        const uchar *row = small.constScanLine(y);
+        for (int x = 0; x < small.width(); ++x)
+            if (row[x] < dark)
+                ink.emplace_back(x, y);
+    }
+    double best = 0, bestScore = -1;
+    if (ink.size() > 50 && ink.size() < size_t(small.width()) * small.height() / 2) {
+        const double cx = small.width() / 2.0, cy = small.height() / 2.0;
+        const int rows = small.height() * 2;
+        std::vector<int> count(size_t(rows), 0);
+        for (double a = -6; a <= 6.001; a += 0.25) {
+            const double t = a * M_PI / 180, s = std::sin(t), c = std::cos(t);
+            std::fill(count.begin(), count.end(), 0);
+            for (const QPoint &p : ink) {
+                const int y = int(std::lround((p.x() - cx) * s + (p.y() - cy) * c + small.height()));
+                if (y >= 0 && y < rows)
+                    ++count[size_t(y)];
+            }
+            double score = 0;
+            for (int i = 1; i < rows; ++i)
+                score += double(count[size_t(i)] - count[size_t(i - 1)]) * (count[size_t(i)] - count[size_t(i - 1)]);
+            if (score > bestScore) {
+                bestScore = score;
+                best = a;
+            }
+        }
+    }
+    if (degrees)
+        *degrees = best;
+    if (std::abs(best) < 0.2)
+        return gray;   // (cleaned, already level)
+    // Turned back by that much, the corners filled with the page's own gray.
+    QImage out(gray.size(), QImage::Format_Grayscale8);
+    out.fill(QColor(mean, mean, mean));
+    QPainter paint(&out);
+    paint.setRenderHint(QPainter::SmoothPixmapTransform);
+    paint.translate(gray.width() / 2.0, gray.height() / 2.0);
+    paint.rotate(best);
+    paint.translate(-gray.width() / 2.0, -gray.height() / 2.0);
+    paint.drawImage(0, 0, gray);
+    paint.end();
+    return out;
+}
+
 void MenuReader::readPages(QStringList pages, int at, QString text)
 {
     if (at >= pages.size())
@@ -100,10 +227,34 @@ void MenuReader::readPages(QStringList pages, int at, QString text)
     if (progress_)
         progress_(pages.size() > 1 ? tr("Reading page %1 of %2…").arg(at + 1).arg(pages.size())
                                    : tr("Reading the photo…"));
-    // English and Spanish menus; the page's own layout (columns too).
-    run(u"tesseract"_s, {pages[at], u"stdout"_s, u"-l"_s, u"eng+spa"_s},
+    // Straightened first, away from the screen (a photo is millions of pixels).
+    const QString page = pages[at], level = dir_.filePath(u"level-%1.png"_s.arg(at));
+    QPointer<MenuReader> self(this);
+    QThreadPool::globalInstance()->start([self, page, level, pages, at, text] {
+        QImage in(page);
+        // (A phone's 12-megapixel photo: more than the words need.)
+        if (in.width() > 3000)
+            in = in.scaledToWidth(3000, Qt::SmoothTransformation);
+        const QImage out = straightened(in);
+        const bool saved = !out.isNull() && out.save(level, "PNG");
+        // (Back on the reader's thread; it may be gone, given up.)
+        QMetaObject::invokeMethod(QCoreApplication::instance(), [self, page, level, saved, pages, at, text] {
+            if (self && !self->over_)
+                self->readPage(saved ? level : page, pages, at, text);
+        }, Qt::QueuedConnection);
+    });
+}
+
+void MenuReader::readPage(const QString &file, QStringList pages, int at, QString text)
+{
+    // English and Spanish menus; a block of lines kept as lines (a price on
+    // its item's row, columns of sizes beside it).
+    run(u"tesseract"_s, {file, u"stdout"_s, u"-l"_s, u"eng+spa"_s, u"--psm"_s, u"4"_s, u"-c"_s, u"preserve_interword_spaces=1"_s},
         [this, pages, at, text](const QByteArray &out) mutable {
-            const QString page = QString::fromUtf8(out).trimmed();
+            QString page = QString::fromUtf8(out).trimmed();
+            // OCR's usual slip on a cup size: "12oz" read as "120z".
+            static const QRegularExpression ounces(u"\\b(\\d{1,2})0z\\b"_s);
+            page.replace(ounces, u"\\1oz"_s);
             if (!page.isEmpty())
                 text += (text.isEmpty() ? QString() : u"\n\n"_s) + page;
             readPages(pages, at + 1, text);

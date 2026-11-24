@@ -1,9 +1,12 @@
 # VT Ai: the small AI on the store's computer (llama.cpp's server, with the
 # model /var/lib/viewtouch-ai/model.gguf), for ViewTouch only: it listens on
 # this computer alone (127.0.0.1:7720), and the point of sale always comes
-# first: three of the four cores at most, the lowest priority, its own memory
-# limit. Turned on and off from Store Settings -> VT Ai
-# (vtmodern-device ai on|off). Without a model it waits (never starts).
+# first: two of the four cores (as quick as three: memory is its limit), the
+# lowest priority, one question at a time in a small context (about 3 GB
+# with a 4B model), and the first
+# to go if memory runs out (a Raspberry Pi's kernel has no memory limits for
+# services: MemoryMax is for the computers that do). Turned on and off from
+# Manager -> VT Ai (vtmodern-device ai on|off). Without a model it waits.
 [Unit]
 Description=VT Ai (ViewTouch's local AI)
 Documentation=file:///usr/share/doc/vtmodern-ai/README.md
@@ -17,13 +20,14 @@ Group=viewtouch-ai
 StateDirectory=viewtouch-ai
 StateDirectoryMode=0750
 ExecStart=/usr/libexec/vtmodern-ai/llama-server --model /var/lib/viewtouch-ai/model.gguf --alias vtai \
-    --host 127.0.0.1 --port 7720 --threads 3 --ctx-size 8192 --jinja --no-webui
+    --host 127.0.0.1 --port 7720 --threads 2 --poll 0 --parallel 1 --ctx-size 4096 --jinja --no-webui
 Nice=15
 CPUWeight=20
 CPUQuota=250%
 IOSchedulingClass=idle
 MemoryHigh=3500M
 MemoryMax=4500M
+OOMScoreAdjust=1000
 Restart=on-failure
 RestartSec=10
 # Nothing but its model and the local port.

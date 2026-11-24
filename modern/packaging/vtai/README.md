@@ -8,7 +8,10 @@ a manager looks and confirms. Nothing it reads or writes leaves the store.
 
 - `vtmodern-ai.service` runs llama.cpp's `llama-server` on 127.0.0.1:7720,
   with the model `/var/lib/viewtouch-ai/model.gguf`, below the point of sale
-  (3 cores at most, lowest priority, 4.5 GB of memory at most).
+  (2 cores, lowest priority, one question at a time in about 3 GB,
+  and the first process the kernel stops if memory runs out: a Raspberry
+  Pi's kernel has no per-service memory limits, so MemoryMax applies only
+  elsewhere).
 - `vtmodern-device ai-model` downloads the model ViewTouch's release page
   names (signed, like updates); `vtmodern-device ai-model-usb` takes one from
   a USB stick (with its .sig); `vtmodern-device ai on|off` starts or stops it.

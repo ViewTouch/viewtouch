@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include "print/printer_finder.hh"
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QTimer>
 #include <QTcpSocket>
@@ -1811,7 +1812,9 @@ TEST_CASE("UI: Ask VT Ai from the Manager screen; its proposals for the menu tic
     // Its button only while VT Ai is running.
     // (A shown zone: the label it shows.)
     const auto button = [&] { return Screen::findBy(root, "label", u"VT Ai…"_s); };
-    CHECK_FALSE(button());
+    // (Where vtmodern-ai is installed, as on a store's computer, it shows already.)
+    if (!QFileInfo(u"/usr/libexec/vtmodern-ai/llama-server"_s).isExecutable())
+        CHECK_FALSE(button());
     QStringList answers;
     s.pos.shared()->vtaiRunning = true;
     s.pos.shared()->vtaiCall = [&](const QJsonObject &, std::function<void(const QJsonObject &, const QString &)> done) {

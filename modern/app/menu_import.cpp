@@ -4,13 +4,13 @@
 
 #include <QCoreApplication>
 #include <QHash>
-#include <QSet>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QRegularExpression>
-#include <cmath>
+#include <QSet>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 
 using namespace Qt::StringLiterals;
@@ -755,6 +755,136 @@ MenuImport readVtAiMenu(const QList<QJsonObject> &answers)
     if (out.items.isEmpty())
         out.problems << tr("VT Ai found no items in it.");
     return out;
+}
+
+QString withoutInstructions(const QString &text, QStringList *removed)
+{
+    static const QRegularExpression orders(
+        u"\\b(ignore|disregard|forget)\\b.{0,40}\\b(instruction|rule|prompt|above|previous)|"
+        "\\b(system|assistant|developer)\\s*:|\\byou are (now )?(an? |in )|\\badmin mode\\b|\\bjailbreak|"
+        "\\bnew instructions?\\b|\\bprompt\\b|\\b(ignora|olvida)\\b.{0,40}\\b(instruccion|regla)"_s,
+        QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+    QStringList kept;
+    for (const QString &line : text.split(u'\n')) {
+        if (orders.match(line).hasMatch()) {
+            if (removed)
+                *removed << line.simplified().left(120);
+            continue;
+        }
+        kept << line;
+    }
+    return kept.join(u'\n');
+}
+
+namespace {
+
+// Words for comparing: lower case, no accents, letters and digits only.
+QStringList plainWords(const QString &text)
+{
+    QString t = text.normalized(QString::NormalizationForm_D).toLower();
+    QString out;
+    out.reserve(t.size());
+    for (const QChar c : t) {
+        if (c.category() == QChar::Mark_NonSpacing)
+            continue;
+        out += c.isLetterOrNumber() ? c : u' ';
+    }
+    return out.split(u' ', Qt::SkipEmptyParts);
+}
+
+} // namespace
+
+void keepToSource(MenuImport &read, const QString &source)
+{
+    const QStringList words = plainWords(source);
+    const QSet<QString> have(words.begin(), words.end());
+    // A word of the name is there as it is, or as the menu's singular/plural,
+    // or (4 letters or more) as the start of one of its words ("Burgers").
+    const auto there = [&](const QString &w) {
+        if (have.contains(w) || have.contains(w + u's') || (w.endsWith(u's') && have.contains(w.chopped(1))))
+            return true;
+        if (w.size() >= 4)
+            for (const QString &h : words)
+                if (h.size() >= 4 && (h.startsWith(w) || w.startsWith(h)))
+                    return true;
+        return false;
+    };
+    // Most of a name's words (all of a short one's) in the menu.
+    const auto named = [&](const QString &name) {
+        int all = 0, found = 0;
+        for (const QString &w : plainWords(name)) {
+            if (w.size() < 3 && !w.front().isDigit())
+                continue;   // (of, a, la)
+            ++all;
+            found += there(w) ? 1 : 0;
+        }
+        return all == 0 || (all <= 2 ? found == all : found * 3 >= all * 2);
+    };
+    // A price as the menu could write it: 3.50, 3.5, 3,50, 3 (3.00), .75.
+    const QString flat = QString(source).replace(u',', u'.');
+    const auto priced = [&](double p) {
+        if (p <= 0)
+            return true;   // none: nothing to check
+        QStringList ways{QString::number(p, 'f', 2), QString::number(p, 'f', 1)};
+        if (std::abs(p - std::round(p)) < 0.001)
+            ways << QString::number(qRound64(p));
+        if (p < 1)
+            ways << QString::number(p, 'f', 2).mid(1);   // ".75"
+        for (const QString &w : ways) {
+            const QRegularExpression at(u"(?<![0-9.])"_s + QRegularExpression::escape(w) + u"(?![0-9])"_s);
+            if (at.match(flat).hasMatch())
+                return true;
+        }
+        return false;
+    };
+    QList<ImportedItem> kept;
+    for (ImportedItem it : read.items) {
+        if (!named(it.name)) {
+            // (What was said about it before goes with it.)
+            read.problems.removeAll(tr("No price for %1: type it in the preview, or after.").arg(it.name));
+            read.problems.removeAll(tr("%1 was there twice: once kept.").arg(it.name));
+            read.problems << tr("VT Ai named %1, which isn't in the menu's words: left out.").arg(it.name);
+            continue;
+        }
+        if (!it.category.isEmpty() && !named(it.category))
+            it.category.clear();   // (into the category chosen in the preview)
+        QList<ImportedPrice> sizes;
+        for (const ImportedPrice &z : it.sizes)
+            if (priced(z.price))
+                sizes << z;
+        if (sizes.size() != it.sizes.size())
+            read.problems << tr("Some of %1's sizes had prices that aren't on the menu: left out.").arg(it.name);
+        it.sizes = sizes.size() >= 2 ? sizes : QList<ImportedPrice>();
+        if (!it.sizes.isEmpty()) {
+            it.price = it.sizes.front().price;
+            for (const ImportedPrice &z : it.sizes)
+                it.price = std::min(it.price, z.price);
+        } else if (!priced(it.price)) {
+            read.problems << tr("%1's price (%2) isn't on the menu: type it in the preview.").arg(it.name).arg(it.price, 0, 'f', 2);
+            it.price = 0;
+        }
+        kept << it;
+    }
+    read.items = kept;
+    for (ImportedGroup &g : read.groups) {
+        QList<ImportedPrice> options;
+        for (ImportedPrice o : g.options) {
+            if (!named(o.name))
+                continue;
+            if (!priced(o.price))
+                o.price = 0;
+            options << o;
+        }
+        g.options = options;
+    }
+    read.groups.erase(std::remove_if(read.groups.begin(), read.groups.end(), [](const ImportedGroup &g) { return g.options.isEmpty(); }),
+                      read.groups.end());
+    // Items asking for a group that's gone: not any more.
+    for (ImportedItem &it : read.items)
+        it.groups.erase(std::remove_if(it.groups.begin(), it.groups.end(), [&](const QString &name) {
+                            return std::none_of(read.groups.begin(), read.groups.end(), [&](const ImportedGroup &g) { return g.name == name; });
+                        }),
+                        it.groups.end());
 }
 
 QJsonObject parseVtAiLines(const QString &text)

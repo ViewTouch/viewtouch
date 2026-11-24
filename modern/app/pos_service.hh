@@ -1457,6 +1457,8 @@ private:
     QVariantMap vtai_;
     int vtaiRequest_ = 0;
     QPointer<MenuReader> vtaiReader_;
+    QString vtaiSource_;        // the menu's words VT Ai was given (its answer held to them)
+    QStringList vtaiNotes_;     // lines left out of them
     bool vtaiReady();   // a manager's, VT Ai there and free (else said why)
     bool vtaiStartMenu(const QString &text);
     // One question to VT Ai, its answer kept to `grammar`: `then` gets the text.

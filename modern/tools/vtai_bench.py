@@ -90,7 +90,7 @@ def ask_lines(url, menu_text, spec, timeout=600):
         "temperature": 0,
         "max_tokens": 2000,
         "grammar": spec["grammar"],
-        "stop": ["END"],
+        "stop": ["\nEND"],
     }
     req = urllib.request.Request(url.rstrip("/") + "/v1/chat/completions", data=json.dumps(body).encode(),
                                  headers={"Content-Type": "application/json"})

@@ -79,6 +79,17 @@ MenuImport readToastMenu(const QJsonDocument &doc);
 // and what it couldn't be sure of in problems ("No price for French Toast").
 MenuImport readVtAiMenu(const QList<QJsonObject> &answers);
 
+// A menu's text with the lines that read like orders to an AI taken out
+// ("Ignore all previous instructions", "SYSTEM:", "you are now..."): what
+// VT Ai is given. Each line left out goes in `removed`.
+QString withoutInstructions(const QString &text, QStringList *removed = nullptr);
+
+// VT Ai's menu held to the menu's own words (`source`): an item, choice or
+// category it names that isn't there is left out, a price that isn't there
+// is none, a size whose price isn't there is dropped; each said in problems.
+// (What a small AI makes up, or what text in the menu told it to.)
+void keepToSource(MenuImport &read, const QString &source);
+
 // VT Ai's answer in its line format (seed/vtai/menu-lines.json: "C Tacos",
 // "I Carne Asada Taco | 3.50 | sizes | groups", "G Salsa | Roja=0; Verde=0",
 // "END"), as the shape above. Lines it can't read are left out.

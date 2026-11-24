@@ -8,6 +8,7 @@
 // a folder of its own, gone after. VTM_VTAI_TOOLS: a folder looked in first.
 
 #include <QByteArray>
+#include <QImage>
 #include <QObject>
 #include <QPointer>
 #include <QProcess>
@@ -40,10 +41,16 @@ public:
     static QString kindOf(const QByteArray &data);
     // The program's path ("" when it isn't on this computer).
     static QString program(const QString &name);
+    // A photo or scanned page turned level (a phone's photo is rarely
+    // straight, and Tesseract reads tilted columns of prices badly), in
+    // grays: the tilt found by trying angles up to 6 degrees either way.
+    // The angle used comes back in `degrees`. Null: not a picture.
+    static QImage straightened(const QImage &page, double *degrees = nullptr);
 
 private:
     void run(const QString &name, const QStringList &args, std::function<void(QByteArray out)> then);
     void readPages(QStringList pages, int at, QString text);
+    void readPage(const QString &file, QStringList pages, int at, QString text);
     void finish(const QString &text, const QString &error);
 
     QByteArray data_;
