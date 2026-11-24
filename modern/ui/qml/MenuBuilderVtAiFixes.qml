@@ -23,10 +23,12 @@ Dialog {
     function describe(ids, kind) { task = "describe"; what = kind; off = {}; open(); menu.pos.vtaiDescribe(ids, kind) }
     // The menu in another language: which one first.
     property bool picking: false
+    function suggest(ids, kind) { task = "suggest"; what = kind; off = {}; picking = false; open(); menu.pos.vtaiSuggest(ids, kind) }
     function translate() { task = "translate"; what = ""; off = {}; picking = true; if (menu.pos) menu.pos.vtaiClear(); open() }
     function translateInto(lang) { what = lang; picking = false; menu.pos.vtaiTranslate(lang) }
 
-    title: task === "translate" ? qsTr("Translate the Menu (VT Ai)")
+    title: task === "suggest" ? (what === "allergens" ? qsTr("Allergens (VT Ai)") : qsTr("Choices for Items (VT Ai)"))
+         : task === "translate" ? qsTr("Translate the Menu (VT Ai)")
          : task === "fix" ? qsTr("Check the Menu (VT Ai)")
          : what === "kitchenName" ? qsTr("Kitchen Names (VT Ai)") : qsTr("Descriptions (VT Ai)")
     parent: Overlay.overlay
@@ -113,6 +115,8 @@ Dialog {
                         font.pixelSize: Ui.px(14)
                         visible: text !== ""
                         text: String(row.modelData.field).startsWith("word:") ? ""
+                            : row.modelData.field === "allergens" || row.modelData.field === "groups"
+                              ? "+ " + row.modelData.shown + (row.modelData.why ? "  ·  " + row.modelData.why : "")
                             : row.modelData.field === "description" || row.modelData.field === "kitchenName"
                               ? row.modelData.shown : (row.modelData.why ?? "")
                     }

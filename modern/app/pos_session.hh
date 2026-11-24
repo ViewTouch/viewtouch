@@ -427,6 +427,7 @@ public:
     Q_INVOKABLE void vtaiDescribe(const QStringList &itemIds, const QString &what) { invoke(QStringLiteral("vtaiDescribe"), {itemIds, what}); }
     Q_INVOKABLE void vtaiApply(const QVariantList &fixes) { invoke(QStringLiteral("vtaiApply"), QVariantList{QVariant(fixes)}); }
     Q_INVOKABLE void vtaiTranslate(const QString &language) { invoke(QStringLiteral("vtaiTranslate"), {language}); }
+    Q_INVOKABLE void vtaiSuggest(const QStringList &itemIds, const QString &what) { invoke(QStringLiteral("vtaiSuggest"), {itemIds, what}); }
     Q_INVOKABLE void vtaiCancel() { invoke(QStringLiteral("vtaiCancel")); }
     Q_INVOKABLE void vtaiClear() { invoke(QStringLiteral("vtaiClear")); }
     virtual QVariantMap printerSearch() const = 0;

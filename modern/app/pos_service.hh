@@ -631,6 +631,16 @@ public:
     // English name, field: "word:es", value}]}; vtaiApply keeps the ticked
     // ones as the store's words (PosSettings::menuWords).
     bool vtaiTranslate(const QString &language);
+    // For these items (20 at most), VT Ai's guess at what: "allergens" (of the
+    // nine: from each one's name and recipe; added, never taken off) or
+    // "groups" (which of the store's choice groups it should ask for):
+    // {task: suggest, what, fixes: [{item, name, field, value: [ids], shown, why}]}.
+    bool vtaiSuggest(const QStringList &itemIds, const QString &what);
+    // After End of Day: the day just closed, in a few plain sentences (sales
+    // against the same day last week, best sellers, the top server, voids
+    // and comps) left as a shift note from VT Ai for the next manager. VT Ai
+    // writes it from those facts alone; without VT Ai, the facts are the note.
+    void vtaiDaySummary();
     // What VT Ai is doing for this screen, given up; its result, put away.
     bool vtaiCancel();
     bool vtaiClear();
@@ -1463,6 +1473,7 @@ private:
     QVariantMap vtai_;
     int vtaiRequest_ = 0;
     QPointer<MenuReader> vtaiReader_;
+    int dayRecap_ = 0;          // the newest End of Day's recap (an older one's answer comes too late)
     QString vtaiSource_;        // the menu's words VT Ai was given (its answer held to them)
     QStringList vtaiNotes_;     // lines left out of them
     bool vtaiReady();   // a manager's, VT Ai there and free (else said why)

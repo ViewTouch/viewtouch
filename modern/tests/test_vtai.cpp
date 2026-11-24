@@ -965,3 +965,101 @@ TEST_CASE("VT Ai: the menu translated, the ticked words on every screen in that 
     CHECK_FALSE(pos.vtaiApply({QVariantMap{{u"item"_s, u"Water"_s}, {u"field"_s, u"word:xx"_s}, {u"value"_s, u"Wasser"_s}}}));
     i18n::setStoreWords({});
 }
+
+TEST_CASE("VT Ai: allergens and choice groups guessed, only added, a manager's ticks made", "[vtai]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    FakeVtAi ai(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const core::MenuItem *burger = pos.findItem(u"Cheeseburger"_s);
+    REQUIRE(burger);
+    const QString id = QString::fromStdString(burger->id);
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, id}, {u"name"_s, u"Cheeseburger"_s}, {u"allergens"_s, QStringList{u"soy"_s}}}));
+
+    // Allergens: only the nine, only ones it hasn't, the one it had kept.
+    ai.answers = {u"A 1 | Cheeseburger | gluten; dairy; soy; plutonium\nEND"_s};
+    REQUIRE(pos.vtaiSuggest({id}, u"allergens"_s));
+    waitFor(pos);
+    QVariantList fixes = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(fixes.size() == 1);
+    CHECK(fixes[0].toMap()[u"value"_s].toStringList() == QStringList({u"gluten"_s, u"dairy"_s}));
+    CHECK(fixes[0].toMap()[u"shown"_s] == u"Gluten, Dairy"_s);
+    CHECK_FALSE(fixes[0].toMap()[u"why"_s].toString().isEmpty());   // a guess: said so
+    CHECK(ai.asked.last()[u"grammar"_s].toString().contains(u"\"shellfish\""_s));
+    CHECK(pos.findItem(id)->allergens == std::vector<std::string>{"soy"});   // nothing until ticked
+    REQUIRE(pos.vtaiApply(fixes));
+    const std::vector<std::string> now = pos.findItem(id)->allergens;
+    CHECK(std::ranges::find(now, "soy") != now.end());
+    CHECK(std::ranges::find(now, "gluten") != now.end());
+    CHECK(std::ranges::find(now, "dairy") != now.end());
+
+    // Choice groups: only the store's own, added to the ones it asks for.
+    const QVariantList groups = pos.choiceGroups();
+    REQUIRE(groups.size() >= 2);
+    QString name, gid;
+    for (const QVariant &g : groups)
+        if (std::ranges::find(pos.findItem(id)->modifierGroups, g.toMap()[u"id"_s].toString().toStdString())
+            == pos.findItem(id)->modifierGroups.end()) {
+            name = g.toMap()[u"name"_s].toString();
+            gid = g.toMap()[u"id"_s].toString();
+            break;
+        }
+    REQUIRE_FALSE(gid.isEmpty());
+    const std::vector<std::string> before = pos.findItem(id)->modifierGroups;
+    ai.answers = {u"G 1 | Cheeseburger | "_s + name + u"; Made Up Group\nEND"_s};
+    REQUIRE(pos.vtaiSuggest({id}, u"groups"_s));
+    waitFor(pos);
+    fixes = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(fixes.size() == 1);
+    CHECK(fixes[0].toMap()[u"value"_s].toStringList() == QStringList{gid});
+    CHECK(ai.asked.last()[u"grammar"_s].toString().contains(name));
+    REQUIRE(pos.vtaiApply(fixes));
+    const std::vector<std::string> after = pos.findItem(id)->modifierGroups;
+    CHECK(after.size() == before.size() + 1);
+    for (const std::string &g : before)
+        CHECK(std::ranges::find(after, g) != after.end());
+    // One Undo takes it back.
+    REQUIRE(pos.undoMenuChange());
+    CHECK(pos.findItem(id)->modifierGroups == before);
+    CHECK_FALSE(pos.vtaiSuggest({id}, u"calories"_s));
+}
+
+TEST_CASE("VT Ai: the day just closed, left as a shift note for the next manager", "[vtai]")
+{
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    app::PosShared shared(*app::starterData({u"restaurant"_s, {}}), nullptr);
+    app::PosService pos(&shared, u"Recap"_s);
+    REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE_FALSE(shared.pastDays.empty());
+    const auto notes = [&] {
+        QStringList out;
+        for (const core::PosSettings::HandoffNote &n : shared.settings.handoffNotes)
+            if (n.from == "VT Ai")
+                out << QString::fromStdString(n.text);
+        return out;
+    };
+    // Each End of Day of the demo's history left one: the newest day's only.
+    CHECK(notes().size() == 1);
+    // Without VT Ai: the facts themselves.
+    pos.vtaiDaySummary();
+    REQUIRE(notes().size() == 1);
+    CHECK(notes()[0].startsWith(u"VT Ai: "_s));
+    CHECK(notes()[0].contains(u"Net sales"_s));
+    CHECK(notes()[0].contains(u"Best sellers"_s));
+    // With it, for a day that closed just now: its few sentences, from the facts it was given.
+    shared.pastDays.front().day.closedAt = QDateTime::currentMSecsSinceEpoch();
+    FakeVtAi ai(pos);
+    ai.answers = {u"A good night: net sales were up on last week, led by the burgers. Voids were low."_s};
+    pos.vtaiDaySummary();
+    for (int i = 0; i < 200 && !notes().value(0).contains(u"A good night"_s); ++i)
+        QTest::qWait(10);
+    REQUIRE(notes().size() == 1);
+    CHECK(notes()[0].contains(u"A good night"_s));
+    REQUIRE_FALSE(ai.asked.isEmpty());
+    const QString given = ai.asked.last()[u"messages"_s].toArray()[1].toObject()[u"content"_s].toString();
+    CHECK(given.contains(u"Net sales"_s));
+    CHECK(given.contains(u"The same day last week"_s));
+    // The next manager sees it.
+    CHECK_FALSE(pos.handoff().isEmpty());
+}

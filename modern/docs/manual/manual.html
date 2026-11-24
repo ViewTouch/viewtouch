@@ -1132,7 +1132,7 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <p>What VT Ai read opens in the same preview as <b>Bring a Menu In…</b>: each item with its price, sizes and choice groups, in its category. Check the names and prices (an item with no price on the menu is said, never made up), untick any you don't want, and <b>Import</b>. One <b>Undo</b> takes the whole import back.</p>
 <h3>Questions about sales</h3>
 <p class="shot"><img src="shots/m242-vtai-answer.jpg" width="560" height="350"></p>
-<p><b>Manager → VT Ai…</b>: ask in your own words (<i>What sold best this week? Who sold the most yesterday? Which hour was busiest?</i>) or touch one of the examples. VT Ai picks one of ViewTouch's reports and the days, ViewTouch makes it, and VT Ai answers in a sentence or two from that report's numbers. It can only read reports; it can't change anything. <b>Open the Report</b> shows the report it read, for the full numbers: VT Ai can be wrong, the report isn't.</p>
+<p><b>Manager → VT Ai…</b>: ask in your own words (<i>What sold best this week? Who sold the most yesterday? Which hour was busiest?</i>) or touch one of the examples. The everyday ones (today's or a week's sales, "how are we doing", the best or slowest seller, the busiest hour, who sold the most, the biggest category; in English or Spanish) are answered by ViewTouch itself from the report in about a second, without VT Ai. For anything else: VT Ai picks one of ViewTouch's reports and the days, ViewTouch makes it, and VT Ai answers in a sentence or two from that report's numbers. It can only read reports; it can't change anything. <b>Open the Report</b> shows the report it read, for the full numbers: VT Ai can be wrong, the report isn't.</p>
 <h3>Fixing the menu, descriptions and kitchen names</h3>
 <p class="shot"><img src="shots/m243-vtai-kitchen-names.jpg" width="560" height="350"></p>
 <p>In Menu Builder → <b>More Tools…</b>:</p>
@@ -1140,8 +1140,13 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 <li><b>Check the Menu with VT Ai…</b>: for each item with no price, a price like its category's others; for each in no category, which one. Each says why. Items a store usually gives free (water) stay free.</li>
 <li><b>Write Descriptions (VT Ai)…</b>: a line about each item in the category, for the kiosk and online ordering. It names only what the item's name and its recipe (its card's <b>What's on it</b>) say.</li>
 <li><b>Kitchen Names (VT Ai)…</b>: short names for the kitchen tickets (<i>BCN CHZBGR</i>).</li>
+<li><b>Allergens (VT Ai)…</b>: VT Ai's guess at each item's allergens (of the nine: gluten, dairy, egg, peanut, tree nuts, soy, fish, shellfish, sesame), from its name and recipe. Only ever added, never taken off: check each with the kitchen before you tick it.</li>
+<li><b>Choices for Items (VT Ai)…</b>: which of your choice groups each item should ask for (a burger: how it's cooked, its side). Only groups you already have.</li>
+<li><b>Translate the Menu (VT Ai)…</b>: your items, categories and choices in Spanish, French, Portuguese or Chinese. The ticked words are the store's: each person's screen shows the menu in their own language (Manager → Employees → the person → <b>Language</b>), and the kitchen's tickets and receipts follow the store's.</li>
 </ul>
 <p>Untick any you don't want and touch <b>Use</b>: the rest are made as one change, and <b>Undo</b> takes them all back.</p>
+<h3>The day at a glance</h3>
+<p>After <b>End of Day</b>, VT Ai leaves a shift note for the next manager: the day just closed in three or four sentences (net sales against the same day last week, the best sellers, the top server, voids and comps), written from the day's reports and nothing else. It shows with the other shift notes when the next manager logs in; without VT Ai the note is those facts. It runs after closing, so it never slows service.</p>
 <p>VT Ai's model is Qwen3-4B-Instruct (Apache 2.0 license, from Alibaba's Qwen team), run with llama.cpp (MIT license); their licenses are on the computer in <code>/var/lib/viewtouch-ai/MODEL-LICENSE</code> and <code>/usr/share/doc/vtmodern-ai/</code>.</p>
 
 <h2>Menu items</h2>

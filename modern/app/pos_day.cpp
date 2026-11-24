@@ -1384,6 +1384,7 @@ bool PosService::endOfDay()
     lastClosedId_ = 0;
     const std::int64_t closedId = s_->day.id;
     s_->startDay();
+    vtaiDaySummary();   // (the day just closed, for the next manager: after closing, never in service)
     emit notice(tr("Day %1 closed. A new day has started.").arg(closedId));
     emit s_->drawerChanged();
     emit s_->dayChanged();

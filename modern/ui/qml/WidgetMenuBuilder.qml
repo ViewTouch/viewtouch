@@ -2431,7 +2431,11 @@ Item {
                             ? [{ id: "builderVtAiDescribe", name: qsTr("Write Descriptions (VT Ai)…"),
                                  text: qsTr("A line about each item in this category, for the kiosk and online ordering") },
                                { id: "builderVtAiKitchen", name: qsTr("Kitchen Names (VT Ai)…"),
-                                 text: qsTr("Short names for this category's items on kitchen tickets (BCN CHZBGR)") }] : [])
+                                 text: qsTr("Short names for this category's items on kitchen tickets (BCN CHZBGR)") },
+                               { id: "builderVtAiAllergens", name: qsTr("Allergens (VT Ai)…"),
+                                 text: qsTr("VT Ai's guess at the allergens of this category's items, from their names and recipes, for you to check and tick") },
+                               { id: "builderVtAiGroups", name: qsTr("Choices for Items (VT Ai)…"),
+                                 text: qsTr("Which of your choice groups each item in this category should ask for (a burger: how it's cooked, its side)") }] : [])
                         : []).concat([
                     { id: "builderImport", name: qsTr("Bring a Menu In…"),
                       text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's") },
@@ -2461,6 +2465,8 @@ Item {
                             else if (id === "builderVtAiTranslate") vtaiFixes.translate()
                             else if (id === "builderVtAiDescribe") vtaiFixes.describe(firstItems, "description")
                             else if (id === "builderVtAiKitchen") vtaiFixes.describe(firstItems, "kitchenName")
+                            else if (id === "builderVtAiAllergens") vtaiFixes.suggest(firstItems, "allergens")
+                            else if (id === "builderVtAiGroups") vtaiFixes.suggest(firstItems, "groups")
                             else if (id === "builderImport") importFile.open()
                             else if (id === "builderTemplates") templateDialog.open()
                             else if (id === "builderPrintMenu") b.leave(() => printDialog.open())
