@@ -367,6 +367,11 @@ public:
     // pictureFiles, without the screen waiting (usbSticksOpened says when).
     // False where it can't (then they're opened by the desktop).
     Q_INVOKABLE bool openUsbSticks();
+    // VT Ai on this computer (the vtmodern-ai service, through vtmodern-device):
+    // "status", "on", "off", "model" (download it, signed), "modelUsb" (from a
+    // USB stick). vtaiDeviceSaid tells what it said; status: NOTINSTALLED,
+    // NOMODEL, RUNNING <model> or STOPPED <model>. False: no helper here.
+    Q_INVOKABLE bool vtaiDevice(const QString &what);
     // Legacy ViewTouch's dat folders on this computer and its USB sticks:
     // [{path, label}], the likeliest first.
     Q_INVOKABLE QVariantList legacyFolders() const;
@@ -414,6 +419,10 @@ public:
     virtual QVariantMap vtai() const = 0;
     Q_INVOKABLE void vtaiMenuFromText(const QString &text) { invoke(QStringLiteral("vtaiMenuFromText"), {text}); }
     Q_INVOKABLE void vtaiMenuFromFile(const QString &base64) { invoke(QStringLiteral("vtaiMenuFromFile"), {base64}); }
+    Q_INVOKABLE void vtaiAsk(const QString &question) { invoke(QStringLiteral("vtaiAsk"), {question}); }
+    Q_INVOKABLE void vtaiFixMenu() { invoke(QStringLiteral("vtaiFixMenu")); }
+    Q_INVOKABLE void vtaiDescribe(const QStringList &itemIds, const QString &what) { invoke(QStringLiteral("vtaiDescribe"), {itemIds, what}); }
+    Q_INVOKABLE void vtaiApply(const QVariantList &fixes) { invoke(QStringLiteral("vtaiApply"), QVariantList{QVariant(fixes)}); }
     Q_INVOKABLE void vtaiCancel() { invoke(QStringLiteral("vtaiCancel")); }
     Q_INVOKABLE void vtaiClear() { invoke(QStringLiteral("vtaiClear")); }
     virtual QVariantMap printerSearch() const = 0;
@@ -827,6 +836,7 @@ signals:
     void onlineChanged();
     void notice(const QString &message);
     void usbSticksOpened(bool ok);
+    void vtaiDeviceSaid(const QString &what, const QString &said, bool ok);
     void loggedInChanged(bool loggedIn);
     void checkClosed(qint64 checkId);
 

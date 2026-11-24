@@ -610,6 +610,21 @@ public:
     // A menu's PDF or photo (its bytes, base64: from a phone too), read on this
     // computer (app/menu_reader.hh), then as above.
     bool vtaiMenuFromFile(const QString &base64);
+    // A question about sales ("what sold best this week?"): VT Ai picks one of
+    // the read-only reports and the days, ViewTouch makes it, and VT Ai answers
+    // from it: {task: ask, answer, report: {id, label, title}}.
+    bool vtaiAsk(const QString &question);
+    // The menu's problems VT Ai can propose a fix for (an item with no price:
+    // like the others of its category; one in no category: which), each with
+    // why: {task: fix, fixes: [{item, name, field, value, shown, why}]}.
+    bool vtaiFixMenu();
+    // Descriptions (what: "description", for the kiosk and online) or kitchen
+    // names ("kitchenName": BCN BGR) for these items (20 at most):
+    // {task: describe, fixes: [...]} as above.
+    bool vtaiDescribe(const QStringList &itemIds, const QString &what);
+    // The ones a manager ticked ([{item, field, value}]: price, family,
+    // description or kitchenName), checked again: one Undo step.
+    bool vtaiApply(const QVariantList &fixes);
     // What VT Ai is doing for this screen, given up; its result, put away.
     bool vtaiCancel();
     bool vtaiClear();
@@ -1444,9 +1459,14 @@ private:
     QPointer<MenuReader> vtaiReader_;
     bool vtaiReady();   // a manager's, VT Ai there and free (else said why)
     bool vtaiStartMenu(const QString &text);
+    // One question to VT Ai, its answer kept to `grammar`: `then` gets the text.
+    void vtaiOnce(const QString &task, const QString &system, const QString &user, const QString &grammar, int most,
+                  std::function<void(const QString &answer)> then);
     void vtaiMenuPart(const QStringList &parts, int at, QList<QJsonObject> answers, int request, QString lastCategory);
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;
+    std::function<void()> rangeDone_;   // when range request rangeDoneFor_ is ready
+    int rangeDoneFor_ = 0;
     core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
     QVariantMap legacy_;

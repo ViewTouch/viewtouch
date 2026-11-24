@@ -1793,6 +1793,109 @@ TEST_CASE("UI: Menu Builder: VT Ai reads a pasted menu into the import preview",
     s.shot("91-vtai-preview");
 }
 
+TEST_CASE("UI: Ask VT Ai from the Manager screen; its proposals for the menu ticked", "[flow][ui][vtai]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(100);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        INFO(name.toStdString());
+        REQUIRE(it);
+        s.tapItem(it);
+        QTest::qWait(80);
+    };
+    // Its button only while VT Ai is running.
+    // (A shown zone: the label it shows.)
+    const auto button = [&] { return Screen::findBy(root, "label", u"VT Ai…"_s); };
+    CHECK_FALSE(button());
+    QStringList answers;
+    s.pos.shared()->vtaiRunning = true;
+    s.pos.shared()->vtaiCall = [&](const QJsonObject &, std::function<void(const QJsonObject &, const QString &)> done) {
+        const QString a = answers.isEmpty() ? QString() : answers.takeFirst();
+        QTimer::singleShot(20, [done, a] {
+            done(QJsonObject{{u"choices"_s, QJsonArray{QJsonObject{{u"message"_s, QJsonObject{{u"content"_s, a}}}}}}}, {});
+        });
+    };
+    emit s.pos.shared()->vtaiChanged();
+    QTest::qWait(80);
+    REQUIRE(button());
+    // This computer's VT Ai service, through a stand-in helper.
+    QTemporaryDir helperDir;
+    const QString helper = helperDir.filePath(u"vtmodern-device"_s);
+    {
+        QFile f(helper);
+        REQUIRE(f.open(QIODevice::WriteOnly));
+        f.write("#!/bin/sh\nstate=$(cat \"$0.state\" 2>/dev/null || echo RUNNING)\n"
+                "case \"$1 $2\" in\n"
+                "'ai status') echo \"$state vtai-qwen3-4b\";;\n"
+                "'ai off') echo STOPPED > \"$0.state\"; echo 'VT Ai is off.';;\n"
+                "'ai on') echo RUNNING > \"$0.state\"; echo 'VT Ai is on.';;\n"
+                "*) exit 1;; esac\n");
+        f.close();
+        f.setPermissions(f.permissions() | QFileDevice::ExeOwner);
+    }
+    qputenv("VTM_STATION_HELPER", helper.toLocal8Bit());
+    s.c.activate(u"ask-vtai"_s);
+    QTest::qWait(150);
+    for (int i = 0; i < 100 && !by(u"vtaiSetup"_s); ++i)
+        QTest::qWait(20);
+    REQUIRE(by(u"vtaiSetup"_s));
+    CHECK(by(u"vtaiOnOff"_s)->property("text").toString() == u"Turn Off"_s);
+    tap(u"vtaiOnOff"_s);
+    for (int i = 0; i < 100 && by(u"vtaiOnOff"_s)->property("text").toString() != u"Turn On"_s; ++i)
+        QTest::qWait(20);
+    CHECK(by(u"vtaiOnOff"_s)->property("text").toString() == u"Turn On"_s);
+    tap(u"vtaiOnOff"_s);
+    for (int i = 0; i < 100 && by(u"vtaiOnOff"_s)->property("text").toString() != u"Turn Off"_s; ++i)
+        QTest::qWait(20);
+    qunsetenv("VTM_STATION_HELPER");
+    CHECK(s.c.pageId() == u"vtai"_s);
+    answers = {u"R items week"_s, u"The Classic Burger sold best this week: 12 of them."_s};
+    QQuickItem *q = by(u"vtaiQuestion"_s);
+    REQUIRE(q);
+    q->setProperty("text", u"What sold best this week?"_s);
+    tap(u"vtaiAsk"_s);
+    for (int i = 0; i < 200 && !by(u"vtaiAnswer"_s)->property("text").toString().contains(u"Classic Burger"_s); ++i)
+        QTest::qWait(20);
+    CHECK(by(u"vtaiAnswer"_s)->property("text").toString().contains(u"Classic Burger"_s));
+    s.shot("92-vtai-answer");
+    tap(u"vtaiOpenReport"_s);
+    QTest::qWait(150);
+    CHECK(s.c.pageId() == u"reports"_s);
+
+    // Menu Builder: kitchen names for a category, ticked, made.
+    REQUIRE(s.c.jumpTo(u"menu-builder"_s));
+    QTest::qWait(150);
+    root = s.window->contentItem();
+    tap(u"builderTools"_s);
+    REQUIRE(by(u"builderVtAiKitchen"_s));
+    answers = {u"K 1 | BKFST BRTO\nK 2 | PNCKS\nEND"_s};
+    tap(u"builderVtAiKitchen"_s);
+    QObject *sheet = nullptr;
+    for (QQuickItem *at = by(u"builderTools"_s); at && !sheet; at = at->parentItem())
+        sheet = at->findChild<QObject *>(u"builderVtAiFixes"_s, Qt::FindDirectChildrenOnly);
+    REQUIRE(sheet);
+    for (int i = 0; i < 200 && sheet->property("fixes").toList().size() < 2; ++i)
+        QTest::qWait(20);
+    const QVariantList fixes = sheet->property("fixes").toList();
+    REQUIRE(fixes.size() == 2);
+    s.shot("93-vtai-kitchen-names");
+    const QString firstId = fixes[0].toMap()[u"item"_s].toString(), secondId = fixes[1].toMap()[u"item"_s].toString();
+    const std::string secondBefore = s.pos.findItem(secondId)->kitchenName;
+    tap(u"vtaiFix1"_s);   // not the second
+    CHECK(sheet->property("chosen").toList().size() == 1);
+    QString told;
+    QObject::connect(&s.pos, &app::PosService::notice, [&](const QString &m) { told = m; });
+    tap(u"vtaiApply"_s);
+    INFO(told.toStdString());
+    CHECK(s.pos.findItem(firstId)->kitchenName == "BKFST BRTO");
+    CHECK(s.pos.findItem(secondId)->kitchenName == secondBefore);
+}
+
 TEST_CASE("UI: Menu Builder: an import ticked into categories, a few at a time", "[flow][ui][import]")
 {
     Screen s(false, 1280, 800);

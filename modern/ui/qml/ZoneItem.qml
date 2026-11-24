@@ -234,6 +234,8 @@ Item {
         if (r.service && !r.service.split(",").includes((p && p.service && p.service.mode) || "restaurant")) return false
         if (r.numbers !== undefined && r.numbers !== !!(p && p.service && p.service.numbers)) return false
         if (r.rush !== undefined && r.rush !== !!(p && p.service && p.service.rush)) return false
+        // VT Ai on the store's computer (installed; this a manager's).
+        if (r.vtai !== undefined && r.vtai !== !!(p && p.vtai && p.vtai.installed)) return false
         return true
     }
     // Widgets with a working implementation (Widget<Kind>.qml); the rest
@@ -242,7 +244,7 @@ Item {
         "soldOutList", "orderList", "loginPad", "guestCount", "numPad",
         "paymentPanel", "checkList", "keyboard", "clock", "logoutPanel", "statusBar",
         "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "kitchenDisplay", "customerInfo",
-        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "legacyImport", "tablesSetup", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "busList", "prepCounts", "returnPicker", "deliveryBoard", "decor", "floorPlan", "tableKey", "truckOrders"]
+        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "legacyImport", "tablesSetup", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "busList", "prepCounts", "returnPicker", "deliveryBoard", "decor", "floorPlan", "tableKey", "truckOrders", "vtAi"]
     readonly property bool hasWidget: isWidget && builtWidgets.includes(kind)
     readonly property bool interactive: zoneEnabled && behavior !== "passthrough"
                                         && (kind === "button" || kind === "image")

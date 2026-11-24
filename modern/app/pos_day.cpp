@@ -1650,6 +1650,12 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
     const std::int64_t a = startOf(from), b = startOf(to.addDays(1));
     const std::int64_t a0 = startOf(from.addYears(-1)), b0 = startOf(to.addDays(1).addYears(-1));
 
+    // VT Ai waiting on the one this replaces: told it won't come.
+    if (rangeDone_) {
+        rangeDone_ = {};
+        vtai_ = {{u"task"_s, u"ask"_s}, {u"busy"_s, false},
+                 {u"error"_s, tr("Another report was opened meanwhile: ask again.")}};
+    }
     const int request = ++rangeRequest_;
     rangeReport_ = {{u"loading"_s, true}, {u"id"_s, id}, {u"period"_s, period}, {u"label"_s, label}};
     emit sessionChanged();
@@ -1727,6 +1733,9 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
             out.insert(u"checks"_s, int(now.size()));
             self->rangeReport_ = out;
             emit self->sessionChanged();
+            // VT Ai waiting on this one (pos_vtai.cpp): told.
+            if (self->rangeDone_ && self->rangeDoneFor_ == request)
+                std::exchange(self->rangeDone_, {})();
         }, Qt::QueuedConnection);
     });
     return true;

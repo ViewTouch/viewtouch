@@ -2,14 +2,19 @@
 
 #include "app/menu_import.hh"
 #include "app/menu_reader.hh"
+#include "app/pos_demo.hh"
+#include "app/pos_starter.hh"
+#include "net/vtai_client.hh"
 #include "app/pos_service.hh"
 #include "pos_fixture.hh"
 #include "qt_catch.hh"
 
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QElapsedTimer>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QTimer>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -350,4 +355,179 @@ TEST_CASE("VT Ai: a photo of a menu from a phone, read on the store's computer",
         QTest::qWait(10);
     CHECK(pos.vtai()[u"error"_s].toString().contains(u"isn't a PDF or a photo"_s));
     CHECK(told.isEmpty());
+}
+
+namespace {
+
+// A stand-in VT Ai that answers each question with the next of `answers`.
+struct FakeVtAi {
+    QList<QJsonObject> asked;
+    QStringList answers;
+    explicit FakeVtAi(app::PosService &pos)
+    {
+        pos.shared()->vtaiRunning = true;
+        pos.shared()->vtaiCall = [this](const QJsonObject &request, std::function<void(const QJsonObject &, const QString &)> done) {
+            asked << request;
+            const QString a = answers.isEmpty() ? QString() : answers.takeFirst();
+            QTimer::singleShot(0, [done, a] { done(replyWith(a), {}); });
+        };
+    }
+};
+
+void waitFor(app::PosService &pos)
+{
+    for (int i = 0; i < 500 && pos.vtai()[u"busy"_s].toBool(); ++i)
+        QTest::qWait(10);
+    REQUIRE_FALSE(pos.vtai()[u"busy"_s].toBool());
+}
+
+} // namespace
+
+TEST_CASE("VT Ai: a sales question answered from a report it chose", "[vtai]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    FakeVtAi ai(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    ai.answers = {u"R items week"_s, u"Cheeseburgers sold best this week."_s};
+    REQUIRE(pos.vtaiAsk(u"What sold best this week?"_s));
+    waitFor(pos);
+    const QVariantMap v = pos.vtai();
+    CHECK(v[u"answer"_s] == u"Cheeseburgers sold best this week."_s);
+    CHECK(v[u"report"_s].toMap()[u"id"_s] == u"items"_s);
+    CHECK(pos.rangeReport()[u"id"_s] == u"items"_s);   // the manager can open it
+    REQUIRE(ai.asked.size() == 2);
+    // The choice kept to the reports allowed; the answer given the report's rows.
+    CHECK(ai.asked[0][u"grammar"_s].toString().contains(u"\"engineering\""_s));
+    CHECK_FALSE(ai.asked[0][u"grammar"_s].toString().contains(u"\"labor\""_s));
+    CHECK(ai.asked[1][u"messages"_s].toArray()[1].toObject()[u"content"_s].toString().startsWith(u"Report:"_s));
+
+    // Not about the store: said what it does, no report made.
+    ai.asked.clear();
+    ai.answers = {u"N"_s};
+    REQUIRE(pos.vtaiAsk(u"Write me a poem"_s));
+    waitFor(pos);
+    CHECK(pos.vtai()[u"answer"_s].toString().contains(u"sales"_s));
+    CHECK(ai.asked.size() == 1);
+
+    // Managers only.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK_FALSE(pos.vtaiAsk(u"What sold best?"_s));
+}
+
+TEST_CASE("VT Ai: menu fixes and descriptions proposed, a manager's ticks made as one step", "[vtai]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    FakeVtAi ai(pos);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QVariantList categories = pos.menuCategories();
+    REQUIRE(categories.size() > 1);
+    const QString firstCategory = categories[0].toMap()[u"name"_s].toString();
+
+    const QString firstCategoryId = categories[0].toMap()[u"id"_s].toString();
+    // The starter menu's Water is free on purpose; a new item has no price yet.
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, QString()}, {u"name"_s, u"Mystery Plate"_s}, {u"price"_s, u"0"_s},
+                                  {u"family"_s, firstCategoryId}}));
+    const core::MenuItem *made = pos.findItem(u"Mystery Plate"_s);
+    REQUIRE(made);
+    const QString id = QString::fromStdString(made->id);
+    const QString water = QString::fromStdString(pos.findItem(u"Water"_s)->id);
+    ai.answers = {u"P 1 | 0 | water is free\nP 2 | 12.50 | like the other plates\nP 9 | 3 | not asked\nEND"_s};
+    REQUIRE(pos.vtaiFixMenu());
+    waitFor(pos);
+    const QVariantList fixes = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(fixes.size() == 1);   // free stays free; the one it wasn't asked about, left out
+    CHECK(fixes[0].toMap()[u"item"_s] == id);
+    CHECK(fixes[0].toMap()[u"value"_s] == u"12.50"_s);
+    CHECK(ai.asked[0][u"messages"_s].toArray()[1].toObject()[u"content"_s].toString().contains(u"2. Mystery Plate needs a price"_s));
+    CHECK(ai.asked[0][u"grammar"_s].toString().contains(firstCategory));
+    // Nothing changed until a manager says; then price and category as one step.
+    CHECK(pos.findItem(id)->price.cents() == 0);
+    const QString otherCategory = categories[1].toMap()[u"id"_s].toString();
+    REQUIRE(pos.vtaiApply({fixes[0], QVariantMap{{u"item"_s, id}, {u"field"_s, u"family"_s}, {u"value"_s, otherCategory}}}));
+    CHECK(pos.findItem(id)->price.cents() == 1250);
+    CHECK(QString::fromStdString(pos.findItem(id)->family) == otherCategory);
+    CHECK(pos.findItem(water)->price.cents() == 0);
+    // One Undo takes both back.
+    REQUIRE(pos.undoMenuChange());
+    CHECK(pos.findItem(id)->price.cents() == 0);
+    CHECK(QString::fromStdString(pos.findItem(id)->family) == firstCategoryId);
+
+    // Checked again when made: nothing else, nothing wrong.
+    CHECK_FALSE(pos.vtaiApply({QVariantMap{{u"item"_s, id}, {u"field"_s, u"available"_s}, {u"value"_s, u"false"_s}}}));
+    CHECK_FALSE(pos.vtaiApply({QVariantMap{{u"item"_s, id}, {u"field"_s, u"price"_s}, {u"value"_s, u"-4"_s}}}));
+    CHECK_FALSE(pos.vtaiApply({QVariantMap{{u"item"_s, id}, {u"field"_s, u"family"_s}, {u"value"_s, u"nowhere"_s}}}));
+
+    // Descriptions and kitchen names.
+    ai.answers = {u"D 1 | A hearty plate of the chef's surprise, made to order.\nEND"_s};
+    REQUIRE(pos.vtaiDescribe({id}, u"description"_s));
+    waitFor(pos);
+    QVariantList d = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(d.size() == 1);
+    REQUIRE(pos.vtaiApply(d));
+    CHECK(pos.findItem(id)->description == "A hearty plate of the chef's surprise, made to order.");
+    ai.answers = {u"K 1 | mys plt\nEND"_s};
+    REQUIRE(pos.vtaiDescribe({id}, u"kitchenName"_s));
+    waitFor(pos);
+    d = pos.vtai()[u"fixes"_s].toList();
+    REQUIRE(d.size() == 1);
+    CHECK(d[0].toMap()[u"value"_s] == u"MYS PLT"_s);
+    CHECK(ai.asked.last()[u"grammar"_s].toString().contains(u"{1,14}"_s));
+    CHECK_FALSE(pos.vtaiDescribe({id}, u"price"_s));
+    CHECK_FALSE(pos.vtaiDescribe({u"nope"_s}, u"description"_s));
+}
+
+// The real VT Ai (VTM_VTAI_URL, else 127.0.0.1:7720): what it answers, printed.
+// Hidden: ./vtm_tests "[.vtai-live]" -s with a server running.
+TEST_CASE("VT Ai live: questions, fixes and descriptions on a demo restaurant", "[.vtai-live]")
+{
+    const std::int64_t now = QDateTime::currentMSecsSinceEpoch();
+    app::PosShared shared(*app::starterData({u"restaurant"_s, {}}), nullptr);
+    app::PosService pos(&shared, u"Live"_s);
+    REQUIRE(app::fillDemoData(pos, now).startsWith(u"Added"_s));
+    net::VtAiClient client;
+    shared.vtaiCall = [&](const QJsonObject &body, std::function<void(const QJsonObject &, const QString &)> done) {
+        client.chat(body, std::move(done));
+    };
+    shared.vtaiCancel = [&] { client.cancel(); };
+    for (int i = 0; i < 300 && !client.running(); ++i)
+        QTest::qWait(20);
+    REQUIRE(client.running());
+    shared.vtaiRunning = true;
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const auto wait = [&] {
+        QElapsedTimer t;
+        t.start();
+        for (int i = 0; i < 60000 && pos.vtai()[u"busy"_s].toBool(); ++i)
+            QTest::qWait(20);
+        return t.elapsed() / 1000.0;
+    };
+    for (const QString &q : {u"What were today's sales?"_s, u"What sold best today?"_s, u"Which hour was busiest today?"_s,
+                             u"Who sold the most today?"_s, u"Write me a poem about tacos"_s}) {
+        REQUIRE(pos.vtaiAsk(q));
+        const double took = wait();
+        const QVariantMap v = pos.vtai();
+        WARN(q.toStdString() + " -> [" + v[u"report"_s].toMap()[u"id"_s].toString().toStdString() + "] "
+             + (v[u"answer"_s].toString() + v[u"error"_s].toString()).toStdString() + "  (" + std::to_string(int(took)) + " s)");
+    }
+    REQUIRE(pos.saveMenuItemCard({{u"id"_s, QString()}, {u"name"_s, u"Double Bacon Burger"_s}, {u"price"_s, u"0"_s},
+                                  {u"family"_s, pos.menuCategories()[2].toMap()[u"id"_s]}}));
+    REQUIRE(pos.vtaiFixMenu());
+    double took = wait();
+    for (const QVariant &f : pos.vtai()[u"fixes"_s].toList())
+        WARN("fix: " + f.toMap()[u"name"_s].toString().toStdString() + " " + f.toMap()[u"field"_s].toString().toStdString() + " = "
+             + f.toMap()[u"shown"_s].toString().toStdString() + " (" + f.toMap()[u"why"_s].toString().toStdString() + ")");
+    WARN("fix took " + std::to_string(int(took)) + " s " + pos.vtai()[u"error"_s].toString().toStdString());
+    QStringList ids;
+    for (const QVariant &m : pos.menuItems())
+        if (ids.size() < 5)
+            ids << m.toMap()[u"id"_s].toString();
+    for (const QString &what : {u"description"_s, u"kitchenName"_s}) {
+        REQUIRE(pos.vtaiDescribe(ids, what));
+        took = wait();
+        for (const QVariant &f : pos.vtai()[u"fixes"_s].toList())
+            WARN(what.toStdString() + ": " + f.toMap()[u"name"_s].toString().toStdString() + " -> "
+                 + f.toMap()[u"shown"_s].toString().toStdString());
+        WARN(what.toStdString() + " took " + std::to_string(int(took)) + " s " + pos.vtai()[u"error"_s].toString().toStdString());
+    }
 }

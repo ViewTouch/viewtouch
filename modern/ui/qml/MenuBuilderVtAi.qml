@@ -85,7 +85,7 @@ Dialog {
                                     + " " + qsTr("This takes a minute or two for each part; the register works as usual meanwhile.")
                 : vtaiDialog.vtai.error ? vtaiDialog.vtai.error
                 : vtaiDialog.fileError ? vtaiDialog.fileError
-                : !vtaiDialog.vtai.available ? qsTr("VT Ai isn't running on this computer (Store Settings → VT Ai).")
+                : !vtaiDialog.vtai.available ? qsTr("VT Ai isn't running on this computer (Manager → VT Ai).")
                 : qsTr("%L1 of 30,000 letters").arg(words.text.length)
         }
         BusyIndicator { visible: vtaiDialog.busy; running: visible; Layout.alignment: Qt.AlignHCenter }

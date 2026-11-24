@@ -2358,6 +2358,10 @@ Item {
         menu: w
         importDialog: importDialog
     }
+    MenuBuilderVtAiFixes {
+        id: vtaiFixes
+        menu: w
+    }
     MenuBuilderCheck {
         id: checkDialog
         menu: w
@@ -2418,7 +2422,14 @@ Item {
                 // VT Ai's, only while it's running here (and for a manager).
                 model: (w.pos && w.pos.vtai && w.pos.vtai.available
                         ? [{ id: "builderVtAi", name: qsTr("Describe Your Menu (VT Ai)…"),
-                             text: qsTr("Type or paste a menu, or add a photo or PDF of it: VT Ai, on this computer, makes its items, sizes and choices for you to check") }]
+                             text: qsTr("Type or paste a menu, or add a photo or PDF of it: VT Ai, on this computer, makes its items, sizes and choices for you to check") },
+                           { id: "builderVtAiCheck", name: qsTr("Check the Menu with VT Ai…"),
+                             text: qsTr("Items with no price or no category: VT Ai proposes one for each, for you to tick") }]
+                          .concat(w.items.length > 0
+                            ? [{ id: "builderVtAiDescribe", name: qsTr("Write Descriptions (VT Ai)…"),
+                                 text: qsTr("A line about each item in this category, for the kiosk and online ordering") },
+                               { id: "builderVtAiKitchen", name: qsTr("Kitchen Names (VT Ai)…"),
+                                 text: qsTr("Short names for this category's items on kitchen tickets (BCN CHZBGR)") }] : [])
                         : []).concat([
                     { id: "builderImport", name: qsTr("Bring a Menu In…"),
                       text: qsTr("A spreadsheet (Excel or CSV), a menu from Square, Clover or Toast, or another store's") },
@@ -2442,7 +2453,11 @@ Item {
                         onClicked: {
                             const id = toolRow.modelData.id, b = w
                             toolsDialog.close()
+                            const firstItems = b.items.slice(0, 20).map(i => i.id)
                             if (id === "builderVtAi") vtaiDialog.open()
+                            else if (id === "builderVtAiCheck") vtaiFixes.check()
+                            else if (id === "builderVtAiDescribe") vtaiFixes.describe(firstItems, "description")
+                            else if (id === "builderVtAiKitchen") vtaiFixes.describe(firstItems, "kitchenName")
                             else if (id === "builderImport") importFile.open()
                             else if (id === "builderTemplates") templateDialog.open()
                             else if (id === "builderPrintMenu") b.leave(() => printDialog.open())

@@ -229,6 +229,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetReceiveDelivery.qml
             ui/qml/WidgetStockCount.qml
             ui/qml/WidgetWasteLog.qml
+            ui/qml/WidgetVtAi.qml
             ui/qml/WidgetStoreCheck.qml
             ui/qml/WidgetPrepLabels.qml
             ui/qml/WidgetCheckSearch.qml
@@ -238,6 +239,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetMenuBuilder.qml
             ui/qml/MenuBuilderImport.qml
             ui/qml/MenuBuilderVtAi.qml
+            ui/qml/MenuBuilderVtAiFixes.qml
             ui/qml/MenuBuilderNewItem.qml
             ui/qml/MenuBuilderNewChoice.qml
             ui/qml/MenuBuilderCheck.qml

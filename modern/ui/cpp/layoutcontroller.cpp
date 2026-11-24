@@ -1852,6 +1852,9 @@ bool LayoutController::ruleShows(const QJsonObject &rule) const
     if (const QJsonValue numbers = rule.value(u"numbers"); numbers.isBool()
         && numbers.toBool() != (pos_ && pos_->serviceInfo().value(u"numbers"_s).toBool()))
         return false;
+    if (const QJsonValue vtai = rule.value(u"vtai"); vtai.isBool()
+        && vtai.toBool() != (pos_ && pos_->vtai().value(u"installed"_s).toBool()))
+        return false;
     // The store's style (Store Settings -> Screens -> Style): a button only one style has.
     const QString style = rule.value(u"style").toString();
     return style.isEmpty() || style == vt::layout::Layout::styleOf(activeLayout().theme);

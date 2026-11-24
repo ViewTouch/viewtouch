@@ -502,8 +502,9 @@ ai|ai-model|ai-model-usb)
         work=/var/tmp/vtmodern-ai-download   # (on the disk: a model is bigger than memory's /run)
         rm -rf "$work"
         install -d -m 700 "$work"
-        fetch() {
-            curl -fsSL --retry 2 --max-time 3600 -o "$work/$1" "$url/$1" || die "Couldn't download $1 from $url."
+        fetch() {   # NAME [FROM]: the file (from FROM, else the release page), its signature always from the release page
+            from=${2:-$url/$1}
+            curl -fsSL --retry 2 --max-time 3600 -o "$work/$1" "$from" || die "Couldn't download $1 from $from."
             curl -fsSL --retry 2 --max-time 60 -o "$work/$1.sig" "$url/$1.sig" || die "$1 has no signature online: not used."
             signed_by_trusted "$work/$1" "$work/$1.sig" || die "$1 isn't signed by ViewTouch (or was changed on the way): not used."
         }
@@ -513,8 +514,12 @@ ai|ai-model|ai-model-usb)
         printf '%s' "$name" | grep -Eq '^vtai-[A-Za-z0-9._-]+\.gguf$' || die "latest.json: a strange model name."
         free=$(df -Pk "$aidir" | awk 'NR==2{print $4}')
         [ "${free:-0}" -gt 6000000 ] || die "Not enough room on this computer for VT Ai's model (6 GB free needed)."
-        echo "Downloading $name (about 2 GB)..."
-        fetch "$name"
+        # The model itself may be elsewhere (a release page holds files up to
+        # 2 GB): the same bytes, or the signature from the release page says no.
+        from=$(sed -n 's/.*"vtai-model-url" *: *"\([^"]*\)".*/\1/p' "$work/latest.json" | head -1)
+        case "$from" in ''|https://*) ;; *) die "latest.json: the model's address must start with https://." ;; esac
+        echo "Downloading $name (about 2.5 GB)..."
+        fetch "$name" "$from"
         license=$(sed -n 's/.*"vtai-model-license" *: *"\([^"]*\)".*/\1/p' "$work/latest.json" | head -1)
         if [ -n "$license" ] && printf '%s' "$license" | grep -Eq '^vtai-[A-Za-z0-9._-]+\.txt$' && (fetch "$license"); then
             install -m 644 "$work/$license" "$aidir/MODEL-LICENSE"

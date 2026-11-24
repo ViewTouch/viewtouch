@@ -79,6 +79,13 @@ Item {
     Component.onCompleted: {
         const sent = zone && zone.controller ? zone.controller.take("reportOpen") : undefined
         if (sent) pick(sent)
+        // ...and its days (VT Ai's answer: the report it read).
+        const days = zone && zone.controller ? zone.controller.take("reportPeriod") : undefined
+        if (days && days.period) {
+            fromDate = days.from ?? ""
+            toDate = days.to ?? ""
+            period = days.period
+        }
     }
     function pick(id) {
         const r = reportIds.find(x => x.id === id)

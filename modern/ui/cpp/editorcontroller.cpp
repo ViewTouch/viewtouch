@@ -330,6 +330,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"receiveDelivery"_s, QT_TR_NOOP("Receive a delivery")},
         {u"stockCount"_s, QT_TR_NOOP("Count stock")},
         {u"wasteLog"_s, QT_TR_NOOP("Log waste")},
+        {u"vtAi"_s, QT_TR_NOOP("Ask VT Ai")},
         {u"storeCheck"_s, QT_TR_NOOP("Store check")},
         {u"prepLabels"_s, QT_TR_NOOP("Prep labels")},
         {u"checkSearch"_s, QT_TR_NOOP("Find a check")},

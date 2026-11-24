@@ -193,6 +193,29 @@
       ]
     },
     {
+      "id": "ask-vtai",
+      "kind": "button",
+      "rect": {
+        "x": 48,
+        "y": 838,
+        "w": 352,
+        "h": 92
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "VT Ai\u2026",
+      "showWhen": {
+        "vtai": true
+      },
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "vtai"
+        }
+      ]
+    },
+    {
       "id": "group-menu",
       "kind": "label",
       "rect": {
@@ -1121,6 +1144,12 @@
       "tables-setup": {
         "x": 1152,
         "y": 560,
+        "w": 352,
+        "h": 92
+      },
+      "ask-vtai": {
+        "x": 48,
+        "y": 854,
         "w": 352,
         "h": 92
       }

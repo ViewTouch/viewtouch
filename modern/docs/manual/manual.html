@@ -77,6 +77,12 @@
 <li><b>Kitchen:</b> a chime for a new order and another when one turns late; voided items stay <b>crossed out</b> until seen, a second send says <b>ADDED to T5</b>; touch one item for <b>Made</b> or <b>Sold Out (86)</b>; the next course on hold shows under the ticket (chapter 2).</li>
 <li><b>Hosts:</b> <b>server sections</b> drawn on the floor; <b>Seat at T7</b>, the best table for the party, in one touch; wait quotes from the tables that fit the party; and <b>Tables to Clean</b> for bussers (chapter 8).</li>
 </ul>
+<p>VT Ai, a small AI on the store's own computer (optional: <code>vtmodern-ai</code>):</p>
+<ul>
+<li><b>A menu from words, a photo or a PDF</b>: pasted, photographed (a phone too) or a scanned PDF, read into items, prices, sizes and choices in Bring a Menu In's preview, to check before importing.</li>
+<li><b>Questions about sales</b> answered from ViewTouch's own reports (<i>What sold best this week?</i>), with the report a touch away.</li>
+<li><b>Menu fixes, descriptions and kitchen names</b> proposed for a manager to tick; one Undo takes them back. Nothing leaves the store (chapter 11, VT Ai).</li>
+</ul>
 <p>Starter sets for every kind of store:</p>
 <ul>
 <li><b>Factory reset</b> and the setup guide start a store as <b>a restaurant</b>, <b>a food truck</b> or <b>a shop</b>, with a menu to choose: 19 food menus (sushi, pizza, Italian, Mexican, Chinese, Thai, Indian, BBQ, a diner, a steakhouse, a pub...) with their choices, and 13 shops (clothes, hardware, books, a grocery, pet supplies, wine and liquor, a florist...) with barcodes, sizes and colors and stock. Food and a shop's goods never mix.</li>
@@ -1107,6 +1113,34 @@ A modifier group called <i>Size</i> (one required) becomes the item's sizes. Pri
 
 <p><b>★ Favorite</b> on an item's card puts it in the order screen's <b>★ Favorites</b>, the first tab, together with today's best sellers (12 in all). The item buttons size themselves: as many columns as fit the category's items without scrolling, as big as they can be.</p>
 <p>On the order screen, each meal's page shows its categories as buttons (<b>Breakfast</b>, <b>Lunch</b>, <b>Dinner</b> at the top); touching one shows its items, with a button for every category across the top. <b>Everything</b> shows the whole menu, <b>Popular</b> today's best sellers.</p>
+
+<h2>VT Ai: a small AI on the store's computer</h2>
+<p><b>VT Ai</b> is ViewTouch's own assistant. It runs on the store's computer itself (an AIO-CM5-156 or any ViewTouch register with 8 GB of memory): nothing it reads or writes leaves the store, and it needs no internet once its model is there. It helps a manager in four ways, and it only ever <i>proposes</i>: you see everything first and choose what is used.</p>
+<h3>Turning it on</h3>
+<ol>
+<li>Install it once on the store's computer: <code>sudo apt install vtmodern-ai</code> (it is a separate package; ViewTouch works the same without it).</li>
+<li><b>Manager → VT Ai…</b> → <b>Get the Model</b> downloads its model (about 2.5 GB, checked against ViewTouch's signature like an update), or <b>From a USB Stick</b> takes one from a stick (<code>vtai-*.gguf</code> with its <code>.sig</code>).</li>
+<li><b>Turn On</b> / <b>Turn Off</b> there starts and stops it. Its buttons in Menu Builder and on the Manager screen show only while it runs, and only for managers.</li>
+</ol>
+<p>VT Ai always gives way to the point of sale: it uses at most three of the computer's four cores at the lowest priority, and at most 4.5 GB of memory. Ringing orders, the kitchen and payments run as usual while it works. On the AIO-CM5-156 a page of menu takes about a minute, and a question about half a minute.</p>
+<h3>A menu typed, pasted, photographed or as a PDF</h3>
+<p class="shot"><img src="shots/m240-vtai-menu.jpg" width="560" height="350"></p>
+<p>Menu Builder → <b>More Tools…</b> → <b>Describe Your Menu (VT Ai)…</b>. Type or paste a menu the way it's written (headings, items, prices, "choice of salsa roja or verde", "small 2.50 / large 3.50"), or touch <b>Add a Photo or PDF…</b>: a photo of a paper menu (flat, straight on, in good light; on a phone too), a PDF made on a computer, or a scanned one. Then <b>Read It</b>.</p>
+<p class="shot"><img src="shots/m241-vtai-preview.jpg" width="560" height="350"></p>
+<p>What VT Ai read opens in the same preview as <b>Bring a Menu In…</b>: each item with its price, sizes and choice groups, in its category. Check the names and prices (an item with no price on the menu is said, never made up), untick any you don't want, and <b>Import</b>. One <b>Undo</b> takes the whole import back.</p>
+<h3>Questions about sales</h3>
+<p class="shot"><img src="shots/m242-vtai-answer.jpg" width="560" height="350"></p>
+<p><b>Manager → VT Ai…</b>: ask in your own words (<i>What sold best this week? Who sold the most yesterday? Which hour was busiest?</i>) or touch one of the examples. VT Ai picks one of ViewTouch's reports and the days, ViewTouch makes it, and VT Ai answers in a sentence or two from that report's numbers. It can only read reports; it can't change anything. <b>Open the Report</b> shows the report it read, for the full numbers: VT Ai can be wrong, the report isn't.</p>
+<h3>Fixing the menu, descriptions and kitchen names</h3>
+<p class="shot"><img src="shots/m243-vtai-kitchen-names.jpg" width="560" height="350"></p>
+<p>In Menu Builder → <b>More Tools…</b>:</p>
+<ul>
+<li><b>Check the Menu with VT Ai…</b>: for each item with no price, a price like its category's others; for each in no category, which one. Each says why. Items a store usually gives free (water) stay free.</li>
+<li><b>Write Descriptions (VT Ai)…</b>: a line about each item in the category, for the kiosk and online ordering. It names only what the item's name and its recipe (its card's <b>What's on it</b>) say.</li>
+<li><b>Kitchen Names (VT Ai)…</b>: short names for the kitchen tickets (<i>BCN CHZBGR</i>).</li>
+</ul>
+<p>Untick any you don't want and touch <b>Use</b>: the rest are made as one change, and <b>Undo</b> takes them all back.</p>
+<p>VT Ai's model is Qwen3-4B-Instruct (Apache 2.0 license, from Alibaba's Qwen team), run with llama.cpp (MIT license); their licenses are on the computer in <code>/var/lib/viewtouch-ai/MODEL-LICENSE</code> and <code>/usr/share/doc/vtmodern-ai/</code>.</p>
 
 <h2>Menu items</h2>
 <p class="shot"><img src="shots/m31-menu-items.jpg" width="560" height="315"></p>
