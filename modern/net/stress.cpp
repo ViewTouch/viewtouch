@@ -185,7 +185,14 @@ struct StressRunner::Bot {
             done(true);
             return;
         }
-        const Op op = ops.takeFirst();
+        Op op = ops.takeFirst();
+        // Drinks for someone who must show ID: checked first, as a server does
+        // when the order screen asks (then sent, closed or paid as planned).
+        static const QStringList needsId = {u"sendOrder"_s, u"closeCheck"_s, u"tender"_s};
+        if (needsId.contains(op.method) && !s->checkInfo().value(u"idAsk"_s).toMap().isEmpty()) {
+            ops.prepend(op);
+            op = cmd(u"idChecked"_s, {true}, true);
+        }
         lastNotice.clear();
         QElapsedTimer t;
         t.start();
